@@ -93,7 +93,7 @@ public class YajTestBase {
         this.defaultByteOrder = this.defaultPcapHeader.getByteOrder();
         final PcapFramer framer = new PcapFramer(this.defaultByteOrder, this.framerManager);
         this.defaultPcapFrame = (PcapFrame) framer.frame(this.pcapStream);
-        this.defaultFrame = this.defaultPcapFrame.getData();
+        this.defaultFrame = this.defaultPcapFrame.getPayload();
         assertThat(547, is((this.defaultFrame.capacity())));
 
         this.ethernetFrameBuffer = Buffers.wrap(RawData.rawEthernetFrame);

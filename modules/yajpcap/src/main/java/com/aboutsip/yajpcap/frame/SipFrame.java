@@ -8,11 +8,13 @@ import java.io.IOException;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.Framer;
 import com.aboutsip.yajpcap.framer.FramerManager;
+import com.aboutsip.yajpcap.packet.Packet;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
- * @author jonas@jonasborjesson.com
+ * A frame knowledgeable of the SIP protocol.
  * 
+ * @author jonas@jonasborjesson.com
  */
 public final class SipFrame extends AbstractFrame {
 
@@ -76,6 +78,18 @@ public final class SipFrame extends AbstractFrame {
         }
 
         return framer.frame(payload);
+    }
+
+    /**
+     * Parse the content into a "real" SIP message. The parser method will just
+     * make sure that we have the basic information available before
+     * constructing a packet. Remember, everything is done lazily so if the user
+     * really needs to know if the packet conforms to SIP rules, then he/she
+     * should call {@inheritDoc}
+     */
+    @Override
+    public Packet parse() {
+        return null;
     }
 
     /**

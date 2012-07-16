@@ -16,7 +16,6 @@ import org.junit.Test;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.YajTestBase;
 import com.aboutsip.yajpcap.frame.PcapFrame;
-import com.aboutsip.yajpcap.framer.PcapFramer;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -60,16 +59,12 @@ public class PcapFramerTest extends YajTestBase {
         // there are a total of 30 frames in this pcap.
         PcapFrame frame = null;
         for (int i = 6; i < 30; ++i) {
-            System.err.println("Count " + i);
-            if (i == 8) {
-                System.err.println("about to blow up...");
-            }
             frame = (PcapFrame) this.framer.frame(this.pcapStream);
             assertNotNull(frame);
         }
 
         // the last frame is supposed to 340 according to wireshark
-        assertThat(340, is((frame.getData().capacity())));
+        assertThat(340, is((frame.getPayload().capacity())));
 
         // we have read all the 30 frames so trying to frame
         // another one shouldn't work. Hence, we should be getting
@@ -82,7 +77,7 @@ public class PcapFramerTest extends YajTestBase {
     private void verifyNextFrame(final Buffer in, final int expectedLength)
             throws IOException {
         final PcapFrame frame = (PcapFrame) this.framer.frame(in);
-        final Buffer payload = frame.getData();
+        final Buffer payload = frame.getPayload();
         assertThat(expectedLength, is((payload.capacity())));
     }
 

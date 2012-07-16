@@ -80,28 +80,28 @@ public class SIPFramerTest extends YajTestBase {
 
         // check the payload
         String sdp = "v=0";
-        assertThat(frame.getData().readLine().toString(), is(sdp));
+        assertThat(frame.getPayload().readLine().toString(), is(sdp));
 
         sdp = "o=user1 53655765 2353687637 IN IP4 127.0.1.1";
-        assertThat(frame.getData().readLine().toString(), is(sdp));
+        assertThat(frame.getPayload().readLine().toString(), is(sdp));
 
         sdp = "s=-";
-        assertThat(frame.getData().readLine().toString(), is(sdp));
+        assertThat(frame.getPayload().readLine().toString(), is(sdp));
 
         sdp = "c=IN IP4 127.0.1.1";
-        assertThat(frame.getData().readLine().toString(), is(sdp));
+        assertThat(frame.getPayload().readLine().toString(), is(sdp));
 
         sdp = "t=0 0";
-        assertThat(frame.getData().readLine().toString(), is(sdp));
+        assertThat(frame.getPayload().readLine().toString(), is(sdp));
 
         sdp = "m=audio 6001 RTP/AVP 0";
-        assertThat(frame.getData().readLine().toString(), is(sdp));
+        assertThat(frame.getPayload().readLine().toString(), is(sdp));
 
         sdp = "a=rtpmap:0 PCMU/8000";
-        assertThat(frame.getData().readLine().toString(), is(sdp));
+        assertThat(frame.getPayload().readLine().toString(), is(sdp));
 
         // nothing left
-        assertThat(frame.getData().readLine(), is((Buffer) null));
+        assertThat(frame.getPayload().readLine(), is((Buffer) null));
     }
 
 }

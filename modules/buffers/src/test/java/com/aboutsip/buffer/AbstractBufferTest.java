@@ -44,6 +44,7 @@ public abstract class AbstractBufferTest {
 
     @After
     public void tearDown() throws Exception {
+        // currently nothing...
     }
 
     /**

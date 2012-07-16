@@ -71,7 +71,7 @@ public class Pcap {
     }
 
     public void close() {
-        System.err.println("closing...");
+        // TODO
     }
 
 }

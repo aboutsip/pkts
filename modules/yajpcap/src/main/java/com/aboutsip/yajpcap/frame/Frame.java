@@ -6,11 +6,14 @@ package com.aboutsip.yajpcap.frame;
 import java.io.IOException;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.yajpcap.packet.Packet;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
  * A frame in the ISO stack typically have some headers and then a payload/data
  * section. The payload may itself be another frame and so on.
+ * 
+ * A Frame can be asked to fully parse its data in order to produce a Packet.
  * 
  * @author jonas@jonasborjesson.com
  * 
@@ -82,6 +85,17 @@ public interface Frame {
      * 
      * @return
      */
-    Buffer getData();
+    Buffer getPayload();
+
+    /**
+     * A frame has not fully parsed the data but only enough so it can find the
+     * boundary between the headers and its payload. Each type of frame can be
+     * parsed into a specific {@link Packet}, which will examine all the headers
+     * etc more closely to make sure that the data conforms to whatever protocol
+     * it is dealing with.
+     * 
+     * @return
+     */
+    Packet parse();
 
 }
