@@ -1,0 +1,423 @@
+/**
+ * 
+ */
+package com.aboutsip.buffer;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @author jonas@jonasborjesson.com
+ */
+public final class InputStreamBuffer extends AbstractBuffer {
+
+    private final InputStream is;
+
+    /**
+     * The default capacity for each individual byte array
+     */
+    private static final int DEFAULT_CAPACITY = 4096;
+
+    // private final byte[] buffer;
+    private final List<java.nio.ByteBuffer> storage;
+
+    /**
+     * The "local" capacity of each "sub-array".
+     */
+    private final int localCapacity;
+
+    /**
+     * 
+     */
+    public InputStreamBuffer(final InputStream is) {
+        this(InputStreamBuffer.DEFAULT_CAPACITY, is);
+    }
+
+    /**
+     * 
+     * @param initialCapacity the initial size of the internal byte array
+     * @param is
+     */
+    public InputStreamBuffer(final int initialCapacity, final InputStream is) {
+        super(0, 0, 0);
+        assert is != null;
+        this.is = is;
+        this.localCapacity = initialCapacity;
+        this.storage = new ArrayList<java.nio.ByteBuffer>();
+        this.storage.add(java.nio.ByteBuffer.allocate(this.localCapacity));
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Buffer slice(final int start, final int stop) {
+        checkIndex(this.lowerBoundary + start);
+        checkIndex((this.lowerBoundary + stop) - 1);
+
+        // this has to change now that we can have multiple
+        // rows of byte buffers
+        final java.nio.ByteBuffer buf = getWritingRow();
+        return new ByteBuffer(0, this.lowerBoundary + start, this.lowerBoundary + stop, buf.array());
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @throws IOException
+     */
+    @Override
+    public byte readByte() throws IndexOutOfBoundsException, IOException {
+        final int read = internalReadBytes(1);
+        if (read == -1) {
+            // not sure this is really the right thing to do
+            throw new IndexOutOfBoundsException();
+        }
+        return getByte(this.readerIndex++);
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @throws IOException
+     */
+    @Override
+    public Buffer readBytes(final int length) throws IndexOutOfBoundsException, IOException {
+        if (!checkReadableBytesSafe(length)) {
+            final int read = internalReadBytes(length);
+            if (read == -1) {
+                // end-of-file
+                return null;
+            } else if (read < length) {
+                // do something else?
+                throw new IndexOutOfBoundsException("Not enough bytes left in the stream. Wanted " + length
+                        + " but only read " + read);
+            }
+        }
+
+        // perhaps we should create a composite buffer instead of this
+        // copying???
+        int index = 0;
+        final byte[] buf = new byte[length];
+        while (index < length) {
+            final int spaceLeft = getAvailableLocalReadingSpace();
+            final int readAtMost = Math.min(length - index, spaceLeft);
+            final int localIndex = getLocalReaderIndex();
+
+            final java.nio.ByteBuffer bb = getReadingRow();
+            System.arraycopy(bb.array(), localIndex, buf, index, readAtMost);
+            this.readerIndex += readAtMost;
+            index += readAtMost;
+        }
+        return Buffers.wrap(buf);
+
+    }
+
+    /**
+     * Read at most <code>length</code> no of bytes and store it into the
+     * internal buffer. This method is blocking in case we don't have enough
+     * bytes to read
+     * 
+     * @param length the amount of bytes we wishes to read
+     * @return the actual number of bytes read.
+     * @throws IOException
+     */
+    private int internalReadBytes(final int length) throws IOException {
+
+        // check if we already have enough bytes available for reading
+        // and if so, just return the length the user is asking for
+        if (checkReadableBytesSafe(length)) {
+            return length;
+        }
+
+        return readFromStream(length);
+
+    }
+
+    /**
+     * Since the writer index (upper boundary) is where we are to write for the
+     * entire buffer we need to translate this into the local index into the
+     * array we currently are working with.
+     * 
+     * @return
+     */
+    private int getLocalWriterIndex() {
+        return this.upperBoundary % this.localCapacity;
+    }
+
+    /**
+     * Translates the global reader index into the local index within a row
+     * 
+     * @return
+     */
+    private int getLocalReaderIndex() {
+        return this.readerIndex % this.localCapacity;
+    }
+
+    /**
+     * Since the underlying storage for this buffer is essentially a 2-D byte
+     * array we sometimes need to find out how much capacity is left in a
+     * particular row.
+     * 
+     * @return
+     */
+    private int getAvailableLocalWritingSpace() {
+        return this.localCapacity - getLocalWriterIndex();
+    }
+
+    /**
+     * Find out how many bytes are left to read in the current row
+     * 
+     * @return
+     */
+    private int getAvailableLocalReadingSpace() {
+        return this.localCapacity - getLocalReaderIndex();
+    }
+
+    /**
+     * Get which "row" we currently are working with for writing
+     * 
+     * @return
+     */
+    private java.nio.ByteBuffer getWritingRow() {
+        final int row = this.upperBoundary / this.localCapacity;
+        if (row >= this.storage.size()) {
+            final java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(this.localCapacity);
+            this.storage.add(buf);
+            return buf;
+        }
+
+        return this.storage.get(row);
+    }
+
+    /**
+     * Get which "row" we currently are working with for reading
+     * 
+     * @return
+     */
+    private java.nio.ByteBuffer getReadingRow() {
+        final int row = this.readerIndex / this.localCapacity;
+        return this.storage.get(row);
+    }
+
+    /**
+     * Method for reading bytes off the stream and store it in the local
+     * "storage"
+     * 
+     * @param length the length we wish to read
+     * @return the actual amount of bytes we read
+     * @throws IOException in case anything goes wrong while reading
+     */
+    private int readFromStream(final int length) throws IOException {
+        int total = 0;
+        int actual = 0;
+        while ((total < length) && (actual != -1)) {
+
+            final int localIndex = getLocalWriterIndex();
+            final int spaceLeft = getAvailableLocalWritingSpace();
+            final int readAtMost = Math.min(length - total, spaceLeft);
+
+            final java.nio.ByteBuffer bb = getWritingRow();
+            actual = this.is.read(bb.array(), localIndex, readAtMost);
+            if (actual > 0) {
+                this.upperBoundary += actual;
+                total += actual;
+            }
+        }
+        return total;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int readableBytes() {
+        return this.upperBoundary - this.readerIndex;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    @Override
+    public boolean hasReadableBytes() {
+        if (!checkReadableBytesSafe(1)) {
+            try {
+                return internalReadBytes(1) >= 1;
+            } catch (final IOException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isEmpty() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public byte[] getArray() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public byte getByte(final int index) throws IndexOutOfBoundsException, IOException {
+        checkIndex(this.lowerBoundary + index);
+        final java.nio.ByteBuffer bb = getWritingRow();
+        // this has to be localized as well
+        return bb.get(this.lowerBoundary + index);
+    }
+
+    /**
+     * Convenience method for checking if we can get the byte at the specified
+     * index. If we can't, then we will try and read the missing bytes off of
+     * the underlying {@link InputStream}. If that fails, e.g. we don't ready
+     * enough bytes off of the stream, then we will eventually throw an
+     * {@link IndexOutOfBoundsException}
+     * 
+     * @param index the actual index to check. I.e., this is the actual index in
+     *            our byte array, irrespective of what the lowerBoundary is set
+     *            to.
+     * @throws IndexOutOfBoundsException
+     * @throws IOException
+     */
+    @Override
+    protected void checkIndex(final int index) throws IndexOutOfBoundsException {
+        final int missingBytes = (index + 1) - (this.lowerBoundary + capacity());
+        if (missingBytes <= 0) {
+            // we got all the bytes needed
+            return;
+        }
+
+        try {
+            final int read = readFromStream(missingBytes);
+            if ((read == -1) || (read < missingBytes)) {
+                throw new IndexOutOfBoundsException();
+            }
+        } catch (final IOException e) {
+            throw new IndexOutOfBoundsException();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public long readUnsignedInt() throws IndexOutOfBoundsException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int readInt() throws IndexOutOfBoundsException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getInt(final int index) throws IndexOutOfBoundsException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public short getShort(final int index) throws IndexOutOfBoundsException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int readUnsignedShort() throws IndexOutOfBoundsException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getUnsignedShort(final int index) throws IndexOutOfBoundsException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public short readShort() throws IndexOutOfBoundsException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public short readUnsignedByte() throws IndexOutOfBoundsException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public short getUnsignedByte(final int index) throws IndexOutOfBoundsException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String dumpAsHex() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setByte(final int index, final byte value) throws IndexOutOfBoundsException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public Buffer clone() {
+        return null;
+    }
+
+}
