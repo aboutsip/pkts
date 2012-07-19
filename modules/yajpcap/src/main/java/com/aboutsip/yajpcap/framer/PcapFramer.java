@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 
 import com.aboutsip.buffer.Buffer;
-import com.aboutsip.yajpcap.frame.Frame;
 import com.aboutsip.yajpcap.frame.PcapFrame;
 import com.aboutsip.yajpcap.frame.PcapRecordHeader;
 import com.aboutsip.yajpcap.protocol.Protocol;
@@ -37,8 +36,11 @@ public final class PcapFramer implements Framer {
         return Protocol.PCAP;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Frame frame(final Buffer buffer) throws IOException {
+    public PcapFrame frame(final Buffer buffer) throws IOException {
 
         Buffer record = null;
         try {

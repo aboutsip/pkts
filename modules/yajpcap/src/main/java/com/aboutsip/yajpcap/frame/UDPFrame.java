@@ -8,6 +8,8 @@ import java.io.IOException;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.Framer;
 import com.aboutsip.yajpcap.framer.FramerManager;
+import com.aboutsip.yajpcap.packet.TransportPacket;
+import com.aboutsip.yajpcap.packet.impl.TransportPacketImpl;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
@@ -46,11 +48,6 @@ public final class UDPFrame extends AbstractFrame {
         return this.headers.getUnsignedShort(6);
     }
 
-    public static final UDPFrame frame(final Buffer payload) {
-        return null;
-    }
-
-
     @Override
     protected Frame framePayload(final FramerManager framerManager, final Buffer payload) throws IOException {
 
@@ -61,6 +58,15 @@ public final class UDPFrame extends AbstractFrame {
 
         // unknown payload
         return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public TransportPacket parse() {
+        // TODO: perhaps do a UDPPacket
+        return new TransportPacketImpl(true, getSourcePort(), getDestinationPort());
     }
 
 }

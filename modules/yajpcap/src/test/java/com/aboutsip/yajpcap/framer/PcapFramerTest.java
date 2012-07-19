@@ -45,9 +45,6 @@ public class PcapFramerTest extends YajTestBase {
 
     @Test
     public void testPcapFramer() throws Exception {
-        // final PcapGlobalHeader header =
-        // PcapGlobalHeader.parse(this.pcapStream);
-
         // length verified using wireshark. Remember, the first frame
         // has been framed and verified by the test base
         verifyNextFrame(this.pcapStream, 348);

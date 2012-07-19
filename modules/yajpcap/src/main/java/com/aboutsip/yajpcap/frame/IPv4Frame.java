@@ -8,6 +8,8 @@ import java.io.IOException;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.Framer;
 import com.aboutsip.yajpcap.framer.FramerManager;
+import com.aboutsip.yajpcap.packet.IPPacket;
+import com.aboutsip.yajpcap.packet.impl.IPPacketImpl;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
@@ -128,6 +130,14 @@ public final class IPv4Frame extends AbstractFrame {
      */
     public int getLength() {
         return this.length;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public IPPacket parse() {
+        return new IPPacketImpl(getSourceIp(), getDestinationIp());
     }
 
     @Override

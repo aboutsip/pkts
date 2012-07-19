@@ -6,7 +6,6 @@ package com.aboutsip.yajpcap.framer;
 import java.io.IOException;
 
 import com.aboutsip.buffer.Buffer;
-import com.aboutsip.yajpcap.frame.Frame;
 import com.aboutsip.yajpcap.frame.UDPFrame;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
@@ -36,7 +35,7 @@ public class UDPFramer implements Framer {
      * {@inheritDoc}
      */
     @Override
-    public Frame frame(final Buffer buffer) throws IOException {
+    public UDPFrame frame(final Buffer buffer) throws IOException {
         // UDP header is very simple. For our purposes, just
         // read the 8 bytes containing all the header fields
         // and the rest is just user data (payload of the udp packet)

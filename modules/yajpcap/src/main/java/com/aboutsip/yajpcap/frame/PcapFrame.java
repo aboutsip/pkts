@@ -8,6 +8,8 @@ import java.io.IOException;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.Framer;
 import com.aboutsip.yajpcap.framer.FramerManager;
+import com.aboutsip.yajpcap.packet.Packet;
+import com.aboutsip.yajpcap.packet.impl.PCapPacketImpl;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
@@ -40,6 +42,14 @@ public final class PcapFrame extends AbstractFrame {
     protected Frame framePayload(final FramerManager framerManager, final Buffer payload) throws IOException {
         final Framer framer = framerManager.getFramer(Protocol.ETHERNET_II);
         return framer.frame(payload);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Packet parse() {
+        return new PCapPacketImpl(this.header);
     }
 
 

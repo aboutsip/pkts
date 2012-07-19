@@ -7,7 +7,7 @@ package com.aboutsip.yajpcap.packet;
  * @author jonas@jonasborjesson.com
  * 
  */
-public interface TransportPacket extends IPPacket {
+public interface TransportPacket extends Packet {
 
     boolean isUDP();
 

@@ -8,7 +8,7 @@ import java.io.IOException;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.Framer;
 import com.aboutsip.yajpcap.framer.FramerManager;
-import com.aboutsip.yajpcap.packet.Packet;
+import com.aboutsip.yajpcap.packet.SipMessage;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
@@ -88,7 +88,7 @@ public final class SipFrame extends AbstractFrame {
      * should call {@inheritDoc}
      */
     @Override
-    public Packet parse() {
+    public SipMessage parse() {
         return null;
     }
 

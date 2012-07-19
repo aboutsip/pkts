@@ -6,7 +6,6 @@ package com.aboutsip.yajpcap.framer;
 import java.io.IOException;
 
 import com.aboutsip.buffer.Buffer;
-import com.aboutsip.yajpcap.frame.Frame;
 import com.aboutsip.yajpcap.frame.IPv4Frame;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
@@ -34,7 +33,7 @@ public class IPv4Framer implements Framer {
      * {@inheritDoc}
      */
     @Override
-    public Frame frame(final Buffer payload) throws IOException {
+    public IPv4Frame frame(final Buffer payload) throws IOException {
         // the ipv4 headers are always 20 bytes unless
         // the length is greater than 5
         final Buffer headers = payload.readBytes(20);

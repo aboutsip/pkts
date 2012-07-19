@@ -8,7 +8,7 @@ import com.aboutsip.buffer.Buffer;
  * @author jonas@jonasborjesson.com
  * 
  */
-public interface SipMessage extends TransportPacket {
+public interface SipMessage extends Packet {
 
     /**
      * Check whether this sip message is a response or not

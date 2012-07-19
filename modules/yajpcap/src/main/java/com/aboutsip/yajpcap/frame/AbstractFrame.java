@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.FramerManager;
-import com.aboutsip.yajpcap.packet.Packet;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
@@ -124,11 +123,6 @@ public abstract class AbstractFrame implements Frame {
      * @return
      */
     protected abstract Frame framePayload(FramerManager framerManager, Buffer payload) throws IOException;
-
-    @Override
-    public Packet parse() {
-        throw new RuntimeException("Not implemented yet");
-    }
 
 
 }

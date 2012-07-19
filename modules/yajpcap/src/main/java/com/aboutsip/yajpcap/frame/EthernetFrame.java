@@ -8,6 +8,8 @@ import java.io.IOException;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.Framer;
 import com.aboutsip.yajpcap.framer.FramerManager;
+import com.aboutsip.yajpcap.packet.Packet;
+import com.aboutsip.yajpcap.packet.impl.EthernetPacketImpl;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
@@ -88,6 +90,20 @@ public final class EthernetFrame extends AbstractFrame {
         }
         return sb.toString();
 
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Packet parse() {
+        try {
+            final String source = getSourceMacAddress();
+            final String dest = getDestinationMacAddress();
+            return new EthernetPacketImpl(source, dest);
+        } catch (final IOException e) {
+            throw new RuntimeException("TODO: need to parse exception or something", e);
+        }
     }
 
     @Override

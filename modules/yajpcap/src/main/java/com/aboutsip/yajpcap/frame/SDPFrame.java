@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.FramerManager;
+import com.aboutsip.yajpcap.packet.Packet;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
@@ -41,6 +42,15 @@ public final class SDPFrame extends AbstractFrame {
      */
     public Buffer getRawSDP() {
         return this.sdp.slice();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Packet parse() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

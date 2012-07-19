@@ -3,22 +3,13 @@
  */
 package com.aboutsip.yajpcap.packet;
 
+
 /**
+ * Represents a captured packet.
+ * 
  * @author jonas@jonasborjesson.com
  */
 public interface Packet {
-
-    /**
-     * Get the arrival time of this packet.
-     * 
-     * @return
-     */
-    long getArrivalTime();
-
-    String getSourceMacAddress();
-
-    String getDestinationMacAddress();
-
     /**
      * Calling this method will force the packet to completely parse its data
      * and check so that all the information conforms to whatever rules this

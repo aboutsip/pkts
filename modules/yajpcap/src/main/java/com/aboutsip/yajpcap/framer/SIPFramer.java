@@ -6,7 +6,6 @@ package com.aboutsip.yajpcap.framer;
 import java.io.IOException;
 
 import com.aboutsip.buffer.Buffer;
-import com.aboutsip.yajpcap.frame.Frame;
 import com.aboutsip.yajpcap.frame.SipFrame;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
@@ -37,7 +36,7 @@ public final class SIPFramer implements Framer {
      * in the framing phase we are, well, just framing.
      */
     @Override
-    public Frame frame(final Buffer buffer) throws IOException {
+    public SipFrame frame(final Buffer buffer) throws IOException {
 
         // we just assume that the initial line
         // indeed is a correct sip line
