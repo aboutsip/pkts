@@ -6,8 +6,6 @@ package com.aboutsip.yajpcap.frame;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,7 +39,7 @@ public class IPFrameTest extends YajTestBase {
     }
 
     @Test
-    public void testParsePacket() throws IOException {
+    public void testParsePacket() throws Exception {
         final IPv4Framer framer = new IPv4Framer(this.framerManager);
         final IPv4Frame frame = framer.frame(this.ipv4FrameBuffer);
         final IPPacket p = frame.parse();

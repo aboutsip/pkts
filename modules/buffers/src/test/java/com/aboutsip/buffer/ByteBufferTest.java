@@ -4,14 +4,11 @@
 package com.aboutsip.buffer;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import com.aboutsip.buffer.Buffer;
-import com.aboutsip.buffer.Buffers;
-import com.aboutsip.buffer.ByteBuffer;
 
 
 /**
@@ -29,8 +26,6 @@ public class ByteBufferTest extends AbstractBufferTest {
     public void setUp() throws Exception {
         super.setUp();
     }
-
-
 
     /**
      * When cloning, the underlying array will also be copied meaning that any
@@ -86,6 +81,35 @@ public class ByteBufferTest extends AbstractBufferTest {
         b1.setByte(0, (byte)0xFF);
         assertThat(b1.getByte(0), is((byte) 0xFF));
         assertThat(buffer.getByte(10), is((byte) 0xFF));
+    }
+
+    @Test
+    public void testEquals() throws Exception {
+        final Buffer b1 = createBuffer("hello world");
+        final Buffer b2 = createBuffer("hello world");
+        assertThat(b1, is(b2));
+
+        final Buffer b3 = createBuffer("hello not world");
+        assertThat(b1, is(not(b3)));
+        assertThat(b2, is(not(b3)));
+
+        // because the way we do equals right now when one of the
+        // buffers has read a head they are no longer equal.
+        // One motivation is because the bytes that have been
+        // consumed actually can be discarded...
+        b2.readByte();
+        assertThat(b1, is(not(b2)));
+
+        // because of this, if we now read a head in both
+        // b1 and b3 and only leave the "world" portion left
+        // then all of a sudden b1 and b3 actually are equal
+        b1.readBytes(6);
+        b3.readBytes(10);
+        assertThat(b1, is(b3));
+    }
+
+    public Buffer createBuffer(final String s) {
+        return createBuffer(s.getBytes());
     }
 
 

@@ -17,6 +17,14 @@ public final class Buffers {
         // left empty intentionally
     }
 
+    public static Buffer wrap(final String s) {
+        if (s == null) {
+            throw new IllegalArgumentException("String cannot be null");
+        }
+
+        return Buffers.wrap(s.getBytes());
+    }
+
     public static Buffer wrap(final InputStream is) {
         if (is == null) {
             throw new IllegalArgumentException("the input stream cannot be null or empty");

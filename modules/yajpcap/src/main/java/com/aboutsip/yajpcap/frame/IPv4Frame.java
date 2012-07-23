@@ -9,6 +9,7 @@ import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.Framer;
 import com.aboutsip.yajpcap.framer.FramerManager;
 import com.aboutsip.yajpcap.packet.IPPacket;
+import com.aboutsip.yajpcap.packet.PacketParseException;
 import com.aboutsip.yajpcap.packet.impl.IPPacketImpl;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
@@ -136,7 +137,7 @@ public final class IPv4Frame extends AbstractFrame {
      * {@inheritDoc}
      */
     @Override
-    public IPPacket parse() {
+    public IPPacket parse() throws PacketParseException {
         return new IPPacketImpl(getSourceIp(), getDestinationIp());
     }
 

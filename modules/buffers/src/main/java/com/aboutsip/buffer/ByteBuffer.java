@@ -170,16 +170,6 @@ public final class ByteBuffer extends AbstractBuffer {
      * {@inheritDoc}
      */
     @Override
-    public short readUnsignedByte() throws IndexOutOfBoundsException {
-        final short value = getUnsignedByte(this.readerIndex);
-        this.readerIndex += 1;
-        return value;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public short getUnsignedByte(final int index) throws IndexOutOfBoundsException {
         return (short) (getByte(index) & 0xFF);
     }

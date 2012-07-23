@@ -74,6 +74,47 @@ public abstract class AbstractBufferTest {
     }
 
     @Test
+    public void testReadUntil() throws Exception {
+        Buffer buffer = createBuffer("hello world".getBytes());
+        final Buffer hello = buffer.readUntil((byte) ' ');
+        assertThat(hello.toString(), is("hello"));
+
+        // read the next 5 bytes and that should give us the world part
+        final Buffer world = buffer.readBytes(5);
+        assertThat(world.toString(), is("world"));
+
+        // test to read until 'h' is found, which should yeild nothing
+        // since the character that is found is essentially thrown away
+        buffer = createBuffer("hello world again".getBytes());
+        final Buffer empty = buffer.readUntil((byte) 'h');
+        assertThat(empty.toString(), is(""));
+
+        // then read until 'a' is found
+        final Buffer more = buffer.readUntil((byte) 'a');
+        assertThat(more.toString(), is("ello world "));
+
+        final Buffer gai = buffer.readUntil((byte) 'n');
+        assertThat(gai.toString(), is("gai"));
+
+        // and now there should be nothing left
+        try {
+            buffer.readByte();
+            fail("Expected a IndexOutOfBoundsException");
+        } catch (final IndexOutOfBoundsException e) {
+            // expected
+        }
+
+        // no 'u' in the string, exception expected
+        buffer = createBuffer("nothing will match".getBytes());
+        try {
+            buffer.readUntil((byte) 'u');
+            fail("Expected a ByteNotFoundException");
+        } catch (final ByteNotFoundException e) {
+            // expected
+        }
+    }
+
+    @Test
     public void testRead() throws Exception {
         final Buffer buffer = createBuffer(RawData.rawEthernetFrame);
 

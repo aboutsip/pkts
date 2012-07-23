@@ -77,6 +77,23 @@ public interface Buffer extends Cloneable {
     byte[] getArray();
 
     /**
+     * Read until the specified byte is encountered and return a buffer
+     * representing that section of the buffer.
+     * 
+     * If the byte isn't found, then a {@link ByteNotFoundException} is thrown
+     * and the {@link #getReaderIndex()} is left where we bailed out.
+     * 
+     * @param b the byte to look for
+     * @return a buffer containing the content from the initial reader index to
+     *         the the position where the byte was found (exclusive the byte we
+     *         are looking for)
+     * 
+     * @throws ByteNotFoundException in case the byte we were looking for is not
+     *             found.
+     */
+    Buffer readUntil(byte b) throws IOException, ByteNotFoundException;
+
+    /**
      * Get a slice of the buffer starting at <code>start</code> (inclusive)
      * ending at <code>stop</code> (exclusive). Hence, the new capacity of the
      * buffer is <code>stop - start</code>
@@ -193,7 +210,7 @@ public interface Buffer extends Cloneable {
 
     short readShort() throws IndexOutOfBoundsException;
 
-    short readUnsignedByte() throws IndexOutOfBoundsException;
+    short readUnsignedByte() throws IndexOutOfBoundsException, IOException;
 
     short getUnsignedByte(int index) throws IndexOutOfBoundsException;
 
@@ -223,7 +240,18 @@ public interface Buffer extends Cloneable {
      */
     void setByte(int index, byte value) throws IndexOutOfBoundsException;
 
+    /**
+     * Check whether to buffers are considered to be equal.
+     * 
+     * To buffers are equal if the underlying visible area of the byte array are
+     * equal.
+     * 
+     * @param b
+     * @return
+     */
+    @Override
+    boolean equals(Object b);
+
     @Override
     String toString();
-
 }

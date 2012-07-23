@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.packet.Packet;
+import com.aboutsip.yajpcap.packet.PacketParseException;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
@@ -95,7 +96,8 @@ public interface Frame {
      * it is dealing with.
      * 
      * @return
+     * @throws PacketParseException TODO
      */
-    Packet parse();
+    Packet parse() throws PacketParseException;
 
 }

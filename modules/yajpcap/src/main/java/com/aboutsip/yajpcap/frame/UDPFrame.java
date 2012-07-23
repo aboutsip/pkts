@@ -8,6 +8,7 @@ import java.io.IOException;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.Framer;
 import com.aboutsip.yajpcap.framer.FramerManager;
+import com.aboutsip.yajpcap.packet.PacketParseException;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.impl.TransportPacketImpl;
 import com.aboutsip.yajpcap.protocol.Protocol;
@@ -64,7 +65,7 @@ public final class UDPFrame extends AbstractFrame {
      * {@inheritDoc}
      */
     @Override
-    public TransportPacket parse() {
+    public TransportPacket parse() throws PacketParseException {
         // TODO: perhaps do a UDPPacket
         return new TransportPacketImpl(true, getSourcePort(), getDestinationPort());
     }

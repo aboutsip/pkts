@@ -383,15 +383,6 @@ public final class InputStreamBuffer extends AbstractBuffer {
      * {@inheritDoc}
      */
     @Override
-    public short readUnsignedByte() throws IndexOutOfBoundsException {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public short getUnsignedByte(final int index) throws IndexOutOfBoundsException {
         // TODO Auto-generated method stub
         return 0;
@@ -418,6 +409,16 @@ public final class InputStreamBuffer extends AbstractBuffer {
     @Override
     public Buffer clone() {
         return null;
+    }
+
+
+    @Override
+    public String toString() {
+        // perhaps not the most efficient way? but it works
+        // so for now we'll leave it as this until proven
+        // slow
+        final Buffer b = this.slice();
+        return b.toString();
     }
 
 }

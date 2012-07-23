@@ -6,8 +6,6 @@ package com.aboutsip.yajpcap.frame;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -69,8 +67,8 @@ public class PcapFrameTest extends YajTestBase {
     }
 
     private void verifyNextPacket(final Buffer in, final int expectedLength, final long expectedArrivalTime)
-            throws IOException {
-        final PcapFrame frame = (PcapFrame) this.framer.frame(in);
+            throws Exception {
+        final PcapFrame frame = this.framer.frame(in);
         final PCapPacket p = (PCapPacket) frame.parse();
         assertThat(p.getTotalLength(), is(((long) expectedLength)));
         assertThat(p.getCapturedLength(), is(((long) expectedLength)));
