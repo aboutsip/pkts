@@ -107,12 +107,10 @@ public abstract class AbstractBuffer implements Buffer {
      */
     @Override
     public Buffer readUntil(final byte b) throws IOException, ByteNotFoundException {
-        // TODO Auto-generated method stub
         final int start = getReaderIndex();
-        markReaderIndex(); // in case we need to re-wind
         while (hasReadableBytes()) {
             if (b == readByte()) {
-                return slice(start, (this.lowerBoundary + this.readerIndex) - 1);
+                return slice(start, this.readerIndex - 1);
             }
         }
 
@@ -180,7 +178,7 @@ public abstract class AbstractBuffer implements Buffer {
             return null;
         }
 
-        return slice(start, this.lowerBoundary + this.readerIndex);
+        return slice(start, this.readerIndex);
     }
 
     /**

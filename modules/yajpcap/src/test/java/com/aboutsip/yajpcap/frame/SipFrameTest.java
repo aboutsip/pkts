@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.aboutsip.yajpcap.YajTestBase;
@@ -39,7 +38,6 @@ public class SipFrameTest extends YajTestBase {
         super.tearDown();
     }
 
-    @Ignore
     @Test
     public void test() throws Exception {
         final SIPFramer framer = new SIPFramer(this.framerManager);

@@ -11,6 +11,8 @@ import com.aboutsip.yajpcap.framer.FramerManager;
 import com.aboutsip.yajpcap.packet.PacketParseException;
 import com.aboutsip.yajpcap.packet.SipMessage;
 import com.aboutsip.yajpcap.packet.impl.sip.SipInitialLine;
+import com.aboutsip.yajpcap.packet.impl.sip.SipRequestImpl;
+import com.aboutsip.yajpcap.packet.impl.sip.SipRequestLine;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
@@ -92,6 +94,9 @@ public final class SipFrame extends AbstractFrame {
     @Override
     public SipMessage parse() throws PacketParseException {
         final SipInitialLine initialLine = SipInitialLine.parse(this.initialLine);
+        if (initialLine.isRequestLine()) {
+            return new SipRequestImpl((SipRequestLine) initialLine, this.headers, getPayload());
+        }
         return null;
     }
 
