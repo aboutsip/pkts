@@ -4,6 +4,7 @@
 package com.aboutsip.yajpcap.packet.impl.sip;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.SipMessage;
 
 /**
@@ -11,6 +12,12 @@ import com.aboutsip.yajpcap.packet.SipMessage;
  * 
  */
 public abstract class SipMessageImpl implements SipMessage {
+
+    private static final Buffer FROM_HEADER = Buffers.wrap("From".getBytes());
+
+    private static final Buffer TO_HEADER = Buffers.wrap("To".getBytes());
+
+    private static final Buffer Call_ID_HEADER = Buffers.wrap("Call-ID".getBytes());
 
     /**
      * The initial line of the sip message, which is either a request or a
@@ -27,6 +34,12 @@ public abstract class SipMessageImpl implements SipMessage {
      * The payload, which may be null
      */
     private final Buffer payload;
+
+    private Buffer fromHeader;
+
+    private Buffer toHeader;
+
+    private Buffer callIDHeader;
 
     /**
      * 
@@ -64,6 +77,45 @@ public abstract class SipMessageImpl implements SipMessage {
      * {@inheritDoc}
      */
     @Override
+    public Buffer getHeader(final Buffer headerName) {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Buffer getFromHeader() {
+        if (this.fromHeader != null) {
+            return this.fromHeader;
+        }
+
+        this.fromHeader = getHeader(FROM_HEADER);
+        return this.fromHeader;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Buffer getToHeader() {
+        return null;
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Buffer getCallIDHeader() {
+        return null;
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public abstract Buffer getMethod();
 
     /**
@@ -72,6 +124,17 @@ public abstract class SipMessageImpl implements SipMessage {
     @Override
     public void verify() {
         // TODO Auto-generated method stub
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(this.initialLine.toString()).append("\n");
+        sb.append(this.headers.toString()).append("\n");
+        if (this.payload != null) {
+            sb.append(this.payload.toString()).append("\n");
+        }
+        return sb.toString();
     }
 
 }

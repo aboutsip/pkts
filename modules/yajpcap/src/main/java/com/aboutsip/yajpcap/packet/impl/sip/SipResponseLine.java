@@ -43,4 +43,11 @@ public final class SipResponseLine extends SipInitialLine {
         return this.reason;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("SIP/2.0 ").append(this.statusCode).append(" ").append(this.reason.toString());
+        return sb.toString();
+    }
+
 }

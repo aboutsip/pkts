@@ -72,6 +72,11 @@ public class YajTestBase {
      */
     protected Buffer sipFrameBuffer;
 
+    /**
+     * A raw sip frame buffer containing a 180 response
+     */
+    protected Buffer sipFrameBuffer180Response;
+
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -92,7 +97,7 @@ public class YajTestBase {
         this.defaultPcapHeader = PcapGlobalHeader.parse(this.pcapStream);
         this.defaultByteOrder = this.defaultPcapHeader.getByteOrder();
         final PcapFramer framer = new PcapFramer(this.defaultByteOrder, this.framerManager);
-        this.defaultPcapFrame = (PcapFrame) framer.frame(this.pcapStream);
+        this.defaultPcapFrame = framer.frame(this.pcapStream);
         this.defaultFrame = this.defaultPcapFrame.getPayload();
         assertThat(547, is((this.defaultFrame.capacity())));
 
@@ -103,6 +108,9 @@ public class YajTestBase {
         this.ipv4FrameBuffer = this.ethernetFrameBuffer.slice(14, this.ethernetFrameBuffer.capacity());
         this.udpFrameBuffer = this.ethernetFrameBuffer.slice(34, this.ethernetFrameBuffer.capacity());
         this.sipFrameBuffer = this.ethernetFrameBuffer.slice(42, this.ethernetFrameBuffer.capacity());
+
+        final Buffer ethernetFrame = Buffers.wrap(RawData.rawEthernetFrame2);
+        this.sipFrameBuffer180Response = ethernetFrame.slice(42, ethernetFrame.capacity());
     }
 
     @After

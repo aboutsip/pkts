@@ -40,4 +40,11 @@ public final class SipRequestLine extends SipInitialLine {
         return this.requestUri;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(this.method.toString()).append(" ").append(this.requestUri.toString()).append(" SIP/2.0");
+        return sb.toString();
+    }
+
 }

@@ -32,6 +32,36 @@ public interface SipMessage extends Packet {
     Buffer getMethod();
 
     /**
+     * Get the header as a buffer
+     * 
+     * @param headerName the name of the header we wish to fetch
+     * @return the header as a buffer or null if not found
+     */
+    Buffer getHeader(Buffer headerName);
+
+    /**
+     * Convenience method for fetching the from-header
+     * 
+     * @return the from header as a buffer
+     */
+    Buffer getFromHeader();
+
+    /**
+     * Convenience method for fetching the to-header
+     * 
+     * @return the to header as a buffer
+     */
+    Buffer getToHeader();
+
+    /**
+     * Convenience method for fetching the call-id-header
+     * 
+     * @return the call-id header as a buffer
+     */
+    Buffer getCallIDHeader();
+
+
+    /**
      * {@inheritDoc}
      * 
      * <p>

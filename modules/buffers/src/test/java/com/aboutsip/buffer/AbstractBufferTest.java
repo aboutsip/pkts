@@ -73,26 +73,6 @@ public abstract class AbstractBufferTest {
         return array;
     }
 
-    /**
-     * Test the read until on a sliced buffer.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testReadUntilFromSlicedBuffer() throws Exception {
-        final Buffer original = createBuffer("hello world this is going to be a longer one".getBytes());
-        final Buffer buffer = original.slice(6, original.capacity());
-        final Buffer world = buffer.readUntil((byte) ' ');
-        assertThat(world.toString(), is("world"));
-
-        final Buffer longer = buffer.readUntil((byte) 'a');
-        assertThat(longer.toString(), is("this is going to be "));
-
-        final Buffer theRest = buffer.readLine();
-        assertThat(theRest.toString(), is(" longer one"));
-
-    }
-
     @Test
     public void testReadUntil() throws Exception {
         Buffer buffer = createBuffer("hello world".getBytes());

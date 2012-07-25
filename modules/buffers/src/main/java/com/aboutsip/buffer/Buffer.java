@@ -119,7 +119,7 @@ public interface Buffer extends Cloneable {
     Buffer slice();
 
     /**
-     * The the reader index
+     * The reader index
      * 
      * @return
      */

@@ -54,6 +54,25 @@ public class ByteBufferTest extends AbstractBufferTest {
         assertBuffers(sliceClone, slice);
     }
 
+    /**
+     * Test the read until on a sliced buffer.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testReadUntilFromSlicedBuffer() throws Exception {
+        final Buffer original = createBuffer("hello world this is going to be a longer one".getBytes());
+        final Buffer buffer = original.slice(6, original.capacity());
+        final Buffer world = buffer.readUntil((byte) ' ');
+        assertThat(world.toString(), is("world"));
+
+        final Buffer longer = buffer.readUntil((byte) 'a');
+        assertThat(longer.toString(), is("this is going to be "));
+
+        final Buffer theRest = buffer.readLine();
+        assertThat(theRest.toString(), is(" longer one"));
+    }
+
     private void assertBuffers(final Buffer b1, final Buffer b2) throws Exception {
         // make sure they are the exact same size and have
         // the same content etc

@@ -13,6 +13,7 @@ import com.aboutsip.yajpcap.packet.SipMessage;
 import com.aboutsip.yajpcap.packet.impl.sip.SipInitialLine;
 import com.aboutsip.yajpcap.packet.impl.sip.SipRequestImpl;
 import com.aboutsip.yajpcap.packet.impl.sip.SipRequestLine;
+import com.aboutsip.yajpcap.packet.impl.sip.SipResponseImpl;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
@@ -97,7 +98,7 @@ public final class SipFrame extends AbstractFrame {
         if (initialLine.isRequestLine()) {
             return new SipRequestImpl((SipRequestLine) initialLine, this.headers, getPayload());
         }
-        return null;
+        return new SipResponseImpl(initialLine, this.headers, getPayload());
     }
 
     /**

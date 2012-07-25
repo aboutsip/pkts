@@ -55,7 +55,10 @@ public final class SIPFramer implements Framer {
         }
 
         final Buffer headers = buffer.slice(startHeaders, buffer.getReaderIndex());
-        final Buffer payload = buffer.slice(); // may actually be empty
+        Buffer payload = null;
+        if (buffer.hasReadableBytes()) {
+            payload = buffer.slice();
+        }
 
         return new SipFrame(this.framerManager, initialLine, headers, payload);
     }
