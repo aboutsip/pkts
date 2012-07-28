@@ -7,6 +7,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -52,6 +55,103 @@ public class ByteBufferTest extends AbstractBufferTest {
         assertThat(slice.getByte(0), is((byte) 30));
         final Buffer sliceClone = slice.clone();
         assertBuffers(sliceClone, slice);
+    }
+
+    @Test
+    public void testMap() throws Exception {
+        final Buffer a = createBuffer("hello");
+        final Map<Buffer, String> map = new HashMap<Buffer, String>();
+        map.put(a, "fup");
+        assertThat(map.get(a), is("fup"));
+
+        final Buffer b = createBuffer("hello");
+        assertThat(map.get(b), is("fup"));
+
+        final Buffer c = createBuffer("world");
+        map.put(c, "apa");
+        assertThat(map.containsKey(c), is(true));
+
+        final Buffer d = createBuffer("nope");
+        assertThat(map.containsKey(d), is(false));
+    }
+
+    @Test
+    public void testHashCode() {
+        final Buffer a = createBuffer("hello");
+        final Buffer b = createBuffer("hello");
+        final Buffer c = createBuffer("world");
+        assertThat(a.hashCode(), is(b.hashCode()));
+        assertThat(c.hashCode(), not(b.hashCode()));
+    }
+
+    @Test
+    public void testEqualsBasicStuff() throws Exception {
+        final Buffer a = createBuffer("hello");
+        final Buffer b = createBuffer("hello");
+        final Buffer c = createBuffer("world");
+        assertThat(a, is(b));
+        assertThat(b, is(a));
+        assertThat(c, is(c));
+        assertThat(c, not(b));
+    }
+
+    @Test
+    public void testEqualsHashCode() throws Exception {
+        final Buffer b1 = createBuffer("hello world");
+        final Buffer b2 = createBuffer("hello world");
+        assertThat(b1, is(b2));
+        assertThat(b1.hashCode(), is(b2.hashCode()));
+
+        final Buffer b3 = createBuffer("hello not world");
+        assertThat(b1, is(not(b3)));
+        assertThat(b1.hashCode(), is(not(b3.hashCode())));
+        assertThat(b2, is(not(b3)));
+
+        // because the way we do equals right now when one of the
+        // buffers has read a head they are no longer equal.
+        // One motivation is because the bytes that have been
+        // consumed actually can be discarded...
+        b2.readByte();
+        assertThat(b1, is(not(b2)));
+        assertThat(b1.hashCode(), is(not(b2.hashCode())));
+
+        // because of this, if we now read a head in both
+        // b1 and b3 and only leave the "world" portion left
+        // then all of a sudden b1 and b3 actually are equal
+        b1.readBytes(6);
+        b3.readBytes(10);
+        assertThat(b1, is(b3));
+        assertThat(b1.hashCode(), is(b3.hashCode()));
+
+        final Buffer a1 = createBuffer("123 world");
+        final Buffer a2 = createBuffer("456 world");
+        assertThat(a1, not(a2));
+        assertThat(a1.hashCode(), not(a2.hashCode()));
+
+        final Buffer a1_1 = a1.readBytes(3);
+        final Buffer a2_1 = a2.readBytes(3);
+        assertThat(a1_1, not(a2_1));
+        assertThat(a1_1.hashCode(), not(a2_1.hashCode()));
+
+        // now they should be equal
+        final Buffer a1_2 = a1.slice();
+        final Buffer a2_2 = a2.slice();
+        assertThat(a1_2, is(a2_2));
+        assertThat(a1_2.hashCode(), is(a2_2.hashCode()));
+
+        final Buffer a1_3 = a1.readBytes(5);
+        final Buffer a2_3 = a2.readBytes(5);
+        assertThat(a1_3, is(a2_3));
+        assertThat(a1_3.hashCode(), is(a2_3.hashCode()));
+
+        final Buffer from = createBuffer("From");
+        final Buffer fromHeader = createBuffer("some arbitrary crap first then From and then some more shit");
+        fromHeader.readBytes(31);
+        final Buffer fromAgain = fromHeader.readBytes(4);
+        assertThat(fromAgain.toString(), is("From"));
+        assertThat(fromAgain, is(from));
+        assertThat(from, is(fromAgain));
+
     }
 
     /**
@@ -101,36 +201,6 @@ public class ByteBufferTest extends AbstractBufferTest {
         assertThat(b1.getByte(0), is((byte) 0xFF));
         assertThat(buffer.getByte(10), is((byte) 0xFF));
     }
-
-    @Test
-    public void testEquals() throws Exception {
-        final Buffer b1 = createBuffer("hello world");
-        final Buffer b2 = createBuffer("hello world");
-        assertThat(b1, is(b2));
-
-        final Buffer b3 = createBuffer("hello not world");
-        assertThat(b1, is(not(b3)));
-        assertThat(b2, is(not(b3)));
-
-        // because the way we do equals right now when one of the
-        // buffers has read a head they are no longer equal.
-        // One motivation is because the bytes that have been
-        // consumed actually can be discarded...
-        b2.readByte();
-        assertThat(b1, is(not(b2)));
-
-        // because of this, if we now read a head in both
-        // b1 and b3 and only leave the "world" portion left
-        // then all of a sudden b1 and b3 actually are equal
-        b1.readBytes(6);
-        b3.readBytes(10);
-        assertThat(b1, is(b3));
-    }
-
-    public Buffer createBuffer(final String s) {
-        return createBuffer(s.getBytes());
-    }
-
 
     @Override
     public Buffer createBuffer(final byte[] array) {

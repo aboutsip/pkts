@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
+import com.aboutsip.yajpcap.packet.SipHeader;
 
 /**
  * Tests to verify that basic parsing functionality that is provided by the
@@ -40,6 +41,53 @@ public class SipParserTest {
      */
     @After
     public void tearDown() throws Exception {
+    }
+
+    /**
+     * Make sure we recognize and bail out on a non-digit
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testExpectDigitFailure() throws Exception {
+        try {
+            SipParser.expectDigit(Buffers.wrap("abc"));
+            fail("Expected SipParseException");
+        } catch (final SipParseException e) {
+        }
+
+        try {
+            // character '/' is just before zero in the ascii table so
+            // therefore some boundary testing
+            SipParser.expectDigit(Buffers.wrap("/abc"));
+            fail("Expected SipParseException");
+        } catch (final SipParseException e) {
+        }
+
+        try {
+            // character ':' is just after 9 in the ascii table so
+            // therefore some boundary testing
+            SipParser.expectDigit(Buffers.wrap(":abc"));
+            fail("Expected SipParseException");
+        } catch (final SipParseException e) {
+        }
+
+        try {
+            SipParser.expectDigit(Buffers.wrap("    "));
+            fail("Expected SipParseException");
+        } catch (final SipParseException e) {
+        }
+    }
+
+    @Test
+    public void testExpectDigit() throws Exception {
+        assertThat(SipParser.expectDigit(Buffers.wrap("213 apa")).toString(), is("213"));
+        assertThat(SipParser.expectDigit(Buffers.wrap("2 apa")).toString(), is("2"));
+        assertThat(SipParser.expectDigit(Buffers.wrap("2apa")).toString(), is("2"));
+        assertThat(SipParser.expectDigit(Buffers.wrap("2")).toString(), is("2"));
+        assertThat(SipParser.expectDigit(Buffers.wrap("0")).toString(), is("0"));
+        assertThat(SipParser.expectDigit(Buffers.wrap("9")).toString(), is("9"));
+        assertThat(SipParser.expectDigit(Buffers.wrap("9   ")).toString(), is("9"));
     }
 
     /**
@@ -78,8 +126,9 @@ public class SipParserTest {
         // message and as such, there will always be CRLF at the end, which is
         // why we pad them here
         final Buffer buffer = Buffers.wrap(rawHeader + "\r\n");
-        final Buffer header = SipParser.nextHeader(buffer);
-        assertThat(header.toString(), is(name + ": " + value));
+        final SipHeader header = SipParser.nextHeader(buffer);
+        assertThat(header.getName().toString(), is(name));
+        assertThat(header.getValue().toString(), is(value));
     }
 
     /**

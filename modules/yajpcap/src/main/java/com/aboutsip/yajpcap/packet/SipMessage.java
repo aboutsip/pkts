@@ -1,6 +1,7 @@
 package com.aboutsip.yajpcap.packet;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.yajpcap.packet.impl.sip.SipParseException;
 
 /**
  * Packet representing a SIP message.
@@ -29,7 +30,7 @@ public interface SipMessage extends Packet {
      * 
      * @return
      */
-    Buffer getMethod();
+    Buffer getMethod() throws SipParseException;
 
     /**
      * Get the header as a buffer
@@ -37,28 +38,29 @@ public interface SipMessage extends Packet {
      * @param headerName the name of the header we wish to fetch
      * @return the header as a buffer or null if not found
      */
-    Buffer getHeader(Buffer headerName);
+    SipHeader getHeader(Buffer headerName) throws SipParseException;
 
     /**
      * Convenience method for fetching the from-header
      * 
      * @return the from header as a buffer
+     * @throws SipParseException TODO
      */
-    Buffer getFromHeader();
+    SipHeader getFromHeader() throws SipParseException;
 
     /**
      * Convenience method for fetching the to-header
      * 
      * @return the to header as a buffer
      */
-    Buffer getToHeader();
+    SipHeader getToHeader() throws SipParseException;
 
     /**
      * Convenience method for fetching the call-id-header
      * 
      * @return the call-id header as a buffer
      */
-    Buffer getCallIDHeader();
+    SipHeader getCallIDHeader() throws SipParseException;
 
 
     /**

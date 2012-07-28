@@ -3,8 +3,12 @@
  */
 package com.aboutsip.yajpcap.packet.impl.sip;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
+import com.aboutsip.yajpcap.packet.SipHeader;
 import com.aboutsip.yajpcap.packet.SipMessage;
 
 /**
@@ -13,11 +17,13 @@ import com.aboutsip.yajpcap.packet.SipMessage;
  */
 public abstract class SipMessageImpl implements SipMessage {
 
-    private static final Buffer FROM_HEADER = Buffers.wrap("From".getBytes());
+    public static final Buffer FROM_HEADER = Buffers.wrap("From".getBytes());
 
-    private static final Buffer TO_HEADER = Buffers.wrap("To".getBytes());
+    public static final Buffer TO_HEADER = Buffers.wrap("To".getBytes());
 
-    private static final Buffer Call_ID_HEADER = Buffers.wrap("Call-ID".getBytes());
+    public static final Buffer Call_ID_HEADER = Buffers.wrap("Call-ID".getBytes());
+
+    public static final Buffer CSEQ_HEADER = Buffers.wrap("CSeq".getBytes());
 
     /**
      * The initial line of the sip message, which is either a request or a
@@ -35,11 +41,16 @@ public abstract class SipMessageImpl implements SipMessage {
      */
     private final Buffer payload;
 
-    private Buffer fromHeader;
-
-    private Buffer toHeader;
-
-    private Buffer callIDHeader;
+    /**
+     * Map with parsed headers. Need to change since there are many headers that
+     * can appear multiple times. We'll get to that...
+     * 
+     * We'll keep the default size of 16 and load factory of 0.75, which means
+     * that we won't do a re-hash until we hit 12 headers. A basic request has
+     * around 10ish headers but in real life there will be much more so get some
+     * real world examples and set an appropriate size based on that.
+     */
+    private final Map<Buffer, SipHeader> parsedHeaders = new HashMap<Buffer, SipHeader>(16, 0.75f);
 
     /**
      * 
@@ -77,46 +88,53 @@ public abstract class SipMessageImpl implements SipMessage {
      * {@inheritDoc}
      */
     @Override
-    public Buffer getHeader(final Buffer headerName) {
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Buffer getFromHeader() {
-        if (this.fromHeader != null) {
-            return this.fromHeader;
+    public SipHeader getHeader(final Buffer headerName) throws SipParseException {
+        final SipHeader h = this.parsedHeaders.get(headerName);
+        if (h != null) {
+            return h;
         }
 
-        this.fromHeader = getHeader(FROM_HEADER);
-        return this.fromHeader;
-    }
+        while (this.headers.hasReadableBytes()) {
+            final SipHeader header = SipParser.nextHeader(this.headers);
+            this.parsedHeaders.put(header.getName(), header);
+            if (header.getName().equals(headerName)) {
+                return header;
+            }
+        }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Buffer getToHeader() {
+        // didn't find the header that was requested
         return null;
-
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Buffer getCallIDHeader() {
-        return null;
-
+    public SipHeader getFromHeader() throws SipParseException {
+        return getHeader(FROM_HEADER);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public abstract Buffer getMethod();
+    public SipHeader getToHeader() throws SipParseException {
+        return getHeader(TO_HEADER);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SipHeader getCallIDHeader() throws SipParseException {
+        return getHeader(Call_ID_HEADER);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public abstract Buffer getMethod() throws SipParseException;
 
     /**
      * {@inheritDoc}

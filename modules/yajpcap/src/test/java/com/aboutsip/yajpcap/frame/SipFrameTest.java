@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.aboutsip.yajpcap.YajTestBase;
@@ -49,14 +48,12 @@ public class SipFrameTest extends YajTestBase {
         assertThat(((SipRequest) sip).getRequestUri().toString(), is("sip:service@127.0.0.1:5090"));
     }
 
-    @Ignore
     @Test
     public void testParseSipResponse() throws Exception {
         final SIPFramer framer = new SIPFramer(this.framerManager);
         final SipFrame frame = framer.frame(this.sipFrameBuffer180Response);
         final SipMessage sip = frame.parse();
         assertThat(sip.getMethod().toString(), is("INVITE"));
-        assertThat(((SipRequest) sip).getRequestUri().toString(), is("sip:service@127.0.0.1:5090"));
     }
 
 }

@@ -3,6 +3,8 @@
  */
 package com.aboutsip.buffer;
 
+import java.util.Arrays;
+
 /**
  * A buffer directly backed by a byte-array
  * 
@@ -191,6 +193,35 @@ public final class ByteBuffer extends AbstractBuffer {
         final byte[] copy = new byte[size];
         System.arraycopy(this.buffer, this.lowerBoundary, copy, 0, size);
         return new ByteBuffer(copy);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        int result = 1;
+        for (int i = this.lowerBoundary + this.readerIndex; i < this.upperBoundary; ++i) {
+            result = (31 * result) + this.buffer[i];
+        }
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ByteBuffer other = (ByteBuffer) obj;
+        // TODO: compare them byte by byte "manually" instead of having to
+        // copy them first.
+        return Arrays.equals(getArray(), other.getArray());
     }
 
     /**

@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
+import com.aboutsip.yajpcap.packet.SipHeader;
 
 /**
  * 
@@ -77,6 +78,58 @@ public class SipParser {
         }
 
         return false;
+    }
+
+    /**
+     * Check wheter the next byte is a digit or not
+     * 
+     * @param buffer
+     * @return
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static boolean isNextDigit(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+        if (buffer.hasReadableBytes()) {
+            buffer.markReaderIndex();
+            final char next = (char)buffer.readByte();
+            buffer.resetReaderIndex();
+            return (next >= 48) && (next <= 57);
+        }
+
+        return false;
+    }
+
+    /**
+     * Will expect at least 1 digit and will continue consuming bytes until a
+     * non-digit is encountered
+     * 
+     * @param buffer the buffer to consume the digits from
+     * @return the buffer containing digits only
+     * @throws SipParseException in case there is not one digit at the first
+     *             position in the buffer (where the current reader index is
+     *             pointing to)
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static Buffer expectDigit(final Buffer buffer) throws SipParseException {
+        final int start = buffer.getReaderIndex();
+        try {
+
+            while (buffer.hasReadableBytes() && isNextDigit(buffer)) {
+                // consume it
+                buffer.readByte();
+            }
+
+            if (start == buffer.getReaderIndex()) {
+                throw new SipParseException(start, "Expected digit");
+            }
+
+            return buffer.slice(start, buffer.getReaderIndex());
+        } catch (final IndexOutOfBoundsException e) {
+            throw new SipParseException(start, "Expected digit but no more bytes to read");
+        } catch (final IOException e) {
+            throw new SipParseException(start, "Expected digit unable to read from underlying stream");
+        }
     }
 
     /**
@@ -260,10 +313,11 @@ public class SipParser {
     /**
      * 
      * @param buffer
-     * @return
+     * @return an array where the first element is the name of the buffer and
+     *         the second element is the value of the buffer
      * @throws SipParseException
      */
-    public static Buffer nextHeader(final Buffer buffer) throws SipParseException {
+    public static SipHeader nextHeader(final Buffer buffer) throws SipParseException {
         try {
 
             final int startIndex = buffer.getReaderIndex();
@@ -287,38 +341,38 @@ public class SipParser {
 
             expectHCOLON(buffer);
 
-            // NOTE: all of this stuff can be done so much better!!! Get rid of
-            // the
-            // stupid
-            // "do one thing at a time and the concatenate it all" stuff...
-
             // Note, we are framing headers from a sip request or response which
-            // is
-            // why we safely can assume that there will ALWAYS be a CRLF after
-            // each
-            // line
-            final Buffer valueBuffer = buffer.readLine();
+            // is why we safely can assume that there will ALWAYS be a CRLF
+            // after each line
+            Buffer valueBuffer = buffer.readLine();
 
             // the header may be a folded one so check that and if so, consume
-            // it
-            // too
-            final List<Buffer> foldedLines = new ArrayList<Buffer>();
+            // it too
+            List<Buffer> foldedLines = null;
             boolean done = false;
             while (!done) {
                 if (isNext(buffer, SP) || isNext(buffer, HTAB)) {
                     consumeWS(buffer);
+                    if (foldedLines == null) {
+                        foldedLines = new ArrayList<Buffer>(2);
+                    }
                     foldedLines.add(buffer.readLine());
                 } else {
                     done = true;
                 }
             }
-            String stupid = valueBuffer.toString();
-            for (final Buffer line : foldedLines) {
-                stupid += " " + line.toString();
+
+            if (foldedLines != null) {
+                // even though stupid, folded lines are not that common
+                // so optimize if this ever becomes a problem.
+                String stupid = valueBuffer.toString();
+                for (final Buffer line : foldedLines) {
+                    stupid += " " + line.toString();
+                }
+                valueBuffer = Buffers.wrap(stupid.getBytes());
             }
 
-            // TODO: add a SipHeaderBuffer or something
-            return Buffers.wrap((name.toString() + ": " + stupid).getBytes());
+            return new SipHeaderImpl(name, valueBuffer);
         } catch (final IOException e) {
             throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
         }

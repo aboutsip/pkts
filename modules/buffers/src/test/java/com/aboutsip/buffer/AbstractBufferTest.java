@@ -367,4 +367,8 @@ public abstract class AbstractBufferTest {
         assertThat(slice.readByte(), is((byte) 36));
     }
 
+    public Buffer createBuffer(final String s) {
+        return createBuffer(s.getBytes());
+    }
+
 }

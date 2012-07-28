@@ -4,7 +4,6 @@
 package com.aboutsip.buffer;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 
 /**
@@ -121,36 +120,6 @@ public abstract class AbstractBuffer implements Buffer {
      * {@inheritDoc}
      */
     @Override
-    public boolean equals(final Object other) {
-        if (other == null) {
-            return false;
-        }
-
-        if (this == other) {
-            return true;
-        }
-
-        try {
-            final Buffer b = (Buffer) other;
-
-            // should we care about how far we may have read into
-            // the two buffers? For now we will...
-            // Also, we may want to implement our own array compare
-            // since now the two arrays will be copied, which is kind
-            // of stupid but for now that is ok. Will worry about potential
-            // bottlenecks later. Issue has been added to the tracker to keep
-            // track of this...
-            return Arrays.equals(getArray(), b.getArray());
-        } catch (final ClassCastException e) {
-            return false;
-        }
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public Buffer readLine() throws IOException {
         final byte LF = '\n';
         final byte CR = '\r';
@@ -223,5 +192,11 @@ public abstract class AbstractBuffer implements Buffer {
     public final short readUnsignedByte() throws IndexOutOfBoundsException, IOException {
         return (short) (readByte() & 0xFF);
     }
+
+    @Override
+    public abstract boolean equals(Object other);
+
+    @Override
+    public abstract int hashCode();
 
 }
