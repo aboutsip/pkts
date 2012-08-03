@@ -4,6 +4,7 @@
 package com.aboutsip.yajpcap.packet.impl.sip;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.buffer.Buffers;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -19,6 +20,8 @@ public final class SipResponseLine extends SipInitialLine {
      * The response reason
      */
     private final Buffer reason;
+
+    private Buffer responseLine;
 
     public SipResponseLine(final int statusCode, final Buffer reason) {
         super();
@@ -43,11 +46,24 @@ public final class SipResponseLine extends SipInitialLine {
         return this.reason;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Buffer getBuffer() {
+        // TODO: redo
+        if (this.responseLine == null) {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("SIP/2.0 ").append(this.statusCode).append(" ").append(this.reason.toString());
+            this.responseLine = Buffers.wrap(sb.toString());
+        }
+
+        return this.responseLine;
+    }
+
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("SIP/2.0 ").append(this.statusCode).append(" ").append(this.reason.toString());
-        return sb.toString();
+        return getBuffer().toString();
     }
 
 }

@@ -332,7 +332,10 @@ public class SipParser {
 
             // Bad header! No HCOLON found! (or beginning thereof anyway)
             if (nameIndex == 0) {
-                throw new SipParseException(buffer.getReaderIndex(), "Expected HCOLON");
+                // probably ran out of bytes to read so lets just return null
+                return null;
+                // throw new SipParseException(buffer.getReaderIndex(),
+                // "Expected HCOLON");
             }
 
             // final String name = buffer.copy(startIndex, nameIndex -

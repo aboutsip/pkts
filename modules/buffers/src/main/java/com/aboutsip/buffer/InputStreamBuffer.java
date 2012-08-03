@@ -249,7 +249,10 @@ public final class InputStreamBuffer extends AbstractBuffer {
     public boolean hasReadableBytes() {
         if (!checkReadableBytesSafe(1)) {
             try {
-                return internalReadBytes(1) >= 1;
+                // if we don't have any bytes available for reading
+                // then try and read a bunch at the same time. However,
+                // we are satisfied if we can only read one byte
+                return internalReadBytes(100) >= 1;
             } catch (final IOException e) {
                 return false;
             }

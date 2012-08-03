@@ -37,6 +37,12 @@ public abstract class SipMessageImpl implements SipMessage {
     private final Buffer headers;
 
     /**
+     * Stupid, just to fix it quickly and since a sliced buffer
+     * is kind of cheap perhaps it is ok for now
+     */
+    private final Buffer headersCopy;
+
+    /**
      * The payload, which may be null
      */
     private final Buffer payload;
@@ -65,7 +71,16 @@ public abstract class SipMessageImpl implements SipMessage {
 
         this.initialLine = initialLine;
         this.headers = headers;
+        this.headersCopy = headers.slice();
         this.payload = payload;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Buffer getInitialLine() {
+        return this.initialLine.getBuffer();
     }
 
     /**
@@ -96,6 +111,9 @@ public abstract class SipMessageImpl implements SipMessage {
 
         while (this.headers.hasReadableBytes()) {
             final SipHeader header = SipParser.nextHeader(this.headers);
+            if (header == null) {
+                return null;
+            }
             this.parsedHeaders.put(header.getName(), header);
             if (header.getName().equals(headerName)) {
                 return header;
@@ -148,7 +166,7 @@ public abstract class SipMessageImpl implements SipMessage {
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append(this.initialLine.toString()).append("\n");
-        sb.append(this.headers.toString()).append("\n");
+        sb.append(this.headersCopy.toString()).append("\n");
         if (this.payload != null) {
             sb.append(this.payload.toString()).append("\n");
         }

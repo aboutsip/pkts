@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.YajTestBase;
 import com.aboutsip.yajpcap.framer.SIPFramer;
 import com.aboutsip.yajpcap.packet.SipMessage;
@@ -46,6 +47,10 @@ public class SipFrameTest extends YajTestBase {
         final SipMessage sip = frame.parse();
         assertThat(sip.getMethod().toString(), is("INVITE"));
         assertThat(((SipRequest) sip).getRequestUri().toString(), is("sip:service@127.0.0.1:5090"));
+
+        // just check some random headers
+        assertThat(sip.getHeader(Buffers.wrap("Content-Length")).getValue().toString(), is("129"));
+        assertThat(sip.getHeader(Buffers.wrap("Call-ID")).getValue().toString(), is("1-16732@127.0.1.1"));
     }
 
     @Test
@@ -54,6 +59,8 @@ public class SipFrameTest extends YajTestBase {
         final SipFrame frame = framer.frame(this.sipFrameBuffer180Response);
         final SipMessage sip = frame.parse();
         assertThat(sip.getMethod().toString(), is("INVITE"));
+        assertThat(sip.getHeader(Buffers.wrap("Call-ID")).getValue().toString(), is("1-16732@127.0.1.1"));
+        assertThat(sip.getHeader(Buffers.wrap("Content-Length")).getValue().toString(), is("0"));
     }
 
 }

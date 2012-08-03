@@ -38,23 +38,6 @@ public class Pcap {
             callback.nextFrame(frame);
         }
 
-        // frame = framer.frame(this.header.getByteOrder(), this.in);
-        // callback.nextFrame(frame);
-
-        // final Frame etherFrame = frame.getNextFrame();
-        // final Frame ipFrame = etherFrame.getNextFrame();
-        // final UDPFrame udpFrame = (UDPFrame)ipFrame.getNextFrame();
-
-        // System.out.println("Source Port: " + udpFrame.getSourcePort());
-        // System.out.println("Destination Port: " +
-        // udpFrame.getDestinationPort());
-
-        /*
-         * final byte[] p = frame.getPayload(); final byte[] sip = new
-         * byte[p.length - 42]; System.arraycopy(p, 42, sip, 0, sip.length);
-         * System.out.println(new String(sip));
-         */
-
     }
 
     /**

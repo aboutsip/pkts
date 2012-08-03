@@ -19,6 +19,13 @@ public abstract class SipInitialLine extends SipParser {
     }
 
     /**
+     * The request initial line as a raw buffer.
+     * 
+     * @return
+     */
+    public abstract Buffer getBuffer();
+
+    /**
      * Parse the buffer into a SIP initial line, which either can be a
      * {@link SipRequestLine} or a {@link SipResponseLine}.
      * 

@@ -12,6 +12,14 @@ import com.aboutsip.yajpcap.packet.impl.sip.SipParseException;
 public interface SipMessage extends Packet {
 
     /**
+     * The first line of a sip message, which is either a request or a response
+     * line
+     * 
+     * @return
+     */
+    Buffer getInitialLine();
+
+    /**
      * Check whether this sip message is a response or not
      * 
      * @return
@@ -35,10 +43,10 @@ public interface SipMessage extends Packet {
     /**
      * Get the header as a buffer
      * 
-     * @param headerName the name of the header we wish to fetch
+     * @param keyParameter the name of the header we wish to fetch
      * @return the header as a buffer or null if not found
      */
-    SipHeader getHeader(Buffer headerName) throws SipParseException;
+    SipHeader getHeader(Buffer keyParameter) throws SipParseException;
 
     /**
      * Convenience method for fetching the from-header
