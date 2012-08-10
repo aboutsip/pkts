@@ -143,11 +143,12 @@ public final class IPv4Frame extends AbstractFrame {
 
     @Override
     protected Frame framePayload(final FramerManager framerManager, final Buffer payload) throws IOException {
-        if (this.protocol == Protocol.UDP) {
-            final Framer framer = framerManager.getFramer(Protocol.UDP);
+        final Framer framer = framerManager.getFramer(this.protocol);
+        if (framer != null) {
             return framer.frame(payload);
         }
-        return null;
+
+        throw new RuntimeException("Unknown protocol " + this.protocol);
     }
 
 }

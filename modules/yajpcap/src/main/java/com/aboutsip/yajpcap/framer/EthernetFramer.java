@@ -54,21 +54,28 @@ public class EthernetFramer implements Framer {
         return new EthernetFrame(this.framerManager, destMacAddress, srcMacAddress, etherType, data);
     }
 
-    private static EthernetFrame.EtherType getEtherType(final byte b1, final byte b2) throws UnknownEtherType {
+    public static EthernetFrame.EtherType getEtherType(final byte b1, final byte b2) throws UnknownEtherType {
+        final EthernetFrame.EtherType type = getEtherTypeSafe(b1, b2);
+        if (type != null) {
+            return type;
+        }
+
+        // will implement as we need to
+        throw new UnknownEtherType(b1, b2);
+    }
+
+    public static EthernetFrame.EtherType getEtherTypeSafe(final byte b1, final byte b2) {
         if ((b1 == (byte) 0x08) && (b2 == (byte) 0x00)) {
             return EthernetFrame.EtherType.IPv4;
         } else if ((b1 == (byte) 0x86) && (b2 == (byte) 0xdd)) {
             return EthernetFrame.EtherType.IPv6;
         }
 
-        // will implement as we need to
-        throw new UnknownEtherType(b1, b2);
-
+        return null;
     }
 
     @Override
     public boolean accept(final Buffer data) {
-        // TODO Auto-generated method stub
         return false;
     }
 

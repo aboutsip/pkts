@@ -41,8 +41,14 @@ public final class PcapFrame extends AbstractFrame {
 
     @Override
     protected Frame framePayload(final FramerManager framerManager, final Buffer payload) throws IOException {
-        final Framer framer = framerManager.getFramer(Protocol.ETHERNET_II);
-        return framer.frame(payload);
+        final Framer sllFramer = framerManager.getFramer(Protocol.SLL);
+
+        if (sllFramer.accept(payload)) {
+            return sllFramer.frame(payload);
+        }
+
+        final Framer ethernetFramer = framerManager.getFramer(Protocol.ETHERNET_II);
+        return ethernetFramer.frame(payload);
     }
 
     /**

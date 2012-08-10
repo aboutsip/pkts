@@ -73,7 +73,6 @@ public final class PcapFramer implements Framer {
         // not enough bytes in the stream
         final int l = in.available();
         if (l == -1) {
-            System.err.println("end-of-stream");
             return null;
         }
 

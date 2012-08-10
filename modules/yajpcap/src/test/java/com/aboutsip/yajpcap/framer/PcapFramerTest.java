@@ -56,7 +56,7 @@ public class PcapFramerTest extends YajTestBase {
         // there are a total of 30 frames in this pcap.
         PcapFrame frame = null;
         for (int i = 6; i < 30; ++i) {
-            frame = (PcapFrame) this.framer.frame(this.pcapStream);
+            frame = this.framer.frame(this.pcapStream);
             assertNotNull(frame);
         }
 
@@ -66,14 +66,14 @@ public class PcapFramerTest extends YajTestBase {
         // we have read all the 30 frames so trying to frame
         // another one shouldn't work. Hence, we should be getting
         // back a null frame, indicating that the fun is over
-        frame = (PcapFrame) this.framer.frame(this.pcapStream);
+        frame = this.framer.frame(this.pcapStream);
         assertThat(frame, is((PcapFrame) null));
 
     }
 
     private void verifyNextFrame(final Buffer in, final int expectedLength)
             throws IOException {
-        final PcapFrame frame = (PcapFrame) this.framer.frame(in);
+        final PcapFrame frame = this.framer.frame(in);
         final Buffer payload = frame.getPayload();
         assertThat(expectedLength, is((payload.capacity())));
     }

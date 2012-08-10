@@ -5,7 +5,7 @@ package com.aboutsip.yajpcap.protocol;
  * @author jonas@jonasborjesson.com
  */
 public enum Protocol {
-    ICMP("icmp"), IGMP("igmp"), TCP("tcp"), UDP("udp"), SCTP("sctp"), SIP("sip"), SDP("sdp"), ETHERNET_II("eth"), IPv4(
+    ICMP("icmp"), IGMP("igmp"), TCP("tcp"), UDP("udp"), SCTP("sctp"), SIP("sip"), SDP("sdp"), ETHERNET_II("eth"), SLL("sll"), IPv4(
             "ip"), PCAP("pcap"), UNKNOWN("unknown");
 
     private final String name;

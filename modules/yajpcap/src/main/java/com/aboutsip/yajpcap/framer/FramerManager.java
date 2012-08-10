@@ -60,11 +60,13 @@ public final class FramerManager {
      * protocols we currently can handle
      */
     public void registerDefaultFramers() {
+        registerFramer(Protocol.SIP, new SIPFramer(this));
+        registerFramer(Protocol.SDP, new SDPFramer(this));
+        registerFramer(Protocol.SLL, new SllFramer(this));
         registerFramer(Protocol.ETHERNET_II, new EthernetFramer(this));
         registerFramer(Protocol.IPv4, new IPv4Framer(this));
         registerFramer(Protocol.UDP, new UDPFramer(this));
-        registerFramer(Protocol.SIP, new SIPFramer(this));
-        registerFramer(Protocol.SDP, new SDPFramer(this));
+        registerFramer(Protocol.TCP, new TCPFramer(this));
     }
 
     /**

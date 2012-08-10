@@ -58,14 +58,24 @@ public class YajTestBase {
     protected Buffer ethernetFrameBuffer;
 
     /**
-     * A raw ipv4 frame buffer.
+     * A raw ipv4 frame buffer containing a UDP packet
      */
     protected Buffer ipv4FrameBuffer;
+
+    /**
+     * A raw ipv4 frame containing a TCP packet
+     */
+    protected Buffer ipv4TCPFrameBuffer;
 
     /**
      * A raw udp frame buffer.
      */
     protected Buffer udpFrameBuffer;
+
+    /**
+     * A raw tcp frame buffer.
+     */
+    protected Buffer tcpFrameBuffer;
 
     /**
      * A raw sip frame buffer.
@@ -108,6 +118,10 @@ public class YajTestBase {
         this.ipv4FrameBuffer = this.ethernetFrameBuffer.slice(14, this.ethernetFrameBuffer.capacity());
         this.udpFrameBuffer = this.ethernetFrameBuffer.slice(34, this.ethernetFrameBuffer.capacity());
         this.sipFrameBuffer = this.ethernetFrameBuffer.slice(42, this.ethernetFrameBuffer.capacity());
+
+        final Buffer buf = Buffers.wrap(RawData.tcpFrame);
+        this.ipv4TCPFrameBuffer = buf.slice(14, buf.capacity());
+        this.tcpFrameBuffer = buf.slice(34, buf.capacity());
 
         final Buffer ethernetFrame = Buffers.wrap(RawData.rawEthernetFrame2);
         this.sipFrameBuffer180Response = ethernetFrame.slice(42, ethernetFrame.capacity());

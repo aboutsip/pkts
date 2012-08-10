@@ -80,7 +80,16 @@ public final class EthernetFrame extends AbstractFrame {
         return toHexString(this.destMacAddress);
     }
 
-    private String toHexString(final Buffer buffer) throws IOException {
+    /**
+     * Convert the buffer into a hex string
+     * 
+     * TODO: move somewhere else...
+     * 
+     * @param buffer
+     * @return
+     * @throws IOException
+     */
+    public static String toHexString(final Buffer buffer) throws IOException {
         final StringBuilder sb = new StringBuilder();
         for (int i = 0; i < buffer.capacity(); ++i) {
             final byte b = buffer.getByte(i);

@@ -16,7 +16,6 @@ import org.junit.Test;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.YajTestBase;
 import com.aboutsip.yajpcap.frame.EthernetFrame;
-import com.aboutsip.yajpcap.framer.EthernetFramer;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -40,6 +39,7 @@ public class EthernetFramerTest extends YajTestBase {
     public void tearDown() throws Exception {
         super.tearDown();
     }
+
 
     @Test
     public void testEthernetFramer() throws IOException {
