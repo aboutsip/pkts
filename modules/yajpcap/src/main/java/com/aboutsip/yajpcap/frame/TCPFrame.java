@@ -51,6 +51,85 @@ public final class TCPFrame extends AbstractFrame {
         return 20 + (this.options != null ? this.options.capacity() : 0);
     }
 
+    public boolean isFIN() {
+        try {
+            final byte b = this.headers.getByte(13);
+            return (b & 0x01) == 0x01;
+        } catch (final Exception e) {
+            // ignore, Shouldn't happen since we have already
+            // framed all the bytes
+            return false;
+        }
+    }
+
+    public boolean isSYN() {
+        try {
+            final byte b = this.headers.getByte(13);
+            return (b & 0x02) == 0x02;
+        } catch (final Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isRST() {
+        try {
+            final byte b = this.headers.getByte(13);
+            return (b & 0x04) == 0x04;
+        } catch (final Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Check whether the psh (push) flag is turned on
+     * 
+     * @return
+     */
+    public boolean isPSH() {
+        try {
+            final byte b = this.headers.getByte(13);
+            return (b & 0x08) == 0x08;
+        } catch (final Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isACK() {
+        try {
+            final byte b = this.headers.getByte(13);
+            return (b & 0x10) == 0x10;
+        } catch (final Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isURG() {
+        try {
+            final byte b = this.headers.getByte(13);
+            return (b & 0x20) == 0x20;
+        } catch (final Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isECE() {
+        try {
+            final byte b = this.headers.getByte(13);
+            return (b & 0x40) == 0x40;
+        } catch (final Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isCWR() {
+        try {
+            final byte b = this.headers.getByte(13);
+            return (b & 0x80) == 0x80;
+        } catch (final Exception e) {
+            return false;
+        }
+    }
+
     public int getSourcePort() {
         return this.headers.getUnsignedShort(0);
     }

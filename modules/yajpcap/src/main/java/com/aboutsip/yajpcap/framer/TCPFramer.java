@@ -56,6 +56,7 @@ public final class TCPFramer implements Framer {
             options = buffer.readBytes(size * 4);
         }
 
+        // to handle packets that has no payload (e.g a syn packet)
         if (buffer.hasReadableBytes()) {
             payload = buffer.slice();
         }
