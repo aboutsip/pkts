@@ -18,6 +18,11 @@ import org.junit.Test;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
+import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipInitialLine;
+import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipParseException;
+import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipParser;
+import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipRequestLine;
+import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipResponseLine;
 
 /**
  * @author jonas@jonasborjesson.com

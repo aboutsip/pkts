@@ -13,7 +13,9 @@ import org.junit.Test;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
-import com.aboutsip.yajpcap.packet.SipHeader;
+import com.aboutsip.yajpcap.packet.layer7.sip.SipHeader;
+import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipParseException;
+import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipParser;
 
 /**
  * Tests to verify that basic parsing functionality that is provided by the

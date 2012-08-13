@@ -6,7 +6,7 @@ package com.aboutsip.yajpcap.packet.impl;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.aboutsip.yajpcap.frame.PcapRecordHeader;
+import com.aboutsip.yajpcap.frame.layer1.PcapRecordHeader;
 import com.aboutsip.yajpcap.packet.PCapPacket;
 
 /**

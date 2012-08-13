@@ -3,6 +3,7 @@ package com.aboutsip.yajpcap.framer;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.junit.After;
 import org.junit.Before;
@@ -12,11 +13,13 @@ import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.RawData;
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.frame.EthernetFrame.EtherType;
 import com.aboutsip.yajpcap.frame.Frame;
-import com.aboutsip.yajpcap.frame.SllFrame;
-import com.aboutsip.yajpcap.packet.EthernetPacket;
-import com.aboutsip.yajpcap.packet.SipMessage;
+import com.aboutsip.yajpcap.frame.layer1.Layer1Frame;
+import com.aboutsip.yajpcap.frame.layer2.EthernetFrame.EtherType;
+import com.aboutsip.yajpcap.frame.layer2.SllFrame;
+import com.aboutsip.yajpcap.framer.layer2.SllFramer;
+import com.aboutsip.yajpcap.packet.layer2.MACPacket;
+import com.aboutsip.yajpcap.packet.layer7.sip.SipMessage;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 public class SllFramerTest extends YajTestBase {
@@ -42,14 +45,15 @@ public class SllFramerTest extends YajTestBase {
      */
     @Test
     public void testFrame() throws Exception {
+        final Layer1Frame parent = mock(Layer1Frame.class);
         final SllFramer framer = new SllFramer(this.framerManager);
         final Buffer buffer = Buffers.wrap(RawData.rawSLLFrame);
         assertThat(framer.accept(buffer), is(true));
-        final SllFrame frame = (SllFrame) framer.frame(buffer);
+        final SllFrame frame = (SllFrame) framer.frame(parent, buffer);
         assertThat(frame, not((SllFrame) null));
         assertThat(frame.getType(), is(EtherType.IPv4));
 
-        final EthernetPacket pkt = (EthernetPacket) frame.parse();
+        final MACPacket pkt = (MACPacket) frame.parse();
         assertThat(pkt.getDestinationMacAddress(), is("12:31:38:1B:7B:73"));
         assertThat(pkt.getSourceMacAddress(), is("12:31:38:1B:7B:73"));
 

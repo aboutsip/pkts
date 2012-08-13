@@ -12,10 +12,10 @@ import org.junit.BeforeClass;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
-import com.aboutsip.yajpcap.frame.PcapFrame;
-import com.aboutsip.yajpcap.frame.PcapGlobalHeader;
+import com.aboutsip.yajpcap.frame.layer1.PcapFrame;
+import com.aboutsip.yajpcap.frame.layer1.PcapGlobalHeader;
 import com.aboutsip.yajpcap.framer.FramerManager;
-import com.aboutsip.yajpcap.framer.PcapFramer;
+import com.aboutsip.yajpcap.framer.layer1.PcapFramer;
 
 /**
  * Test base for all tests regarding framing and parsing
@@ -107,7 +107,7 @@ public class YajTestBase {
         this.defaultPcapHeader = PcapGlobalHeader.parse(this.pcapStream);
         this.defaultByteOrder = this.defaultPcapHeader.getByteOrder();
         final PcapFramer framer = new PcapFramer(this.defaultByteOrder, this.framerManager);
-        this.defaultPcapFrame = framer.frame(this.pcapStream);
+        this.defaultPcapFrame = framer.frame(null, this.pcapStream);
         this.defaultFrame = this.defaultPcapFrame.getPayload();
         assertThat(547, is((this.defaultFrame.capacity())));
 

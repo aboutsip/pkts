@@ -5,6 +5,7 @@ package com.aboutsip.yajpcap.packet.impl.sip;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.junit.After;
 import org.junit.Before;
@@ -12,7 +13,11 @@ import org.junit.Test;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.packet.SipResponse;
+import com.aboutsip.yajpcap.packet.layer4.TransportPacket;
+import com.aboutsip.yajpcap.packet.layer7.sip.SipResponse;
+import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipInitialLine;
+import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipResponseImpl;
+import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipResponseLine;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -35,7 +40,8 @@ public class SipResponseTest extends YajTestBase {
 
         final SipInitialLine initialLine = SipInitialLine.parse(line);
         assertThat(initialLine.isResponseLine(), is(true));
-        this.response = new SipResponseImpl((SipResponseLine) initialLine, headers, payload);
+        final TransportPacket pkt = mock(TransportPacket.class);
+        this.response = new SipResponseImpl(pkt, (SipResponseLine) initialLine, headers, payload);
     }
 
     /**

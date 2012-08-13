@@ -7,9 +7,9 @@ import java.nio.ByteOrder;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.frame.Frame;
-import com.aboutsip.yajpcap.frame.PcapGlobalHeader;
+import com.aboutsip.yajpcap.frame.layer1.PcapGlobalHeader;
 import com.aboutsip.yajpcap.framer.FramerManager;
-import com.aboutsip.yajpcap.framer.PcapFramer;
+import com.aboutsip.yajpcap.framer.layer1.PcapFramer;
 
 /**
  * 
@@ -34,7 +34,7 @@ public class Pcap {
         final PcapFramer framer = new PcapFramer(byteOrder, framerManager);
 
         Frame frame = null;
-        while ((frame = framer.frame(this.buffer)) != null) {
+        while ((frame = framer.frame(null, this.buffer)) != null) {
             callback.nextFrame(frame);
         }
 

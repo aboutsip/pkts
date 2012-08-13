@@ -5,6 +5,8 @@ package com.aboutsip.yajpcap.framer;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.After;
 import org.junit.Before;
@@ -15,7 +17,10 @@ import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.FragmentedTCPData;
 import com.aboutsip.yajpcap.RawData;
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.frame.TCPFrame;
+import com.aboutsip.yajpcap.frame.layer3.IPFrame;
+import com.aboutsip.yajpcap.frame.layer4.TCPFrame;
+import com.aboutsip.yajpcap.framer.layer4.TCPFramer;
+import com.aboutsip.yajpcap.packet.layer3.IPPacket;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -103,9 +108,13 @@ public class TCPFramerTest extends YajTestBase {
     }
 
     private TCPFrame getFrame(final byte[] data) throws Exception {
+        final IPFrame ipFrame = mock(IPFrame.class);
+        final IPPacket ip = mock(IPPacket.class);
+        when(ipFrame.parse()).thenReturn(ip);
+
         final Buffer buf = Buffers.wrap(data);
         final Buffer tcp = buf.slice(34, buf.capacity());
-        return (TCPFrame) this.framer.frame(tcp);
+        return (TCPFrame) this.framer.frame(ipFrame, tcp);
     }
 
     /**
@@ -123,7 +132,11 @@ public class TCPFramerTest extends YajTestBase {
 
     @Test
     public void testTcpFramer() throws Exception {
-        final TCPFrame frame = (TCPFrame) this.framer.frame(this.tcpFrameBuffer);
+        final IPFrame ipFrame = mock(IPFrame.class);
+        final IPPacket ip = mock(IPPacket.class);
+        when(ipFrame.parse()).thenReturn(ip);
+
+        final TCPFrame frame = (TCPFrame) this.framer.frame(ipFrame, this.tcpFrameBuffer);
         assertThat(frame.getSourcePort(), is(5060));
         assertThat(frame.getDestinationPort(), is(59409));
         assertThat(frame.getHeaderLength(), is(32));

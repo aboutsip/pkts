@@ -3,24 +3,19 @@
  */
 package com.aboutsip.yajpcap.framer;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
-
-import java.io.IOException;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.frame.EthernetFrame;
+import com.aboutsip.yajpcap.framer.layer2.EthernetFramer;
 
 /**
  * @author jonas@jonasborjesson.com
  */
 public class EthernetFramerTest extends YajTestBase {
+
+    private EthernetFramer framer;
 
     /**
      * @throws java.lang.Exception
@@ -29,6 +24,7 @@ public class EthernetFramerTest extends YajTestBase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
+        this.framer = new EthernetFramer(this.framerManager);
     }
 
     /**
@@ -41,15 +37,9 @@ public class EthernetFramerTest extends YajTestBase {
     }
 
 
-    @Test
-    public void testEthernetFramer() throws IOException {
-        final EthernetFramer framer = new EthernetFramer(this.framerManager);
-        final EthernetFrame frame = (EthernetFrame) framer.frame(this.ethernetFrameBuffer);
-        assertThat(frame, is(not((EthernetFrame) null)));
-        assertThat(frame.getRawDestinationMacAddress(), is(not((Buffer) null)));
-        assertThat(frame.getRawSourceMacAddress(), is(not((Buffer) null)));
-        assertThat(frame.getSourceMacAddress(), is("00:00:00:00:00:00"));
-        assertThat(frame.getDestinationMacAddress(), is("00:00:00:00:00:00"));
+    @Test(expected = IllegalArgumentException.class)
+    public void testEthernetFramerNoParent() throws Exception {
+        this.framer.frame(null, this.ethernetFrameBuffer);
     }
 
 }

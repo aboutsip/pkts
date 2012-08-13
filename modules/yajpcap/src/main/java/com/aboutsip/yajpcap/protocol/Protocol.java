@@ -52,4 +52,17 @@ public enum Protocol {
             return null;
         }
     }
+
+    public static enum Layer2 {
+    }
+
+    public static enum Layer3 {
+    }
+
+    public static enum Layer4 {
+    }
+
+    public static enum Layer7 {
+        SIP, SDP, HTTP, RTP, RTCP, RTMP;
+    }
 }

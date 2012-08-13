@@ -14,7 +14,7 @@ import com.aboutsip.yajpcap.protocol.Protocol;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface Framer {
+public interface Framer<T extends Frame> {
 
     /**
      * 
@@ -25,12 +25,17 @@ public interface Framer {
     /**
      * Ask the framer to frame the buffer into a frame.
      * 
-     * @param buffer the buffer containing all the raw data
+     * @param parent
+     *            the parent frame or null if the frame doesn't have one.
+     * @param buffer
+     *            the buffer containing all the raw data
+     * 
      * @return a new frame
-     * @throws IOException in case something goes wrong when reading data from
-     *             the buffer
+     * @throws IOException
+     *             in case something goes wrong when reading data from the
+     *             buffer
      */
-    Frame frame(Buffer buffer) throws IOException;
+    Frame frame(T parent, Buffer buffer) throws IOException;
 
     /**
      * Check whether the supplied data could be framed into a frame of this

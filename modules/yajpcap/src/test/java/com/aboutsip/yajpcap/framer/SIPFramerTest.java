@@ -2,6 +2,8 @@ package com.aboutsip.yajpcap.framer;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.After;
 import org.junit.Before;
@@ -9,8 +11,10 @@ import org.junit.Test;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.frame.SipFrame;
-import com.aboutsip.yajpcap.framer.SIPFramer;
+import com.aboutsip.yajpcap.frame.layer4.Layer4Frame;
+import com.aboutsip.yajpcap.frame.layer7.SipFrame;
+import com.aboutsip.yajpcap.framer.layer7.SIPFramer;
+import com.aboutsip.yajpcap.packet.layer4.TransportPacket;
 
 public class SIPFramerTest extends YajTestBase {
 
@@ -33,8 +37,12 @@ public class SIPFramerTest extends YajTestBase {
      */
     @Test
     public void testFrameSipRequest() throws Exception {
+        final Layer4Frame layer4Frame = mock(Layer4Frame.class);
+        final TransportPacket pkt = mock(TransportPacket.class);
+        when(layer4Frame.parse()).thenReturn(pkt);
+
         final SIPFramer framer = new SIPFramer(this.framerManager);
-        final SipFrame frame = (SipFrame) framer.frame(this.sipFrameBuffer);
+        final SipFrame frame = framer.frame(layer4Frame, this.sipFrameBuffer);
 
         // this is the real request line from the above sip message
         final String requestLine = "INVITE sip:service@127.0.0.1:5090 SIP/2.0";

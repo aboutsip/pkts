@@ -6,16 +6,17 @@ package com.aboutsip.yajpcap.frame;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.frame.Frame;
-import com.aboutsip.yajpcap.frame.SDPFrame;
-import com.aboutsip.yajpcap.frame.UDPFrame;
-import com.aboutsip.yajpcap.framer.EthernetFramer;
+import com.aboutsip.yajpcap.frame.layer1.Layer1Frame;
+import com.aboutsip.yajpcap.frame.layer4.UDPFrame;
+import com.aboutsip.yajpcap.frame.layer7.SDPFrame;
+import com.aboutsip.yajpcap.framer.layer2.EthernetFramer;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
@@ -36,8 +37,10 @@ public final class CommonFrameTest extends YajTestBase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
+
+        final Layer1Frame parent = mock(Layer1Frame.class);
         final EthernetFramer framer = new EthernetFramer(this.framerManager);
-        this.defaultFrame = framer.frame(this.ethernetFrameBuffer);
+        this.defaultFrame = framer.frame(parent, this.ethernetFrameBuffer);
     }
 
     /**

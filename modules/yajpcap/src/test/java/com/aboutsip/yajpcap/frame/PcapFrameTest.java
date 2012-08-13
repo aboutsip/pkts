@@ -11,7 +11,8 @@ import org.junit.Test;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.framer.PcapFramer;
+import com.aboutsip.yajpcap.frame.layer1.PcapFrame;
+import com.aboutsip.yajpcap.framer.layer1.PcapFramer;
 import com.aboutsip.yajpcap.packet.PCapPacket;
 
 /**
@@ -59,7 +60,7 @@ public class PcapFrameTest extends YajTestBase {
         // there are a total of 30 frames in this pcap.
         // Read all but the last
         for (int i = 6; i < 29; ++i) {
-            this.framer.frame(this.pcapStream);
+            this.framer.frame(null, this.pcapStream);
         }
 
         // now verify this last one
@@ -68,7 +69,7 @@ public class PcapFrameTest extends YajTestBase {
 
     private void verifyNextPacket(final Buffer in, final int expectedLength, final long expectedArrivalTime)
             throws Exception {
-        final PcapFrame frame = this.framer.frame(in);
+        final PcapFrame frame = this.framer.frame(null, in);
         final PCapPacket p = (PCapPacket) frame.parse();
         assertThat(p.getTotalLength(), is(((long) expectedLength)));
         assertThat(p.getCapturedLength(), is(((long) expectedLength)));

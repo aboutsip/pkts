@@ -11,7 +11,7 @@ import com.aboutsip.yajpcap.packet.PacketParseException;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
- * A frame in the ISO stack typically have some headers and then a payload/data
+ * A frame in the OSI model typically have some headers and then a payload/data
  * section. The payload may itself be another frame and so on.
  * 
  * A Frame can be asked to fully parse its data in order to produce a Packet.

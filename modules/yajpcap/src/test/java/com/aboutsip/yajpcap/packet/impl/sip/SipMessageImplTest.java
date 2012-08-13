@@ -2,6 +2,7 @@ package com.aboutsip.yajpcap.packet.impl.sip;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.junit.After;
 import org.junit.Before;
@@ -10,8 +11,12 @@ import org.junit.Test;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.packet.SipHeader;
-import com.aboutsip.yajpcap.packet.SipRequest;
+import com.aboutsip.yajpcap.packet.layer4.TransportPacket;
+import com.aboutsip.yajpcap.packet.layer7.sip.SipHeader;
+import com.aboutsip.yajpcap.packet.layer7.sip.SipRequest;
+import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipInitialLine;
+import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipRequestImpl;
+import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipRequestLine;
 
 public class SipMessageImplTest extends YajTestBase {
 
@@ -30,7 +35,9 @@ public class SipMessageImplTest extends YajTestBase {
 
         final SipInitialLine initialLine = SipInitialLine.parse(line);
         assertThat(initialLine.isRequestLine(), is(true));
-        this.request = new SipRequestImpl((SipRequestLine) initialLine, headers, payload);
+
+        final TransportPacket pkt = mock(TransportPacket.class);
+        this.request = new SipRequestImpl(pkt, (SipRequestLine) initialLine, headers, payload);
     }
 
     @Override

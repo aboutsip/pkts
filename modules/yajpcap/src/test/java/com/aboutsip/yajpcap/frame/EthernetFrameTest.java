@@ -11,8 +11,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.framer.EthernetFramer;
-import com.aboutsip.yajpcap.packet.EthernetPacket;
+import com.aboutsip.yajpcap.frame.layer1.Layer1Frame;
+import com.aboutsip.yajpcap.frame.layer2.EthernetFrame;
+import com.aboutsip.yajpcap.framer.layer1.Layer1Framer;
+import com.aboutsip.yajpcap.framer.layer1.PcapFramer;
+import com.aboutsip.yajpcap.framer.layer2.EthernetFramer;
+import com.aboutsip.yajpcap.packet.layer2.MACPacket;
 
 /**
  * @author jonas
@@ -46,12 +50,16 @@ public class EthernetFrameTest extends YajTestBase {
      */
     @Test
     public void testParsePacket() throws Exception {
-        final EthernetFramer framer = new EthernetFramer(this.framerManager);
-        final EthernetFrame frame = (EthernetFrame) framer.frame(this.ethernetFrameBuffer);
-        final EthernetPacket p = (EthernetPacket) frame.parse();
+        final Layer1Framer pcapFramer = new PcapFramer(this.defaultByteOrder, this.framerManager);
+        final Layer1Frame pcapFrame = pcapFramer.frame(null, this.pcapStream);
 
-        assertThat(p.getDestinationMacAddress(), is("00:00:00:00:00:00"));
-        assertThat(p.getSourceMacAddress(), is("00:00:00:00:00:00"));
+        final EthernetFramer framer = new EthernetFramer(this.framerManager);
+        final EthernetFrame frame = framer.frame(pcapFrame, pcapFrame.getPayload());
+
+        final MACPacket packet = frame.parse();
+        assertThat(packet.getSourceMacAddress(), is("00:00:00:00:00:00"));
+        assertThat(packet.getDestinationMacAddress(), is("00:00:00:00:00:00"));
+        assertThat(packet.getArrivalTime(), is(1340495109792862L));
     }
 
 }
