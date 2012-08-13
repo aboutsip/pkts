@@ -21,6 +21,7 @@ import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipRequestLine;
 public class SipMessageImplTest extends YajTestBase {
 
     private SipRequest request;
+    private final int sampleRate = 8000;
 
     @Override
     @Before

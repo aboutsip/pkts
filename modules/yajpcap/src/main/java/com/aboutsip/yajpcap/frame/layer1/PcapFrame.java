@@ -46,11 +46,11 @@ public final class PcapFrame extends AbstractFrame implements Layer1Frame {
         final Framer sllFramer = framerManager.getFramer(Protocol.SLL);
 
         if (sllFramer.accept(payload)) {
-            return sllFramer.frame(null, payload);
+            return sllFramer.frame(this, payload);
         }
 
         final Framer ethernetFramer = framerManager.getFramer(Protocol.ETHERNET_II);
-        return ethernetFramer.frame(null, payload);
+        return ethernetFramer.frame(this, payload);
     }
 
     /**
