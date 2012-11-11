@@ -3,7 +3,7 @@
  */
 package com.aboutsip.yajpcap.packet.impl;
 
-import com.aboutsip.yajpcap.packet.layer4.TransportPacket;
+import com.aboutsip.yajpcap.packet.TransportPacket;
 
 /**
  * Represents a packet from the Application Layer (layer 7) in the OSI model.

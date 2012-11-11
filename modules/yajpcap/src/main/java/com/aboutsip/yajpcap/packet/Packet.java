@@ -5,7 +5,6 @@ package com.aboutsip.yajpcap.packet;
 
 import java.text.SimpleDateFormat;
 
-import com.aboutsip.yajpcap.packet.layer3.IPPacket;
 
 
 /**

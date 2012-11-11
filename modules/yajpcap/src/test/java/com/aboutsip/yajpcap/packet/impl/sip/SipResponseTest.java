@@ -13,11 +13,11 @@ import org.junit.Test;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.packet.layer4.TransportPacket;
-import com.aboutsip.yajpcap.packet.layer7.sip.SipResponse;
-import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipInitialLine;
-import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipResponseImpl;
-import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipResponseLine;
+import com.aboutsip.yajpcap.packet.TransportPacket;
+import com.aboutsip.yajpcap.packet.sip.SipResponse;
+import com.aboutsip.yajpcap.packet.sip.impl.SipInitialLine;
+import com.aboutsip.yajpcap.packet.sip.impl.SipResponseImpl;
+import com.aboutsip.yajpcap.packet.sip.impl.SipResponseLine;
 
 /**
  * @author jonas@jonasborjesson.com

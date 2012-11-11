@@ -8,7 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.framer.layer2.EthernetFramer;
 
 /**
  * @author jonas@jonasborjesson.com

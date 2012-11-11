@@ -22,10 +22,9 @@ import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.RawData;
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.frame.layer1.Layer1Frame;
-import com.aboutsip.yajpcap.framer.layer2.SllFramer;
+import com.aboutsip.yajpcap.framer.SllFramer;
 import com.aboutsip.yajpcap.packet.Packet;
-import com.aboutsip.yajpcap.packet.layer7.rtp.RtpPacket;
+import com.aboutsip.yajpcap.packet.rtp.RtpPacket;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**

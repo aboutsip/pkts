@@ -13,10 +13,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.frame.layer3.IPFrame;
-import com.aboutsip.yajpcap.frame.layer4.UDPFrame;
-import com.aboutsip.yajpcap.framer.layer4.UDPFramer;
-import com.aboutsip.yajpcap.packet.layer3.IPPacket;
+import com.aboutsip.yajpcap.frame.IPFrame;
+import com.aboutsip.yajpcap.frame.UDPFrame;
+import com.aboutsip.yajpcap.packet.IPPacket;
 
 /**
  * @author jonas@jonasborjesson.com

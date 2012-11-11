@@ -11,12 +11,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.frame.layer1.Layer1Frame;
-import com.aboutsip.yajpcap.frame.layer2.EthernetFrame;
-import com.aboutsip.yajpcap.framer.layer1.Layer1Framer;
-import com.aboutsip.yajpcap.framer.layer1.PcapFramer;
-import com.aboutsip.yajpcap.framer.layer2.EthernetFramer;
-import com.aboutsip.yajpcap.packet.layer2.MACPacket;
+import com.aboutsip.yajpcap.framer.EthernetFramer;
+import com.aboutsip.yajpcap.framer.Layer1Framer;
+import com.aboutsip.yajpcap.framer.PcapFramer;
+import com.aboutsip.yajpcap.packet.MACPacket;
 
 /**
  * @author jonas

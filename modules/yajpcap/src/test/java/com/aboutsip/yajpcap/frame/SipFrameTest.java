@@ -14,12 +14,10 @@ import org.junit.Test;
 
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.frame.layer4.Layer4Frame;
-import com.aboutsip.yajpcap.frame.layer7.SipFrame;
-import com.aboutsip.yajpcap.framer.layer7.SIPFramer;
-import com.aboutsip.yajpcap.packet.layer4.TransportPacket;
-import com.aboutsip.yajpcap.packet.layer7.sip.SipMessage;
-import com.aboutsip.yajpcap.packet.layer7.sip.SipRequest;
+import com.aboutsip.yajpcap.framer.SIPFramer;
+import com.aboutsip.yajpcap.packet.TransportPacket;
+import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.SipRequest;
 
 /**
  * @author jonas@jonasborjesson.com

@@ -15,8 +15,7 @@ import org.junit.Test;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.frame.layer1.PcapFrame;
-import com.aboutsip.yajpcap.framer.layer1.PcapFramer;
+import com.aboutsip.yajpcap.frame.PcapFrame;
 
 /**
  * @author jonas@jonasborjesson.com

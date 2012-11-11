@@ -8,7 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.framer.layer3.IPv4Framer;
 
 /**
  * @author jonas@jonasborjesson.com

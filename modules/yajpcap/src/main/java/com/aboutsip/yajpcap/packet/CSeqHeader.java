@@ -5,7 +5,7 @@ package com.aboutsip.yajpcap.packet;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
-import com.aboutsip.yajpcap.packet.layer7.sip.SipHeader;
+import com.aboutsip.yajpcap.packet.sip.SipHeader;
 
 /**
  * @author jonas@jonasborjesson.com

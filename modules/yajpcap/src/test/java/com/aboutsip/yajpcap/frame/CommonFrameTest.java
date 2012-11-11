@@ -13,10 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.frame.layer1.Layer1Frame;
-import com.aboutsip.yajpcap.frame.layer4.UDPFrame;
-import com.aboutsip.yajpcap.frame.layer7.SDPFrame;
-import com.aboutsip.yajpcap.framer.layer2.EthernetFramer;
+import com.aboutsip.yajpcap.framer.EthernetFramer;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**

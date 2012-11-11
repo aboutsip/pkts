@@ -11,10 +11,9 @@ import org.junit.Test;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.frame.layer4.Layer4Frame;
-import com.aboutsip.yajpcap.frame.layer7.SipFrame;
-import com.aboutsip.yajpcap.framer.layer7.SIPFramer;
-import com.aboutsip.yajpcap.packet.layer4.TransportPacket;
+import com.aboutsip.yajpcap.frame.Layer4Frame;
+import com.aboutsip.yajpcap.frame.SipFrame;
+import com.aboutsip.yajpcap.packet.TransportPacket;
 
 public class SIPFramerTest extends YajTestBase {
 

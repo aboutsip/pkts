@@ -11,16 +11,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.frame.layer1.Layer1Frame;
-import com.aboutsip.yajpcap.frame.layer2.EthernetFrame;
-import com.aboutsip.yajpcap.frame.layer3.IPv4Frame;
-import com.aboutsip.yajpcap.frame.layer4.UDPFrame;
-import com.aboutsip.yajpcap.framer.layer1.Layer1Framer;
-import com.aboutsip.yajpcap.framer.layer1.PcapFramer;
-import com.aboutsip.yajpcap.framer.layer2.EthernetFramer;
-import com.aboutsip.yajpcap.framer.layer3.IPv4Framer;
-import com.aboutsip.yajpcap.framer.layer4.UDPFramer;
-import com.aboutsip.yajpcap.packet.layer4.TransportPacket;
+import com.aboutsip.yajpcap.framer.EthernetFramer;
+import com.aboutsip.yajpcap.framer.IPv4Framer;
+import com.aboutsip.yajpcap.framer.Layer1Framer;
+import com.aboutsip.yajpcap.framer.PcapFramer;
+import com.aboutsip.yajpcap.framer.UDPFramer;
+import com.aboutsip.yajpcap.packet.TransportPacket;
 
 /**
  * @author jonas@jonasborjesson.com

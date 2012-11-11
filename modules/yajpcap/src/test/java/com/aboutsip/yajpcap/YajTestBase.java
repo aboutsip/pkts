@@ -12,10 +12,10 @@ import org.junit.BeforeClass;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
-import com.aboutsip.yajpcap.frame.layer1.PcapFrame;
-import com.aboutsip.yajpcap.frame.layer1.PcapGlobalHeader;
+import com.aboutsip.yajpcap.frame.PcapFrame;
+import com.aboutsip.yajpcap.frame.PcapGlobalHeader;
 import com.aboutsip.yajpcap.framer.FramerManager;
-import com.aboutsip.yajpcap.framer.layer1.PcapFramer;
+import com.aboutsip.yajpcap.framer.PcapFramer;
 
 /**
  * Test base for all tests regarding framing and parsing

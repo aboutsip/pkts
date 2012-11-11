@@ -7,9 +7,9 @@ import java.nio.ByteOrder;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.frame.Frame;
-import com.aboutsip.yajpcap.frame.layer1.PcapGlobalHeader;
+import com.aboutsip.yajpcap.frame.PcapGlobalHeader;
 import com.aboutsip.yajpcap.framer.FramerManager;
-import com.aboutsip.yajpcap.framer.layer1.PcapFramer;
+import com.aboutsip.yajpcap.framer.PcapFramer;
 
 /**
  * 

@@ -11,12 +11,12 @@ import org.junit.Test;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.packet.layer4.TransportPacket;
-import com.aboutsip.yajpcap.packet.layer7.sip.SipHeader;
-import com.aboutsip.yajpcap.packet.layer7.sip.SipRequest;
-import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipInitialLine;
-import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipRequestImpl;
-import com.aboutsip.yajpcap.packet.layer7.sip.impl.SipRequestLine;
+import com.aboutsip.yajpcap.packet.TransportPacket;
+import com.aboutsip.yajpcap.packet.sip.SipHeader;
+import com.aboutsip.yajpcap.packet.sip.SipRequest;
+import com.aboutsip.yajpcap.packet.sip.impl.SipInitialLine;
+import com.aboutsip.yajpcap.packet.sip.impl.SipRequestImpl;
+import com.aboutsip.yajpcap.packet.sip.impl.SipRequestLine;
 
 public class SipMessageImplTest extends YajTestBase {
 

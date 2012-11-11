@@ -8,14 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.aboutsip.buffer.Buffer;
-import com.aboutsip.yajpcap.framer.layer2.EthernetFramer;
-import com.aboutsip.yajpcap.framer.layer2.SllFramer;
-import com.aboutsip.yajpcap.framer.layer3.IPv4Framer;
-import com.aboutsip.yajpcap.framer.layer4.TCPFramer;
-import com.aboutsip.yajpcap.framer.layer4.UDPFramer;
-import com.aboutsip.yajpcap.framer.layer7.RTPFramer;
-import com.aboutsip.yajpcap.framer.layer7.SDPFramer;
-import com.aboutsip.yajpcap.framer.layer7.SIPFramer;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**

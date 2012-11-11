@@ -17,10 +17,9 @@ import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.FragmentedTCPData;
 import com.aboutsip.yajpcap.RawData;
 import com.aboutsip.yajpcap.YajTestBase;
-import com.aboutsip.yajpcap.frame.layer3.IPFrame;
-import com.aboutsip.yajpcap.frame.layer4.TCPFrame;
-import com.aboutsip.yajpcap.framer.layer4.TCPFramer;
-import com.aboutsip.yajpcap.packet.layer3.IPPacket;
+import com.aboutsip.yajpcap.frame.IPFrame;
+import com.aboutsip.yajpcap.frame.TCPFrame;
+import com.aboutsip.yajpcap.packet.IPPacket;
 
 /**
  * @author jonas@jonasborjesson.com

@@ -15,13 +15,12 @@ import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.RawData;
 import com.aboutsip.yajpcap.YajTestBase;
 import com.aboutsip.yajpcap.frame.Frame;
-import com.aboutsip.yajpcap.frame.layer1.Layer1Frame;
-import com.aboutsip.yajpcap.frame.layer2.EthernetFrame.EtherType;
-import com.aboutsip.yajpcap.frame.layer2.SllFrame;
-import com.aboutsip.yajpcap.framer.layer2.SllFramer;
+import com.aboutsip.yajpcap.frame.Layer1Frame;
+import com.aboutsip.yajpcap.frame.SllFrame;
+import com.aboutsip.yajpcap.frame.EthernetFrame.EtherType;
+import com.aboutsip.yajpcap.packet.MACPacket;
 import com.aboutsip.yajpcap.packet.Packet;
-import com.aboutsip.yajpcap.packet.layer2.MACPacket;
-import com.aboutsip.yajpcap.packet.layer7.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.SipMessage;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 public class SllFramerTest extends YajTestBase {
