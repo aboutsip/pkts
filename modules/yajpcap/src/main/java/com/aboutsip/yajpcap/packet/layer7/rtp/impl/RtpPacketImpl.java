@@ -35,7 +35,6 @@ public final class RtpPacketImpl implements RtpPacket {
         this.payload = payload;
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -51,7 +50,6 @@ public final class RtpPacketImpl implements RtpPacket {
     public boolean hasPadding() throws IOException {
         return (this.headers.getByte(0) & 0x20) == 0x020;
     }
-
 
     /**
      * {@inheritDoc}
@@ -176,6 +174,5 @@ public final class RtpPacketImpl implements RtpPacket {
     public String getDestinationMacAddress() {
         return this.parent.getDestinationMacAddress();
     }
-
 
 }

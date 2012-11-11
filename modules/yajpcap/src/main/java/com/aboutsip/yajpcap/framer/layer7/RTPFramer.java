@@ -69,10 +69,25 @@ public final class RTPFramer implements Layer7Framer {
             throw new IllegalArgumentException("The parent frame cannot be null");
         }
 
-        // TODO: can be more. Just testing right now
+        // An RTP packet has a least 12 bytes but can contain more depending on
+        // extensions, padding etc. Figure that out.
         final Buffer headers = buffer.readBytes(12);
-        final Buffer payload = buffer.slice();
+        final Byte b = headers.getByte(0);
+        final boolean hasPadding = (b & 0x20) == 0x020;
+        final boolean hasExtension = (b & 0x10) == 0x010;
+        final int csrcCount = b & 0x0F;
 
+        if (hasExtension) {
+            final short extensionHeaders = buffer.readShort();
+            final int length = buffer.readUnsignedShort();
+            final Buffer extensionData = buffer.readBytes(length);
+        }
+
+        if (hasPadding || hasExtension || (csrcCount > 0)) {
+            throw new RuntimeException("TODO - have not implemented the case of handling padding, extensions etc");
+        }
+
+        final Buffer payload = buffer.slice();
         return new RtpFrame(this.framerManager, parent, headers, payload);
     }
 

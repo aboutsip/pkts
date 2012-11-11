@@ -8,6 +8,8 @@ package com.aboutsip.yajpcap.frame.layer2;
  */
 public final class UnknownEtherType extends Exception {
 
+    private static final long serialVersionUID = 1L;
+
     private final byte b1;
     private final byte b2;
 

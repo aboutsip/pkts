@@ -29,7 +29,10 @@ This section describes how to e.g. add a new protocol framer and how to test tha
 
 1. Define a new Protocol in the Protocol enum.
 1. Create a new Framer and add it into the appropriate package.
-1. 
+1. Add a new Frame for the new protocol.
+1. Define and implement a new Packet, which is what we ultimately want.
+1. Register your new Framer with the FramerManager.
+1. Done...
 
 
 ### Define new Protocol
@@ -90,4 +93,26 @@ The above code is our skeleton for creating the new RTPFramer. I already impleme
 
 The purpose of the accept method is to check whether the supplied buffer could be an RTP frame or not. The trick here is to look ahead just as much as we need to figure out whether it is a good chance of this data being of the prefered type or not. In our case, the preferred type is of course RTP. Depending on the protocol you are adding, this can be easier said than done. E.g., in the case of HTTP  you may look three bytes a head and see if those bytes either are "GET", "PUT", "DEL" (for delete) or "POS" (for post) and if so, then we will return true and hope that this indeed is an HTTP frame. Of course, there is a chance that these three bytes may just accidently are "GET" and then we will falsly report true. At the same time though, we cannot go over too much either since the entire yajpcap library would be so slow it would be useless. Hence, it is up to you to decide how much look ahead you need to do in order to be fairly confident that your packet is what you are looking for.
 
-So, back to RTP.
+So, back to RTP.  Unfortunately, there is no real good test to make sure that the data indeed is an RTP packet. Appendix 2 in RFC3550 describes one way of doing it but you really need a sequence of packets in order to be able to determine if this indeed is a RTP packet or not. The best is to analyze the session negotiation but here we are just looking at a single packet so can't do that. Therefore, we will only do what we can which isn't much. First, the size of the headers is always at least 12 bytes so let's verify that we have that. Also, the version of the RTP packet is most commonly 2 and you will find that in the first byte of the message. If both of these things are true then we return true.
+
+``` java
+public boolean accept(final Buffer data) throws IOException {
+
+    if (data.readableBytes() < 12) {
+        data.markReaderIndex();
+        final Buffer b = data.readBytes(12);
+        if (b.capacity() < 12) {
+            return false;
+        }
+        data.resetReaderIndex();
+    }
+
+    final byte b = data.getByte(0);
+    return ((b & 0xC0) >> 6) == 0x02;
+}
+```
+Remember, this is a very basic check that is very likely to incorrectly claim that a packet is an RTP packet even though it is not. 
+
+#### Implementing the frame-method.
+
+

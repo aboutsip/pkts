@@ -15,6 +15,7 @@ import javax.sound.sampled.SourceDataLine;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.aboutsip.buffer.Buffer;
@@ -76,11 +77,9 @@ public class RTPFrameTest extends YajTestBase {
         assertThat(rtp.getTimestamp(), is(8396320L));
     }
 
+    @Ignore
     @Test
     public void testPlaySinusWave() throws Exception {
-        if (true) {
-            return;
-        }
 
         final AudioFormat af = new AudioFormat(sampleRate, 16, 1, true, true);
         try {

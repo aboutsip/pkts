@@ -27,7 +27,7 @@ public final class FramerManager {
 
     private static final FramerManager instance = new FramerManager();
 
-    private final Map<Protocol, Framer> framers = new HashMap<Protocol, Framer>();
+    private final Map<Protocol, Framer<?>> framers = new HashMap<Protocol, Framer<?>>();
 
     static {
         // should be moved somewhere else but for now...
@@ -45,7 +45,7 @@ public final class FramerManager {
         // left empty intentionally
     }
 
-    public Framer getFramer(final Protocol p) {
+    public Framer<?> getFramer(final Protocol p) {
         return this.framers.get(p);
     }
 
@@ -84,7 +84,7 @@ public final class FramerManager {
      * @param data the data we are trying to find a framer for
      * @return
      */
-    public Framer getFramer(final Buffer data) throws IOException {
+    public Framer<?> getFramer(final Buffer data) throws IOException {
         // TODO: if we know which ports the data was sent from
         // and came in on, we should be able to find a framer
         // faster. Hence, allow the user to register known ports
@@ -92,7 +92,7 @@ public final class FramerManager {
         // and we would still have to loop over all of them in case
         // the port lookup doesn't turn out to be true
 
-        for (final Framer framer : this.framers.values()) {
+        for (final Framer<?> framer : this.framers.values()) {
             if (framer.accept(data)) {
                 return framer;
             }
