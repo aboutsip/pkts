@@ -97,8 +97,6 @@ public class YajTestBase {
         this.framerManager = FramerManager.getInstance();
         final InputStream stream = YajTestBase.class.getResourceAsStream("sipp.pcap");
 
-        // final InputStream stream = new
-        // FileInputStream("/home/jonas/work/GLL/noSound.pcap");
         this.pcapStream = Buffers.wrap(stream);
 
         // Get the first frame for tests to use. Since this actually will

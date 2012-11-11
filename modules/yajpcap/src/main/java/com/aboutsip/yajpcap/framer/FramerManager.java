@@ -13,6 +13,7 @@ import com.aboutsip.yajpcap.framer.layer2.SllFramer;
 import com.aboutsip.yajpcap.framer.layer3.IPv4Framer;
 import com.aboutsip.yajpcap.framer.layer4.TCPFramer;
 import com.aboutsip.yajpcap.framer.layer4.UDPFramer;
+import com.aboutsip.yajpcap.framer.layer7.RTPFramer;
 import com.aboutsip.yajpcap.framer.layer7.SDPFramer;
 import com.aboutsip.yajpcap.framer.layer7.SIPFramer;
 import com.aboutsip.yajpcap.protocol.Protocol;
@@ -74,6 +75,7 @@ public final class FramerManager {
         registerFramer(Protocol.IPv4, new IPv4Framer(this));
         registerFramer(Protocol.UDP, new UDPFramer(this));
         registerFramer(Protocol.TCP, new TCPFramer(this));
+        registerFramer(Protocol.RTP, new RTPFramer(this));
     }
 
     /**

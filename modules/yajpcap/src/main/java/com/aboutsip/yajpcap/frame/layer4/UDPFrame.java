@@ -60,6 +60,10 @@ public final class UDPFrame extends AbstractFrame implements Layer4Frame {
 
     @Override
     protected Frame framePayload(final FramerManager framerManager, final Buffer payload) throws IOException {
+        if (payload == null) {
+            return null;
+        }
+
         final Framer framer = framerManager.getFramer(payload);
         if (framer != null) {
             return framer.frame(this, payload);

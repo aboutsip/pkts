@@ -9,8 +9,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.aboutsip.yajpcap.FrameHandler;
-import com.aboutsip.yajpcap.Pcap;
 import com.aboutsip.yajpcap.frame.Frame;
 
 public class PcapTest extends YajTestBase {

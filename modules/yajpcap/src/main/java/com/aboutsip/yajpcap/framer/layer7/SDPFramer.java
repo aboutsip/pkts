@@ -6,9 +6,8 @@ package com.aboutsip.yajpcap.framer.layer7;
 import java.io.IOException;
 
 import com.aboutsip.buffer.Buffer;
-import com.aboutsip.yajpcap.frame.Frame;
+import com.aboutsip.yajpcap.frame.layer4.Layer4Frame;
 import com.aboutsip.yajpcap.frame.layer7.SDPFrame;
-import com.aboutsip.yajpcap.framer.Framer;
 import com.aboutsip.yajpcap.framer.FramerManager;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
@@ -18,7 +17,7 @@ import com.aboutsip.yajpcap.protocol.Protocol;
  * 
  * @author jonas@jonasborjesson.com
  */
-public final class SDPFramer implements Framer {
+public final class SDPFramer implements Layer7Framer {
     private final FramerManager framerManager;
 
     public SDPFramer(final FramerManager framerManager) {
@@ -37,7 +36,7 @@ public final class SDPFramer implements Framer {
      * {@inheritDoc}
      */
     @Override
-    public SDPFrame frame(Frame parent, final Buffer buffer) throws IOException {
+    public SDPFrame frame(final Layer4Frame parent, final Buffer buffer) throws IOException {
         // nothing really to frame in the case of SDP.
         // just assuming that everything is ok
         return new SDPFrame(this.framerManager, buffer);

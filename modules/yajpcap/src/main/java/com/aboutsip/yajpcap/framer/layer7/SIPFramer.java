@@ -6,11 +6,8 @@ package com.aboutsip.yajpcap.framer.layer7;
 import java.io.IOException;
 
 import com.aboutsip.buffer.Buffer;
-import com.aboutsip.yajpcap.frame.Frame;
-import com.aboutsip.yajpcap.frame.layer3.IPFrame;
 import com.aboutsip.yajpcap.frame.layer4.Layer4Frame;
 import com.aboutsip.yajpcap.frame.layer7.SipFrame;
-import com.aboutsip.yajpcap.framer.Framer;
 import com.aboutsip.yajpcap.framer.FramerManager;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
@@ -18,7 +15,7 @@ import com.aboutsip.yajpcap.protocol.Protocol;
  * @author jonas@jonasborjesson.com
  * 
  */
-public final class SIPFramer implements Framer {
+public final class SIPFramer implements Layer7Framer {
 
     private final FramerManager framerManager;
 
@@ -41,17 +38,10 @@ public final class SIPFramer implements Framer {
      * in the framing phase we are, well, just framing.
      */
     @Override
-    public SipFrame frame(final Frame parent, final Buffer buffer) throws IOException {
+    public SipFrame frame(final Layer4Frame parent, final Buffer buffer) throws IOException {
 
         if (parent == null) {
             throw new IllegalArgumentException("The parent frame cannot be null");
-        }
-
-        Layer4Frame parentFrame = null;
-        try {
-            parentFrame = (Layer4Frame) parent;
-        } catch (final ClassCastException e) {
-            throw new IllegalArgumentException("The parent frame must be of type " + IPFrame.class.getCanonicalName());
         }
 
         // we just assume that the initial line
@@ -76,7 +66,7 @@ public final class SIPFramer implements Framer {
             payload = buffer.slice();
         }
 
-        return new SipFrame(this.framerManager, parentFrame, initialLine, headers, payload);
+        return new SipFrame(this.framerManager, parent, initialLine, headers, payload);
     }
 
     @Override

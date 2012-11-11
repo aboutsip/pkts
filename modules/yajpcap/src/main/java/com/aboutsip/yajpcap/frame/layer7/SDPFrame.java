@@ -9,14 +9,14 @@ import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.frame.AbstractFrame;
 import com.aboutsip.yajpcap.frame.Frame;
 import com.aboutsip.yajpcap.framer.FramerManager;
-import com.aboutsip.yajpcap.packet.Packet;
 import com.aboutsip.yajpcap.packet.PacketParseException;
+import com.aboutsip.yajpcap.packet.impl.ApplicationPacket;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
  * @author jonas@jonasborjesson.com
  */
-public final class SDPFrame extends AbstractFrame {
+public final class SDPFrame extends AbstractFrame implements Layer7Frame {
 
     private final Buffer sdp;
 
@@ -51,7 +51,7 @@ public final class SDPFrame extends AbstractFrame {
      * {@inheritDoc}
      */
     @Override
-    public Packet parse() throws PacketParseException {
+    public ApplicationPacket parse() throws PacketParseException {
         // TODO Auto-generated method stub
         return null;
     }
