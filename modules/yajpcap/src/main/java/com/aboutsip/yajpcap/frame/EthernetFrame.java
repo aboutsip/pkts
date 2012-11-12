@@ -4,6 +4,8 @@
 package com.aboutsip.yajpcap.frame;
 
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.Framer;
@@ -105,7 +107,6 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
             }
         }
         return sb.toString();
-
     }
 
     /**
@@ -137,6 +138,14 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
      * {@inheritDoc}
      */
     @Override
+    public void writeExternal(final ObjectOutput out) throws IOException {
+        this.parentFrame.writeExternal(out);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     protected Frame framePayload(final FramerManager framerManager, final Buffer buffer) throws IOException {
         switch(this.type){
         case IPv4:
@@ -150,7 +159,31 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
     }
 
     public static enum EtherType {
-        IPv4, IPv6;
+        IPv4((byte) 0x08, (byte) 0x00), IPv6((byte) 0x86, (byte) 0xdd);
+
+        private final byte b1;
+        private final byte b2;
+
+        private EtherType(final byte b1, final byte b2) {
+            this.b1 = b1;
+            this.b2 = b2;
+        }
+
+        public void write(final OutputStream out) throws IOException {
+            out.write(this.b1);
+            out.write(this.b2);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void write(final OutputStream out) throws IOException {
+        this.parentFrame.write(out);
+        // out.write(this.destMacAddress.getArray());
+        // out.write(this.srcMacAddress.getArray());
+        // this.type.write(out);
     }
 
 }

@@ -3,6 +3,8 @@
  */
 package com.aboutsip.yajpcap.frame;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteOrder;
 
 import com.aboutsip.buffer.Buffer;
@@ -53,6 +55,10 @@ public final class PcapRecordHeader {
      */
     public long getCapturedLength() {
         return PcapGlobalHeader.getUnsignedInt(12, this.body.getArray(), this.byteOrder);
+    }
+
+    public void write(final OutputStream out) throws IOException {
+        out.write(this.body.getArray());
     }
 
     @Override

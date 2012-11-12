@@ -4,6 +4,8 @@
 package com.aboutsip.yajpcap.frame;
 
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.Framer;
@@ -34,7 +36,6 @@ public final class PcapFrame extends AbstractFrame implements Layer1Frame {
         super(framerManager, Protocol.PCAP, payload);
         assert framerManager != null;
         assert header != null;
-        assert payload != null;
         this.header = header;
     }
 
@@ -55,9 +56,26 @@ public final class PcapFrame extends AbstractFrame implements Layer1Frame {
      * {@inheritDoc}
      */
     @Override
+    public void writeExternal(final ObjectOutput out) throws IOException {
+        // out.write(this.header);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public PCapPacket parse() throws PacketParseException {
         return new PCapPacketImpl(this.header);
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void write(final OutputStream out) throws IOException {
+        this.header.write(out);
+        out.write(super.getPayload().getArray());
+    }
 
 }

@@ -4,6 +4,8 @@
 package com.aboutsip.yajpcap.frame;
 
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.FramerManager;
@@ -47,10 +49,26 @@ public class RtpFrame extends AbstractFrame implements Layer7Frame {
      * {@inheritDoc}
      */
     @Override
+    public void writeExternal(final ObjectOutput out) throws IOException {
+        this.parentFrame.writeExternal(out);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     protected Frame framePayload(final FramerManager framerManager, final Buffer payload) throws IOException {
         // Not sure how to frame the payload of an RTP packet, which
         // will typically be audio
         return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void write(final OutputStream out) throws IOException {
+        this.parentFrame.write(out);
     }
 
 }

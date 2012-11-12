@@ -3,6 +3,7 @@
  */
 package com.aboutsip.yajpcap.packet.sip.impl;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -166,6 +167,60 @@ public abstract class SipMessageImpl implements SipMessage {
     @Override
     public void verify() {
         // TODO Auto-generated method stub
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isInvite() throws SipParseException {
+        final Buffer m = getMethod();
+        try {
+            return (m.getByte(0) == 'I') && (m.getByte(1) == 'N') && (m.getByte(2) == 'V') && (m.getByte(3) == 'I')
+                    && (m.getByte(4) == 'T') && (m.getByte(5) == 'E');
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isBye() throws SipParseException {
+        final Buffer m = getMethod();
+        try {
+            return (m.getByte(0) == 'B') && (m.getByte(1) == 'Y') && (m.getByte(2) == 'E');
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isAck() throws SipParseException {
+        final Buffer m = getMethod();
+        try {
+            return (m.getByte(0) == 'A') && (m.getByte(1) == 'C') && (m.getByte(2) == 'K');
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isCancel() throws SipParseException {
+        final Buffer m = getMethod();
+        try {
+            return (m.getByte(0) == 'C') && (m.getByte(1) == 'A') && (m.getByte(2) == 'N') && (m.getByte(3) == 'C')
+                    && (m.getByte(4) == 'E') && (m.getByte(5) == 'L');
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+        }
     }
 
     @Override

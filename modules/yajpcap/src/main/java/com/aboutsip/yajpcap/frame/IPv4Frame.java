@@ -4,6 +4,8 @@
 package com.aboutsip.yajpcap.frame;
 
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.Framer;
@@ -25,7 +27,7 @@ public final class IPv4Frame extends AbstractFrame implements IPFrame {
     /**
      * The parent frame
      */
-    private final Layer2Frame parent;
+    private final Layer2Frame parentFrame;
 
     /**
      * Internet Header Length (IHL), which is the number of 32-bit words in the
@@ -63,7 +65,7 @@ public final class IPv4Frame extends AbstractFrame implements IPFrame {
         super(framerManager, Protocol.IPv4, payload);
         assert parent != null;
 
-        this.parent = parent;
+        this.parentFrame = parent;
         this.length = length;
         this.headers = headers;
         this.options = options;
@@ -109,8 +111,19 @@ public final class IPv4Frame extends AbstractFrame implements IPFrame {
      * {@inheritDoc}
      */
     @Override
+    public void writeExternal(final ObjectOutput out) throws IOException {
+        // frames are easy to write out, just ask the top level
+        // frame to persist all its payload since that will
+        // capture everything...
+        this.parentFrame.writeExternal(out);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public IPPacket parse() throws PacketParseException {
-        final MACPacket packet = this.parent.parse();
+        final MACPacket packet = this.parentFrame.parse();
         return new IPPacketImpl(packet, this.headers, this.options);
     }
 
@@ -122,6 +135,16 @@ public final class IPv4Frame extends AbstractFrame implements IPFrame {
         }
 
         throw new RuntimeException("Unknown protocol " + this.protocol);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void write(final OutputStream out) throws IOException {
+        this.parentFrame.write(out);
+        // out.write(this.headers.getArray());
+        // out.write(getPayload().getArray());
     }
 
 }

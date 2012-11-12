@@ -4,6 +4,8 @@
 package com.aboutsip.yajpcap.frame;
 
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.Framer;
@@ -20,7 +22,7 @@ import com.aboutsip.yajpcap.protocol.Protocol;
  */
 public final class TCPFrame extends AbstractFrame implements Layer4Frame {
 
-    private final Layer3Frame parent;
+    private final Layer3Frame parentFrame;
 
     /**
      * The raw tcp headers
@@ -42,7 +44,7 @@ public final class TCPFrame extends AbstractFrame implements Layer4Frame {
         super(framerManager, Protocol.TCP, payload);
         assert parent != null;
         assert headers != null;
-        this.parent = parent;
+        this.parentFrame = parent;
         this.headers = headers;
         this.options = options;
     }
@@ -149,8 +151,24 @@ public final class TCPFrame extends AbstractFrame implements Layer4Frame {
      */
     @Override
     public TransportPacket parse() throws PacketParseException {
-        final IPPacket packet = this.parent.parse();
+        final IPPacket packet = this.parentFrame.parse();
         return new TransportPacketImpl(packet, false, getSourcePort(), getDestinationPort());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void writeExternal(final ObjectOutput out) throws IOException {
+        this.parentFrame.writeExternal(out);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void write(final OutputStream out) throws IOException {
+        this.parentFrame.write(out);
     }
 
     /**

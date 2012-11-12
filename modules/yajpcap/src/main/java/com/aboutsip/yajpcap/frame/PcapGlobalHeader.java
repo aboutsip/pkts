@@ -1,6 +1,7 @@
 package com.aboutsip.yajpcap.frame;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteOrder;
 
 import com.aboutsip.buffer.Buffer;
@@ -53,6 +54,50 @@ public final class PcapGlobalHeader {
 
     private final ByteOrder byteOrder;
     private final byte[] body;
+
+    /**
+     * Factory method for creating a default {@link PcapGlobalHeader}. Mainly
+     * used for when writing out new pcaps to a stream.
+     * 
+     * @return
+     */
+    public static PcapGlobalHeader createDefaultHeader() {
+        final byte[] body = new byte[20];
+
+        // major version number
+        body[1] = (byte) 0x00;
+        body[0] = (byte) 0x02;
+
+        // minor version number
+        body[3] = (byte) 0x00;
+        body[2] = (byte) 0x04;
+
+        // GMT to local correction - in practice always zero
+        body[4] = (byte) 0x00;
+        body[5] = (byte) 0x00;
+        body[6] = (byte) 0x00;
+        body[7] = (byte) 0x00;
+
+        // accuracy of timestamp - always zero.
+        body[8] = (byte) 0x00;
+        body[9] = (byte) 0x00;
+        body[10] = (byte) 0x00;
+        body[11] = (byte) 0x00;
+
+        // snaplength - typically 65535
+        body[12] = (byte) 0xFF;
+        body[13] = (byte) 0xFF;
+        body[14] = (byte) 0x00;
+        body[15] = (byte) 0x00;
+
+        // data link type - zero is ethernet
+        body[16] = (byte) 0x01;
+        body[17] = (byte) 0x00;
+        body[18] = (byte) 0x00;
+        body[19] = (byte) 0x00;
+
+        return new PcapGlobalHeader(ByteOrder.LITTLE_ENDIAN, body);
+    }
 
     public PcapGlobalHeader(final ByteOrder byteOrder, final byte[] body) {
         assert byteOrder != null;
@@ -162,6 +207,20 @@ public final class PcapGlobalHeader {
         final byte[] body = in.readBytes(20).getArray();
 
         return new PcapGlobalHeader(byteOrder, body);
+    }
+
+    /**
+     * Will write this header to the output stream.
+     * 
+     * @param out
+     */
+    public void write(final OutputStream out) throws IOException {
+        if (this.byteOrder == ByteOrder.BIG_ENDIAN) {
+            out.write(MAGIC_BIG_ENDIAN);
+        } else {
+            out.write(MAGIC_LITTLE_ENDIAN);
+        }
+        out.write(this.body);
     }
 
     @Override

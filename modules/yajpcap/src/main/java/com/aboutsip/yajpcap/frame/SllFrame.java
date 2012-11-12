@@ -4,6 +4,8 @@
 package com.aboutsip.yajpcap.frame;
 
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.EthernetFramer;
@@ -64,6 +66,23 @@ public final class SllFrame extends AbstractFrame implements Layer2Frame {
         } catch (final IOException e) {
             throw new RuntimeException("TODO: need to parse exception or something", e);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void writeExternal(final ObjectOutput out) throws IOException {
+        this.parentFrame.writeExternal(out);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void write(final OutputStream out) throws IOException {
+        this.parentFrame.write(out);
+        // out.write(this.headers.getArray());
     }
 
     /**

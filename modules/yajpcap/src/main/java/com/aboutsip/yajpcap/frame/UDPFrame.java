@@ -4,6 +4,8 @@
 package com.aboutsip.yajpcap.frame;
 
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.Framer;
@@ -20,7 +22,7 @@ import com.aboutsip.yajpcap.protocol.Protocol;
  */
 public final class UDPFrame extends AbstractFrame implements Layer4Frame {
 
-    private final Layer3Frame parent;
+    private final Layer3Frame parentFrame;
 
     private final Buffer headers;
 
@@ -33,7 +35,7 @@ public final class UDPFrame extends AbstractFrame implements Layer4Frame {
         assert parent != null;
         assert headers != null;
         assert payload != null;
-        this.parent = parent;
+        this.parentFrame = parent;
         this.headers = headers;
     }
 
@@ -74,9 +76,26 @@ public final class UDPFrame extends AbstractFrame implements Layer4Frame {
      * {@inheritDoc}
      */
     @Override
+    public void writeExternal(final ObjectOutput out) throws IOException {
+        this.parentFrame.writeExternal(out);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void write(final OutputStream out) throws IOException {
+        this.parentFrame.write(out);
+        // out.write(this.headers.getArray());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public TransportPacket parse() throws PacketParseException {
         // TODO: perhaps do a UDPPacket
-        final IPPacket packet = this.parent.parse();
+        final IPPacket packet = this.parentFrame.parse();
         return new TransportPacketImpl(packet, true, getSourcePort(), getDestinationPort());
     }
 

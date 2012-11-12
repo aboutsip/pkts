@@ -71,6 +71,50 @@ public interface SipMessage extends ApplicationPacket {
      */
     SipHeader getCallIDHeader() throws SipParseException;
 
+    /**
+     * Convenience method for determining whether the method of this message is
+     * an INVITE or not
+     * 
+     * @return true if it is an invite, false otherwise.
+     * @throws SipParseException
+     *             in case the method could not be parsed out of the underlying
+     *             buffer.
+     */
+    boolean isInvite() throws SipParseException;
+
+    /**
+     * Convenience method for determining whether the method of this message is
+     * a BYE or not
+     * 
+     * @return true if it is a BYE, false otherwise.
+     * @throws SipParseException
+     *             in case the method could not be parsed out of the underlying
+     *             buffer.
+     */
+    boolean isBye() throws SipParseException;
+
+    /**
+     * Convenience method for determining whether the method of this message is
+     * an ACK or not
+     * 
+     * @return true if it is an ack, false otherwise.
+     * @throws SipParseException
+     *             in case the method could not be parsed out of the underlying
+     *             buffer.
+     */
+    boolean isAck() throws SipParseException;
+
+    /**
+     * Convenience method for determining whether the method of this message is
+     * a CANCEL or not
+     * 
+     * @return true if it is a cancel, false otherwise.
+     * @throws SipParseException
+     *             in case the method could not be parsed out of the underlying
+     *             buffer.
+     */
+    boolean isCancel() throws SipParseException;
+
 
     /**
      * {@inheritDoc}

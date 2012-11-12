@@ -4,6 +4,8 @@
 package com.aboutsip.yajpcap.frame;
 
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.FramerManager;
@@ -49,9 +51,25 @@ public final class SDPFrame extends AbstractFrame implements Layer7Frame {
      * {@inheritDoc}
      */
     @Override
+    public void writeExternal(final ObjectOutput out) throws IOException {
+        throw new RuntimeException("Not yet implemented");
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public ApplicationPacket parse() throws PacketParseException {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void write(final OutputStream out) {
+        throw new RuntimeException("Not yet implemented");
     }
 
 }

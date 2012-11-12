@@ -4,6 +4,7 @@
 package com.aboutsip.yajpcap.frame;
 
 import java.io.IOException;
+import java.io.ObjectInput;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.FramerManager;
@@ -102,7 +103,7 @@ public abstract class AbstractFrame implements Frame {
     @Override
     public final Frame getNextFrame() throws IOException {
         if (this.nextFrame == null) {
-            this.nextFrame = framePayload(this.framerManager, this.payload);
+            this.nextFrame = framePayload(this.framerManager, this.payload.slice());
         }
 
         return this.nextFrame;
@@ -124,5 +125,13 @@ public abstract class AbstractFrame implements Frame {
      */
     protected abstract Frame framePayload(FramerManager framerManager, Buffer payload) throws IOException;
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void readExternal(final ObjectInput in) throws IOException, ClassNotFoundException {
+        // we don't support this way of reading right now. Should probably add that, can't
+        // be hard...
+    }
 
 }

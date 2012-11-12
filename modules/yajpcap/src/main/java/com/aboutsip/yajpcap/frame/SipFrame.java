@@ -4,6 +4,8 @@
 package com.aboutsip.yajpcap.frame;
 
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.Framer;
@@ -107,6 +109,22 @@ public final class SipFrame extends AbstractFrame implements Layer7Frame {
             return new SipRequestImpl(pkt, (SipRequestLine) initialLine, this.headers, getPayload());
         }
         return new SipResponseImpl(pkt, (SipResponseLine) initialLine, this.headers, getPayload());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void writeExternal(final ObjectOutput out) throws IOException {
+        this.parentFrame.writeExternal(out);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void write(final OutputStream out) throws IOException {
+        this.parentFrame.write(out);
     }
 
     /**

@@ -3,7 +3,9 @@
  */
 package com.aboutsip.yajpcap.frame;
 
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.packet.Packet;
@@ -19,7 +21,7 @@ import com.aboutsip.yajpcap.protocol.Protocol;
  * @author jonas@jonasborjesson.com
  * 
  */
-public interface Frame {
+public interface Frame extends Externalizable {
 
     /**
      * Check whether this frame contains a particular protocol. This will cause
@@ -99,5 +101,7 @@ public interface Frame {
      * @throws PacketParseException TODO
      */
     Packet parse() throws PacketParseException;
+
+    void write(OutputStream out) throws IOException;
 
 }
