@@ -49,9 +49,13 @@ public final class RTPFramer implements Layer7Framer {
             // get another 12 bytes by forcing the underlying
             // implementation to read further ahead
             data.markReaderIndex();
-            final Buffer b = data.readBytes(12);
-            if (b.capacity() < 12) {
-                return false;
+            try {
+                final Buffer b = data.readBytes(12);
+                if (b.capacity() < 12) {
+                    return false;
+                }
+            } catch (final IndexOutOfBoundsException e) {
+                e.printStackTrace();
             }
             data.resetReaderIndex();
         }

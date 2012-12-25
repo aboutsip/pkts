@@ -21,23 +21,37 @@ public class PcapOutputStream extends OutputStream {
      */
     private final OutputStream out;
 
-    private boolean isInitialized = false;
+    /**
+     * The {@link PcapGlobalHeader} that tells us how to write out the various
+     * info to the stream such as the byte order.
+     */
+    private final PcapGlobalHeader pcapHeader;
+
+    public static PcapOutputStream create(final PcapGlobalHeader pcapHeader, final OutputStream out) {
+        if (out == null) {
+            throw new IllegalArgumentException("The OutputStream cannot be null");
+        }
+
+        if (pcapHeader == null) {
+            throw new IllegalArgumentException("The OutputStream cannot be null");
+        }
+
+        try {
+            pcapHeader.write(out);
+        } catch (final IOException e) {
+            throw new IllegalArgumentException("Could not write the pcapheader to the stream due to IOException.", e);
+        }
+
+        return new PcapOutputStream(pcapHeader, out);
+    }
 
 
     /**
      * 
      */
-    public PcapOutputStream(final OutputStream out) {
+    private PcapOutputStream(final PcapGlobalHeader pcapHeader, final OutputStream out) {
         this.out = out;
-    }
-
-    private void initialize() throws IOException {
-        if (!this.isInitialized) {
-            // TODO: if dumping frames, we need to know the byte order
-            final PcapGlobalHeader header = PcapGlobalHeader.createDefaultHeader();
-            header.write(this.out);
-            this.isInitialized = true;
-        }
+        this.pcapHeader = pcapHeader;
     }
 
     /**
@@ -52,7 +66,6 @@ public class PcapOutputStream extends OutputStream {
             return;
         }
 
-        initialize();
         frame.write(this);
     }
 
@@ -68,7 +81,8 @@ public class PcapOutputStream extends OutputStream {
             return;
         }
 
-        initialize();
+        throw new RuntimeException("Not implemented just yet");
+
     }
 
     /**
@@ -78,6 +92,24 @@ public class PcapOutputStream extends OutputStream {
     public void write(final int b) throws IOException {
         // TODO: should we allow this?
         this.out.write(b);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void flush() throws IOException {
+        super.flush();
+        this.out.flush();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void close() throws IOException {
+        super.close();
+        this.out.close();
     }
 
 }

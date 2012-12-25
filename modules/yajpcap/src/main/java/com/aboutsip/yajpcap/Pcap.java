@@ -2,6 +2,7 @@ package com.aboutsip.yajpcap;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteOrder;
 
 import com.aboutsip.buffer.Buffer;
@@ -38,6 +39,22 @@ public class Pcap {
             callback.nextFrame(frame);
         }
 
+    }
+
+    /**
+     * Create an {@link PcapOutputStream} based on this {@link Pcap}. The new
+     * {@link PcapOutputStream} is configured to use the same
+     * {@link PcapGlobalHeader} as the {@link Pcap} is using which means that
+     * you can just safely write frames back out to this
+     * {@link PcapOutputStream}. Good for those applications that needs to
+     * filter a {@link Pcap} and write out new files.
+     * 
+     * @param out
+     * @return
+     * @throws IllegalArgumentException
+     */
+    public PcapOutputStream createOutputStream(final OutputStream out) throws IllegalArgumentException {
+        return PcapOutputStream.create(this.header, out);
     }
 
     /**

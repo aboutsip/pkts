@@ -8,7 +8,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 import org.junit.After;
 import org.junit.Before;
@@ -61,7 +60,8 @@ public class PcapTest extends YajTestBase {
         Pcap pcap = Pcap.openStream(stream);
         // final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream("cool.pcap"));
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final TestWriteStreamHandler handler = new TestWriteStreamHandler(out);
+        final PcapOutputStream pcapStream = pcap.createOutputStream(out);
+        final TestWriteStreamHandler handler = new TestWriteStreamHandler(pcapStream);
         pcap.loop(handler);
         pcap.close();
         out.flush();
@@ -121,8 +121,8 @@ public class PcapTest extends YajTestBase {
         private final PcapOutputStream out;
         private final int count = 0;
 
-        public TestWriteStreamHandler(final OutputStream out) {
-            this.out = new PcapOutputStream(out);
+        public TestWriteStreamHandler(final PcapOutputStream out) {
+            this.out = out;
         }
 
         @Override

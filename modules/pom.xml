@@ -15,6 +15,7 @@
   <modules>
     <module>buffers</module>
     <module>yajpcap</module>
+    <module>rtptools</module>
   </modules>
 
   <dependencyManagement>
@@ -23,6 +24,14 @@
     <dependency>
       <groupId>com.aboutsip</groupId>
       <artifactId>aboutsip-buffers</artifactId>
+      <version>${project.version}</version>
+      <type>jar</type>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.aboutsip</groupId>
+      <artifactId>yajpcap</artifactId>
       <version>${project.version}</version>
       <type>jar</type>
       <scope>compile</scope>

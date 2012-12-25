@@ -65,7 +65,12 @@ public final class UDPFrame extends AbstractFrame implements Layer4Frame {
 
         final Framer framer = framerManager.getFramer(payload);
         if (framer != null) {
-            return framer.frame(this, payload);
+            try {
+                return framer.frame(this, payload);
+            } catch (final RuntimeException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         // unknown payload

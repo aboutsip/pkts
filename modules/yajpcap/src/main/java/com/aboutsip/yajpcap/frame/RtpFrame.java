@@ -11,7 +11,7 @@ import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.framer.FramerManager;
 import com.aboutsip.yajpcap.packet.PacketParseException;
 import com.aboutsip.yajpcap.packet.TransportPacket;
-import com.aboutsip.yajpcap.packet.impl.ApplicationPacket;
+import com.aboutsip.yajpcap.packet.rtp.RtpPacket;
 import com.aboutsip.yajpcap.packet.rtp.impl.RtpPacketImpl;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
@@ -40,7 +40,7 @@ public class RtpFrame extends AbstractFrame implements Layer7Frame {
      * {@inheritDoc}
      */
     @Override
-    public ApplicationPacket parse() throws PacketParseException {
+    public RtpPacket parse() throws PacketParseException {
         final TransportPacket pkt = this.parentFrame.parse();
         return new RtpPacketImpl(pkt, this.headers, this.payload);
     }

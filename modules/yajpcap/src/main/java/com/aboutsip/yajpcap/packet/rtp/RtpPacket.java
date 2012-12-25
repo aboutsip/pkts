@@ -30,4 +30,11 @@ public interface RtpPacket extends ApplicationPacket {
 
     int getContributingSource() throws IOException;
 
+    /**
+     * Dump the entire {@link RtpPacket} as a raw byte-array.
+     * 
+     * @return
+     */
+    byte[] dumpPacket();
+
 }

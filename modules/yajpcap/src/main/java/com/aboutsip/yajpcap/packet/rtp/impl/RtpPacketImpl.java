@@ -175,4 +175,30 @@ public final class RtpPacketImpl implements RtpPacket {
         return this.parent.getDestinationMacAddress();
     }
 
+    @Override
+    public String toString() {
+        try {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("Seq=").append(getSeqNumber());
+            sb.append(" type=").append(getPayloadType());
+            sb.append(" src=").append(getSourceIP()).append(":").append(getSourcePort());
+            sb.append(" dst=").append(getDestinationIP()).append(":").append(getDestinationPort());
+            return sb.toString();
+        } catch (final IOException e) {
+            return super.toString();
+        }
+
+    }
+
+    @Override
+    public byte[] dumpPacket() {
+        final int headerLength = this.headers.capacity();
+        final int payloadLength = this.payload.capacity();
+
+        final byte[] dump = new byte[headerLength + payloadLength];
+        System.arraycopy(this.headers.getArray(), 0, dump, 0, headerLength);
+        System.arraycopy(this.payload.getArray(), 0, dump, headerLength, payloadLength);
+        return dump;
+    }
+
 }
