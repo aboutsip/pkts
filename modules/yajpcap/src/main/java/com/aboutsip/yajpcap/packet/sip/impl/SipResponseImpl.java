@@ -16,6 +16,8 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
 
     private CSeqHeader cseq;
 
+    private final SipResponseLine initialLine;
+
     /**
      * @param initialLine
      * @param headers
@@ -24,6 +26,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
     public SipResponseImpl(final TransportPacket pkt, final SipResponseLine initialLine, final Buffer headers,
             final Buffer payload) {
         super(pkt, initialLine, headers, payload);
+        this.initialLine = initialLine;
     }
 
     /**
@@ -38,6 +41,14 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
             this.cseq = CSeqHeaderImpl.parseValue(header.getValue());
         }
         return this.cseq.getMethod();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getStatus() {
+        return this.initialLine.getStatusCode();
     }
 
 }

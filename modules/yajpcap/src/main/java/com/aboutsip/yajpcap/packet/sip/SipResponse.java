@@ -9,5 +9,11 @@ package com.aboutsip.yajpcap.packet.sip;
  */
 public interface SipResponse extends SipMessage {
 
+    /**
+     * Get the status code of this SIP response
+     * 
+     * @return
+     */
+    int getStatus();
 
 }
