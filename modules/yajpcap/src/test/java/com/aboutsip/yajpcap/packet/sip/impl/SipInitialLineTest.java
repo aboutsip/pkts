@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.aboutsip.yajpcap.packet.impl.sip;
+package com.aboutsip.yajpcap.packet.sip.impl;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;

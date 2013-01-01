@@ -1,11 +1,13 @@
 /**
  * 
  */
-package com.aboutsip.yajpcap.packet.impl.sip;
+package com.aboutsip.yajpcap.packet.sip.impl;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
+import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Before;
@@ -14,8 +16,6 @@ import org.junit.Test;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParser;
 
 /**
  * Tests to verify that basic parsing functionality that is provided by the
@@ -43,6 +43,304 @@ public class SipParserTest {
      */
     @After
     public void tearDown() throws Exception {
+    }
+
+    /**
+     * Test the following:
+     * 
+     * <pre>
+     * generic-param  =  token [ EQUAL gen-value ]
+     * gen-value      =  token / host / quoted-string
+     * </pre>
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testConsumeGenericParam() throws Exception {
+        assertGenericParam("hello=world", "hello", "world");
+        assertGenericParam("hello = world", "hello", "world");
+        assertGenericParam("h=w", "h", "w");
+
+        // flag params
+        assertGenericParam("hello", "hello", null);
+        assertGenericParam("h", "h", null);
+
+        // this is technically not legal according to the SIP BNF
+        // but there are a lot of implementations out there that
+        // does this anyway...
+        assertGenericParam("h=", "h", null);
+
+        // the SipParser.consumeGenericParam will ONLY consume
+        // the first one so we should still only get hello world
+        assertGenericParam("hello=world;foo=boo", "hello", "world");
+
+        // also, it doesn't matter what comes after since it should
+        // not be consumed. Off course, some of these constructs are
+        // not to be found in a SIP message but these low-level parser
+        // functions are not concerned about that.
+        assertGenericParam("hello=world some spaces to the left", "hello", "world");
+
+        assertGenericParam("hello = world some spaces to the left", "hello", "world");
+        assertGenericParam("hello = w orld some spaces to the left", "hello", "w");
+        assertGenericParam("hello = w.orld some spaces to the left", "hello", "w.orld");
+    }
+
+    /**
+     * Helper function for asserting the generic param behavior.
+     * 
+     * @param input
+     * @param expectedKey
+     * @param expectedValue
+     */
+    private void assertGenericParam(final String input, final String expectedKey, final String expectedValue)
+            throws Exception {
+        final Buffer[] keyValue = SipParser.consumeGenericParam(Buffers.wrap(input));
+        assertThat(keyValue[0].toString(), is(expectedKey));
+        if (expectedValue == null) {
+            assertThat(keyValue[1], is((Buffer) null));
+        } else {
+            assertThat(keyValue[1].toString(), is(expectedValue));
+        }
+    }
+
+    /**
+     * Make sure that we can detect alphanumerics correctly
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testIsAlphaNum() throws Exception {
+        for (int i = 0; i < 10; ++i) {
+            assertThat(SipParser.isAlphaNum((char) ('0' + i)), is(true));
+        }
+
+        for (int i = 0; i < 26; ++i) {
+            assertThat(SipParser.isAlphaNum((char) ('A' + i)), is(true));
+            assertThat(SipParser.isAlphaNum((char) ('a' + i)), is(true));
+        }
+    }
+
+    /**
+     * Test all the below stuff
+     * 
+     * (from RFC 3261 25.1)
+     * 
+     * When tokens are used or separators are used between elements,
+     * whitespace is often allowed before or after these characters:
+     * 
+     * STAR    =  SWS "*" SWS ; asterisk
+     * SLASH   =  SWS "/" SWS ; slash
+     * EQUAL   =  SWS "=" SWS ; equal
+     * LPAREN  =  SWS "(" SWS ; left parenthesis
+     * RPAREN  =  SWS ")" SWS ; right parenthesis
+     * RAQUOT  =  ">" SWS ; right angle quote
+     * LAQUOT  =  SWS "<"; left angle quote
+     * COMMA   =  SWS "," SWS ; comma
+     * SEMI    =  SWS ";" SWS ; semicolon
+     * COLON   =  SWS ":" SWS ; colon
+     * LDQUOT  =  SWS DQUOTE; open double quotation mark
+     * RDQUOT  =  DQUOTE SWS ; close double quotation mark
+     */
+    @Test
+    public void testConsumeSeparators() throws Exception {
+
+        // basic happy testing
+        assertThat(SipParser.consumeSTAR(Buffers.wrap(" * ")), is(true));
+        assertThat(SipParser.consumeSTAR(Buffers.wrap("     * ")), is(true));
+        assertThat(SipParser.consumeSTAR(Buffers.wrap("     *    asdf")), is(true));
+        assertThat(SipParser.consumeSTAR(Buffers.wrap("*    asdf")), is(true));
+        assertThat(SipParser.consumeSTAR(Buffers.wrap("*asdf")), is(true));
+        assertThat(SipParser.consumeSTAR(Buffers.wrap("*")), is(true));
+
+        assertThat(SipParser.consumeSLASH(Buffers.wrap(" / ")), is(true));
+        assertThat(SipParser.consumeEQUAL(Buffers.wrap(" = ")), is(true));
+        assertThat(SipParser.consumeLPAREN(Buffers.wrap(" ( ")), is(true));
+        assertThat(SipParser.consumeRPAREN(Buffers.wrap(" ) ")), is(true));
+        assertThat(SipParser.consumeRAQUOT(Buffers.wrap(" > ")), is(true));
+        assertThat(SipParser.consumeLAQUOT(Buffers.wrap(" < ")), is(true));
+        assertThat(SipParser.consumeCOMMA(Buffers.wrap(" , ")), is(true));
+        assertThat(SipParser.consumeSEMI(Buffers.wrap(" ; ")), is(true));
+        assertThat(SipParser.consumeCOLON(Buffers.wrap(" : ")), is(true));
+        assertThat(SipParser.consumeLDQUOT(Buffers.wrap(" \"")), is(true));
+        assertThat(SipParser.consumeRDQUOT(Buffers.wrap("\" ")), is(true));
+
+        Buffer buffer = Buffers.wrap("    *    hello");
+        assertThat(SipParser.consumeSTAR(buffer), is(true));
+        assertThat(buffer.toString(), is("hello"));
+
+        buffer = Buffers.wrap("\"hello\"");
+        assertThat(SipParser.consumeLDQUOT(buffer), is(true));
+        assertThat(SipParser.consumeToken(buffer).toString(), is("hello"));
+        assertThat(SipParser.consumeRDQUOT(buffer), is(true));
+    }
+
+    /**
+     * Test to consume a token as specified by RFC3261 section 25.1
+     * 
+     * token = 1*(alphanum / "-" / "." / "!" / "%" / "*" / "_" / "+" / "`" / "'"
+     * / "~" )
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testConsumeAndExpectToken() throws Exception {
+        Buffer buffer = Buffers.wrap("hello world");
+        assertConsumeAndExpectToken(buffer, "hello");
+        SipParser.consumeWS(buffer);
+        assertConsumeAndExpectToken(buffer, "world");
+
+        buffer = Buffers.wrap("!hello");
+        assertConsumeAndExpectToken(buffer, "!hello");
+
+        final String all = "-.!%*_+`'~";
+        buffer = Buffers.wrap(all + "hello");
+        assertConsumeAndExpectToken(buffer, all + "hello");
+
+        buffer = Buffers.wrap(all + "hello world" + all);
+        assertConsumeAndExpectToken(buffer, all + "hello");
+        SipParser.consumeWS(buffer);
+        assertConsumeAndExpectToken(buffer, "world" + all);
+
+        buffer = Buffers.wrap(all + "019hello world" + all);
+        assertConsumeAndExpectToken(buffer, all + "019hello");
+
+        buffer = Buffers.wrap("0");
+        assertConsumeAndExpectToken(buffer, "0");
+
+        buffer = Buffers.wrap("09");
+        assertConsumeAndExpectToken(buffer, "09");
+
+        buffer = Buffers.wrap("19");
+        assertConsumeAndExpectToken(buffer, "19");
+
+        buffer = Buffers.wrap("0987654321");
+        assertConsumeAndExpectToken(buffer, "0987654321");
+
+        // none of the below are part of the token "family"
+        assertConsumeAndExpectToken(Buffers.wrap("&"), null);
+        assertConsumeAndExpectToken(Buffers.wrap("&asdf"), null);
+        assertConsumeAndExpectToken(Buffers.wrap("="), null);
+        assertConsumeAndExpectToken(Buffers.wrap(";="), null);
+        assertConsumeAndExpectToken(Buffers.wrap(" "), null);
+        assertConsumeAndExpectToken(Buffers.wrap("\t"), null);
+    }
+
+    /**
+     * Helper method that tests both consume and expect token at the same time.
+     * 
+     * @param buffer
+     * @param expected
+     */
+    private void assertConsumeAndExpectToken(final Buffer buffer, final String expected) throws Exception {
+        final Buffer b = buffer.slice();
+        if (expected == null) {
+            assertThat(SipParser.consumeToken(buffer), is((Buffer) null));
+            try {
+                SipParser.expectToken(b);
+                fail("Expected a SipParseException because there is no token");
+            } catch (final SipParseException e) {
+                // expected
+            }
+        } else {
+            assertThat(SipParser.consumeToken(buffer).toString(), is(expected));
+            assertThat(SipParser.expectToken(b).toString(), is(expected));
+        }
+
+    }
+
+    /**
+     * Tests so that the index of the SipParseException is correct.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void textExpectTokenSipParseException() throws Exception {
+        assertSipParseExceptionIndexForExpectToken(Buffers.wrap(";hello world"), 0);
+        assertSipParseExceptionIndexForExpectToken(Buffers.wrap(";"), 0);
+
+        Buffer buffer = Buffers.wrap("hello ;world");
+        SipParser.consumeToken(buffer);
+        SipParser.consumeWS(buffer);
+        assertSipParseExceptionIndexForExpectToken(buffer, 6);
+
+        buffer = Buffers.wrap("hello;");
+        SipParser.consumeToken(buffer);
+        assertSipParseExceptionIndexForExpectToken(buffer, 5);
+    }
+
+    /**
+     * Helper method for verifying the index in the {@link SipParseException}
+     * for the {@link SipParser#expectToken(Buffer)}
+     * 
+     * @param buffer
+     * @param expectedIndex
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    private void assertSipParseExceptionIndexForExpectToken(final Buffer buffer, final int expectedIndex)
+            throws IndexOutOfBoundsException, IOException {
+        try {
+            SipParser.expectToken(buffer);
+        } catch (final SipParseException e) {
+            assertThat(e.getErroOffset(), is(expectedIndex));
+        }
+
+    }
+
+    /**
+     * Test the {@link SipParser#indexOf(Buffer, byte)} functionality
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testIndexOf() throws Exception {
+        Buffer buffer = Buffers.wrap("hello world");
+        assertThat(SipParser.indexOf(buffer, (byte) 'h'), is(0));
+        assertThat(SipParser.indexOf(buffer, (byte) 'e'), is(1));
+        assertThat(SipParser.indexOf(buffer, (byte) 'l'), is(2));
+        assertThat(SipParser.indexOf(buffer, (byte) 'o'), is(4));
+        assertThat(SipParser.indexOf(buffer, (byte) ' '), is(5));
+        assertThat(SipParser.indexOf(buffer, (byte) 'w'), is(6));
+        assertThat(SipParser.indexOf(buffer, (byte) 'r'), is(8));
+        assertThat(SipParser.indexOf(buffer, (byte) 'd'), is(10));
+
+        // not in the buffer
+        assertThat(SipParser.indexOf(buffer, (byte) 'k'), is(-1));
+        assertThat(SipParser.indexOf(buffer, (byte) ';'), is(-1));
+
+        // boundary testing. Note, a Buffer can't be empty so
+        // no need to test that...
+        buffer = Buffers.wrap(" ");
+        assertThat(SipParser.indexOf(buffer, (byte) ' '), is(0));
+        assertThat(SipParser.indexOf(buffer, (byte) 'k'), is(-1));
+    }
+
+    /**
+     * Make sure that we consume SEMI as defined by 3261 section 25.1
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testConsumeSEMI() throws Exception {
+        Buffer buffer = Buffers.wrap("  ;  hello");
+        assertThat(SipParser.consumeSEMI(buffer), is(true));
+        assertThat(buffer.toString(), is("hello"));
+
+        buffer = Buffers.wrap(";  hello");
+        assertThat(SipParser.consumeSEMI(buffer), is(true));
+        assertThat(buffer.toString(), is("hello"));
+
+        buffer = Buffers.wrap(";hello");
+        assertThat(SipParser.consumeSEMI(buffer), is(true));
+        assertThat(buffer.toString(), is("hello"));
+
+        buffer = Buffers.wrap("hello");
+        assertThat(SipParser.consumeSEMI(buffer), is(false));
+        assertThat(buffer.toString(), is("hello"));
+
+        buffer = Buffers.wrap(";");
+        assertThat(SipParser.consumeSEMI(buffer), is(true));
+        assertThat(buffer.toString(), is(""));
     }
 
     /**

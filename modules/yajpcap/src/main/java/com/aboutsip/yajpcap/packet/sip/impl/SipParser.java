@@ -11,8 +11,30 @@ import java.util.List;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
+import com.aboutsip.yajpcap.packet.sip.header.impl.SipHeaderImpl;
 
 /**
+ * Basic sip parser that contains most (all?) of the different grammar rules for
+ * SIP as defined by RFC 3261. View these various methods as building blocks for
+ * building up a complete SIP parser (perhaps I should rename this class?).
+ * 
+ * All of these functions work in the following way:
+ * <ul>
+ * <li><b>consumeXXXX</b> - will (in general) simply try and consume whatever it
+ * is supposed to consume and the function will return true of false depending
+ * on whether is was able to consume anything from the {@link Buffer}. The
+ * consume-functions will (if successful) move the reader index of the
+ * {@link Buffer}. If unsuccessful, the reader index will be left untouched.</li>
+ * <li><b>expectXXX</b> - will (in general) expect that the next thing is
+ * whatever it is supposed to expect. These functions are really the same as the
+ * consumeXXXX ones but instead of returning true or false the expect-functions
+ * will throw a {@link SipParseException} to indicate that things didn't turn
+ * out as we were hoping for. Also, remember that the {@link SipParseException}
+ * contains the error offset into the {@link Buffer} where things broke. As with
+ * the consume-functions, the expect-functions will (if successful) move the
+ * reader index of the {@link Buffer}</li>
+ * <li></li>
+ * </ul>
  * 
  * @author jonas@jonasborjesson.com
  */
@@ -22,6 +44,8 @@ public class SipParser {
 
     public static final byte COLON = ':';
 
+    public static final byte SEMI = ';';
+
     public static final byte CR = '\r';
 
     public static final byte LF = '\n';
@@ -29,6 +53,57 @@ public class SipParser {
     public static final byte SP = ' ';
 
     public static final byte HTAB = '\t';
+
+    public static final byte DASH = '-';
+
+    public static final byte PERIOD = '.';
+
+    public static final byte COMMA = ',';
+
+    public static final byte EXCLAMATIONPOINT = '!';
+
+    public static final byte PERCENT = '%';
+
+    public static final byte STAR = '*';
+
+    public static final byte UNDERSCORE = '_';
+
+    public static final byte PLUS = '+';
+
+    public static final byte BACKTICK = '`';
+
+    public static final byte TICK = '\'';
+
+    public static final byte TILDE = '~';
+
+    public static final byte EQ = '=';
+
+    public static final byte SLASH = '/';
+
+    /**
+     * Left parenthesis
+     */
+    public static final byte LPAREN = '(';
+
+    /**
+     * Right parenthesis
+     */
+    public static final byte RPAREN = ')';
+
+    /**
+     * Right angle quote
+     */
+    public static final byte RAQUOT = '>';
+
+    /**
+     * Left angle quote
+     */
+    public static final byte LAQUOT = '<';
+
+    /**
+     * Double quotation mark
+     */
+    public static final byte DQUOT = '"';
 
     // ----------------------------------------------------------------------
     // ----------------------------------------------------------------------
@@ -62,6 +137,50 @@ public class SipParser {
     }
 
     /**
+     * Consumes a generic param, which according to RFC 3261 section 25.1 is:
+     * 
+     * <pre>
+     * generic-param  =  token [ EQUAL gen-value ]
+     * gen-value      =  token / host / quoted-string
+     * </pre>
+     * 
+     * The return value is two buffers returned as an array and if the second
+     * element is null (so make sure you check it!) then there was no value for
+     * this parameter.
+     * 
+     * Also note that due to poor implementations out there, the following is
+     * accepted as valid input:
+     * 
+     * foo=
+     * 
+     * I.e., foo is a flag parameter and as such there should not be an equal
+     * sign following it but there are many servers out there that does this
+     * anyway.
+     * 
+     * @param buffer
+     *            the buffer from which we will consume a generic-param
+     * @return a buffer array of size two. The first element is the name of the
+     *         parameter and the second element is the value of that parameter
+     *         or null if the parameter was a flag parameter (didn't have a
+     *         value)
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static Buffer[] consumeGenericParam(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+        final Buffer key = consumeToken(buffer);
+        Buffer value = null;
+        if (key == null) {
+            return new Buffer[2];
+        }
+        if (consumeEQUAL(buffer)) {
+            // TODO: consume host and quoted string
+            value = consumeToken(buffer);
+        }
+        return new Buffer[] {
+                key, value };
+    }
+
+    /**
      * Will check whether the next readable byte in the buffer is a certain byte
      * 
      * @param buffer the buffer to peek into
@@ -81,7 +200,36 @@ public class SipParser {
     }
 
     /**
-     * Check wheter the next byte is a digit or not
+     * Find the index of the specified byte.
+     * 
+     * @param buffer
+     *            the buffer
+     * @param b
+     *            the byte that we are looking for
+     * @return the index of the byte or -1 (negative one) if it isn't found.
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static int indexOf(final Buffer buffer, final byte b) throws IndexOutOfBoundsException, IOException {
+        buffer.markReaderIndex();
+        int index = -1;
+        boolean found = false;
+        while (buffer.hasReadableBytes() && !found) {
+            ++index;
+            if (buffer.readByte() == b) {
+                found = true;
+            }
+        }
+        buffer.resetReaderIndex();
+        if (found) {
+            return index;
+        } else {
+            return -1;
+        }
+    }
+
+    /**
+     * Check whether the next byte is a digit or not
      * 
      * @param buffer
      * @return
@@ -200,6 +348,337 @@ public class SipParser {
         }
     }
 
+
+    /**
+     * Consume an asterisk/star (STAR), which according to RFC3261 section 25.1
+     * Basic Rules is:
+     * 
+     * STAR = SWS "*" SWS ; asterisk
+     * 
+     * @param buffer
+     * @return true if we indeed did consume a STAR
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static boolean consumeSTAR(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
+    IOException {
+        return consumeSeparator(buffer, STAR);
+    }
+
+    /**
+     * Consume an slash (SLASH), which according to RFC3261 section 25.1 Basic
+     * Rules is:
+     * 
+     * SLASH = SWS "/" SWS ; slash
+     * 
+     * @param buffer
+     * @return true if we indeed did consume a SLASH
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static boolean consumeSLASH(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
+    IOException {
+        return consumeSeparator(buffer, SLASH);
+    }
+
+    /**
+     * Consume equal sign (EQUAL), which according to RFC3261 section 25.1 Basic
+     * Rules is:
+     * 
+     * EQUAL = SWS "=" SWS ; equal
+     * 
+     * @param buffer
+     * @return
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static boolean consumeEQUAL(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+        return consumeSeparator(buffer, EQ);
+    }
+
+    /**
+     * Consume left parenthesis (LPAREN), which according to RFC3261 section
+     * 25.1 Basic Rules is:
+     * 
+     * LPAREN = SWS "(" SWS ; left parenthesis
+     * 
+     * @param buffer
+     * @return
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static boolean consumeLPAREN(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+        return consumeSeparator(buffer, LPAREN);
+    }
+
+    /**
+     * Consume right parenthesis (RPAREN), which according to RFC3261 section
+     * 25.1 Basic Rules is:
+     * 
+     * RPAREN = SWS ")" SWS ; right parenthesis
+     * 
+     * @param buffer
+     * @return
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static boolean consumeRPAREN(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+        return consumeSeparator(buffer, RPAREN);
+    }
+
+    /**
+     * Consume right angle quote (RAQUOT), which according to RFC3261 section
+     * 25.1 Basic Rules is:
+     * 
+     * RAQUOT = SWS ">"; left angle quote
+     * 
+     * @param buffer
+     * @return
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static boolean consumeRAQUOT(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+        return consumeSeparator(buffer, RAQUOT);
+    }
+
+    /**
+     * Consume left angle quote (LAQUOT), which according to RFC3261 section
+     * 25.1 Basic Rules is:
+     * 
+     * LAQUOT  =  SWS "<"; left angle quote
+     * 
+     * @param buffer
+     * @return
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static boolean consumeLAQUOT(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+        return consumeSeparator(buffer, LAQUOT);
+    }
+
+    /**
+     * Consume comma (COMMA), which according to RFC3261 section 25.1 Basic
+     * Rules is:
+     * 
+     * COMMA = SWS "," SWS ; comma
+     * 
+     * @param buffer
+     * @return true if we indeed did consume a COMMA
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static boolean consumeCOMMA(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
+    IOException {
+        return consumeSeparator(buffer, COMMA);
+    }
+
+    /**
+     * Consume semicolon (SEMI), which according to RFC3261 section 25.1 Basic
+     * Rules is:
+     * 
+     * SEMI = SWS ";" SWS ; semicolon
+     * 
+     * @param buffer
+     * @return true if we indeed did consume a SEMI
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static boolean consumeSEMI(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
+    IOException {
+        return consumeSeparator(buffer, SEMI);
+    }
+
+    /**
+     * Consume colon (COLON), which according to RFC3261 section 25.1 Basic
+     * Rules is:
+     * 
+     * COLON = SWS ":" SWS ; colon
+     * 
+     * @param buffer
+     * @return true if we indeed did consume a COLON
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static boolean consumeCOLON(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
+    IOException {
+        return consumeSeparator(buffer, COLON);
+    }
+
+    /**
+     * Consume open double quotation mark (LDQUT), which according to RFC3261
+     * section 25.1 Basic Rules is:
+     * 
+     * LDQUOT = SWS DQUOTE; open double quotation mark
+     * 
+     * @param buffer
+     * @return true if we indeed did consume a LDQUOT
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static boolean consumeLDQUOT(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
+    IOException {
+        consumeSWS(buffer);
+        if (isNext(buffer, DQUOT)) {
+            buffer.readByte();
+        } else {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Consume close double quotation mark (RDQUT), which according to RFC3261
+     * section 25.1 Basic Rules is:
+     * 
+     * RDQUOT = DQUOTE SWS ; close double quotation mark
+     * 
+     * @param buffer
+     * @return true if we indeed did consume a LDQUOT
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static boolean consumeRDQUOT(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
+    IOException {
+        consumeSWS(buffer);
+        if (isNext(buffer, DQUOT)) {
+            buffer.readByte();
+        } else {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Helper function for checking stuff as described below. It is all the same pattern so...
+     * (from rfc 3261 section 25.1)
+     * 
+     * When tokens are used or separators are used between elements,
+     * whitespace is often allowed before or after these characters:
+     * 
+     * STAR    =  SWS "*" SWS ; asterisk
+     * SLASH   =  SWS "/" SWS ; slash
+     * EQUAL   =  SWS "=" SWS ; equal
+     * LPAREN  =  SWS "(" SWS ; left parenthesis
+     * RPAREN  =  SWS ")" SWS ; right parenthesis
+     * RAQUOT  =  ">" SWS ; right angle quote
+     * LAQUOT  =  SWS "<"; left angle quote
+     * COMMA   =  SWS "," SWS ; comma
+     * SEMI    =  SWS ";" SWS ; semicolon
+     * COLON   =  SWS ":" SWS ; colon
+     * LDQUOT  =  SWS DQUOTE; open double quotation mark
+     * RDQUOT  =  DQUOTE SWS ; close double quotation mark
+
+     * @param buffer
+     * @param b
+     * @return
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    private static boolean consumeSeparator(final Buffer buffer, final byte b) throws IndexOutOfBoundsException,
+    IOException {
+        consumeSWS(buffer);
+        if (isNext(buffer, b)) {
+            buffer.readByte();
+        } else {
+            return false;
+        }
+        consumeSWS(buffer);
+        return true;
+    }
+
+    /**
+     * Expects a token, which according to RFC3261 section 25.1 Basic Rules is:
+     * 
+     * token = 1*(alphanum / "-" / "." / "!" / "%" / "*" / "_" / "+" / "`" / "'"
+     * / "~" )
+     * 
+     * @param buffer
+     * @return the buffer containing the expected token
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     * @throws SipParseException
+     *             in case there is no token
+     */
+    public static Buffer expectToken(final Buffer buffer) throws IndexOutOfBoundsException, IOException,
+    SipParseException {
+        final Buffer token = consumeToken(buffer);
+        if (token == null) {
+            throw new SipParseException(buffer.getReaderIndex(), "Expected TOKEN");
+        }
+        return token;
+    }
+
+    /**
+     * Consume a token, which according to RFC3261 section 25.1 Basic Rules is:
+     * 
+     * token = 1*(alphanum / "-" / "." / "!" / "%" / "*" / "_" / "+" / "`" / "'"
+     * / "~" )
+     * 
+     * @param buffer
+     * @return the buffer containing the token we consumed or null if nothing
+     *         was consumed.
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static Buffer consumeToken(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+        boolean done = false;
+        int count = 0;
+        buffer.markReaderIndex();
+        while (buffer.hasReadableBytes() && !done) {
+            final byte b = buffer.readByte();
+            final boolean ok = isAlphaNum(b) || (b == DASH) || (b == PERIOD) || (b == EXCLAMATIONPOINT)
+                    || (b == PERCENT) || (b == STAR) || (b == UNDERSCORE) || (b == PLUS) || (b == BACKTICK)
+                    || (b == TICK) || (b == TILDE);
+            if (ok) {
+                ++count;
+            } else {
+                done = true;
+            }
+        }
+        buffer.resetReaderIndex();
+        if (count == 0) {
+            return null;
+        }
+        return buffer.readBytes(count);
+    }
+
+    /**
+     * Check whether next byte is a alpha numeric one.
+     * 
+     * @param buffer
+     * @return true if the next byte is a alpha numeric character, otherwise
+     *         false
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static boolean isNextAlphaNum(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+        if (buffer.hasReadableBytes()) {
+            buffer.markReaderIndex();
+            final byte b = buffer.readByte();
+            buffer.resetReaderIndex();
+            return isAlphaNum(b);
+        }
+
+        return false;
+    }
+
+    /**
+     * Helper method for checking whether the supplied byte is a alphanumeric
+     * character or not.
+     * 
+     * @param b
+     * @return true if the byte is indeed a alphanumeric character, false
+     *         otherwise
+     */
+    public static boolean isAlphaNum(final char ch) {
+        return ((ch >= 97) && (ch <= 122)) || ((ch >= 48) && (ch <= 57)) || ((ch >= 65) && (ch <= 90));
+    }
+
+    public static boolean isAlphaNum(final byte b) {
+        return isAlphaNum((char) b);
+    }
+
+
     /**
      * Consume linear whitespace (LWS), which according to RFC3261 section 25.1
      * Basic Rules is:
@@ -238,12 +717,13 @@ public class SipParser {
             if ((cr == CR) && (lf == LF)) {
                 return true;
             }
-
-            buffer.resetReaderIndex();
-            return false;
+        } catch (final IndexOutOfBoundsException e) {
+            // fall through
         } catch (final IOException e) {
             throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
         }
+        buffer.resetReaderIndex();
+        return false;
     }
 
     /**
@@ -309,6 +789,7 @@ public class SipParser {
             throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
         }
     }
+
 
     /**
      * 

@@ -173,6 +173,17 @@ public abstract class SipMessageImpl implements SipMessage {
      * {@inheritDoc}
      */
     @Override
+    public boolean isInitial() throws SipParseException {
+
+        // over simplified check
+        final SipHeader to = getToHeader();
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean isInvite() throws SipParseException {
         final Buffer m = getMethod();
         try {

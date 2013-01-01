@@ -115,6 +115,15 @@ public interface SipMessage extends ApplicationPacket {
      */
     boolean isCancel() throws SipParseException;
 
+    /**
+     * Checks whether or not this request is considered to be an "initial"
+     * request, i.e., a request that does not go within a dialog.
+     * 
+     * @return
+     * @throws SipParseException
+     */
+    boolean isInitial() throws SipParseException;
+
 
     /**
      * {@inheritDoc}

@@ -4,10 +4,11 @@
 package com.aboutsip.yajpcap.packet.sip.impl;
 
 import com.aboutsip.buffer.Buffer;
-import com.aboutsip.yajpcap.packet.CSeqHeader;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipResponse;
+import com.aboutsip.yajpcap.packet.sip.header.CSeqHeader;
+import com.aboutsip.yajpcap.packet.sip.header.impl.CSeqHeaderImpl;
 
 /**
  * @author jonas@jonasborjesson.com

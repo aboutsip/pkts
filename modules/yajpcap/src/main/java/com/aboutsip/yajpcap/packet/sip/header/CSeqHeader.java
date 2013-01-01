@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.aboutsip.yajpcap.packet;
+package com.aboutsip.yajpcap.packet.sip.header;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;

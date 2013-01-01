@@ -59,6 +59,10 @@ public final class DefaultSipStream implements SipStream {
      */
     @Override
     public long getPostDialDelay() {
+        if (message.isRequest() && message.isInvite() && message.isInitial()) {
+
+        }
+
         // TODO Auto-generated method stub
         return 0;
     }

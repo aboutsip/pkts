@@ -1,12 +1,14 @@
 /**
  * 
  */
-package com.aboutsip.yajpcap.packet.sip.impl;
+package com.aboutsip.yajpcap.packet.sip.header.impl;
 
 import java.io.IOException;
 
 import com.aboutsip.buffer.Buffer;
-import com.aboutsip.yajpcap.packet.CSeqHeader;
+import com.aboutsip.yajpcap.packet.sip.header.CSeqHeader;
+import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
+import com.aboutsip.yajpcap.packet.sip.impl.SipParser;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -21,18 +23,9 @@ public final class CSeqHeaderImpl extends SipHeaderImpl implements CSeqHeader {
      * 
      */
     public CSeqHeaderImpl(final long cseqNumber, final Buffer method, final Buffer value) {
-        super(null, value);
+        super(CSeqHeader.NAME, value);
         this.cseqNumber = cseqNumber;
         this.method = method;
-    }
-
-    /**
-     * 
-     * {@inheritDoc}
-     */
-    @Override
-    public Buffer getName() {
-        return CSeqHeader.NAME;
     }
 
     /**
