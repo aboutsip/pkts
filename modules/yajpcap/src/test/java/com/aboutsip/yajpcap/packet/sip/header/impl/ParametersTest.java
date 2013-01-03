@@ -37,7 +37,7 @@ public class ParametersTest {
      * 
      */
     @Test
-    public void testParseParameters() {
+    public void testParseParameters() throws Exception {
         final Buffer name = Buffers.wrap("Whatever");
         final Buffer value = Buffers.wrap("hello;foo=boo");
         final Parameters params = new ParametersImpl(name, value) {

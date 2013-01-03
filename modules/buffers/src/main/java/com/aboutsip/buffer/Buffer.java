@@ -77,21 +77,102 @@ public interface Buffer extends Cloneable {
     byte[] getArray();
 
     /**
+     * Same as {@link #readUntil(4096, b)}
+     * 
      * Read until the specified byte is encountered and return a buffer
      * representing that section of the buffer.
      * 
      * If the byte isn't found, then a {@link ByteNotFoundException} is thrown
      * and the {@link #getReaderIndex()} is left where we bailed out.
      * 
-     * @param b the byte to look for
+     * Note, the byte we are looking for will have been consumed so whatever
+     * that is left in the {@link Buffer} will not contain that byte.
+     * 
+     * Example: <code>
+     *    Buffer buffer = Buffers.wrap("hello world");
+     *    Buffer hello = buffer.readUntil((byte)' ');
+     *    System.out.println(hello);  // will contain "hello"
+     *    System.out.println(buffer); // will contain "world"
+     * </code>
+     * 
+     * As the example above illustrates, we are looking for a space, which is
+     * found between "hello" and "world". Since the space will be consumed, the
+     * original buffer will now only contain "world" and not " world".
+     * 
+     * @param b
+     *            the byte to look for
      * @return a buffer containing the content from the initial reader index to
      *         the the position where the byte was found (exclusive the byte we
      *         are looking for)
      * 
-     * @throws ByteNotFoundException in case the byte we were looking for is not
-     *             found.
+     * @throws ByteNotFoundException
+     *             in case the byte we were looking for is not found.
      */
     Buffer readUntil(byte b) throws IOException, ByteNotFoundException;
+
+    /**
+     * Read until any of the specified bytes have been encountered or until we
+     * have read a maximum amount of bytes. This one works exactly the same as
+     * {@link #readUntil(byte)} except it allows you to look for multiple bytes
+     * and to specify for how many bytes we should be looking before we give up.
+     * 
+     * Example, we want to read until we either find
+     * 
+     * @param maxBytes
+     *            the maximum number of bytes we would like to read before
+     *            giving up.
+     * @param bytes
+     *            the bytes we are looking for (either one of them)
+     * @return a buffer containing the content from the initial reader index to
+     *         the the position where the byte was found (exclusive the byte we
+     *         are looking for)
+     * @throws IOException
+     * @throws ByteNotFoundException
+     *             in case none of the bytes we were looking for are found
+     *             within the specified maximum number of bytes.
+     * @throws IllegalArgumentException
+     *             in no bytes to look for is specified.
+     */
+    Buffer readUntil(int maxBytes, byte... bytes) throws IOException, ByteNotFoundException, IllegalArgumentException;
+
+    /**
+     * Same as {@link #readUntil(int, byte...)} but instead of returning the
+     * buffer with everything up until the specified byte it returns the index
+     * instead.
+     * 
+     * NOTE. The index is representing where in the {@link Buffer} you can find
+     * the byte and the index is in relation to the entire {@link Buffer} and
+     * its capacity so even if you have already read x bytes, it would not
+     * change the index of what you search for.
+     * 
+     * Example:
+     * 
+     * 
+     * @param maxBytes
+     *            the maximum number of bytes we would like to read before
+     *            giving up.
+     * @param bytes
+     *            the bytes we are looking for (either one of them)
+     * @return the index of the found byte or -1 (negative one) if we couldn't
+     *         find it.
+     * @throws IOException
+     * @throws ByteNotFoundException
+     *             will ONLY be thrown if we haven't found the byte within the
+     *             maxBytes limit. If the buffer we are searching in is less
+     *             than maxBytes and we can't find what we are looking for then
+     *             negative one will be returned instead.
+     */
+    int indexOf(int maxBytes, byte... bytes) throws IOException, ByteNotFoundException, IllegalArgumentException;
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @throws IOException
+     * @throws ByteNotFoundException
+     * @throws IllegalArgumentException
+     */
+    int indexOf(byte b) throws IOException, ByteNotFoundException, IllegalArgumentException;
 
     /**
      * Get a slice of the buffer starting at <code>start</code> (inclusive)
@@ -125,6 +206,8 @@ public interface Buffer extends Cloneable {
      */
     int getReaderIndex();
 
+    void setReaderIndex(int index);
+
     /**
      * Mark the current position of the reader index.
      * 
@@ -142,7 +225,7 @@ public interface Buffer extends Cloneable {
      * The capacity of this buffer. The capacity is not affected by where the
      * reader index is etc
      * 
-     * @return the capcity
+     * @return the capacity
      */
     int capacity();
 
@@ -170,6 +253,16 @@ public interface Buffer extends Cloneable {
      * @throws IndexOutOfBoundsException in case there is nothing left to read
      */
     byte readByte() throws IndexOutOfBoundsException, IOException;
+
+    /**
+     * Peak a head to see what the next byte is. This method will not change the
+     * readerIndex
+     * 
+     * @return the next byte
+     * @throws IndexOutOfBoundsException
+     *             in case there is nothing left to read
+     */
+    byte peekByte() throws IndexOutOfBoundsException, IOException;
 
     /**
      * Read an unsigned int and will increase the reader index of this buffer by

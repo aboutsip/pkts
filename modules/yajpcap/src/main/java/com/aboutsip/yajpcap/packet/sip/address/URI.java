@@ -12,7 +12,9 @@ import com.aboutsip.buffer.Buffer;
 public interface URI {
 
     /**
-     * Returns the scheme of this URI.
+     * Returns the scheme of this URI, which really can be anything (see RFC3261
+     * section 25.1 and the definition of absoluteURI) but most commonly will be
+     * "sip", "sips" or "tel".
      * 
      * @return
      */

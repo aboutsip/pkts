@@ -3,6 +3,7 @@
  */
 package com.aboutsip.buffer;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -95,6 +96,14 @@ public final class ByteBuffer extends AbstractBuffer {
     @Override
     public byte readByte() throws IndexOutOfBoundsException {
         return getByte(this.readerIndex++);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public byte peekByte() throws IndexOutOfBoundsException, IOException {
+        return getByte(this.readerIndex);
     }
 
     public long unsignedInt(final byte a, final byte b, final byte c, final byte d) {
@@ -212,6 +221,9 @@ public final class ByteBuffer extends AbstractBuffer {
      */
     @Override
     public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
         if (this == obj) {
             return true;
         }

@@ -74,6 +74,90 @@ public abstract class AbstractBufferTest {
     }
 
     @Test
+    public void testIndexOf() throws Exception {
+        final Buffer buffer = createBuffer("hello world ena goa grejor".getBytes());
+        assertThat(buffer.indexOf(100, (byte) 'h'), is(0));
+        assertThat(buffer.indexOf(100, (byte) 'e'), is(1));
+        assertThat(buffer.indexOf(100, (byte) 'l'), is(2));
+        assertThat(buffer.indexOf(100, (byte) 'o'), is(4));
+        assertThat(buffer.indexOf(100, (byte) ' '), is(5));
+        assertThat(buffer.indexOf(100, (byte) 'w'), is(6));
+        assertThat(buffer.getByte(6), is((byte) 'w'));
+
+        // indexOf should not affect the reader index so
+        // everything should still be there.
+        assertThat(buffer.toString(), is("hello world ena goa grejor"));
+
+        // read some byte so now that we try and find 'w' it is actually
+        // not there anymore...
+        assertThat(buffer.readBytes(11).toString(), is("hello world"));
+        assertThat(buffer.indexOf((byte) 'w'), is(-1));
+        // however, we still have an 'o' around in the visible area
+        // Remember that the index is in relation to the entire buffer
+        // and not where the reader index is.
+        assertThat(buffer.indexOf((byte) 'o'), is(17));
+    }
+
+    @Test
+    public void testReadUntil2() throws Exception {
+        Buffer buffer = createBuffer("this is a somewhat long string".getBytes());
+        Buffer buf = buffer.readUntil(100, (byte) 'a', (byte) 'o');
+        assertThat(buf.toString(), is("this is "));
+
+        buffer = createBuffer("this is a somewhat long string".getBytes());
+        buf = buffer.readUntil(100, (byte) 'o', (byte) 'a');
+        assertThat(buf.toString(), is("this is "));
+
+        buffer = createBuffer("this is a somewhat long string".getBytes());
+        buf = buffer.readUntil(100, (byte) 'k', (byte) 'c', (byte) 'o');
+        assertThat(buf.toString(), is("this is a s"));
+
+        buffer = createBuffer("this is a somewhat long string".getBytes());
+        buf = buffer.readUntil(100, (byte) 'k', (byte) 'c', (byte) 'g');
+        assertThat(buf.toString(), is("this is a somewhat lon"));
+        assertThat(buffer.toString(), is(" string"));
+
+        // but now we really only want to read a maximum 10 bytes
+        buffer = createBuffer("this is a somewhat long string".getBytes());
+        try {
+            buf = buffer.readUntil(10, (byte) 'k', (byte) 'c', (byte) 'g');
+            fail("Expected a ByteNotFoundException");
+        } catch (final ByteNotFoundException e) {
+            // the buffer should have been left untouched.
+            assertThat(buffer.toString(), is("this is a somewhat long string"));
+        }
+
+        // also make sure that after slicing the read until stuff
+        // works as expected.
+        buffer = createBuffer("this is a somewhat long string".getBytes());
+        buffer.readBytes(5);
+        buf = buffer.readUntil((byte) 'i');
+        assertThat(buf.toString(), is(""));
+
+        buf = buffer.readUntil((byte) 'e');
+        assertThat(buf.toString(), is("s a som"));
+
+        // slice things up and make sure that our readUntil works on slices as well
+        final Buffer slice = buffer.slice(buffer.getReaderIndex() + 5);
+        assertThat(slice.toString(), is("what "));
+        buf = slice.readUntil((byte)'a');
+        assertThat(buf.toString(), is("wh"));
+        assertThat(slice.toString(), is("t "));
+
+        buf = slice.readUntil((byte) ' ');
+        assertThat(buf.toString(), is("t"));
+        assertThat(slice.toString(), is(""));
+        assertThat(slice.hasReadableBytes(), is(false));
+
+        // head back to the buffer which should have been unaffected by our
+        // work on the slice. we should have "what long string" left
+        buf = buffer.readUntil((byte) 'o');
+        assertThat(buf.toString(), is("what l"));
+        assertThat(buffer.readUntil((byte) 'n').toString(), is(""));
+        assertThat(buffer.readUntil((byte) 'i').toString(), is("g str"));
+    }
+
+    @Test
     public void testReadUntil() throws Exception {
         Buffer buffer = createBuffer("hello world".getBytes());
         final Buffer hello = buffer.readUntil((byte) ' ');

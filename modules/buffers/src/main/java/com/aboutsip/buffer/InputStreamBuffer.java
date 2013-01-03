@@ -82,6 +82,19 @@ public final class InputStreamBuffer extends AbstractBuffer {
 
     /**
      * {@inheritDoc}
+     */
+    @Override
+    public byte peekByte() throws IndexOutOfBoundsException, IOException {
+        final int read = internalReadBytes(1);
+        if (read == -1) {
+            // not sure this is really the right thing to do
+            throw new IndexOutOfBoundsException();
+        }
+        return getByte(this.readerIndex);
+    }
+
+    /**
+     * {@inheritDoc}
      * 
      * @throws IOException
      */

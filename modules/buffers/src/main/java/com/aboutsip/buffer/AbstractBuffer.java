@@ -55,6 +55,11 @@ public abstract class AbstractBuffer implements Buffer {
         return this.readerIndex;
     }
 
+    @Override
+    public void setReaderIndex(final int index) {
+        this.readerIndex = index;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -106,14 +111,74 @@ public abstract class AbstractBuffer implements Buffer {
      */
     @Override
     public Buffer readUntil(final byte b) throws IOException, ByteNotFoundException {
+        return this.readUntil(4096, b);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Buffer readUntil(final int maxBytes, final byte... bytes) throws IOException, ByteNotFoundException,
+    IllegalArgumentException {
+        final int index = indexOf(maxBytes, bytes);
+        if (index == -1) {
+            throw new ByteNotFoundException(bytes);
+        }
+
+        final int size = index - getReaderIndex();
+        Buffer result = null;
+        if (size == 0) {
+            result = Buffers.EMPTY_BUFFER;
+        } else {
+            result = readBytes(size);
+        }
+        readByte(); // consume the one at the index as well
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int indexOf(final byte b) throws IOException, ByteNotFoundException, IllegalArgumentException {
+        return this.indexOf(4096, b);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int indexOf(final int maxBytes, final byte... bytes) throws IOException, ByteNotFoundException,
+    IllegalArgumentException {
+        if (bytes.length == 0) {
+            throw new IllegalArgumentException("No bytes specified. Not sure what you want me to look for");
+        }
+
         final int start = getReaderIndex();
-        while (hasReadableBytes()) {
-            if (b == readByte()) {
-                return slice(start, this.readerIndex - 1);
+        int index = -1;
+
+        while (hasReadableBytes() && ((getReaderIndex() - start) < maxBytes) && (index == -1)) {
+            if (isByteInArray(readByte(), bytes)) {
+                index = this.readerIndex - 1;
             }
         }
 
-        throw new ByteNotFoundException(b);
+        this.readerIndex = start;
+
+        if ((getReaderIndex() - start) >= maxBytes) {
+            throw new ByteNotFoundException(maxBytes, bytes);
+        }
+
+        return index;
+    }
+
+    private boolean isByteInArray(final byte b, final byte[] bytes) {
+        for (final byte x : bytes) {
+            if (x == b) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

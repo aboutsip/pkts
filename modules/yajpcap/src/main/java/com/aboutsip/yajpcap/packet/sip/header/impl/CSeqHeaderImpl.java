@@ -22,7 +22,7 @@ public final class CSeqHeaderImpl extends SipHeaderImpl implements CSeqHeader {
     /**
      * 
      */
-    public CSeqHeaderImpl(final long cseqNumber, final Buffer method, final Buffer value) {
+    private CSeqHeaderImpl(final long cseqNumber, final Buffer method, final Buffer value) {
         super(CSeqHeader.NAME, value);
         this.cseqNumber = cseqNumber;
         this.method = method;

@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -43,6 +44,151 @@ public class SipParserTest {
      */
     @After
     public void tearDown() throws Exception {
+    }
+
+    /**
+     * Make sure that we can consume addr-spec.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testConsumeAddressSpec() throws Exception {
+        Buffer buffer = Buffers.wrap("sip:alice@example.com");
+        assertThat(SipParser.consumeAddressSpec(buffer).toString(), is("sip:alice@example.com"));
+        assertThat(buffer.isEmpty(), is(true));
+
+        buffer = Buffers.wrap("sip:alice@example.com>");
+        assertThat(SipParser.consumeAddressSpec(buffer).toString(), is("sip:alice@example.com"));
+        assertThat(buffer.toString(), is(">"));
+
+        buffer = Buffers.wrap("sip:alice@example.com;transport=tcp");
+        assertThat(SipParser.consumeAddressSpec(buffer).toString(), is("sip:alice@example.com;transport=tcp"));
+        assertThat(buffer.isEmpty(), is(true));
+
+        buffer = Buffers.wrap("sips:alice@example.com> apa");
+        assertThat(SipParser.consumeAddressSpec(buffer).toString(), is("sips:alice@example.com"));
+        assertThat(buffer.toString(), is("> apa"));
+
+        buffer = Buffers.wrap("sip:alice@example.com\n");
+        assertThat(SipParser.consumeAddressSpec(buffer).toString(), is("sip:alice@example.com"));
+        assertThat(buffer.toString(), is("\n"));
+
+        buffer = Buffers.wrap("whatever:alice@example.com hello");
+        assertThat(SipParser.consumeAddressSpec(buffer).toString(), is("whatever:alice@example.com"));
+        assertThat(buffer.toString(), is(" hello"));
+
+        // no scheme part...
+        buffer = Buffers.wrap("alice@example.com hello");
+        try {
+            assertThat(SipParser.consumeAddressSpec(buffer), is((Buffer) null));
+            fail("Expected a SipParseException");
+        } catch (final SipParseException e) {
+        }
+
+        // if we cannot find the scheme within 100 bytes then we will
+        // give up...
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 100; ++i) {
+            sb.append("a");
+        }
+        sb.append(":");
+        buffer = Buffers.wrap(sb.toString() + "alice@example.com hello");
+        try {
+            assertThat(SipParser.consumeAddressSpec(buffer), is((Buffer) null));
+            fail("Expected a SipParseException");
+        } catch (final SipParseException e) {
+        }
+
+        // and if we haven't found the end after 1000 bytes we will also give up
+        sb = new StringBuilder();
+        for (int i = 0; i < 1000; ++i) {
+            sb.append("a");
+        }
+        buffer = Buffers.wrap("sip:" + sb.toString());
+        try {
+            assertThat(SipParser.consumeAddressSpec(buffer), is((Buffer) null));
+            fail("Expected a SipParseException");
+        } catch (final SipParseException e) {
+        }
+
+    }
+
+    /**
+     * Consuming a display name can be tricky so make sure we do it correctly.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testConsumeDisplayName() throws Exception {
+        Buffer buffer = Buffers.wrap("hello <sip:alice@example.com>");
+        assertThat(SipParser.consumeDisplayName(buffer).toString(), is("hello"));
+        assertThat(buffer.toString(), is(" <sip:alice@example.com>")); // note that the SP should still be there
+
+        // not actually legal but the consumeDisplayName
+        // is not the one enforcing this so should work
+        buffer = Buffers.wrap("hello sip:alice@example.com");
+        assertThat(SipParser.consumeDisplayName(buffer).toString(), is("hello"));
+        assertThat(buffer.toString(), is(" sip:alice@example.com"));
+
+        buffer = Buffers.wrap("sip:alice@example.com");
+        assertThat(SipParser.consumeDisplayName(buffer).isEmpty(), is(true));
+        assertThat(buffer.toString(), is("sip:alice@example.com"));
+
+        assertThat(SipParser.consumeDisplayName(Buffers.wrap("apa:alice@example.com")).isEmpty(), is(true));
+        assertThat(SipParser.consumeDisplayName(Buffers.wrap("<sips:alice@example.com>")).isEmpty(), is(true));
+        assertThat(SipParser.consumeDisplayName(Buffers.wrap("     sip:alice@example.com")).isEmpty(), is(true));
+
+        buffer = Buffers.wrap("   <sip:alice@example.com>");
+        assertThat(SipParser.consumeDisplayName(buffer).isEmpty(), is(true));
+        assertThat(buffer.toString(), is("   <sip:alice@example.com>"));
+    }
+
+    /**
+     * Test to consume parameters (notice the plural).
+     * 
+     * <pre>
+     *  *( SEMI generic-param )
+     * </pre>
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testConsumeGenericParams() throws Exception {
+        assertGenericParams(";a=b;c=d;foo", "a", "b", "c", "d", "foo", null);
+        assertGenericParams(";a", "a", null);
+        assertGenericParams(";a ;b;c = d", "a", null, "b", null, "c", "d");
+        assertGenericParams("hello this is not a params");
+        assertGenericParams(";lr the lr was a flag param followed by some crap", "lr", null);
+    }
+
+    /**
+     * Helper function for asserting the generic param behavior.
+     * 
+     * @param input
+     * @param expectedKey
+     * @param expectedValue
+     */
+    private void assertGenericParams(final String input, final String... expectedKeyValuePairs) throws Exception {
+        final List<Buffer[]> params = SipParser.consumeGenericParams(Buffers.wrap(input));
+        if (expectedKeyValuePairs.length == 0) {
+            assertThat(params.isEmpty(), is(true));
+            return;
+        }
+
+        final int noOfParams = expectedKeyValuePairs.length / 2;
+        assertThat(params.size(), is(noOfParams));
+
+        for (int i = 0; i < noOfParams; ++i) {
+            final Buffer[] actual = params.get(i);
+            final String expectedKey = expectedKeyValuePairs[i * 2];
+            final String expectedValue = expectedKeyValuePairs[(i * 2) + 1];
+            assertThat(actual[0].toString(), is(expectedKey));
+            if (expectedValue == null) {
+                assertThat(actual[1], is((Buffer) null));
+            } else {
+                assertThat(actual[1].toString(), is(expectedValue));
+            }
+        }
     }
 
     /**
@@ -145,33 +291,33 @@ public class SipParserTest {
     public void testConsumeSeparators() throws Exception {
 
         // basic happy testing
-        assertThat(SipParser.consumeSTAR(Buffers.wrap(" * ")), is(true));
-        assertThat(SipParser.consumeSTAR(Buffers.wrap("     * ")), is(true));
-        assertThat(SipParser.consumeSTAR(Buffers.wrap("     *    asdf")), is(true));
-        assertThat(SipParser.consumeSTAR(Buffers.wrap("*    asdf")), is(true));
-        assertThat(SipParser.consumeSTAR(Buffers.wrap("*asdf")), is(true));
-        assertThat(SipParser.consumeSTAR(Buffers.wrap("*")), is(true));
+        assertThat(SipParser.consumeSTAR(Buffers.wrap(" * ")), is(3));
+        assertThat(SipParser.consumeSTAR(Buffers.wrap("     * ")), is(7));
+        assertThat(SipParser.consumeSTAR(Buffers.wrap("     *    asdf")), is(10));
+        assertThat(SipParser.consumeSTAR(Buffers.wrap("*    asdf")), is(5));
+        assertThat(SipParser.consumeSTAR(Buffers.wrap("*asdf")), is(1));
+        assertThat(SipParser.consumeSTAR(Buffers.wrap("*")), is(1));
 
-        assertThat(SipParser.consumeSLASH(Buffers.wrap(" / ")), is(true));
-        assertThat(SipParser.consumeEQUAL(Buffers.wrap(" = ")), is(true));
-        assertThat(SipParser.consumeLPAREN(Buffers.wrap(" ( ")), is(true));
-        assertThat(SipParser.consumeRPAREN(Buffers.wrap(" ) ")), is(true));
-        assertThat(SipParser.consumeRAQUOT(Buffers.wrap(" > ")), is(true));
-        assertThat(SipParser.consumeLAQUOT(Buffers.wrap(" < ")), is(true));
-        assertThat(SipParser.consumeCOMMA(Buffers.wrap(" , ")), is(true));
-        assertThat(SipParser.consumeSEMI(Buffers.wrap(" ; ")), is(true));
-        assertThat(SipParser.consumeCOLON(Buffers.wrap(" : ")), is(true));
-        assertThat(SipParser.consumeLDQUOT(Buffers.wrap(" \"")), is(true));
-        assertThat(SipParser.consumeRDQUOT(Buffers.wrap("\" ")), is(true));
+        assertThat(SipParser.consumeSLASH(Buffers.wrap(" / ")), is(3));
+        assertThat(SipParser.consumeEQUAL(Buffers.wrap(" = ")), is(3));
+        assertThat(SipParser.consumeLPAREN(Buffers.wrap(" ( ")), is(3));
+        assertThat(SipParser.consumeRPAREN(Buffers.wrap(" ) ")), is(3));
+        assertThat(SipParser.consumeRAQUOT(Buffers.wrap(" > ")), is(3));
+        assertThat(SipParser.consumeLAQUOT(Buffers.wrap(" < ")), is(3));
+        assertThat(SipParser.consumeCOMMA(Buffers.wrap(" , ")), is(3));
+        assertThat(SipParser.consumeSEMI(Buffers.wrap(" ; ")), is(3));
+        assertThat(SipParser.consumeCOLON(Buffers.wrap(" : ")), is(3));
+        assertThat(SipParser.consumeLDQUOT(Buffers.wrap(" \"")), is(2));
+        assertThat(SipParser.consumeRDQUOT(Buffers.wrap("\" ")), is(2));
 
         Buffer buffer = Buffers.wrap("    *    hello");
-        assertThat(SipParser.consumeSTAR(buffer), is(true));
+        assertThat(SipParser.consumeSTAR(buffer), is(9));
         assertThat(buffer.toString(), is("hello"));
 
         buffer = Buffers.wrap("\"hello\"");
-        assertThat(SipParser.consumeLDQUOT(buffer), is(true));
+        assertThat(SipParser.consumeLDQUOT(buffer), is(1));
         assertThat(SipParser.consumeToken(buffer).toString(), is("hello"));
-        assertThat(SipParser.consumeRDQUOT(buffer), is(true));
+        assertThat(SipParser.consumeRDQUOT(buffer), is(1));
     }
 
     /**
@@ -288,34 +434,6 @@ public class SipParserTest {
     }
 
     /**
-     * Test the {@link SipParser#indexOf(Buffer, byte)} functionality
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testIndexOf() throws Exception {
-        Buffer buffer = Buffers.wrap("hello world");
-        assertThat(SipParser.indexOf(buffer, (byte) 'h'), is(0));
-        assertThat(SipParser.indexOf(buffer, (byte) 'e'), is(1));
-        assertThat(SipParser.indexOf(buffer, (byte) 'l'), is(2));
-        assertThat(SipParser.indexOf(buffer, (byte) 'o'), is(4));
-        assertThat(SipParser.indexOf(buffer, (byte) ' '), is(5));
-        assertThat(SipParser.indexOf(buffer, (byte) 'w'), is(6));
-        assertThat(SipParser.indexOf(buffer, (byte) 'r'), is(8));
-        assertThat(SipParser.indexOf(buffer, (byte) 'd'), is(10));
-
-        // not in the buffer
-        assertThat(SipParser.indexOf(buffer, (byte) 'k'), is(-1));
-        assertThat(SipParser.indexOf(buffer, (byte) ';'), is(-1));
-
-        // boundary testing. Note, a Buffer can't be empty so
-        // no need to test that...
-        buffer = Buffers.wrap(" ");
-        assertThat(SipParser.indexOf(buffer, (byte) ' '), is(0));
-        assertThat(SipParser.indexOf(buffer, (byte) 'k'), is(-1));
-    }
-
-    /**
      * Make sure that we consume SEMI as defined by 3261 section 25.1
      * 
      * @throws Exception
@@ -323,23 +441,23 @@ public class SipParserTest {
     @Test
     public void testConsumeSEMI() throws Exception {
         Buffer buffer = Buffers.wrap("  ;  hello");
-        assertThat(SipParser.consumeSEMI(buffer), is(true));
+        assertThat(SipParser.consumeSEMI(buffer), is(5));
         assertThat(buffer.toString(), is("hello"));
 
         buffer = Buffers.wrap(";  hello");
-        assertThat(SipParser.consumeSEMI(buffer), is(true));
+        assertThat(SipParser.consumeSEMI(buffer), is(3));
         assertThat(buffer.toString(), is("hello"));
 
         buffer = Buffers.wrap(";hello");
-        assertThat(SipParser.consumeSEMI(buffer), is(true));
+        assertThat(SipParser.consumeSEMI(buffer), is(1));
         assertThat(buffer.toString(), is("hello"));
 
         buffer = Buffers.wrap("hello");
-        assertThat(SipParser.consumeSEMI(buffer), is(false));
+        assertThat(SipParser.consumeSEMI(buffer), is(0));
         assertThat(buffer.toString(), is("hello"));
 
         buffer = Buffers.wrap(";");
-        assertThat(SipParser.consumeSEMI(buffer), is(true));
+        assertThat(SipParser.consumeSEMI(buffer), is(1));
         assertThat(buffer.toString(), is(""));
     }
 
@@ -485,7 +603,7 @@ public class SipParserTest {
 
     private void assertLWSConsumption(final String LWS, final String expected) throws Exception {
         final Buffer buffer = stringToBuffer(LWS + expected);
-        final boolean stuffConsumed = SipParser.consumeLWS(buffer);
+        final boolean stuffConsumed = SipParser.consumeLWS(buffer) > 0;
         assertThat(bufferToString(buffer), is(expected));
 
         // in the case of LWS, we should always consume at least 1 WS
@@ -546,7 +664,7 @@ public class SipParserTest {
         }
 
         final Buffer buffer = stringToBuffer(padding + expected);
-        final boolean stuffConsumed = SipParser.consumeWS(buffer);
+        final boolean stuffConsumed = SipParser.consumeWS(buffer) > 0;
         assertThat(bufferToString(buffer), is(expected));
 
         // also make sure we return the boolean indicating that we consumed
@@ -581,7 +699,7 @@ public class SipParserTest {
     private void assertCRLFConsumption(final String parse, final String expected, final boolean expectedConsumption)
             throws SipParseException {
         final Buffer buffer = stringToBuffer(parse);
-        final boolean stuffConsumed = SipParser.consumeCRLF(buffer);
+        final boolean stuffConsumed = SipParser.consumeCRLF(buffer) > 0;
         assertThat(bufferToString(buffer), is(expected));
         assertThat(stuffConsumed, is(expectedConsumption));
     }
@@ -620,7 +738,7 @@ public class SipParserTest {
     private void assertSWSConsumption(final String SWS, final String expected, final boolean shouldWeConsumeStuff)
             throws Exception {
         final Buffer buffer = stringToBuffer(SWS + expected);
-        final boolean stuffConsumed = SipParser.consumeSWS(buffer);
+        final boolean stuffConsumed = SipParser.consumeSWS(buffer) > 0;
         assertThat(bufferToString(buffer), is(expected));
 
         assertThat(stuffConsumed, is(shouldWeConsumeStuff));

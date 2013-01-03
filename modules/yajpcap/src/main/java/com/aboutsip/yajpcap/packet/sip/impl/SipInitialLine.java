@@ -62,9 +62,6 @@ public abstract class SipInitialLine extends SipParser {
             final int index = buffer.getReaderIndex() - part3.capacity() - part2.capacity() - 1;
             throw new SipParseException(index, "unable to parse the SIP response code as an integer");
         } catch (final ByteNotFoundException e) {
-            System.err.println("========================");
-            System.err.println(buffer);
-            System.err.println("========================");
             throw new SipParseException(buffer.getReaderIndex(), "expected space");
         } catch (final SipParseException e) {
             // is only thrown by the expectSIP2_0. Calculate the correct

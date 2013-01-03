@@ -68,6 +68,8 @@ public class SipParser {
 
     public static final byte UNDERSCORE = '_';
 
+    public static final byte QUESTIONMARK = '?';
+
     public static final byte PLUS = '+';
 
     public static final byte BACKTICK = '`';
@@ -137,6 +139,70 @@ public class SipParser {
     }
 
     /**
+     * Consumes all generic-params it can find. If there are no generic params
+     * to be consumed it will return an empty list. The list of generic-params
+     * are found on many SIP headers such as the To, From etc. In general, the
+     * BNF looks like so:
+     * 
+     * 
+     * <pre>
+     *  *( SEMI generic-param )
+     * </pre>
+     * 
+     * E.g. in To:
+     * 
+     * <pre>
+     * To        =  ( "To" / "t" ) HCOLON ( name-addr / addr-spec ) *( SEMI to-param )
+     * to-param  =  tag-param / generic-param
+     * </pre>
+     * 
+     * @param buffer
+     * @return
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static List<Buffer[]> consumeGenericParams(final Buffer buffer) throws IndexOutOfBoundsException,
+    IOException {
+        final List<Buffer[]> params = new ArrayList<Buffer[]>();
+        while (buffer.hasReadableBytes() && (buffer.peekByte() == SEMI)) {
+            buffer.readByte(); // consume the SEMI
+            params.add(consumeGenericParam(buffer));
+        }
+        return params;
+    }
+
+    /**
+     * Same as {@link #consumeGenericParams(Buffer)} but instead of returning
+     * the parsed out values this one returns everything as one buffer.
+     * 
+     * @param buffer
+     * @return
+     * @throws IndexOutOfBoundsException
+     * @throws IOException
+     */
+    public static Buffer consumeGenericParamsAsBuffer(final Buffer buffer) throws IndexOutOfBoundsException,
+    IOException {
+        final int start = buffer.getReaderIndex();
+        int total = 0;
+        while (buffer.hasReadableBytes() && (buffer.peekByte() == SipParser.SEMI)) {
+            ++total;
+            buffer.readByte();
+            int count = SipParser.getTokenCount(buffer);
+            buffer.readBytes(count);
+            total += count;
+            count = SipParser.consumeEQUAL(buffer);
+            total += count;
+            if (count > 0) {
+                count = SipParser.getTokenCount(buffer);
+                buffer.readBytes(count);
+                total += count;
+            }
+        }
+        buffer.setReaderIndex(start);
+        return buffer.readBytes(total);
+    }
+
+    /**
      * Consumes a generic param, which according to RFC 3261 section 25.1 is:
      * 
      * <pre>
@@ -172,13 +238,14 @@ public class SipParser {
         if (key == null) {
             return new Buffer[2];
         }
-        if (consumeEQUAL(buffer)) {
+        if (consumeEQUAL(buffer) > 0) {
             // TODO: consume host and quoted string
             value = consumeToken(buffer);
         }
         return new Buffer[] {
                 key, value };
     }
+
 
     /**
      * Will check whether the next readable byte in the buffer is a certain byte
@@ -190,42 +257,11 @@ public class SipParser {
      */
     public static boolean isNext(final Buffer buffer, final byte b) throws IOException {
         if (buffer.hasReadableBytes()) {
-            buffer.markReaderIndex();
-            final Byte actual = buffer.readByte();
-            buffer.resetReaderIndex();
+            final Byte actual = buffer.peekByte();
             return actual == b;
         }
 
         return false;
-    }
-
-    /**
-     * Find the index of the specified byte.
-     * 
-     * @param buffer
-     *            the buffer
-     * @param b
-     *            the byte that we are looking for
-     * @return the index of the byte or -1 (negative one) if it isn't found.
-     * @throws IOException
-     * @throws IndexOutOfBoundsException
-     */
-    public static int indexOf(final Buffer buffer, final byte b) throws IndexOutOfBoundsException, IOException {
-        buffer.markReaderIndex();
-        int index = -1;
-        boolean found = false;
-        while (buffer.hasReadableBytes() && !found) {
-            ++index;
-            if (buffer.readByte() == b) {
-                found = true;
-            }
-        }
-        buffer.resetReaderIndex();
-        if (found) {
-            return index;
-        } else {
-            return -1;
-        }
     }
 
     /**
@@ -238,9 +274,7 @@ public class SipParser {
      */
     public static boolean isNextDigit(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
         if (buffer.hasReadableBytes()) {
-            buffer.markReaderIndex();
-            final char next = (char)buffer.readByte();
-            buffer.resetReaderIndex();
+            final char next = (char) buffer.peekByte();
             return (next >= 48) && (next <= 57);
         }
 
@@ -288,11 +322,13 @@ public class SipParser {
      * 
      * See RFC3261 section 25.1 Basic Rules
      */
-    public static void expectHCOLON(final Buffer buffer) throws SipParseException {
+    public static int expectHCOLON(final Buffer buffer) throws SipParseException {
         try {
-            consumeWS(buffer);
+            int consumed = consumeWS(buffer);
             expect(buffer, COLON);
-            consumeSWS(buffer);
+            ++consumed;
+            consumed += consumeSWS(buffer);
+            return consumed;
         } catch (final IOException e) {
             throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
         }
@@ -303,14 +339,15 @@ public class SipParser {
      * 
      * @param buffer
      */
-    public static void expectWS(final Buffer buffer) throws SipParseException {
+    public static int expectWS(final Buffer buffer) throws SipParseException {
+        int consumed = 0;
         try {
             if (buffer.hasReadableBytes()) {
-
                 final byte b = buffer.getByte(buffer.getReaderIndex());
                 if ((b == SP) || (b == HTAB)) {
                     // ok, it was a WS so consume the byte
                     buffer.readByte();
+                    ++consumed;
                 } else {
                     throw new SipParseException(buffer.getReaderIndex(), "Expected WS");
                 }
@@ -321,6 +358,7 @@ public class SipParser {
         } catch (final IOException e) {
             throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
         }
+        return consumed;
     }
 
     /**
@@ -335,7 +373,7 @@ public class SipParser {
      * @param buffer
      * @return
      */
-    public static boolean consumeSWS(final Buffer buffer) {
+    public static int consumeSWS(final Buffer buffer) {
         try {
             return consumeLWS(buffer);
         } catch (final SipParseException e) {
@@ -344,7 +382,7 @@ public class SipParser {
             // particular place and since SWS is all optional
             // we will silently just consume it, but return
             // false however
-            return false;
+            return 0;
         }
     }
 
@@ -360,7 +398,7 @@ public class SipParser {
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
-    public static boolean consumeSTAR(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
+    public static int consumeSTAR(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
     IOException {
         return consumeSeparator(buffer, STAR);
     }
@@ -376,7 +414,7 @@ public class SipParser {
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
-    public static boolean consumeSLASH(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
+    public static int consumeSLASH(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
     IOException {
         return consumeSeparator(buffer, SLASH);
     }
@@ -392,7 +430,7 @@ public class SipParser {
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
-    public static boolean consumeEQUAL(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+    public static int consumeEQUAL(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
         return consumeSeparator(buffer, EQ);
     }
 
@@ -407,7 +445,7 @@ public class SipParser {
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
-    public static boolean consumeLPAREN(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+    public static int consumeLPAREN(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
         return consumeSeparator(buffer, LPAREN);
     }
 
@@ -422,7 +460,7 @@ public class SipParser {
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
-    public static boolean consumeRPAREN(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+    public static int consumeRPAREN(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
         return consumeSeparator(buffer, RPAREN);
     }
 
@@ -437,7 +475,7 @@ public class SipParser {
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
-    public static boolean consumeRAQUOT(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+    public static int consumeRAQUOT(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
         return consumeSeparator(buffer, RAQUOT);
     }
 
@@ -452,7 +490,7 @@ public class SipParser {
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
-    public static boolean consumeLAQUOT(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+    public static int consumeLAQUOT(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
         return consumeSeparator(buffer, LAQUOT);
     }
 
@@ -467,7 +505,7 @@ public class SipParser {
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
-    public static boolean consumeCOMMA(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
+    public static int consumeCOMMA(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
     IOException {
         return consumeSeparator(buffer, COMMA);
     }
@@ -483,7 +521,7 @@ public class SipParser {
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
-    public static boolean consumeSEMI(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
+    public static int consumeSEMI(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
     IOException {
         return consumeSeparator(buffer, SEMI);
     }
@@ -499,7 +537,7 @@ public class SipParser {
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
-    public static boolean consumeCOLON(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
+    public static int consumeCOLON(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
     IOException {
         return consumeSeparator(buffer, COLON);
     }
@@ -515,15 +553,18 @@ public class SipParser {
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
-    public static boolean consumeLDQUOT(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
+    public static int consumeLDQUOT(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
     IOException {
-        consumeSWS(buffer);
+        buffer.markReaderIndex();
+        int consumed = consumeSWS(buffer);
         if (isNext(buffer, DQUOT)) {
             buffer.readByte();
+            ++consumed;
         } else {
-            return false;
+            buffer.resetReaderIndex();
+            return 0;
         }
-        return true;
+        return consumed;
     }
 
     /**
@@ -537,15 +578,19 @@ public class SipParser {
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
-    public static boolean consumeRDQUOT(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
+    public static int consumeRDQUOT(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
     IOException {
-        consumeSWS(buffer);
+        buffer.markReaderIndex();
+        int consumed = 0;
         if (isNext(buffer, DQUOT)) {
             buffer.readByte();
+            ++consumed;
         } else {
-            return false;
+            buffer.resetReaderIndex();
+            return 0;
         }
-        return true;
+        consumed += consumeSWS(buffer);
+        return consumed;
     }
 
     /**
@@ -570,20 +615,23 @@ public class SipParser {
 
      * @param buffer
      * @param b
-     * @return
+     * @return the number of bytes that was consumed.
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
-    private static boolean consumeSeparator(final Buffer buffer, final byte b) throws IndexOutOfBoundsException,
+    private static int consumeSeparator(final Buffer buffer, final byte b) throws IndexOutOfBoundsException,
     IOException {
-        consumeSWS(buffer);
+        buffer.markReaderIndex();
+        int consumed = consumeSWS(buffer);
         if (isNext(buffer, b)) {
             buffer.readByte();
+            ++consumed;
         } else {
-            return false;
+            buffer.resetReaderIndex();
+            return 0;
         }
-        consumeSWS(buffer);
-        return true;
+        consumed += consumeSWS(buffer);
+        return consumed;
     }
 
     /**
@@ -609,6 +657,118 @@ public class SipParser {
     }
 
     /**
+     * The display name in SIP is a little tricky since it may or may not be
+     * there and the stuff following it (whether or not it was there to begin
+     * with) can easily be confused with being a display name.
+     * 
+     * Note, a display name in SIP is only part of of the "name-addr" construct
+     * and this function assumes that (even though it actually would work like a
+     * regular {@link #consumeToken(Buffer)} in some cases)
+     * 
+     * <pre>
+     * name-addr      =  [ display-name ] LAQUOT addr-spec RAQUOT
+     * display-name   =  *(token LWS)/ quoted-string
+     * </pre>
+     * 
+     * @param buffer
+     * @return the display name or null if there was none
+     * @throws IOException
+     */
+    public static Buffer consumeDisplayName(final Buffer buffer) throws IOException {
+        if (isNext(buffer, DQUOT)) {
+            throw new RuntimeException("can't do quoted strings in display name right now. Sorry...");
+        }
+
+        final int count = getTokenCount(buffer);
+        if (count == 0) {
+            return Buffers.EMPTY_BUFFER;
+        }
+
+        // now, if the next thing after the count is a ':' then
+        // we mistook the scheme for a token so bail out.
+        buffer.markReaderIndex();
+        final Buffer potentialDisplayName = buffer.readBytes(count);
+        if (isNext(buffer, COLON)) {
+            buffer.resetReaderIndex();
+            return Buffers.EMPTY_BUFFER;
+        }
+
+        // all good...
+        return potentialDisplayName;
+    }
+
+    /**
+     * Consumes addr-spec, which according to RFC3261 section 25.1 is:
+     * 
+     * <pre>
+     * addr-spec      =  SIP-URI / SIPS-URI / absoluteURI
+     * SIP-URI          =  "sip:" [ userinfo ] hostport
+     *                      uri-parameters [ headers ]
+     * SIPS-URI         =  "sips:" [ userinfo ] hostport
+     *                      uri-parameters [ headers ]
+     * 
+     * absoluteURI    =  scheme ":" ( hier-part / opaque-part )
+     * </pre>
+     * 
+     * And as you can see, it gets complicated. Also, these consume-functions
+     * are not to validate the exact grammar but rather to find the boundaries
+     * so the strategy for consuming the addr-spec is:
+     * <ul>
+     * <li>If '>' is encountered, then we assume that this addr-spec is within a
+     * name-addr so we stop here</li>
+     * <li>If a white space or end-of-line is encountered, we also assume we are
+     * done.</li>
+     * </ul>
+     * 
+     * Note, I think the above is safe since I do believe you cannot have a
+     * white space or a quoted string (which could have contained white space)
+     * within any of the elements that are part of the addr-spec... Anyone?
+     * 
+     * @return
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     * @throws SipParseException
+     *             in case we cannot successfully frame the addr-spec.
+     */
+    public static Buffer consumeAddressSpec(final Buffer buffer) throws IndexOutOfBoundsException, IOException,
+    SipParseException {
+        buffer.markReaderIndex();
+        int count = 0;
+        int state = 0; // zero is to look for colon, everything else is to find the end
+        boolean done = false;
+
+        while (buffer.hasReadableBytes() && !done) {
+            ++count;
+            final byte b = buffer.readByte();
+
+            // emergency breaks...
+            if ((state == 0) && (count > 99)) {
+                throw new SipParseException(buffer.getReaderIndex(), "No scheme found after 100 bytes, giving up");
+            } else if (count > 999) {
+                throw new SipParseException(buffer.getReaderIndex(),
+                        "Have not been able to find the entire addr-spec after 1000 bytes, giving up");
+            } else if ((state == 0) && (b == COLON)) {
+                state = 1;
+            } else if ((state == 1) && ((b == RAQUOT) || (b == SP) || (b == HTAB) || (b == CR) || (b == LF))) {
+                done = true;
+                --count;
+            }
+        }
+        buffer.resetReaderIndex();
+
+        // didn't find the scheme portion
+        if (state == 0) {
+            throw new SipParseException(buffer.getReaderIndex(), "No scheme found");
+        }
+
+        if (count > 0) {
+            return buffer.readBytes(count);
+        }
+
+        return null;
+    }
+
+    /**
      * Consume a token, which according to RFC3261 section 25.1 Basic Rules is:
      * 
      * token = 1*(alphanum / "-" / "." / "!" / "%" / "*" / "_" / "+" / "`" / "'"
@@ -621,6 +781,24 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static Buffer consumeToken(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+        final int count = getTokenCount(buffer);
+        if (count == 0) {
+            return null;
+        }
+        return buffer.readBytes(count);
+    }
+
+    /**
+     * Helper method that counts the number of bytes that are considered part of
+     * the next token in the {@link Buffer}.
+     * 
+     * @param buffer
+     * @return a count of the number of bytes the next token contains or zero if
+     *         no token is to be found within the buffer.
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static int getTokenCount(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
         boolean done = false;
         int count = 0;
         buffer.markReaderIndex();
@@ -636,10 +814,7 @@ public class SipParser {
             }
         }
         buffer.resetReaderIndex();
-        if (count == 0) {
-            return null;
-        }
-        return buffer.readBytes(count);
+        return count;
     }
 
     /**
@@ -653,9 +828,7 @@ public class SipParser {
      */
     public static boolean isNextAlphaNum(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
         if (buffer.hasReadableBytes()) {
-            buffer.markReaderIndex();
-            final byte b = buffer.readByte();
-            buffer.resetReaderIndex();
+            final byte b = buffer.peekByte();
             return isAlphaNum(b);
         }
 
@@ -686,21 +859,21 @@ public class SipParser {
      * LWS = [*WSP CRLF] 1*WSP ; linear whitespace
      * 
      * @param buffer
-     * @return true if we indeed did consume some LWS
+     * @return the number of bytes consumed
      */
-    public static boolean consumeLWS(final Buffer buffer) throws SipParseException {
+    public static int consumeLWS(final Buffer buffer) throws SipParseException {
         final int i = buffer.getReaderIndex();
         consumeWS(buffer);
 
         // if we consume a CRLF we expect at least ONE WS to be present next
-        if (consumeCRLF(buffer)) {
+        if (consumeCRLF(buffer) > 0) {
             expectWS(buffer);
         }
         consumeWS(buffer);
         if (buffer.getReaderIndex() == i) {
             throw new SipParseException(i, "Expected at least 1 WSP");
         }
-        return true;
+        return buffer.getReaderIndex() - i;
     }
 
     /**
@@ -709,13 +882,13 @@ public class SipParser {
      * @param buffer
      * @return true if we indeed did consume CRLF, false otherwise
      */
-    public static boolean consumeCRLF(final Buffer buffer) throws SipParseException {
+    public static int consumeCRLF(final Buffer buffer) throws SipParseException {
         try {
             buffer.markReaderIndex();
             final byte cr = buffer.readByte();
             final byte lf = buffer.readByte();
             if ((cr == CR) && (lf == LF)) {
-                return true;
+                return 2;
             }
         } catch (final IndexOutOfBoundsException e) {
             // fall through
@@ -723,7 +896,7 @@ public class SipParser {
             throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
         }
         buffer.resetReaderIndex();
-        return false;
+        return 0;
     }
 
     /**
@@ -751,19 +924,19 @@ public class SipParser {
      * @param buffer
      * @return true if we did consume something, false otherwise
      */
-    public static boolean consumeWS(final Buffer buffer) throws SipParseException {
+    public static int consumeWS(final Buffer buffer) throws SipParseException {
         try {
-            boolean consumed = false;
             boolean done = false;
+            int count = 0;
             while (buffer.hasReadableBytes() && !done) {
                 if (isNext(buffer, SP) || isNext(buffer, HTAB)) {
                     buffer.readByte();
-                    consumed = true;
+                    ++count;
                 } else {
                     done = true;
                 }
             }
-            return consumed;
+            return count;
         } catch (final IOException e) {
             throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
         }

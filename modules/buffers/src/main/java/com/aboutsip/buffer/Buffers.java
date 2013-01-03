@@ -17,6 +17,11 @@ public final class Buffers {
         // left empty intentionally
     }
 
+    /**
+     * An empty buffer.
+     */
+    public static Buffer EMPTY_BUFFER = new EmptyBuffer();
+
     public static Buffer wrap(final String s) {
         if (s == null) {
             throw new IllegalArgumentException("String cannot be null");

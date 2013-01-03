@@ -4,6 +4,7 @@
 package com.aboutsip.yajpcap.packet.sip.address;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -11,7 +12,8 @@ import com.aboutsip.buffer.Buffer;
 public interface Address {
 
     /**
-     * Get the display name of this {@link Address} or null if it is not set.
+     * Get the display name of this {@link Address} or an empty buffer if it is
+     * not set.
      * 
      * @return
      */
@@ -21,7 +23,8 @@ public interface Address {
      * Get the {@link URI} of this {@link Address}.
      * 
      * @return the {@link URI}
+     * @throws SipParseException
      */
-    URI getURI();
+    URI getURI() throws SipParseException;
 
 }
