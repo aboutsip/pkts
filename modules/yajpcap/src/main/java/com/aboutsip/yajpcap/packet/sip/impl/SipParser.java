@@ -171,36 +171,6 @@ public class SipParser {
         return params;
     }
 
-    /**
-     * Same as {@link #consumeGenericParams(Buffer)} but instead of returning
-     * the parsed out values this one returns everything as one buffer.
-     * 
-     * @param buffer
-     * @return
-     * @throws IndexOutOfBoundsException
-     * @throws IOException
-     */
-    public static Buffer consumeGenericParamsAsBuffer(final Buffer buffer) throws IndexOutOfBoundsException,
-    IOException {
-        final int start = buffer.getReaderIndex();
-        int total = 0;
-        while (buffer.hasReadableBytes() && (buffer.peekByte() == SipParser.SEMI)) {
-            ++total;
-            buffer.readByte();
-            int count = SipParser.getTokenCount(buffer);
-            buffer.readBytes(count);
-            total += count;
-            count = SipParser.consumeEQUAL(buffer);
-            total += count;
-            if (count > 0) {
-                count = SipParser.getTokenCount(buffer);
-                buffer.readBytes(count);
-                total += count;
-            }
-        }
-        buffer.setReaderIndex(start);
-        return buffer.readBytes(total);
-    }
 
     /**
      * Consumes a generic param, which according to RFC 3261 section 25.1 is:

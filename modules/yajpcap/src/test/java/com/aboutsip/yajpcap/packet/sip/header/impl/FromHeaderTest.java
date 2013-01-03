@@ -7,12 +7,15 @@ import org.junit.After;
 import org.junit.Before;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
 import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 
 /**
+ * Test the {@link FromHeader}.
+ * 
  * @author jonas@jonasborjesson.com
  */
-public class ToHeaderTest extends AddressParameterHeadersTestBase {
+public class FromHeaderTest extends AddressParameterHeadersTestBase {
 
     /**
      * @throws java.lang.Exception
@@ -34,8 +37,7 @@ public class ToHeaderTest extends AddressParameterHeadersTestBase {
 
     @Override
     public AddressParametersHeader frameHeader(final Buffer buffer) throws SipParseException {
-        return (ToHeaderImpl) ToHeaderImpl.frame(buffer);
+        return (FromHeaderImpl) FromHeaderImpl.frame(buffer);
     }
-
 
 }
