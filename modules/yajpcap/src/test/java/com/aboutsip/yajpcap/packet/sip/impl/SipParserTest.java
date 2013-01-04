@@ -47,6 +47,29 @@ public class SipParserTest {
     }
 
     /**
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testConsumeQuotedString() throws Exception {
+        Buffer buffer = Buffers.wrap("\"hello world\" fup");
+        assertThat(SipParser.consumeQuotedString(buffer).toString(), is("hello world"));
+        assertThat(buffer.toString(), is(" fup"));
+
+        buffer = Buffers.wrap("\"hello world\"");
+        assertThat(SipParser.consumeQuotedString(buffer).toString(), is("hello world"));
+        assertThat(buffer.toString(), is(""));
+
+        buffer = Buffers.wrap("\"hello\"");
+        assertThat(SipParser.consumeQuotedString(buffer).toString(), is("hello"));
+        assertThat(buffer.toString(), is(""));
+
+        buffer = Buffers.wrap("\"hello \\\"world\"");
+        assertThat(SipParser.consumeQuotedString(buffer).toString(), is("hello \\\"world"));
+        assertThat(buffer.toString(), is(""));
+    }
+
+    /**
      * Make sure that we can consume addr-spec.
      * 
      * @throws Exception

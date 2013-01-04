@@ -95,8 +95,7 @@ public final class DefaultSipStream implements SipStream {
      */
     @Override
     public Iterator<SipMessage> getPackets() {
-        // TODO Auto-generated method stub
-        return null;
+        return this.messages.iterator();
     }
 
     /**

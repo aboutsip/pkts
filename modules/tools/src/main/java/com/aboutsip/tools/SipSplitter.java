@@ -37,19 +37,35 @@ public final class SipSplitter implements StreamListener<SipMessage> {
     public static void main(final String[] args) throws Exception {
         final SipSplitter splitter = new SipSplitter();
 
-        final String filename = "/home/jonas/development/private/aboutsip/modules/yajpcap/src/test/resources/com/aboutsip/yajpcap/sipp.pcap";
+        final String dir = "/home/jonas/development/private/aboutsip/twilio_pcaps/openser";
+        final String filename = dir + "/openser-udp-5060_01874_20121112135549.pcap";
+
+        final long start = System.currentTimeMillis();
+        // final String filename = "/home/jonas/development/private/aboutsip/modules/yajpcap/src/test/resources/com/aboutsip/yajpcap/sipp.pcap";
         final InputStream stream = new FileInputStream(filename);
         final Pcap pcap = Pcap.openStream(stream);
         final StreamHandler streamHandler = new DefaultStreamHandler();
         streamHandler.addStreamListener(splitter);
         pcap.loop(streamHandler);
         pcap.close();
+        final long stop = System.currentTimeMillis();
+        System.out.println("Processing time(s): " + ((stop - start) / 1000));
         System.out.println("Start: " + splitter.count);
         System.out.println("End  : " + splitter.endCount);
     }
 
     @Override
     public void startStream(final Stream<SipMessage> stream) {
+        try {
+            final SipMessage message = stream.getPackets().next();
+            if (message.isRequest() && message.isInvite()
+                    && message.getToHeader().getAddress().getDisplayName().toString().equals("Farmers Insurance")) {
+                System.err.println(message);
+            }
+        } catch (final Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("WFT");
+        }
         ++this.count;
     }
 

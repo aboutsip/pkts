@@ -82,6 +82,8 @@ public class SipParser {
 
     public static final byte SLASH = '/';
 
+    public static final byte BACK_SLASH = '\\';
+
     /**
      * Left parenthesis
      */
@@ -627,6 +629,40 @@ public class SipParser {
     }
 
     /**
+     * Consumes a quoted-string, which is defined as:
+     * 
+     * <pre>
+     * quoted-string  =  SWS DQUOTE *(qdtext / quoted-pair ) DQUOTE
+     * qdtext         =  LWS / %x21 / %x23-5B / %x5D-7E / UTF8-NONASCII
+     * quoted-pair    =  "\" (%x00-09 / %x0B-0C / %x0E-7F)
+     * </pre>
+     * 
+     * Note, this is a somewhat simplified version and we'll
+     * 
+     * @param buffer
+     * @return
+     * @throws IOException
+     * @throws SipParseException
+     */
+    public static Buffer consumeQuotedString(final Buffer buffer) throws SipParseException, IOException {
+        final int start = buffer.getReaderIndex();
+        expect(buffer, DQUOT);
+        while (buffer.hasReadableBytes()) {
+            final byte b = buffer.readByte();
+            if (b == DQUOT) {
+                break;
+            } else if (b == BACK_SLASH) {
+                buffer.readByte();
+            }
+        }
+        final int stop = buffer.getReaderIndex();
+        buffer.setReaderIndex(start + 1);
+        final Buffer result = buffer.readBytes(stop - start - 2);
+        buffer.setReaderIndex(stop);
+        return result;
+    }
+
+    /**
      * The display name in SIP is a little tricky since it may or may not be
      * there and the stuff following it (whether or not it was there to begin
      * with) can easily be confused with being a display name.
@@ -643,10 +679,11 @@ public class SipParser {
      * @param buffer
      * @return the display name or null if there was none
      * @throws IOException
+     * @throws SipParseException
      */
-    public static Buffer consumeDisplayName(final Buffer buffer) throws IOException {
+    public static Buffer consumeDisplayName(final Buffer buffer) throws IOException, SipParseException {
         if (isNext(buffer, DQUOT)) {
-            throw new RuntimeException("can't do quoted strings in display name right now. Sorry...");
+            return consumeQuotedString(buffer);
         }
 
         final int count = getTokenCount(buffer);
