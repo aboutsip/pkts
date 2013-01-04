@@ -46,10 +46,11 @@ public abstract class ParametersImpl extends SipHeaderImpl implements Parameters
         super(name, null);
         if (params != null) {
             this.originalParams = params.slice();
+            this.params = params;
         } else {
             this.originalParams = null;
+            this.params = Buffers.EMPTY_BUFFER;
         }
-        this.params = params;
     }
 
     @Override

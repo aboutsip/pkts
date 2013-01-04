@@ -12,6 +12,8 @@ import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
+import com.aboutsip.yajpcap.packet.sip.header.impl.ToHeaderImpl;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -143,8 +145,16 @@ public abstract class SipMessageImpl implements SipMessage {
      * {@inheritDoc}
      */
     @Override
-    public SipHeader getToHeader() throws SipParseException {
-        return getHeader(TO_HEADER);
+    public ToHeader getToHeader() throws SipParseException {
+        final SipHeader header = getHeader(TO_HEADER);
+        if (header instanceof ToHeader) {
+            return (ToHeader) header;
+        }
+
+        final Buffer buffer = header.getValue();
+        final ToHeader to = ToHeaderImpl.frame(buffer);
+        this.parsedHeaders.put(to.getName(), to);
+        return to;
     }
 
     /**

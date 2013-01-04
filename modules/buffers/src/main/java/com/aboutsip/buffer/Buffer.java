@@ -346,5 +346,8 @@ public interface Buffer extends Cloneable {
     boolean equals(Object b);
 
     @Override
+    int hashCode();
+
+    @Override
     String toString();
 }

@@ -23,4 +23,26 @@ public interface Stream<T extends Packet> {
      */
     Iterator<T> getPackets();
 
+    /**
+     * Get the duration in microseconds of the stream. Note, see comment on
+     * {@link Packet#getArrivalTime()} regarding the microsecond precision.
+     * 
+     * Depending on the underlying protocol this can be as simple as the time
+     * between the first to the last packet, which is what the {@link RtpStream}
+     * does. Or, it can be more complicated as with a {@link SipStream} that
+     * checks the duration of the dialog (if one was established).
+     * 
+     * @return the duration (in milliseconds) of this {@link Stream}. If the
+     *         duration cannot be calulated for whatever reason (no packets at
+     *         all? Only one packet?), then -1 (negative one) will be returned.
+     */
+    long getDuration();
+
+    /**
+     * Get the unique {@link StreamId} for this particular {@link Stream}.
+     * 
+     * @return
+     */
+    StreamId getStreamIdentifier();
+
 }

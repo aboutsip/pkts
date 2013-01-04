@@ -2,6 +2,7 @@ package com.aboutsip.yajpcap.packet.sip;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.packet.impl.ApplicationPacket;
+import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
 import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 
 /**
@@ -62,7 +63,7 @@ public interface SipMessage extends ApplicationPacket {
      * 
      * @return the to header as a buffer
      */
-    SipHeader getToHeader() throws SipParseException;
+    ToHeader getToHeader() throws SipParseException;
 
     /**
      * Convenience method for fetching the call-id-header

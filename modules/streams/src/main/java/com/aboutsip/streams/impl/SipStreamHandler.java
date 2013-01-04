@@ -7,11 +7,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.aboutsip.streams.StreamId;
 import com.aboutsip.streams.StreamListener;
 import com.aboutsip.yajpcap.frame.Frame;
 import com.aboutsip.yajpcap.frame.SipFrame;
 import com.aboutsip.yajpcap.packet.PacketParseException;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
@@ -19,7 +21,7 @@ import com.aboutsip.yajpcap.protocol.Protocol;
  */
 public class SipStreamHandler {
 
-    private final Map<String, DefaultSipStream> sipStreams = new HashMap<String, DefaultSipStream>();
+    private final Map<StreamId, DefaultSipStream> sipStreams = new HashMap<StreamId, DefaultSipStream>();
 
     private StreamListener<SipMessage> sipListener;
 
@@ -30,20 +32,25 @@ public class SipStreamHandler {
         // TODO Auto-generated constructor stub
     }
 
+    private StreamId getStreamId(final SipMessage msg) throws SipParseException {
+        return new BufferStreamId(msg.getCallIDHeader().getValue());
+    }
+
     public void processFrame(final Frame frame) throws PacketParseException {
         try {
             final SipFrame sipFrame = ((SipFrame) frame.getFrame(Protocol.SIP));
             final SipMessage msg = sipFrame.parse();
-            final String callId = msg.getCallIDHeader().getValue().toString();
-            DefaultSipStream stream = this.sipStreams.get(callId);
+            final StreamId id = getStreamId(msg);
+            DefaultSipStream stream = this.sipStreams.get(id);
             if (stream == null) {
+                stream = new DefaultSipStream(id);
                 this.sipListener.startStream(stream);
-                stream = new DefaultSipStream(msg);
-                this.sipStreams.put(callId, stream);
+                this.sipStreams.put(id, stream);
             }
+            final boolean wasAlreadyTerminated = stream.isTerminated();
             stream.addMessage(msg);
             this.sipListener.packetReceived(stream, msg);
-            if (stream.isTerminated()) {
+            if (!wasAlreadyTerminated && stream.isTerminated()) {
                 this.sipListener.endStream(stream);
             }
 
