@@ -44,16 +44,16 @@ public class SipStreamHandler {
             DefaultSipStream stream = this.sipStreams.get(id);
             if (stream == null) {
                 stream = new DefaultSipStream(id);
-                this.sipListener.startStream(stream);
+                this.sipListener.startStream(stream, msg);
                 this.sipStreams.put(id, stream);
+            } else {
+                final boolean wasAlreadyTerminated = stream.isTerminated();
+                stream.addMessage(msg);
+                this.sipListener.packetReceived(stream, msg);
+                if (!wasAlreadyTerminated && stream.isTerminated()) {
+                    this.sipListener.endStream(stream);
+                }
             }
-            final boolean wasAlreadyTerminated = stream.isTerminated();
-            stream.addMessage(msg);
-            this.sipListener.packetReceived(stream, msg);
-            if (!wasAlreadyTerminated && stream.isTerminated()) {
-                this.sipListener.endStream(stream);
-            }
-
         } catch (final IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

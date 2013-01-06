@@ -55,17 +55,7 @@ public final class SipSplitter implements StreamListener<SipMessage> {
     }
 
     @Override
-    public void startStream(final Stream<SipMessage> stream) {
-        try {
-            final SipMessage message = stream.getPackets().next();
-            if (message.isRequest() && message.isInvite()
-                    && message.getToHeader().getAddress().getDisplayName().toString().equals("Farmers Insurance")) {
-                System.err.println(message);
-            }
-        } catch (final Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("WFT");
-        }
+    public void startStream(final Stream<SipMessage> stream, final SipMessage message) {
         ++this.count;
     }
 

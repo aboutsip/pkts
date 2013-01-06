@@ -14,9 +14,6 @@ import com.aboutsip.yajpcap.YajTestBase;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
-import com.aboutsip.yajpcap.packet.sip.impl.SipInitialLine;
-import com.aboutsip.yajpcap.packet.sip.impl.SipRequestImpl;
-import com.aboutsip.yajpcap.packet.sip.impl.SipRequestLine;
 
 public class SipMessageImplTest extends YajTestBase {
 
@@ -38,7 +35,7 @@ public class SipMessageImplTest extends YajTestBase {
         assertThat(initialLine.isRequestLine(), is(true));
 
         final TransportPacket pkt = mock(TransportPacket.class);
-        this.request = new SipRequestImpl(pkt, (SipRequestLine) initialLine, headers, payload);
+        this.request = new SipRequestImpl(pkt, (SipRequestLine) initialLine, headers, payload, null);
     }
 
     @Override

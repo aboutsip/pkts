@@ -82,7 +82,6 @@ public class PcapOutputStream extends OutputStream {
         }
 
         throw new RuntimeException("Not implemented just yet");
-
     }
 
     /**

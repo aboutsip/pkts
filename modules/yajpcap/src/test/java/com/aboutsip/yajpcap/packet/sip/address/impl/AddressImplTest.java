@@ -36,6 +36,30 @@ public class AddressImplTest {
     }
 
     /**
+     * Make sure that when we parse something that we actually spit out the
+     * EXACT same format again. E.g., the following address
+     * "<sip:alice@whatever.com>" does not actually need the angle-brackets so
+     * we could spit it out as "sip:alice@whatever.com" but we should really
+     * honor what the user gave us to begin with.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testToString() throws Exception {
+        assertAddressToStringIsTheSame("<sip:alice@whatever.com>");
+        assertAddressToStringIsTheSame("sip:alice@whatever.com");
+        assertAddressToStringIsTheSame("alice <sip:alice@whatever.com>");
+        assertAddressToStringIsTheSame("\"alice\" <sip:alice@whatever.com>");
+        assertAddressToStringIsTheSame("\"alice smith\" <sip:alice@whatever.com>");
+        assertAddressToStringIsTheSame("\"alice smith\" <sip:alice@whatever.com;foo=boo>");
+
+    }
+
+    private void assertAddressToStringIsTheSame(final String address) throws Exception {
+        assertThat(AddressImpl.parse(Buffers.wrap(address)).toString(), is(address));
+    }
+
+    /**
      * Make sure that we can correctly frame an address
      * 
      * @throws Exception

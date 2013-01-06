@@ -9,10 +9,13 @@ import java.util.Map;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
+import com.aboutsip.yajpcap.frame.SipFrame;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
+import com.aboutsip.yajpcap.packet.sip.header.impl.FromHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.ToHeaderImpl;
 
 /**
@@ -65,6 +68,13 @@ public abstract class SipMessageImpl implements SipMessage {
     private final Map<Buffer, SipHeader> parsedHeaders = new HashMap<Buffer, SipHeader>(16, 0.75f);
 
     /**
+     * Our raw frame and if set and the message isn't marked as dirty we will
+     * actually use the data in the frame when we are asked to write ourselves
+     * to an output stream.
+     */
+    private final SipFrame sipFrame;
+
+    /**
      * 
      * @param initialLine the initial line, which is either a request or a
      *            response line
@@ -72,7 +82,7 @@ public abstract class SipMessageImpl implements SipMessage {
      * @param payload the payload or null if there is none
      */
     public SipMessageImpl(final TransportPacket parent, final SipInitialLine initialLine, final Buffer headers,
-            final Buffer payload) {
+            final Buffer payload, final SipFrame sipFrame) {
         assert initialLine != null;
         assert headers != null;
         assert parent != null;
@@ -82,6 +92,7 @@ public abstract class SipMessageImpl implements SipMessage {
         this.headers = headers;
         this.headersCopy = headers.slice();
         this.payload = payload;
+        this.sipFrame = sipFrame;
     }
 
     /**
@@ -137,8 +148,16 @@ public abstract class SipMessageImpl implements SipMessage {
      * {@inheritDoc}
      */
     @Override
-    public SipHeader getFromHeader() throws SipParseException {
-        return getHeader(FROM_HEADER);
+    public FromHeader getFromHeader() throws SipParseException {
+        final SipHeader header = getHeader(FromHeader.NAME);
+        if (header instanceof FromHeader) {
+            return (FromHeader) header;
+        }
+
+        final Buffer buffer = header.getValue();
+        final FromHeader from = FromHeaderImpl.frame(buffer);
+        this.parsedHeaders.put(from.getName(), from);
+        return from;
     }
 
     /**
@@ -146,7 +165,7 @@ public abstract class SipMessageImpl implements SipMessage {
      */
     @Override
     public ToHeader getToHeader() throws SipParseException {
-        final SipHeader header = getHeader(TO_HEADER);
+        final SipHeader header = getHeader(ToHeader.NAME);
         if (header instanceof ToHeader) {
             return (ToHeader) header;
         }

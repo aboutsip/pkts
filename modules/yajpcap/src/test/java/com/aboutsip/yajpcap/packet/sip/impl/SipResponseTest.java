@@ -15,9 +15,6 @@ import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.YajTestBase;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.sip.SipResponse;
-import com.aboutsip.yajpcap.packet.sip.impl.SipInitialLine;
-import com.aboutsip.yajpcap.packet.sip.impl.SipResponseImpl;
-import com.aboutsip.yajpcap.packet.sip.impl.SipResponseLine;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -41,7 +38,7 @@ public class SipResponseTest extends YajTestBase {
         final SipInitialLine initialLine = SipInitialLine.parse(line);
         assertThat(initialLine.isResponseLine(), is(true));
         final TransportPacket pkt = mock(TransportPacket.class);
-        this.response = new SipResponseImpl(pkt, (SipResponseLine) initialLine, headers, payload);
+        this.response = new SipResponseImpl(pkt, (SipResponseLine) initialLine, headers, payload, null);
     }
 
     /**

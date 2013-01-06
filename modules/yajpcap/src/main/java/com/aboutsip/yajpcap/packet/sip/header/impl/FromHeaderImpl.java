@@ -43,4 +43,5 @@ public class FromHeaderImpl extends AddressParametersHeader implements FromHeade
         return new FromHeaderImpl((Address) result[0], (Buffer) result[1]);
     }
 
+
 }

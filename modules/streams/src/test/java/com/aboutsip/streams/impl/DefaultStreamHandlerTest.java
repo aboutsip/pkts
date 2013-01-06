@@ -96,7 +96,7 @@ public class DefaultStreamHandlerTest extends StreamsTestBase {
         streamHandler.addStreamListener(new StreamListener() {
 
             @Override
-            public void startStream(final Stream stream) {
+            public void startStream(final Stream stream, final Packet packet) {
                 // TODO Auto-generated method stub
 
             }
@@ -129,7 +129,7 @@ public class DefaultStreamHandlerTest extends StreamsTestBase {
         public int endCount;
 
         @Override
-        public void startStream(final Stream<SipMessage> stream) {
+        public void startStream(final Stream<SipMessage> stream, final SipMessage packet) {
             this.streams.add(stream);
             ++this.startCount;
         }

@@ -4,6 +4,7 @@
 package com.aboutsip.yajpcap.packet.sip.impl;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.yajpcap.frame.SipFrame;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipResponse;
@@ -25,8 +26,8 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      * @param payload
      */
     public SipResponseImpl(final TransportPacket pkt, final SipResponseLine initialLine, final Buffer headers,
-            final Buffer payload) {
-        super(pkt, initialLine, headers, payload);
+            final Buffer payload, final SipFrame sipFrame) {
+        super(pkt, initialLine, headers, payload, sipFrame);
         this.initialLine = initialLine;
     }
 

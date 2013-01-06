@@ -21,7 +21,6 @@ public final class InputStreamBuffer extends AbstractBuffer {
      */
     private static final int DEFAULT_CAPACITY = 4096;
 
-    // private final byte[] buffer;
     private final List<java.nio.ByteBuffer> storage;
 
     /**

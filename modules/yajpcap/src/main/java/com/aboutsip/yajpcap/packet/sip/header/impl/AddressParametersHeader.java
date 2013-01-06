@@ -47,8 +47,11 @@ public abstract class AddressParametersHeader extends ParametersImpl implements 
      */
     @Override
     public Buffer getValue() {
-        // TODO Auto-generated method stub
-        return null;
+        // TODO: create a composite buffer instead of this crap
+        final StringBuilder sb = new StringBuilder();
+        sb.append(this.address.toString());
+        sb.append(super.getValue().toString());
+        return Buffers.wrap(sb.toString());
     }
 
     /**

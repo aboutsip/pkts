@@ -18,10 +18,15 @@ public interface StreamListener<T extends Packet> {
     /**
      * Called when a new {@link Stream} is detected.
      * 
+     * Note that the {@link Packet} passed in to this method will NOT appear in
+     * {@link #packetReceived(Stream, Packet)}.
+     * 
      * @param stream
      *            the new {@link Stream}.
+     * @param packet
+     *            the {@link Packet} that created the {@link Stream}.
      */
-    void startStream(Stream<T> stream);
+    void startStream(Stream<T> stream, T packet);
 
     /**
      * Called when a new {@link Packet} has been received.
@@ -42,6 +47,11 @@ public interface StreamListener<T extends Packet> {
      * timeout. For other protocols, such as SIP, the {@link Stream} will end
      * when the dialog dies (if there is a dialog established in the first
      * place).
+     * 
+     * Note that unlike {@link #startStream(Stream, Packet)} the event that
+     * kills the {@link Stream} may not actually be a {@link Packet} but may
+     * just as well be timer based and as such, there is no {@link Packet}
+     * supplied along with the {@link #endStream(Stream)} method.
      * 
      * @param stream
      *            the {@link Stream} that just ended.

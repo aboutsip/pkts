@@ -70,7 +70,7 @@ public final class DefaultStreamHandler implements StreamHandler {
     public void addStreamListener(final StreamListener<? extends Packet> listener) {
 
         try {
-            final Method method = listener.getClass().getMethod("startStream", Stream.class);
+            final Method method = listener.getClass().getMethod("endStream", Stream.class);
             final ParameterizedType parameterizedType = (ParameterizedType) method.getGenericParameterTypes()[0];
             final Type[] parameterArgTypes = parameterizedType.getActualTypeArguments();
 

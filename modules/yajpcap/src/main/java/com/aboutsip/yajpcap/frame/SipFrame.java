@@ -106,9 +106,9 @@ public final class SipFrame extends AbstractFrame implements Layer7Frame {
         final TransportPacket pkt = this.parentFrame.parse();
         final SipInitialLine initialLine = SipInitialLine.parse(this.initialLine);
         if (initialLine.isRequestLine()) {
-            return new SipRequestImpl(pkt, (SipRequestLine) initialLine, this.headers, getPayload());
+            return new SipRequestImpl(pkt, (SipRequestLine) initialLine, this.headers, getPayload(), this);
         }
-        return new SipResponseImpl(pkt, (SipResponseLine) initialLine, this.headers, getPayload());
+        return new SipResponseImpl(pkt, (SipResponseLine) initialLine, this.headers, getPayload(), this);
     }
 
     /**

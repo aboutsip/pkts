@@ -79,7 +79,6 @@ public class PcapTest extends YajTestBase {
         assertThat(calculator.bye, is(5));
         assertThat(calculator.ack, is(0)); // i guess un-necessary check...
         assertThat(calculator.cancel, is(0)); // i guess un-necessary check...
-
     }
 
     private static class MethodCalculator implements FrameHandler {

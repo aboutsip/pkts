@@ -27,4 +27,11 @@ public interface Address {
      */
     URI getURI() throws SipParseException;
 
+    /**
+     * Get the {@link Address} as a raw buffer.
+     * 
+     * @return
+     */
+    Buffer toBuffer();
+
 }

@@ -2,6 +2,7 @@ package com.aboutsip.yajpcap.packet.sip;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.packet.impl.ApplicationPacket;
+import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
 import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 
@@ -56,7 +57,7 @@ public interface SipMessage extends ApplicationPacket {
      * @return the from header as a buffer
      * @throws SipParseException TODO
      */
-    SipHeader getFromHeader() throws SipParseException;
+    FromHeader getFromHeader() throws SipParseException;
 
     /**
      * Convenience method for fetching the to-header

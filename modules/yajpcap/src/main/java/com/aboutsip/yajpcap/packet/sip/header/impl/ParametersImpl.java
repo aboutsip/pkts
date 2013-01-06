@@ -95,4 +95,14 @@ public abstract class ParametersImpl extends SipHeaderImpl implements Parameters
         return getParameter(Buffers.wrap(name));
     }
 
+    /**
+     * Will only return the parameters. Sub-classes will have to build up the
+     * rest of the buffer {@inheritDoc}
+     */
+    @Override
+    public Buffer getValue() {
+        // TODO: need to mark things as dirty etc in case things have been changed
+        return this.originalParams;
+    }
+
 }
