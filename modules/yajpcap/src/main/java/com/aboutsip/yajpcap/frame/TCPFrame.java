@@ -189,4 +189,9 @@ public final class TCPFrame extends AbstractFrame implements Layer4Frame {
         return null;
     }
 
+    @Override
+    public long getArrivalTime() {
+        return this.parentFrame.getArrivalTime();
+    }
+
 }

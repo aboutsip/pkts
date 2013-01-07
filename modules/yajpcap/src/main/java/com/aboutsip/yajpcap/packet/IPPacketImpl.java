@@ -3,6 +3,9 @@
  */
 package com.aboutsip.yajpcap.packet;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 import com.aboutsip.buffer.Buffer;
 
 /**
@@ -107,6 +110,11 @@ public final class IPPacketImpl implements IPPacket {
     @Override
     public String getDestinationMacAddress() {
         return this.parent.getDestinationMacAddress();
+    }
+
+    @Override
+    public void write(final OutputStream out) throws IOException {
+        throw new RuntimeException("Sorry, not implemented just yet.");
     }
 
 }

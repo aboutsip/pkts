@@ -52,7 +52,6 @@ public class AddressImplTest {
         assertAddressToStringIsTheSame("\"alice\" <sip:alice@whatever.com>");
         assertAddressToStringIsTheSame("\"alice smith\" <sip:alice@whatever.com>");
         assertAddressToStringIsTheSame("\"alice smith\" <sip:alice@whatever.com;foo=boo>");
-
     }
 
     private void assertAddressToStringIsTheSame(final String address) throws Exception {

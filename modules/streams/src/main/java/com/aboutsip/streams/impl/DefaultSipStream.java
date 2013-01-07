@@ -3,6 +3,8 @@
  */
 package com.aboutsip.streams.impl;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -173,6 +175,13 @@ public final class DefaultSipStream implements SipStream {
         // as well as the ability to detect error responses to sub-sequent INVITE
         // requests etc.
         return message.isBye();
+    }
+
+    @Override
+    public void write(final OutputStream out) throws IOException {
+        for (final SipMessage msg : this.messages) {
+            msg.write(out);
+        }
     }
 
 }

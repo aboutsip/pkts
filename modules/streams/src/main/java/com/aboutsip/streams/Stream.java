@@ -3,8 +3,12 @@
  */
 package com.aboutsip.streams;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Iterator;
 
+import com.aboutsip.yajpcap.Pcap;
+import com.aboutsip.yajpcap.PcapOutputStream;
 import com.aboutsip.yajpcap.packet.Packet;
 
 /**
@@ -44,5 +48,16 @@ public interface Stream<T extends Packet> {
      * @return
      */
     StreamId getStreamIdentifier();
+
+    /**
+     * Write this {@link Stream} to the specified {@link OutputStream}. Also see
+     * {@link Pcap#createOutputStream(OutputStream)}.
+     * 
+     * @param out
+     *            the {@link OutputStream}, which typically is a
+     *            {@link PcapOutputStream}.
+     * @throws IOException
+     */
+    void write(OutputStream out) throws IOException;
 
 }

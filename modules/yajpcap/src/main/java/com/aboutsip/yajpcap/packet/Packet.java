@@ -3,6 +3,8 @@
  */
 package com.aboutsip.yajpcap.packet;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 
 
@@ -57,5 +59,7 @@ public interface Packet {
      * "assume that everything is ok until things blow up and then deal with it"
      */
     void verify();
+
+    void write(OutputStream out) throws IOException;
 
 }

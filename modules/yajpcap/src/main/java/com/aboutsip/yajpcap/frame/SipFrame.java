@@ -91,7 +91,7 @@ public final class SipFrame extends AbstractFrame implements Layer7Frame {
             // throw exception, don't know how to frame this protocol
         }
 
-        return framer.frame(null, payload);
+        return framer.frame(this, payload);
     }
 
     /**
@@ -200,6 +200,11 @@ public final class SipFrame extends AbstractFrame implements Layer7Frame {
         }
         headers.resetReaderIndex();
         return contentType;
+    }
+
+    @Override
+    public long getArrivalTime() {
+        return this.parentFrame.getArrivalTime();
     }
 
 }

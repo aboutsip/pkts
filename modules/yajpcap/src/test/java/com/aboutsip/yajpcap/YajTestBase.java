@@ -2,7 +2,9 @@ package com.aboutsip.yajpcap;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteOrder;
 
@@ -12,10 +14,16 @@ import org.junit.BeforeClass;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
+import com.aboutsip.yajpcap.frame.Frame;
 import com.aboutsip.yajpcap.frame.PcapFrame;
 import com.aboutsip.yajpcap.frame.PcapGlobalHeader;
+import com.aboutsip.yajpcap.frame.SipFrame;
 import com.aboutsip.yajpcap.framer.FramerManager;
 import com.aboutsip.yajpcap.framer.PcapFramer;
+import com.aboutsip.yajpcap.packet.Packet;
+import com.aboutsip.yajpcap.packet.PacketParseException;
+import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
  * Test base for all tests regarding framing and parsing
@@ -127,6 +135,90 @@ public class YajTestBase {
 
     @After
     public void tearDown() throws Exception {
+    }
+
+    /**
+     * Helper class that simply just counts the number of SIP requests.
+     * 
+     */
+    public static class MethodCalculator implements FrameHandler {
+        public int total;
+        public int invite;
+        public int bye;
+        public int ack;
+        public int cancel;
+
+        @Override
+        public void nextFrame(final Frame frame) {
+            try {
+                final SipFrame sipFrame = (SipFrame) frame.getFrame(Protocol.SIP);
+                final SipMessage msg = sipFrame.parse();
+                ++this.total;
+                if (msg.isRequest()) {
+                    if (msg.isInvite()) {
+                        ++this.invite;
+                    } else if (msg.isBye()) {
+                        ++this.bye;
+                    } else if (msg.isAck()) {
+                        ++this.ack;
+                    } else if (msg.isCancel()) {
+                        ++this.cancel;
+                    }
+                }
+            } catch (final IOException e) {
+                fail("Got an IOException in my test " + e.getMessage());
+            } catch (final PacketParseException e) {
+                fail("Got a PacketParseException in my test " + e.getMessage());
+            }
+
+        }
+
+    }
+
+    /**
+     *  Helper class that will write either {@link Frame}s or {@link Packet} to the output stream. It will ONLY
+     *  write INVITE and BYE messages.
+     */
+    public static class TestWriteStreamHandler implements FrameHandler {
+
+        private final PcapOutputStream out;
+        private final int count = 0;
+        private final boolean writePackets;
+
+        /**
+         * 
+         * @param out
+         *            the output stream to write to
+         * @param writePackets
+         *            flag indicating whether we should be writing the
+         *            {@link Packet}s or the {@link Frame}s
+         */
+        public TestWriteStreamHandler(final PcapOutputStream out, final boolean writePackets) {
+            this.out = out;
+            this.writePackets = writePackets;
+        }
+
+        @Override
+        public void nextFrame(final Frame frame) {
+            try {
+                // only write out INVITE and BYE requests
+                final SipFrame sipFrame = (SipFrame) frame.getFrame(Protocol.SIP);
+                final SipMessage msg = sipFrame.parse();
+                final String method = msg.getMethod().toString();
+                final boolean isInviteOrBye = "INVITE".equals(method) || "BYE".equals(method);
+                if (msg.isRequest() && isInviteOrBye) {
+                    if (this.writePackets) {
+                        this.out.write(msg);
+                    } else {
+                        this.out.write(sipFrame);
+                    }
+                }
+            } catch (final IOException e) {
+                fail("Got an IOException in my test " + e.getMessage());
+            } catch (final PacketParseException e) {
+                fail("Got a PacketParseException in my test " + e.getMessage());
+            }
+        }
     }
 
 

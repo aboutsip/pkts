@@ -3,6 +3,9 @@
  */
 package com.aboutsip.yajpcap.packet;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 
 /**
  * @author jonas@jonasborjesson.com
@@ -60,6 +63,11 @@ public final class MACPacketImpl implements MACPacket {
     @Override
     public long getArrivalTime() {
         return this.parentPacket.getArrivalTime();
+    }
+
+    @Override
+    public void write(final OutputStream out) throws IOException {
+        throw new RuntimeException("Sorry, not implemented just yet.");
     }
 
 }

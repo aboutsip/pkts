@@ -186,4 +186,9 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
         // this.type.write(out);
     }
 
+    @Override
+    public long getArrivalTime() {
+        return this.parentFrame.getArrivalTime();
+    }
+
 }

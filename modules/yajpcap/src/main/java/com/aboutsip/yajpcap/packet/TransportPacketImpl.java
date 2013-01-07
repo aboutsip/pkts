@@ -3,6 +3,9 @@
  */
 package com.aboutsip.yajpcap.packet;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 
 /**
  * @author jonas@jonasborjesson.com
@@ -85,6 +88,11 @@ public final class TransportPacketImpl implements TransportPacket {
     @Override
     public String getDestinationMacAddress() {
         return this.parent.getDestinationMacAddress();
+    }
+
+    @Override
+    public void write(final OutputStream out) throws IOException {
+        throw new RuntimeException("Sorry, not implemented just yet.");
     }
 
 }

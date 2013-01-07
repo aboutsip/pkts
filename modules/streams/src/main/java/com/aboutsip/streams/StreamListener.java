@@ -3,6 +3,7 @@
  */
 package com.aboutsip.streams;
 
+import com.aboutsip.yajpcap.PcapOutputStream;
 import com.aboutsip.yajpcap.packet.Packet;
 
 /**
@@ -52,6 +53,10 @@ public interface StreamListener<T extends Packet> {
      * kills the {@link Stream} may not actually be a {@link Packet} but may
      * just as well be timer based and as such, there is no {@link Packet}
      * supplied along with the {@link #endStream(Stream)} method.
+     * 
+     * Note, when this method is called, it is guaranteed that there will be no
+     * more {@link Packet}s for this {@link Stream} so it is safe to e.g. write
+     * this {@link Stream} to file e.g. by using the {@link PcapOutputStream}.
      * 
      * @param stream
      *            the {@link Stream} that just ended.

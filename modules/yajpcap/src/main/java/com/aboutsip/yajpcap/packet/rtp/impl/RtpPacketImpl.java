@@ -4,6 +4,7 @@
 package com.aboutsip.yajpcap.packet.rtp.impl;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.packet.TransportPacket;
@@ -199,6 +200,11 @@ public final class RtpPacketImpl implements RtpPacket {
         System.arraycopy(this.headers.getArray(), 0, dump, 0, headerLength);
         System.arraycopy(this.payload.getArray(), 0, dump, headerLength, payloadLength);
         return dump;
+    }
+
+    @Override
+    public void write(final OutputStream out) throws IOException {
+        throw new RuntimeException("Sorry, not implemented just yet.");
     }
 
 }

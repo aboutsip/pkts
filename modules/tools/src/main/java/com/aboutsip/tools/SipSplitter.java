@@ -4,13 +4,20 @@
 package com.aboutsip.tools;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
+import com.aboutsip.streams.SipStream;
 import com.aboutsip.streams.Stream;
 import com.aboutsip.streams.StreamHandler;
+import com.aboutsip.streams.StreamId;
 import com.aboutsip.streams.StreamListener;
 import com.aboutsip.streams.impl.DefaultStreamHandler;
 import com.aboutsip.yajpcap.Pcap;
+import com.aboutsip.yajpcap.PcapOutputStream;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
 
 /**
@@ -23,6 +30,8 @@ import com.aboutsip.yajpcap.packet.sip.SipMessage;
  */
 public final class SipSplitter implements StreamListener<SipMessage> {
 
+    private final List<SipStream> streams = new ArrayList<SipStream>();
+
     public int count;
 
     public int endCount;
@@ -34,14 +43,28 @@ public final class SipSplitter implements StreamListener<SipMessage> {
         // TODO Auto-generated constructor stub
     }
 
+    public void saveAll(final Pcap pcap, final String directory) throws Exception {
+        final String dir = (directory == null) || directory.isEmpty() ? "." : directory;
+        for (final SipStream stream : this.streams) {
+            final StreamId id = stream.getStreamIdentifier();
+            final PcapOutputStream out = pcap.createOutputStream(new FileOutputStream(dir + "/" + id + ".pcap"));
+            try {
+                stream.write(out);
+            } catch (final IOException e) {
+                e.printStackTrace();
+            } finally {
+                out.flush();
+                out.close();
+            }
+        }
+    }
+
     public static void main(final String[] args) throws Exception {
         final SipSplitter splitter = new SipSplitter();
 
-        final String dir = "/home/jonas/development/private/aboutsip/twilio_pcaps/openser";
-        final String filename = dir + "/openser-udp-5060_01874_20121112135549.pcap";
+        final String filename = "/home/jonas/development/private/aboutsip/modules/yajpcap/src/test/resources/com/aboutsip/yajpcap/sipp.pcap";
 
         final long start = System.currentTimeMillis();
-        // final String filename = "/home/jonas/development/private/aboutsip/modules/yajpcap/src/test/resources/com/aboutsip/yajpcap/sipp.pcap";
         final InputStream stream = new FileInputStream(filename);
         final Pcap pcap = Pcap.openStream(stream);
         final StreamHandler streamHandler = new DefaultStreamHandler();
@@ -52,6 +75,7 @@ public final class SipSplitter implements StreamListener<SipMessage> {
         System.out.println("Processing time(s): " + ((stop - start) / 1000));
         System.out.println("Start: " + splitter.count);
         System.out.println("End  : " + splitter.endCount);
+        splitter.saveAll(pcap, null);
     }
 
     @Override
@@ -67,6 +91,7 @@ public final class SipSplitter implements StreamListener<SipMessage> {
     @Override
     public void endStream(final Stream<SipMessage> stream) {
         ++this.endCount;
+        this.streams.add((SipStream) stream);
     }
 
 }

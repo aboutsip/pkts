@@ -147,4 +147,9 @@ public final class IPv4Frame extends AbstractFrame implements IPFrame {
         // out.write(getPayload().getArray());
     }
 
+    @Override
+    public long getArrivalTime() {
+        return this.parentFrame.getArrivalTime();
+    }
+
 }

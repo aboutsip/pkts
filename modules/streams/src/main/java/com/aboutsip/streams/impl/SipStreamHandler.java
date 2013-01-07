@@ -44,6 +44,7 @@ public class SipStreamHandler {
             DefaultSipStream stream = this.sipStreams.get(id);
             if (stream == null) {
                 stream = new DefaultSipStream(id);
+                stream.addMessage(msg);
                 this.sipListener.startStream(stream, msg);
                 this.sipStreams.put(id, stream);
             } else {

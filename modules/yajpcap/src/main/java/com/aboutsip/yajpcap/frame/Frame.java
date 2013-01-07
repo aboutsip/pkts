@@ -90,6 +90,8 @@ public interface Frame extends Externalizable {
      */
     Buffer getPayload();
 
+    long getArrivalTime();
+
     /**
      * A frame has not fully parsed the data but only enough so it can find the
      * boundary between the headers and its payload. Each type of frame can be

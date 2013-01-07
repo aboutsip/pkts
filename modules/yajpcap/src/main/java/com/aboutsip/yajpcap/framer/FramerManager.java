@@ -4,10 +4,15 @@
 package com.aboutsip.yajpcap.framer;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.yajpcap.Clock;
+import com.aboutsip.yajpcap.Pcap;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
@@ -20,6 +25,12 @@ public final class FramerManager {
     private static final FramerManager instance = new FramerManager();
 
     private final Map<Protocol, Framer<?>> framers = new HashMap<Protocol, Framer<?>>();
+
+    /**
+     * The current time in the system, which is driven by
+     * {@link Pcap#loop(com.aboutsip.yajpcap.FrameHandler)}.
+     */
+    private final PcapClock clock = new PcapClock();
 
     static {
         // should be moved somewhere else but for now...
@@ -39,6 +50,19 @@ public final class FramerManager {
 
     public Framer<?> getFramer(final Protocol p) {
         return this.framers.get(p);
+    }
+
+    /**
+     * Move the {@link Clock} to the specified time.
+     * 
+     * @param time
+     */
+    public void tick(final long time) {
+        this.clock.tick(time);
+    }
+
+    public Clock getClock() {
+        return this.clock;
     }
 
     /**
@@ -92,6 +116,28 @@ public final class FramerManager {
 
         // unknown data type
         return null;
+    }
+
+    private static class PcapClock implements Clock {
+
+        private final AtomicLong currentTime = new AtomicLong();
+
+        public PcapClock() {
+            // left empty intentionally
+        }
+
+        @Override
+        public long currentTimeMillis() {
+            return this.currentTime.get();
+        }
+
+        public void tick(final long time) {
+            final SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss.SSS");
+            final Date date = new Date(time / 1000);
+            System.out.println("Time is: " + formatter.format(date));
+            this.currentTime.set(time);
+        }
+
     }
 
 }

@@ -4,6 +4,7 @@
 package com.aboutsip.yajpcap.packet.sip.impl;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -309,4 +310,11 @@ public abstract class SipMessageImpl implements SipMessage {
         return this.parent.getDestinationMacAddress();
     }
 
+    @Override
+    public void write(final OutputStream out) throws IOException {
+        // TODO: this only works when the message has not been modified.
+        // since you cannot modify a SipMessage right now anyway (well, not
+        // entirely true) we'll stick with this for now.
+        this.sipFrame.write(out);
+    }
 }

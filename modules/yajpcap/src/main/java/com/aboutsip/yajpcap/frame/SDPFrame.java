@@ -18,14 +18,18 @@ import com.aboutsip.yajpcap.protocol.Protocol;
  */
 public final class SDPFrame extends AbstractFrame implements Layer7Frame {
 
+    private final Frame parentFrame;
+
     private final Buffer sdp;
 
     /**
      * @param framerManager
      * @param sdp the raw SDP
      */
-    public SDPFrame(final FramerManager framerManager, final Buffer sdp) {
+    public SDPFrame(final FramerManager framerManager, final Frame parentFrame, final Buffer sdp) {
         super(framerManager, Protocol.SDP, null);
+        assert parentFrame != null;
+        this.parentFrame = parentFrame;
         this.sdp = sdp;
     }
 
@@ -70,6 +74,11 @@ public final class SDPFrame extends AbstractFrame implements Layer7Frame {
     @Override
     public void write(final OutputStream out) {
         throw new RuntimeException("Not yet implemented");
+    }
+
+    @Override
+    public long getArrivalTime() {
+        return this.parentFrame.getArrivalTime();
     }
 
 }

@@ -68,6 +68,14 @@ public final class PcapFrame extends AbstractFrame implements Layer1Frame {
         return new PCapPacketImpl(this.header);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public long getArrivalTime() {
+        return (this.header.getTimeStampSeconds() * 1000000) + this.header.getTimeStampMicroSeconds();
+    }
+
 
     /**
      * {@inheritDoc}

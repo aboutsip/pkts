@@ -100,4 +100,9 @@ public final class SllFrame extends AbstractFrame implements Layer2Frame {
             throw new RuntimeException("Uknown ether type");
         }
     }
+
+    @Override
+    public long getArrivalTime() {
+        return this.parentFrame.getArrivalTime();
+    }
 }

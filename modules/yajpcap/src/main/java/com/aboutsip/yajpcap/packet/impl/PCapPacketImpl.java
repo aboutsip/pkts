@@ -3,6 +3,8 @@
  */
 package com.aboutsip.yajpcap.packet.impl;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -63,6 +65,11 @@ public final class PCapPacketImpl implements PCapPacket {
         sb.append(" Capture Length: ").append(getCapturedLength());
 
         return sb.toString();
+    }
+
+    @Override
+    public void write(final OutputStream out) throws IOException {
+        throw new RuntimeException("Sorry, not implemented just yet.");
     }
 
 

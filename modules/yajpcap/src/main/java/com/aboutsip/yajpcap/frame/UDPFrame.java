@@ -104,4 +104,9 @@ public final class UDPFrame extends AbstractFrame implements Layer4Frame {
         return new TransportPacketImpl(packet, true, getSourcePort(), getDestinationPort());
     }
 
+    @Override
+    public long getArrivalTime() {
+        return this.parentFrame.getArrivalTime();
+    }
+
 }

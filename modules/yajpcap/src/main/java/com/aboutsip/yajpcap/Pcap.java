@@ -21,21 +21,24 @@ public class Pcap {
 
     private final PcapGlobalHeader header;
     private final Buffer buffer;
+    private final FramerManager framerManager;
 
     private Pcap(final PcapGlobalHeader header, final Buffer buffer) {
         assert header != null;
         assert buffer != null;
         this.header = header;
         this.buffer = buffer;
+        this.framerManager = FramerManager.getInstance();
     }
 
     public void loop(final FrameHandler callback) throws IOException {
-        final FramerManager framerManager = FramerManager.getInstance();
         final ByteOrder byteOrder = this.header.getByteOrder();
-        final PcapFramer framer = new PcapFramer(byteOrder, framerManager);
+        final PcapFramer framer = new PcapFramer(byteOrder, this.framerManager);
 
         Frame frame = null;
         while ((frame = framer.frame(null, this.buffer)) != null) {
+            final long time = frame.getArrivalTime();
+            this.framerManager.tick(time);
             callback.nextFrame(frame);
         }
 

@@ -71,4 +71,9 @@ public class RtpFrame extends AbstractFrame implements Layer7Frame {
         this.parentFrame.write(out);
     }
 
+    @Override
+    public long getArrivalTime() {
+        return this.parentFrame.getArrivalTime();
+    }
+
 }

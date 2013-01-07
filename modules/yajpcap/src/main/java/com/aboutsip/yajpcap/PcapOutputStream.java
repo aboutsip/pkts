@@ -80,8 +80,7 @@ public class PcapOutputStream extends OutputStream {
         if (packet == null) {
             return;
         }
-
-        throw new RuntimeException("Not implemented just yet");
+        packet.write(this);
     }
 
     /**
