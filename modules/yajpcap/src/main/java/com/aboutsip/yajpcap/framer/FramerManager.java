@@ -132,9 +132,9 @@ public final class FramerManager {
         }
 
         public void tick(final long time) {
-            final SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss.SSS");
-            final Date date = new Date(time / 1000);
-            System.out.println("Time is: " + formatter.format(date));
+            // final SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss.SSS");
+            // final Date date = new Date(time / 1000);
+            // System.out.println("Time is: " + formatter.format(date));
             this.currentTime.set(time);
         }
 
