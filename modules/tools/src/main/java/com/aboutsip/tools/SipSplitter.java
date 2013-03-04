@@ -62,8 +62,20 @@ public final class SipSplitter implements StreamListener<SipMessage> {
     public static void main(final String[] args) throws Exception {
         final SipSplitter splitter = new SipSplitter();
 
-        final String filename = "/home/jonas/development/private/aboutsip/modules/yajpcap/src/test/resources/com/aboutsip/yajpcap/sipp.pcap";
+        // final String filename = "/home/jonas/development/private/aboutsip/modules/yajpcap/src/test/resources/com/aboutsip/yajpcap/sipp.pcap";
 
+        // according to wire shark:
+        // Total calls: 8296
+        // Start packets: 0            not sure what this means
+        // Completed calls: 10472
+        // Rejected calls: 1230
+        //
+        // According to me:
+        // Start: 10617
+        // End  : 5529
+        // also, as it turns out, there are a lot of fragmented IP packets
+        // due to really big sip messages
+        final String filename = "/home/jonas/development/private/aboutsip/twilio_pcaps/openser/openser-udp-5060_01873_20121112134549.pcap";
 
         final long start = System.currentTimeMillis();
         final InputStream stream = new FileInputStream(filename);

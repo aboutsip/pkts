@@ -47,6 +47,7 @@ public class BasicSipStream implements SipStream {
      */
     private final List<SipMessage> messages;
 
+
     /**
      * The index into the list of message where we can find the initial message.
      * Typically, this would be the first message but does not necessarily have

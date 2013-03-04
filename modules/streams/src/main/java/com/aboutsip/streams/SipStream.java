@@ -84,16 +84,24 @@ public interface SipStream extends Stream<SipMessage> {
          * call state is currently in the initial phase
          */
         INITIAL,
+
         /**
          * If we receive a 100 Trying response, the call-state will transition
          * over to the trying state.
          */
         TRYING,
+
         /**
          * If we receive a 180/183, the state will progress to the ringing
          * state.
          */
         RINGING,
+
+        /**
+         * The INVITE request was redirected (3xx responses)
+         */
+        REDIRECT,
+
         /**
          * If a 2xx response is generated for the INVITE request, then the
          * call-state progresses to the "in call" state. Note, technically we
@@ -110,10 +118,12 @@ public interface SipStream extends Stream<SipMessage> {
          * closing a little too fast.
          */
         IN_CALL,
+
         /**
          * If the call was cancelled you will end up in this state.
          */
         CANCELLED,
+
         /**
          * Completed always means that the call was first successfully
          * established and then completed at some point. Note, there are a lot
@@ -121,26 +131,35 @@ public interface SipStream extends Stream<SipMessage> {
          * this is still marked as completed.
          */
         COMPLETED,
+
         /**
-         * The INVITE request was rejected for some reason.
+         * The INVITE request was rejected (4xx and 6xx responses) for some
+         * reason.
          */
         REJECTED,
+
         /**
-         * The call failed, typically this can happen during the initial 3-way
-         * handshake where the 200 OK doesn't make it back to the UAC or the UAS
-         * doesn't get the ACK so both of them keeps re-transmitting (depending
-         * where the error is of course. Typically, the 200 OK will make it
-         * through but the ACK will no so you will see a lot of re-transmission
-         * of the 200 as well as the ACK but the ACK will not reach the UAS)
+         * The call failed.
+         * 
+         * The most typical scenario is receiving 5xx responses but if we e.g.
+         * get a 408, 481 we will also mark the call as failed. Only if we get
+         * these on the initial INVITE though.
+         * 
+         * 
+         * Also, this can happen during the initial 3-way handshake where the
+         * 200 OK doesn't make it back to the UAC or the UAS doesn't get the ACK
+         * so both of them keeps re-transmitting (depending where the error is
+         * of course. Typically, the 200 OK will make it through but the ACK
+         * will no so you will see a lot of re-transmission of the 200 as well
+         * as the ACK but the ACK will not reach the UAS)
          */
         FAILED,
+
         /**
          * Sorry, couldn't figure it out! Examine the call flow and let me know
          * which state you believe the call should be in.
          */
         UNKNOWN;
-
-
     }
 
 }
