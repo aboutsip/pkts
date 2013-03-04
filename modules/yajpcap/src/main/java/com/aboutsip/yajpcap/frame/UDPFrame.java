@@ -15,6 +15,7 @@ import com.aboutsip.yajpcap.packet.PacketParseException;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.TransportPacketImpl;
 import com.aboutsip.yajpcap.protocol.Protocol;
+import com.aboutsip.yajpcap.protocol.Protocol.Layer;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -63,7 +64,7 @@ public final class UDPFrame extends AbstractFrame implements Layer4Frame {
             return null;
         }
 
-        final Framer framer = framerManager.getFramer(payload);
+        final Framer framer = framerManager.getFramer(Layer.LAYER_7, payload);
         if (framer != null) {
             try {
                 return framer.frame(this, payload);

@@ -8,10 +8,17 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.aboutsip.streams.FragmentListener;
 import com.aboutsip.streams.Stream;
 import com.aboutsip.streams.StreamHandler;
 import com.aboutsip.streams.StreamListener;
 import com.aboutsip.yajpcap.frame.Frame;
+import com.aboutsip.yajpcap.frame.IPFrame;
+import com.aboutsip.yajpcap.frame.IPv4Frame;
+import com.aboutsip.yajpcap.framer.FramerManager;
 import com.aboutsip.yajpcap.packet.Packet;
 import com.aboutsip.yajpcap.packet.PacketParseException;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
@@ -27,22 +34,51 @@ import com.aboutsip.yajpcap.protocol.Protocol;
  */
 public final class DefaultStreamHandler implements StreamHandler {
 
+    /**
+     * Our logger.
+     */
+    private final static Logger logger = LoggerFactory.getLogger(DefaultStreamHandler.class);
+
+    /**
+     * The {@link FramerManager}
+     */
+    private final FramerManager framerManager;
+
+    /**
+     * The handler that deals with SIP.
+     */
     private SipStreamHandler sipStreamHandler;
+
+    /**
+     * If any IP fragments are detected, then we will consule this listener.
+     */
+    private FragmentListener fragmentListener;
 
     /**
      * 
      */
     public DefaultStreamHandler() {
-        // TODO Auto-generated constructor stub
+        // should really be injected.
+        this.framerManager = FramerManager.getInstance();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void nextFrame(final Frame frame) {
+    public void nextFrame(Frame frame) {
 
         try {
+            if (frame.hasProtocol(Protocol.IPv4)) {
+                final IPv4Frame ipv4Frame = (IPv4Frame) frame.getFrame(Protocol.IPv4);
+                if (ipv4Frame.isFragmented()) {
+                    frame = handleFragmentation(ipv4Frame);
+                    if (frame == null) {
+                        return;
+                    }
+                }
+            }
+
             if ((this.sipStreamHandler != null) && frame.hasProtocol(Protocol.SIP)) {
                 this.sipStreamHandler.processFrame(frame);
             } else if (frame.hasProtocol(Protocol.RTP)) {
@@ -79,7 +115,7 @@ public final class DefaultStreamHandler implements StreamHandler {
             final Class parameterArgClass = (Class) parameterArgType;
             if (parameterArgClass.equals(SipMessage.class)) {
                 if (this.sipStreamHandler == null) {
-                    this.sipStreamHandler = new SipStreamHandler();
+                    this.sipStreamHandler = new SipStreamHandler(this.framerManager);
                 }
                 this.sipStreamHandler.addListener((StreamListener<SipMessage>) listener);
             }
@@ -96,6 +132,34 @@ public final class DefaultStreamHandler implements StreamHandler {
             throw new IllegalArgumentException("The supplied listener has not been parameterized");
         }
 
+    }
+
+    /**
+     * Helper method to deal with the {@link FragmentListener} since it
+     * technically can throw exceptions and stuff so we just want to catch all
+     * and log and move on.
+     * 
+     * @param frame
+     * @return
+     */
+    private Frame handleFragmentation(final IPFrame frame) {
+        if (this.fragmentListener == null) {
+            return null;
+        }
+        try {
+            return this.fragmentListener.handleFragment(frame);
+        } catch (final Throwable t) {
+            logger.warn("Exception thrown by FragmentListener when processing the IP frame", t);
+        }
+        return null;
+    }
+
+    /**
+     * @param listener
+     */
+    @Override
+    public void setFragmentListener(final FragmentListener listener) {
+        this.fragmentListener = listener;
     }
 
 }

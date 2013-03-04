@@ -62,4 +62,85 @@ public interface SipStream extends Stream<SipMessage> {
     @Override
     long getDuration();
 
+    /**
+     * Which {@link CallState} the call is in.
+     * 
+     * NOTE: this only applies to INVITE dialogs.
+     * 
+     * @return the current {@link CallState}.
+     */
+    CallState getCallState();
+
+    /**
+     * Even though SIP can be used for so much more than just establishing
+     * "phone calls" (VoIP) it is commonly used for this very purpose. As such,
+     * it seems useful to provide some kind of "call state" from a phone call
+     * perspective in the same way that wireshark does. Hence, this enum is used
+     * for exactly that and only has a meaning for INVITE dialogs.
+     */
+    enum CallState {
+        /**
+         * We have only received an INVITE request and nothing else. Hence, the
+         * call state is currently in the initial phase
+         */
+        INITIAL,
+        /**
+         * If we receive a 100 Trying response, the call-state will transition
+         * over to the trying state.
+         */
+        TRYING,
+        /**
+         * If we receive a 180/183, the state will progress to the ringing
+         * state.
+         */
+        RINGING,
+        /**
+         * If a 2xx response is generated for the INVITE request, then the
+         * call-state progresses to the "in call" state. Note, technically we
+         * must really wait for the ACK but there are a lof of real-world
+         * clients that will start sending media (RTP) as soon as the 2xx is
+         * sent and from their perspective the call has been established.
+         * 
+         * However, if the 3-way handshake fails the state will progress over to
+         * {@link CallState#FAILED}. Hence, if you examine the states the call
+         * has been and you see a transition from {@link CallState#IN_CALL} to
+         * {@link CallState#FAILED} then you can be 100% sure that there is some
+         * kind of NAT/FW issue going on. Typically, either the UA:s stamped the
+         * wrong information in the Contact-header or there is a firewall
+         * closing a little too fast.
+         */
+        IN_CALL,
+        /**
+         * If the call was cancelled you will end up in this state.
+         */
+        CANCELLED,
+        /**
+         * Completed always means that the call was first successfully
+         * established and then completed at some point. Note, there are a lot
+         * of corner cases where e.g. the BYE wouldn't make it through etc but
+         * this is still marked as completed.
+         */
+        COMPLETED,
+        /**
+         * The INVITE request was rejected for some reason.
+         */
+        REJECTED,
+        /**
+         * The call failed, typically this can happen during the initial 3-way
+         * handshake where the 200 OK doesn't make it back to the UAC or the UAS
+         * doesn't get the ACK so both of them keeps re-transmitting (depending
+         * where the error is of course. Typically, the 200 OK will make it
+         * through but the ACK will no so you will see a lot of re-transmission
+         * of the 200 as well as the ACK but the ACK will not reach the UAS)
+         */
+        FAILED,
+        /**
+         * Sorry, couldn't figure it out! Examine the call flow and let me know
+         * which state you believe the call should be in.
+         */
+        UNKNOWN;
+
+
+    }
+
 }

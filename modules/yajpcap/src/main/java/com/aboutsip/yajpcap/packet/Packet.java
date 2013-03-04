@@ -39,7 +39,7 @@ public interface Packet {
      * Note how an integer devision is performed on the arrival time to
      * "cut off" the microseconds from the time stamp
      * 
-     * @return the arrival time of the packet in milliseconds since the start of
+     * @return the arrival time of the packet in microseconds since the start of
      *         the epoch
      */
     long getArrivalTime();

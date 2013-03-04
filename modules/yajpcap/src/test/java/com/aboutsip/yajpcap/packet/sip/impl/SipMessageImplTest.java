@@ -14,11 +14,11 @@ import com.aboutsip.yajpcap.YajTestBase;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
+import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 
 public class SipMessageImplTest extends YajTestBase {
 
     private SipRequest request;
-    private final int sampleRate = 8000;
 
     @Override
     @Before
@@ -90,6 +90,13 @@ public class SipMessageImplTest extends YajTestBase {
         final SipHeader contentType = this.request.getHeader(Buffers.wrap("Content-Type"));
         assertThat(contentType.getName(), is(Buffers.wrap("Content-Type")));
         assertThat(contentType.getValue(), is(Buffers.wrap("application/sdp")));
+
+        final ContentTypeHeader contentTypeHeader = this.request.getContentTypeHeader();
+        assertThat(contentTypeHeader.getName(), is(Buffers.wrap("Content-Type")));
+        assertThat(contentTypeHeader.getContentType(), is(Buffers.wrap("application")));
+        assertThat(contentTypeHeader.getContentSubType(), is(Buffers.wrap("sdp")));
+        assertThat(contentTypeHeader.isSDP(), is(true));
+        assertThat(contentTypeHeader.getValue(), is(Buffers.wrap("application/sdp")));
     }
 
 }

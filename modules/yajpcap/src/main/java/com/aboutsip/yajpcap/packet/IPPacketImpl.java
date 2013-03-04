@@ -117,4 +117,10 @@ public final class IPPacketImpl implements IPPacket {
         throw new RuntimeException("Sorry, not implemented just yet.");
     }
 
+    @Override
+    public int getTotalLength() {
+        // byte 3 - 4
+        return this.headers.getUnsignedShort(3);
+    }
+
 }

@@ -64,6 +64,7 @@ public final class SipSplitter implements StreamListener<SipMessage> {
 
         final String filename = "/home/jonas/development/private/aboutsip/modules/yajpcap/src/test/resources/com/aboutsip/yajpcap/sipp.pcap";
 
+
         final long start = System.currentTimeMillis();
         final InputStream stream = new FileInputStream(filename);
         final Pcap pcap = Pcap.openStream(stream);
@@ -73,9 +74,10 @@ public final class SipSplitter implements StreamListener<SipMessage> {
         pcap.close();
         final long stop = System.currentTimeMillis();
         System.out.println("Processing time(s): " + ((stop - start) / 1000));
+        // System.out.println("Fragmented pkts: " + ((DefaultStreamHandler) streamHandler).getNoFragmentedPackets());
         System.out.println("Start: " + splitter.count);
         System.out.println("End  : " + splitter.endCount);
-        splitter.saveAll(pcap, null);
+        // splitter.saveAll(pcap, null);
     }
 
     @Override

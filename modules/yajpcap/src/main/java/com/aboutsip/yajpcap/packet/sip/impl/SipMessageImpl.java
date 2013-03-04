@@ -10,12 +10,17 @@ import java.util.Map;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
+import com.aboutsip.sdp.SDPFactory;
+import com.aboutsip.sdp.SdpException;
+import com.aboutsip.sdp.SdpParseException;
 import com.aboutsip.yajpcap.frame.SipFrame;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
+import com.aboutsip.yajpcap.packet.sip.header.impl.ContentTypeHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.FromHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.ToHeaderImpl;
 
@@ -25,6 +30,7 @@ import com.aboutsip.yajpcap.packet.sip.header.impl.ToHeaderImpl;
  */
 public abstract class SipMessageImpl implements SipMessage {
 
+
     public static final Buffer FROM_HEADER = Buffers.wrap("From".getBytes());
 
     public static final Buffer TO_HEADER = Buffers.wrap("To".getBytes());
@@ -32,6 +38,8 @@ public abstract class SipMessageImpl implements SipMessage {
     public static final Buffer Call_ID_HEADER = Buffers.wrap("Call-ID".getBytes());
 
     public static final Buffer CSEQ_HEADER = Buffers.wrap("CSeq".getBytes());
+
+    private final SDPFactory sdpFactory = SDPFactory.getInstance();
 
     private final TransportPacket parent;
 
@@ -161,6 +169,19 @@ public abstract class SipMessageImpl implements SipMessage {
         return from;
     }
 
+    @Override
+    public ContentTypeHeader getContentTypeHeader() throws SipParseException {
+        final SipHeader header = getHeader(ContentTypeHeader.NAME);
+        if (header instanceof ContentTypeHeader) {
+            return (ContentTypeHeader) header;
+        }
+
+        final Buffer buffer = header.getValue();
+        final ContentTypeHeader ct = ContentTypeHeaderImpl.frame(buffer);
+        this.parsedHeaders.put(ct.getName(), ct);
+        return ct;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -276,38 +297,75 @@ public abstract class SipMessageImpl implements SipMessage {
     }
 
     @Override
-    public long getArrivalTime() {
+    public final Object getContent() throws SipParseException {
+        if (!hasContent()) {
+            return null;
+        }
+
+        try {
+            final ContentTypeHeader contentType = getContentTypeHeader();
+            if (contentType == null) {
+                return null;
+            }
+
+            if (contentType.isSDP()) {
+                try {
+                    return this.sdpFactory.parse(this.payload);
+                } catch (final SdpParseException e) {
+                    throw new SipParseException(e.getCharOffset(), e.getMessage(), e);
+                } catch (final SdpException e) {
+                    throw new SipParseException(0, "Unable to parse the content as an SDP", e);
+                }
+            }
+            return this.payload;
+        } catch (final SipParseException e) {
+            throw new SipParseException(e.getErroOffset(), "Unable to process the Content-Type header", e);
+        }
+    }
+
+    @Override
+    public final boolean hasContent() {
+        return (this.payload != null) && this.payload.hasReadableBytes();
+    }
+
+    @Override
+    public final long getArrivalTime() {
         return this.parent.getArrivalTime();
     }
 
     @Override
-    public int getSourcePort() {
+    public final int getSourcePort() {
         return this.parent.getSourcePort();
     }
 
     @Override
-    public int getDestinationPort() {
+    public final int getDestinationPort() {
         return this.parent.getDestinationPort();
     }
 
     @Override
-    public String getSourceIP() {
+    public final String getSourceIP() {
         return this.parent.getSourceIP();
     }
 
     @Override
-    public String getDestinationIP() {
+    public final String getDestinationIP() {
         return this.parent.getDestinationIP();
     }
 
     @Override
-    public String getSourceMacAddress() {
+    public final String getSourceMacAddress() {
         return this.parent.getSourceMacAddress();
     }
 
     @Override
-    public String getDestinationMacAddress() {
+    public final String getDestinationMacAddress() {
         return this.parent.getDestinationMacAddress();
+    }
+
+    @Override
+    public int getTotalLength() {
+        return this.parent.getTotalLength();
     }
 
     @Override

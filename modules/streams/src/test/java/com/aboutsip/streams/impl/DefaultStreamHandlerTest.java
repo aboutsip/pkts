@@ -132,6 +132,7 @@ public class DefaultStreamHandlerTest extends StreamsTestBase {
         public void startStream(final Stream<SipMessage> stream, final SipMessage packet) {
             this.streams.add(stream);
             ++this.startCount;
+            ++this.packetCount;
         }
 
         @Override

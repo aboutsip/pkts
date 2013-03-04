@@ -1,17 +1,24 @@
 package com.aboutsip.yajpcap.protocol;
 
+import com.aboutsip.yajpcap.framer.Framer;
+import com.aboutsip.yajpcap.framer.FramerManager;
 
 /**
  * @author jonas@jonasborjesson.com
  */
 public enum Protocol {
-    ICMP("icmp"), IGMP("igmp"), TCP("tcp"), UDP("udp"), SCTP("sctp"), SIP("sip"), SDP("sdp"), ETHERNET_II("eth"), SLL("sll"), IPv4(
-"ip"), PCAP("pcap"), RTP("rtp"), UNKNOWN("unknown");
+    ICMP("icmp", Layer.LAYER_3), IGMP("igmp", Layer.LAYER_3), TCP("tcp", Layer.LAYER_4), UDP("udp", Layer.LAYER_4), SCTP(
+            "sctp", Layer.LAYER_4), SIP("sip", Layer.LAYER_7), SDP("sdp", Layer.LAYER_7), ETHERNET_II("eth",
+            Layer.LAYER_2), SLL("sll", Layer.LAYER_2), IPv4("ip", Layer.LAYER_3), PCAP("pcap", Layer.LAYER_1), RTP(
+                    "rtp", Layer.LAYER_7), UNKNOWN("unknown", null);
 
     private final String name;
 
-    private Protocol(final String name) {
+    private final Layer layer;
+
+    private Protocol(final String name, final Layer layer) {
         this.name = name;
+        this.layer = layer;
     }
 
     /**
@@ -25,6 +32,18 @@ public enum Protocol {
      */
     public String getName() {
         return this.name;
+    }
+
+    /**
+     * Each {@link Protocol} operates within a particular {@link Layer} in the
+     * ISO stack. This is mainly used by the {@link FramerManager} when trying
+     * to determine which {@link Framer}s it should consult when trying to
+     * figure out which framer to use.
+     * 
+     * @return
+     */
+    public Layer getProtocolLayer() {
+        return this.layer;
     }
 
     /**
@@ -53,16 +72,8 @@ public enum Protocol {
         }
     }
 
-    public static enum Layer2 {
+    public static enum Layer {
+        LAYER_1, LAYER_2, LAYER_3, LAYER_4, LAYER_7;
     }
 
-    public static enum Layer3 {
-    }
-
-    public static enum Layer4 {
-    }
-
-    public static enum Layer7 {
-        SIP, SDP, HTTP, RTP, RTCP, RTMP;
-    }
 }

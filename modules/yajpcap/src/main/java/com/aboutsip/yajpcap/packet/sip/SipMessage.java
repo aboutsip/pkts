@@ -2,6 +2,7 @@ package com.aboutsip.yajpcap.packet.sip;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.packet.impl.ApplicationPacket;
+import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
 import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
@@ -37,6 +38,29 @@ public interface SipMessage extends ApplicationPacket {
     boolean isRequest();
 
     /**
+     * Returns the content (payload) of the {@link SipMessage} as an
+     * {@link Object}. If the {@link ContentTypeHeader} indicates a content type
+     * that is known (such as an sdp) then an attempt to parse the content into
+     * that type is made. If the payload is unknown then a {@link Buffer}
+     * representing the payload will be returned.
+     * 
+     * @return
+     * @throws SipParseException
+     *             in case anything goes wrong when trying to frame the content
+     *             in any way.
+     */
+    Object getContent() throws SipParseException;
+
+    /**
+     * Checks whether this {@link SipMessage} is carrying anything in its
+     * message body.
+     * 
+     * @return true if this {@link SipMessage} has a message body, false
+     *         otherwise.
+     */
+    boolean hasContent();
+
+    /**
      * Get the method of this sip message
      * 
      * @return
@@ -65,6 +89,15 @@ public interface SipMessage extends ApplicationPacket {
      * @return the to header as a buffer
      */
     ToHeader getToHeader() throws SipParseException;
+
+    /**
+     * Get the {@link ContentTypeHeader} for this message. If there is no
+     * Content-Type header in this SIP message then null will be returned.
+     * 
+     * @return the {@link ContentTypeHeader} or null if there is none.
+     * @throws SipParseException
+     */
+    ContentTypeHeader getContentTypeHeader() throws SipParseException;
 
     /**
      * Convenience method for fetching the call-id-header

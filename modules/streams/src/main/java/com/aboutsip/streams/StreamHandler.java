@@ -24,4 +24,15 @@ public interface StreamHandler extends FrameHandler {
      */
     void addStreamListener(StreamListener<? extends Packet> listener) throws IllegalArgumentException;
 
+    /**
+     * Set the {@link FragmentListener}. Note, only one of these listeners is
+     * allowed so if you set a second one the previous listener will be thrown
+     * away.
+     * 
+     * @param listener
+     *            the listener or null if you want to remove a previously set
+     *            listener.
+     */
+    void setFragmentListener(FragmentListener listener);
+
 }
