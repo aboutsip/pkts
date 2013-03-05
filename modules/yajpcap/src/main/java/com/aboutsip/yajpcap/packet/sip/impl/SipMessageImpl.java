@@ -227,8 +227,8 @@ public abstract class SipMessageImpl implements SipMessage {
     public boolean isInitial() throws SipParseException {
 
         // over simplified check
-        final SipHeader to = getToHeader();
-        return true;
+        final ToHeader to = getToHeader();
+        return to.getTag() == null;
     }
 
     /**

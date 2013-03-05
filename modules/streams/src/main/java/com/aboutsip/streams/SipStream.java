@@ -77,11 +77,23 @@ public interface SipStream extends Stream<SipMessage> {
      * it seems useful to provide some kind of "call state" from a phone call
      * perspective in the same way that wireshark does. Hence, this enum is used
      * for exactly that and only has a meaning for INVITE dialogs.
+     * 
+     * Note, RFC 4235 (an invite-initiated dialog event package) describes a
+     * similar state machine and this one here is similar but slightly different
+     * since we want to make it a little more high-level ala wireshark. Perhaps
+     * the wrong decision? Comments???
      */
     enum CallState {
         /**
-         * We have only received an INVITE request and nothing else. Hence, the
-         * call state is currently in the initial phase
+         * Just to have an initial state when everything is created (and since I
+         * decided to call the first "real" state for INITIAL I couldn't use
+         * INIT or similar since it would be confusing)
+         */
+        START,
+
+        /**
+         * We have only seen an INVITE request and nothing else. Hence, the call
+         * state is currently in the initial phase.
          */
         INITIAL,
 

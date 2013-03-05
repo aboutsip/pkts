@@ -108,9 +108,10 @@ public interface SipMessage extends ApplicationPacket {
 
     /**
      * Convenience method for determining whether the method of this message is
-     * an INVITE or not
+     * an INVITE or not. Hence, this is NOT to the method to determine whether
+     * this is a INVITE Request or not!
      * 
-     * @return true if it is an invite, false otherwise.
+     * @return true if the method of this message is a INVITE, false otherwise.
      * @throws SipParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
@@ -119,9 +120,10 @@ public interface SipMessage extends ApplicationPacket {
 
     /**
      * Convenience method for determining whether the method of this message is
-     * a BYE or not
+     * a BYE or not. Hence, this is NOT to the method to determine whether this
+     * is a BYE Request or not!
      * 
-     * @return true if it is a BYE, false otherwise.
+     * @return true if the method of this message is a BYE, false otherwise.
      * @throws SipParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
@@ -130,9 +132,10 @@ public interface SipMessage extends ApplicationPacket {
 
     /**
      * Convenience method for determining whether the method of this message is
-     * an ACK or not
+     * an ACK or not. Hence, this is NOT to the method to determine whether this
+     * is an ACK Request or not!
      * 
-     * @return true if it is an ack, false otherwise.
+     * @return true if the method of this message is a ACK, false otherwise.
      * @throws SipParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
@@ -143,7 +146,7 @@ public interface SipMessage extends ApplicationPacket {
      * Convenience method for determining whether the method of this message is
      * a CANCEL or not
      * 
-     * @return true if it is a cancel, false otherwise.
+     * @return true if the method of this message is a CANCEL, false otherwise.
      * @throws SipParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
