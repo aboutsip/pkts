@@ -3,10 +3,17 @@
  */
 package com.aboutsip.streams.impl;
 
+import static com.aboutsip.streams.SipStream.CallState.CANCELLED;
+import static com.aboutsip.streams.SipStream.CallState.COMPLETED;
+import static com.aboutsip.streams.SipStream.CallState.FAILED;
+import static com.aboutsip.streams.SipStream.CallState.REDIRECT;
+import static com.aboutsip.streams.SipStream.CallState.REJECTED;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
@@ -82,6 +89,10 @@ public final class SimpleCallStateMachine {
             return;
         }
 
+        if (msg.isRequest() && msg.isInitial() && (msg.isMessage() || msg.isInfo() || msg.isOptions())) {
+            return;
+        }
+
         final SipMessage previousMsg = this.messages.isEmpty() ? null : this.messages.last();
         this.messages.add(msg);
         if ((previousMsg != null) && (msg.getArrivalTime() < previousMsg.getArrivalTime())) {
@@ -108,6 +119,8 @@ public final class SimpleCallStateMachine {
             break;
         case IN_CALL:
             handleInConfirmedState(msg);
+            break;
+        case REDIRECT:
             break;
         case REJECTED:
             break;
@@ -184,18 +197,19 @@ public final class SimpleCallStateMachine {
      * 
      * @param msg
      */
-    private void handleInProvisionalState(final SipMessage msg) {
+    private void handleInProvisionalState(final SipMessage msg) throws SipParseException {
         if (msg.isRequest()) {
             // illegal. Need to throw something
             return;
         }
 
+        final boolean isInvite = msg.isInvite();
         final SipResponse response = (SipResponse) msg;
         if (response.is100Trying()) {
             transition(CallState.TRYING, msg);
         } else if (response.isRinging()) {
             transition(CallState.RINGING, msg);
-        } else if (response.isSuccess()) {
+        } else if (response.isSuccess() && isInvite) {
             transition(CallState.IN_CALL, msg);
         } else if (response.isRedirect()) {
             transition(CallState.REDIRECT, msg);
@@ -281,7 +295,9 @@ public final class SimpleCallStateMachine {
             // don't add the same transition twice
             this.callTransitions.add(nextState);
         }
-        logger.info("[{}] {} -> {} Event: {}", this.callId, previousState, this.currentState, msg.getInitialLine());
+        if (logger.isInfoEnabled()) {
+            logger.info("[{}] {} -> {} Event: {}", this.callId, previousState, this.currentState, msg.getInitialLine());
+        }
     }
 
 
@@ -294,7 +310,9 @@ public final class SimpleCallStateMachine {
      * would have gone through etc.
      */
     private void redrive() throws SipParseException {
-        logger.info("Out-of-sequence event detected. Redriving all traffic.");
+        if (logger.isInfoEnabled()) {
+            logger.info("Out-of-sequence event detected. Redriving all traffic.");
+        }
         final NavigableSet<SipMessage> oldMessages = this.messages;
         init();
         while (!oldMessages.isEmpty()) {
@@ -330,6 +348,26 @@ public final class SimpleCallStateMachine {
             return 1;
         }
 
+    }
+
+    /**
+     * Check whether the state of this {@link SimpleCallStateMachine} is
+     * considered to be terminated.
+     * 
+     * @return
+     */
+    public boolean isTerminated() {
+        return (this.currentState == COMPLETED) || (this.currentState == REJECTED) || (this.currentState == CANCELLED)
+                || ((this.currentState == FAILED) || (this.currentState == REDIRECT));
+    }
+
+    /**
+     * Get all the messages that this fsm has seen so far.
+     * 
+     * @return
+     */
+    public Iterator<SipMessage> getMessages() {
+        return this.messages.iterator();
     }
 
     /**

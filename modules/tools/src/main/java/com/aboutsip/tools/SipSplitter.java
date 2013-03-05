@@ -10,7 +10,14 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
+import com.aboutsip.streams.FragmentListener;
+import com.aboutsip.streams.SipStatistics;
 import com.aboutsip.streams.SipStream;
+import com.aboutsip.streams.SipStream.CallState;
 import com.aboutsip.streams.Stream;
 import com.aboutsip.streams.StreamHandler;
 import com.aboutsip.streams.StreamId;
@@ -18,7 +25,9 @@ import com.aboutsip.streams.StreamListener;
 import com.aboutsip.streams.impl.DefaultStreamHandler;
 import com.aboutsip.yajpcap.Pcap;
 import com.aboutsip.yajpcap.PcapOutputStream;
+import com.aboutsip.yajpcap.frame.IPFrame;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 
 /**
  * Simple class that takes one or more pcaps and separates out all SIP dialogs
@@ -28,13 +37,25 @@ import com.aboutsip.yajpcap.packet.sip.SipMessage;
  * 
  * @author jonas@jonasborjesson.com
  */
-public final class SipSplitter implements StreamListener<SipMessage> {
+public final class SipSplitter implements StreamListener<SipMessage>, FragmentListener {
 
     private final List<SipStream> streams = new ArrayList<SipStream>();
 
     public int count;
 
     public int endCount;
+
+    public int fragmented;
+
+    public int rejected;
+
+    public int completed;
+
+    public int failed;
+
+    public int cancelled;
+
+    public int calls;
 
     /**
      * 
@@ -60,35 +81,36 @@ public final class SipSplitter implements StreamListener<SipMessage> {
     }
 
     public static void main(final String[] args) throws Exception {
+
+        BasicConfigurator.configure();
+        Logger.getRootLogger().setLevel(Level.WARN);
         final SipSplitter splitter = new SipSplitter();
 
-        // final String filename = "/home/jonas/development/private/aboutsip/modules/yajpcap/src/test/resources/com/aboutsip/yajpcap/sipp.pcap";
+        final String filename = "/home/jonas/development/private/aboutsip/modules/yajpcap/src/test/resources/com/aboutsip/yajpcap/sipp.pcap";
 
-        // according to wire shark:
-        // Total calls: 8296
-        // Start packets: 0            not sure what this means
-        // Completed calls: 10472
-        // Rejected calls: 1230
-        //
-        // According to me:
-        // Start: 10617
-        // End  : 5529
-        // also, as it turns out, there are a lot of fragmented IP packets
-        // due to really big sip messages
-        final String filename = "/home/jonas/development/private/aboutsip/twilio_pcaps/openser/openser-udp-5060_01873_20121112134549.pcap";
 
         final long start = System.currentTimeMillis();
         final InputStream stream = new FileInputStream(filename);
         final Pcap pcap = Pcap.openStream(stream);
         final StreamHandler streamHandler = new DefaultStreamHandler();
+        streamHandler.setFragmentListener(splitter);
         streamHandler.addStreamListener(splitter);
         pcap.loop(streamHandler);
         pcap.close();
         final long stop = System.currentTimeMillis();
-        System.out.println("Processing time(s): " + ((stop - start) / 1000));
+        System.out.println("Processing time(s): " + ((stop - start) / 1000.0));
         // System.out.println("Fragmented pkts: " + ((DefaultStreamHandler) streamHandler).getNoFragmentedPackets());
+        final SipStatistics stats = streamHandler.getSipStatistics();
         System.out.println("Start: " + splitter.count);
         System.out.println("End  : " + splitter.endCount);
+        System.out.println("Calls  : " + splitter.calls);
+        System.out.println("Fragmented  : " + splitter.fragmented);
+        System.out.println(stats.dumpInfo());
+
+        System.out.println("Rejected  : " + splitter.rejected);
+        System.out.println("Completed  : " + splitter.completed);
+        System.out.println("Failed  : " + splitter.failed);
+        System.out.println("Cancelled  : " + splitter.cancelled);
         // splitter.saveAll(pcap, null);
     }
 
@@ -105,7 +127,32 @@ public final class SipSplitter implements StreamListener<SipMessage> {
     @Override
     public void endStream(final Stream<SipMessage> stream) {
         ++this.endCount;
+        final SipStream.CallState state = ((SipStream) stream).getCallState();
+        // System.out.println(state);
+        if (state == CallState.REJECTED) {
+            ++this.rejected;
+        } else if (state == CallState.COMPLETED) {
+            ++this.completed;
+        } else if (state == CallState.FAILED) {
+            ++this.failed;
+        } else if (state == CallState.CANCELLED) {
+            ++this.cancelled;
+        }
+        final SipMessage msg = stream.getPackets().next();
+        try {
+            if (msg.isRequest() && msg.isInvite()) {
+                ++this.calls;
+            }
+        } catch (final SipParseException e) {
+            e.printStackTrace();
+        }
         this.streams.add((SipStream) stream);
+    }
+
+    @Override
+    public IPFrame handleFragment(final IPFrame ipFrame) {
+        ++this.fragmented;
+        return null;
     }
 
 }

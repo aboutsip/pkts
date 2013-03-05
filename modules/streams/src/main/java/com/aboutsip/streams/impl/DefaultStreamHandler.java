@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.aboutsip.streams.FragmentListener;
+import com.aboutsip.streams.SipStatistics;
 import com.aboutsip.streams.Stream;
 import com.aboutsip.streams.StreamHandler;
 import com.aboutsip.streams.StreamListener;
@@ -131,7 +132,6 @@ public final class DefaultStreamHandler implements StreamHandler {
             // interface, which means that we cannot actually detect streams.
             throw new IllegalArgumentException("The supplied listener has not been parameterized");
         }
-
     }
 
     /**
@@ -160,6 +160,15 @@ public final class DefaultStreamHandler implements StreamHandler {
     @Override
     public void setFragmentListener(final FragmentListener listener) {
         this.fragmentListener = listener;
+    }
+
+    @Override
+    public SipStatistics getSipStatistics() {
+        if (this.sipStreamHandler != null) {
+            return this.sipStreamHandler.getStatistics();
+        }
+
+        return null;
     }
 
 }

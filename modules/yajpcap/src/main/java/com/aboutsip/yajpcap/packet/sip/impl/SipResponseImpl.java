@@ -125,4 +125,9 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
         return getStatus() == 480;
     }
 
+    @Override
+    public SipResponse toResponse() throws ClassCastException {
+        return this;
+    }
+
 }

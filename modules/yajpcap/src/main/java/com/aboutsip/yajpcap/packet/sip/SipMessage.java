@@ -24,6 +24,36 @@ public interface SipMessage extends ApplicationPacket {
     Buffer getInitialLine();
 
     /**
+     * Got tired of casting the {@link SipMessage} into a {@link SipRequest} so
+     * you can use this method instead. Just a short cut for:
+     * 
+     * <code>
+     *     (SipRequest)sipMessage;
+     * </code>
+     * 
+     * @return this but casted into a {@link SipRequest}
+     * @throws ClassCastException
+     *             in case this {@link SipMessage} is actually a
+     *             {@link SipResponse}.
+     */
+    SipRequest toRequest() throws ClassCastException;
+
+    /**
+     * Got tired of casting the {@link SipMessage} into a {@link SipResponse} so
+     * you can use this method instead. Just a short cut for:
+     * 
+     * <code>
+     *     (SipResponse)sipMessage;
+     * </code>
+     * 
+     * @return this but casted into a {@link SipResponse}
+     * @throws ClassCastException
+     *             in case this {@link SipMessage} is actually a
+     *             {@link SipResponse}.
+     */
+    SipResponse toResponse() throws ClassCastException;
+
+    /**
      * Check whether this sip message is a response or not
      * 
      * @return
@@ -141,6 +171,42 @@ public interface SipMessage extends ApplicationPacket {
      *             buffer.
      */
     boolean isAck() throws SipParseException;
+
+    /**
+     * Convenience method for determining whether the method of this message is
+     * a OPTIONS or not. Hence, this is NOT to the method to determine whether
+     * this is an OPTIONS Request or not!
+     * 
+     * @return true if the method of this message is a OPTIONS, false otherwise.
+     * @throws SipParseException
+     *             in case the method could not be parsed out of the underlying
+     *             buffer.
+     */
+    boolean isOptions() throws SipParseException;
+
+    /**
+     * Convenience method for determining whether the method of this message is
+     * a MESSAGE or not. Hence, this is NOT to the method to determine whether
+     * this is an MESSAGE Request or not!
+     * 
+     * @return true if the method of this message is a MESSAGE, false otherwise.
+     * @throws SipParseException
+     *             in case the method could not be parsed out of the underlying
+     *             buffer.
+     */
+    boolean isMessage() throws SipParseException;
+
+    /**
+     * Convenience method for determining whether the method of this message is
+     * a INFO or not. Hence, this is NOT to the method to determine whether this
+     * is an INFO Request or not!
+     * 
+     * @return true if the method of this message is a INFO, false otherwise.
+     * @throws SipParseException
+     *             in case the method could not be parsed out of the underlying
+     *             buffer.
+     */
+    boolean isInfo() throws SipParseException;
 
     /**
      * Convenience method for determining whether the method of this message is

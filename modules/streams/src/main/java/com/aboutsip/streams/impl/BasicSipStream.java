@@ -78,15 +78,23 @@ public class BasicSipStream implements SipStream {
      */
     private final CallState callState = CallState.UNKNOWN;
 
+    private final SimpleCallStateMachine fsm;
+
     /**
      * 
      */
     public BasicSipStream(final StreamId streamIdentifier) {
         this.streamIdentifier = streamIdentifier;
+        this.fsm = new SimpleCallStateMachine(this.streamIdentifier.asString());
         this.messages = new ArrayList<SipMessage>();
     }
 
     public void addMessage(final SipMessage message) throws SipParseException {
+        this.fsm.onEvent(message);
+        if (true) {
+            return;
+        }
+
         this.messages.add(message);
 
         // TOOD: if multiple pcaps are merged then there may
@@ -107,7 +115,7 @@ public class BasicSipStream implements SipStream {
     }
 
     public boolean isTerminated() {
-        return this.isTerminated;
+        return this.fsm.isTerminated();
     }
 
     /**
@@ -115,7 +123,7 @@ public class BasicSipStream implements SipStream {
      */
     @Override
     public Iterator<SipMessage> getPackets() {
-        return this.messages.iterator();
+        return this.fsm.getMessages();
     }
 
     /**
@@ -204,7 +212,7 @@ public class BasicSipStream implements SipStream {
 
     @Override
     public CallState getCallState() {
-        return this.callState;
+        return this.fsm.getCallState();
     }
 
 }

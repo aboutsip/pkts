@@ -17,6 +17,8 @@ import com.aboutsip.yajpcap.frame.SipFrame;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.SipRequest;
+import com.aboutsip.yajpcap.packet.sip.SipResponse;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
@@ -286,6 +288,38 @@ public abstract class SipMessageImpl implements SipMessage {
     }
 
     @Override
+    public boolean isOptions() throws SipParseException {
+        final Buffer m = getMethod();
+        try {
+            return (m.getByte(0) == 'O') && (m.getByte(1) == 'P') && (m.getByte(2) == 'T') && (m.getByte(3) == 'I')
+                    && (m.getByte(4) == 'O') && ((m.getByte(5) == 'N') && (m.getByte(6) == 'S'));
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+        }
+    }
+
+    @Override
+    public boolean isMessage() throws SipParseException {
+        final Buffer m = getMethod();
+        try {
+            return (m.getByte(0) == 'M') && (m.getByte(1) == 'E') && (m.getByte(2) == 'S') && (m.getByte(3) == 'S')
+                    && (m.getByte(4) == 'A') && ((m.getByte(5) == 'G') && (m.getByte(6) == 'E'));
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+        }
+    }
+
+    @Override
+    public boolean isInfo() throws SipParseException {
+        final Buffer m = getMethod();
+        try {
+            return (m.getByte(0) == 'I') && (m.getByte(1) == 'N') && (m.getByte(2) == 'F') && (m.getByte(3) == 'O');
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+        }
+    }
+
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append(this.initialLine.toString()).append("\n");
@@ -366,6 +400,16 @@ public abstract class SipMessageImpl implements SipMessage {
     @Override
     public int getTotalLength() {
         return this.parent.getTotalLength();
+    }
+
+    @Override
+    public SipRequest toRequest() throws ClassCastException {
+        throw new ClassCastException("Unable to cast this SipMessage into a SipRequest");
+    }
+
+    @Override
+    public SipResponse toResponse() throws ClassCastException {
+        throw new ClassCastException("Unable to cast this SipMessage into a SipResponse");
     }
 
     @Override

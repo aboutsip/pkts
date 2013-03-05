@@ -5,6 +5,7 @@ package com.aboutsip.streams;
 
 import com.aboutsip.yajpcap.FrameHandler;
 import com.aboutsip.yajpcap.packet.Packet;
+import com.aboutsip.yajpcap.packet.sip.SipMessage;
 
 /**
  * The {@link StreamHandler} is a higher-level {@link FrameHandler} that
@@ -34,5 +35,16 @@ public interface StreamHandler extends FrameHandler {
      *            listener.
      */
     void setFragmentListener(FragmentListener listener);
+
+    /**
+     * If there is a registered {@link StreamListener} for {@link SipMessage}s
+     * then this {@link StreamHandler} will start processing SIP messages for
+     * which you can get all the statistics for through this method.
+     * 
+     * @return a {@link SipStatistics} object. Note, if this
+     *         {@link StreamHandler} has not been configured to handle sip
+     *         traffic then all the stats will be zero.
+     */
+    SipStatistics getSipStatistics();
 
 }

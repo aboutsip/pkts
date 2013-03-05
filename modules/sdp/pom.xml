@@ -1,0 +1,51 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.aboutsip</groupId>
+    <artifactId>root-pom</artifactId>
+    <version>0.9.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <name>Session Description Protocol Lib</name>
+  <groupId>com.aboutsip</groupId>
+  <artifactId>aboutsip-sdp</artifactId>
+  <packaging>jar</packaging>
+  <dependencies>
+
+    <!-- Compile Dependencies -->
+    <dependency>
+      <groupId>com.aboutsip</groupId>
+      <artifactId>aboutsip-buffers</artifactId>
+    </dependency>
+
+   <!-- only for the SDP support. The reason
+        for including the entire jain sip ri
+        is because I couldn't find an official
+        SDP only release in any maven repos
+        and I didn't want to complicate things
+        for potential contributors so until
+        I write my own SDP library this will
+        be included. -->
+    <dependency>
+       <groupId>javax.sip</groupId>
+       <artifactId>jain-sip-ri</artifactId>
+   </dependency>
+
+
+    <!-- Test Dependencies -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+    </dependency>
+
+  </dependencies>
+
+</project>

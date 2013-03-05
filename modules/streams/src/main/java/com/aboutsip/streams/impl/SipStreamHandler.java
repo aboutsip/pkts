@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.aboutsip.sdp.RTPInfo;
 import com.aboutsip.sdp.SDP;
+import com.aboutsip.streams.SipStatistics;
 import com.aboutsip.streams.StreamId;
 import com.aboutsip.streams.StreamListener;
 import com.aboutsip.yajpcap.frame.Frame;
@@ -20,6 +21,8 @@ import com.aboutsip.yajpcap.framer.Framer;
 import com.aboutsip.yajpcap.framer.FramerManager;
 import com.aboutsip.yajpcap.packet.PacketParseException;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.SipRequest;
+import com.aboutsip.yajpcap.packet.sip.SipResponse;
 import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
@@ -43,6 +46,8 @@ public class SipStreamHandler {
      */
     private final FramerManager framerManager;
 
+    private final SipStatisticsImpl stats = new SipStatisticsImpl();
+
     /**
      * 
      */
@@ -59,6 +64,7 @@ public class SipStreamHandler {
             final SipFrame sipFrame = ((SipFrame) frame.getFrame(Protocol.SIP));
             final SipMessage msg = sipFrame.parse();
             final StreamId id = getStreamId(msg);
+            this.stats.count(msg);
             // checkMessageForContent(msg);
             BasicSipStream stream = this.sipStreams.get(id);
             if (stream == null) {
@@ -78,7 +84,6 @@ public class SipStreamHandler {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
     }
 
     /**
@@ -112,6 +117,115 @@ public class SipStreamHandler {
 
     public void addListener(final StreamListener<SipMessage> listener) {
         this.sipListener = listener;
+    }
+
+    public SipStatistics getStatistics() {
+        return this.stats;
+    }
+
+    private static class SipStatisticsImpl implements SipStatistics {
+
+        private long total;
+
+        private long inviteRequests;
+
+        private long byeRequests;
+
+        private long ackRequests;
+
+        private long optionsRequests;
+
+        private long messageRequests;
+
+        private long infoRequests;
+
+        private long cancelRequests;
+
+        public SipStatisticsImpl() {
+            // left empty intentionally
+        }
+
+        public void count(final SipMessage msg) throws SipParseException {
+            ++this.total;
+            if (msg.isRequest()) {
+                countRequest(msg.toRequest());
+            } else {
+                countResponse(msg.toResponse());
+            }
+        }
+
+        private void countRequest(final SipRequest request) throws SipParseException {
+            if (request.isInvite()) {
+                ++this.inviteRequests;
+            } else if (request.isAck()) {
+                ++this.ackRequests;
+            } else if (request.isBye()) {
+                ++this.byeRequests;
+            } else if (request.isOptions()) {
+                ++this.optionsRequests;
+            } else if (request.isCancel()) {
+                ++this.cancelRequests;
+            } else if (request.isMessage()) {
+                ++this.messageRequests;
+            } else if (request.isInfo()) {
+                ++this.infoRequests;
+            }
+        }
+
+        private void countResponse(final SipResponse response) throws SipParseException {
+
+        }
+
+        @Override
+        public long totalSipMessages() {
+            return this.total;
+        }
+
+        @Override
+        public long totalInviteRequests() {
+            return this.inviteRequests;
+        }
+
+        @Override
+        public long totalAckRequests() {
+            return this.ackRequests;
+        }
+
+        @Override
+        public long totalByeRequests() {
+            return this.byeRequests;
+        }
+
+        @Override
+        public long totalOptionsRequests() {
+            return this.optionsRequests;
+        }
+
+        @Override
+        public long totalInfoRequests() {
+            return this.infoRequests;
+        }
+
+        @Override
+        public long totalCancelRequests() {
+            return this.cancelRequests;
+        }
+
+        @Override
+        public String dumpInfo() {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("Total: ").append(this.total);
+            sb.append("\nRequests");
+            sb.append("\n   INVITE: ").append(this.inviteRequests);
+            sb.append("\n   ACK: ").append(this.ackRequests);
+            sb.append("\n   OPTIONS: ").append(this.optionsRequests);
+            sb.append("\n   BYE: ").append(this.byeRequests);
+            sb.append("\n   MESSAGE: ").append(this.messageRequests);
+            sb.append("\n   CANCEL: ").append(this.cancelRequests);
+            sb.append("\n   INFO: ").append(this.infoRequests);
+            return sb.toString();
+        }
+
     }
 
 }
