@@ -121,6 +121,14 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      * {@inheritDoc}
      */
     @Override
+    public boolean isEarlyMedia() {
+        return getStatus() == 183;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean isTimeout() {
         return getStatus() == 480;
     }

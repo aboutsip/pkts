@@ -90,6 +90,7 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
 
 
         final long start = System.currentTimeMillis();
+
         final InputStream stream = new FileInputStream(filename);
         final Pcap pcap = Pcap.openStream(stream);
         final StreamHandler streamHandler = new DefaultStreamHandler();
@@ -97,6 +98,7 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
         streamHandler.addStreamListener(splitter);
         pcap.loop(streamHandler);
         pcap.close();
+
         final long stop = System.currentTimeMillis();
         System.out.println("Processing time(s): " + ((stop - start) / 1000.0));
         // System.out.println("Fragmented pkts: " + ((DefaultStreamHandler) streamHandler).getNoFragmentedPackets());
@@ -111,11 +113,25 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
         System.out.println("Completed  : " + splitter.completed);
         System.out.println("Failed  : " + splitter.failed);
         System.out.println("Cancelled  : " + splitter.cancelled);
+        final int[] responses = stats.totalResponses();
+        int count = 0;
+        for (int i = 200; i < responses.length; ++i) {
+            count += responses[i];
+        }
+        System.out.println(" total bad responses" + count);
         // splitter.saveAll(pcap, null);
     }
 
     @Override
     public void startStream(final Stream<SipMessage> stream, final SipMessage message) {
+        try {
+            if (message.isInfo() || message.isMessage() || message.isOptions()) {
+                System.out.println("Strange...");
+                System.out.println(message);
+            }
+        } catch (final SipParseException e) {
+            e.printStackTrace();
+        }
         ++this.count;
     }
 

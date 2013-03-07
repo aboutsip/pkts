@@ -89,7 +89,8 @@ public final class SimpleCallStateMachine {
             return;
         }
 
-        if (msg.isRequest() && msg.isInitial() && (msg.isMessage() || msg.isInfo() || msg.isOptions())) {
+        if (msg.isResponse() && msg.isInitial() && (msg.isMessage() || msg.isInfo() || msg.isOptions())) {
+            System.err.println("Got not an invite: " + msg);
             return;
         }
 
@@ -120,20 +121,73 @@ public final class SimpleCallStateMachine {
         case IN_CALL:
             handleInConfirmedState(msg);
             break;
-        case REDIRECT:
-            break;
-        case REJECTED:
-            break;
         case COMPLETED:
             handleInCompletedState(msg);
             break;
+        case REDIRECT:
+        case REJECTED:
         case FAILED:
+            handleInErrorState(msg);
+            break;
+        case CANCELLING:
+            handleInCancellingState(msg);
+            break;
+        case CANCELLED:
+            handleInCancelledState(msg);
             break;
         case UNKNOWN:
             break;
         default:
             throw new RuntimeException("Unknown state, should be impossible. State is: " + this.currentState);
         }
+    }
+
+    private void handleInCancelledState(final SipMessage msg) throws SipParseException {
+        transition(this.currentState, msg);
+    }
+
+    /**
+     * When in the cancelling state, we may actually end up going back to
+     * IN_CALL in case we see a 2xx to the invite so pay attention for that.
+     * 
+     * @param msg
+     * @throws SipParseException
+     */
+    private void handleInCancellingState(final SipMessage msg) throws SipParseException {
+
+        // we don't move over to cancelled state even if
+        // we receive a 200 OK to the cancel request.
+        // therefore, not even checking it...
+        if (msg.isCancel()) {
+            transition(CallState.CANCELLING, msg);
+            return;
+        }
+
+        if (msg.isRequest()) {
+
+        } else {
+            final SipResponse response = msg.toResponse();
+            if (response.isInvite()) {
+                if (response.getStatus() == 487) {
+                    transition(CallState.CANCELLED, msg);
+                } else if (response.isSuccess()) {
+                    // the cancel didn't make it over in time
+                    // so we never cancelled, hence we move
+                    // to in call
+                    transition(CallState.IN_CALL, msg);
+                }
+            }
+
+        }
+
+    }
+
+    private void handleInErrorState(final SipMessage msg) throws SipParseException {
+        // we could be validating here I guess but for now let's
+        // just fall through. Note, we are in a terminal state
+        // so we'll just pass in the current state again since we
+        // want to stay in this state.
+        transition(this.currentState, msg);
     }
 
     /**
@@ -198,8 +252,16 @@ public final class SimpleCallStateMachine {
      * @param msg
      */
     private void handleInProvisionalState(final SipMessage msg) throws SipParseException {
-        if (msg.isRequest()) {
-            // illegal. Need to throw something
+
+        if (msg.isRequest() && msg.isCancel()) {
+            transition(CallState.CANCELLING, msg);
+            return;
+        } else if (msg.isRequest()) {
+            // assuming this is either a re-transmission or
+            // a proxy case where the same request is captured
+            // multiple times so therefore just stay in the same
+            // state
+            transition(this.currentState, msg);
             return;
         }
 
@@ -208,6 +270,8 @@ public final class SimpleCallStateMachine {
         if (response.is100Trying()) {
             transition(CallState.TRYING, msg);
         } else if (response.isRinging()) {
+            transition(CallState.RINGING, msg);
+        } else if (response.isEarlyMedia()) {
             transition(CallState.RINGING, msg);
         } else if (response.isSuccess() && isInvite) {
             transition(CallState.IN_CALL, msg);
@@ -237,8 +301,8 @@ public final class SimpleCallStateMachine {
      * @return
      */
     private boolean isRejected(final int status) {
-        return (status == 401) || (status == 403) || (status == 404) || (status == 407)
-                || (status == 480) || (status == 486);
+        return (status == 401) || (status == 403) || (status == 404) || (status == 407) || (status == 480)
+                || (status == 486);
     }
 
     /**
@@ -259,8 +323,8 @@ public final class SimpleCallStateMachine {
                 transition(CallState.INITIAL, msg);
             } else if (msg.isAck()) {
                 // TODO: need to figure out whether this is an ACK to a 200 or
-                // a error response
-                // since we would transition differently
+                // a error response since we would transition differently
+                // but not sure how we could if the initial invite is lost
                 transition(CallState.IN_CALL, msg);
             } else if (msg.isBye() && !msg.isInitial()) {
                 transition(CallState.COMPLETED, msg);
@@ -297,6 +361,15 @@ public final class SimpleCallStateMachine {
         }
         if (logger.isInfoEnabled()) {
             logger.info("[{}] {} -> {} Event: {}", this.callId, previousState, this.currentState, msg.getInitialLine());
+        }
+        try {
+            final String c = msg.getCallIDHeader().getValue().toString();
+            if (c.equals("0e19891a32bf72b370c5295f10be6a7f@204.236.255.193")) {
+                logger.error("[{}] {} -> {} Event: {}", this.callId, previousState, this.currentState, msg
+                        .getInitialLine());
+            }
+        } catch (final Exception e) {
+            e.printStackTrace();
         }
     }
 

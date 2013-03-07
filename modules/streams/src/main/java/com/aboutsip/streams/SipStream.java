@@ -110,6 +110,13 @@ public interface SipStream extends Stream<SipMessage> {
         RINGING,
 
         /**
+         * If we receive a CANCEL request then we move over to the canceling
+         * state. However, we may actually move back to in call because as
+         * always there is a race condition around canceling.
+         */
+        CANCELLING,
+
+        /**
          * The INVITE request was redirected (3xx responses)
          */
         REDIRECT,

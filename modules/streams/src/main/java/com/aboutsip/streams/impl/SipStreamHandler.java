@@ -65,6 +65,9 @@ public class SipStreamHandler {
             final SipMessage msg = sipFrame.parse();
             final StreamId id = getStreamId(msg);
             this.stats.count(msg);
+            if (msg.isInfo() || msg.isOptions() || msg.isMessage()) {
+                return;
+            }
             // checkMessageForContent(msg);
             BasicSipStream stream = this.sipStreams.get(id);
             if (stream == null) {
@@ -141,6 +144,8 @@ public class SipStreamHandler {
 
         private long cancelRequests;
 
+        private final int[] responses = new int[600];
+
         public SipStatisticsImpl() {
             // left empty intentionally
         }
@@ -173,7 +178,7 @@ public class SipStreamHandler {
         }
 
         private void countResponse(final SipResponse response) throws SipParseException {
-
+            ++this.responses[response.getStatus() - 100];
         }
 
         @Override
@@ -212,6 +217,20 @@ public class SipStreamHandler {
         }
 
         @Override
+        public int[] totalResponses() {
+            return this.responses;
+        }
+
+        public void dump() {
+            final int[] responses = totalResponses();
+            for (int i = 0; i < responses.length; ++i) {
+                if (responses[i] > 0) {
+                    System.out.println((i + 100) + ": " + responses[i]);
+                }
+            }
+        }
+
+        @Override
         public String dumpInfo() {
             final StringBuilder sb = new StringBuilder();
             sb.append("Total: ").append(this.total);
@@ -223,6 +242,12 @@ public class SipStreamHandler {
             sb.append("\n   MESSAGE: ").append(this.messageRequests);
             sb.append("\n   CANCEL: ").append(this.cancelRequests);
             sb.append("\n   INFO: ").append(this.infoRequests);
+            sb.append("\nResponses: ");
+            for (int i = 0; i < this.responses.length; ++i) {
+                if (this.responses[i] > 0) {
+                    sb.append("\n   ").append(i + 100).append(": ").append(this.responses[i]);
+                }
+            }
             return sb.toString();
         }
 
