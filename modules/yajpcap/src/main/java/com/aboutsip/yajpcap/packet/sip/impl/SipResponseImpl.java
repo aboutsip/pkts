@@ -66,7 +66,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      */
     @Override
     public boolean isSuccess() {
-        return (getStatus() / 200) == 1;
+        return (getStatus() / 100) == 2;
     }
 
     /**
@@ -74,7 +74,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      */
     @Override
     public boolean isRedirect() {
-        return (getStatus() / 300) == 1;
+        return (getStatus() / 100) == 3;
     }
 
     /**
@@ -82,7 +82,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      */
     @Override
     public boolean isClientError() {
-        return (getStatus() / 400) == 1;
+        return (getStatus() / 100) == 4;
     }
 
     /**
@@ -90,7 +90,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      */
     @Override
     public boolean isServerError() {
-        return (getStatus() / 500) == 1;
+        return (getStatus() / 100) == 5;
     }
 
     /**
@@ -98,7 +98,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      */
     @Override
     public boolean isGlobalError() {
-        return (getStatus() / 600) == 1;
+        return (getStatus() / 100) == 6;
     }
 
     /**
@@ -114,15 +114,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      */
     @Override
     public boolean isRinging() {
-        return getStatus() == 180;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isEarlyMedia() {
-        return getStatus() == 183;
+        return (getStatus() == 180) || (getStatus() == 183);
     }
 
     /**

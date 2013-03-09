@@ -3,6 +3,8 @@
  */
 package com.aboutsip.streams.impl;
 
+import static com.aboutsip.streams.SipStream.CallState.CANCELLED;
+import static com.aboutsip.streams.SipStream.CallState.CANCELLING;
 import static com.aboutsip.streams.SipStream.CallState.COMPLETED;
 import static com.aboutsip.streams.SipStream.CallState.INITIAL;
 import static com.aboutsip.streams.SipStream.CallState.IN_CALL;
@@ -53,15 +55,38 @@ public class SimpleCallStateMachineTest extends StreamsTestBase {
         final String resource = "simple_invite_scenario.pcap";
         SimpleCallStateMachine fsm = driveTraffic(resource);
         assertStates(fsm, INITIAL, TRYING, RINGING, IN_CALL, COMPLETED);
+        assertThat(fsm.getPostDialDelay(), is(3104809L));
+        assertThat(fsm.getDuration(), is(16108868L));
+
 
         final List<SipMessage> messages = loadMessages(resource);
         messages.set(1, null); // remove the 100 Trying
         fsm = driveTraffic(messages);
         assertStates(fsm, INITIAL, RINGING, IN_CALL, COMPLETED);
+        assertThat(fsm.getPostDialDelay(), is(3104809L));
+        assertThat(fsm.getDuration(), is(16108868L));
 
         messages.set(2, null); // remove the 180 Ringing
         fsm = driveTraffic(messages);
         assertStates(fsm, INITIAL, IN_CALL, COMPLETED);
+        assertThat(fsm.getPostDialDelay(), is(4106017L)); //  because we base the PDD on the 200 OK now
+        assertThat(fsm.getDuration(), is(16108868L));
+    }
+
+    /**
+     * Make sure that we correctly detect calls that have been cancelled.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testCancelScenarios() throws Exception {
+        final String resource = "cancel.pcap";
+        final SimpleCallStateMachine fsm = driveTraffic(resource);
+        assertStates(fsm, INITIAL, TRYING, RINGING, CANCELLING, CANCELLED);
+
+        // verified through wireshark
+        assertThat(fsm.getPostDialDelay(), is(2104843L));
+        assertThat(fsm.getDuration(), is(-1L));
     }
 
     /**

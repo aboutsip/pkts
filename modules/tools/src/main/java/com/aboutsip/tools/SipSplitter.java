@@ -4,11 +4,10 @@
 package com.aboutsip.tools;
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
@@ -24,8 +23,8 @@ import com.aboutsip.streams.StreamId;
 import com.aboutsip.streams.StreamListener;
 import com.aboutsip.streams.impl.DefaultStreamHandler;
 import com.aboutsip.yajpcap.Pcap;
-import com.aboutsip.yajpcap.PcapOutputStream;
 import com.aboutsip.yajpcap.frame.IPFrame;
+import com.aboutsip.yajpcap.packet.Packet;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
 import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 
@@ -39,7 +38,7 @@ import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
  */
 public final class SipSplitter implements StreamListener<SipMessage>, FragmentListener {
 
-    private final List<SipStream> streams = new ArrayList<SipStream>();
+    private final Map<StreamId, SipStream> streams = new HashMap<StreamId, SipStream>(20000);
 
     public int count;
 
@@ -53,9 +52,21 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
 
     public int failed;
 
+    public int trying;
+    public int inCall;
+    public int ringing;
+
     public int cancelled;
 
     public int calls;
+
+    public long maxPDD;
+    public long totalPDD;
+    public long pddCount;
+
+    public long maxCallDuration;
+    public long totalCallDuration;
+    public long callDurationCount;
 
     /**
      * 
@@ -65,6 +76,7 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
     }
 
     public void saveAll(final Pcap pcap, final String directory) throws Exception {
+        /*
         final String dir = (directory == null) || directory.isEmpty() ? "." : directory;
         for (final SipStream stream : this.streams) {
             final StreamId id = stream.getStreamIdentifier();
@@ -78,6 +90,7 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
                 out.close();
             }
         }
+         */
     }
 
     public static void main(final String[] args) throws Exception {
@@ -91,24 +104,39 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
 
         final long start = System.currentTimeMillis();
 
-        final InputStream stream = new FileInputStream(filename);
-        final Pcap pcap = Pcap.openStream(stream);
+        final InputStream is = new FileInputStream(filename);
+        final Pcap pcap = Pcap.openStream(is);
         final StreamHandler streamHandler = new DefaultStreamHandler();
         streamHandler.setFragmentListener(splitter);
         streamHandler.addStreamListener(splitter);
         pcap.loop(streamHandler);
         pcap.close();
 
+
         final long stop = System.currentTimeMillis();
-        System.out.println("Processing time(s): " + ((stop - start) / 1000.0));
+        System.out.println("Processing time(s): " + (stop - start) / 1000.0);
+
         // System.out.println("Fragmented pkts: " + ((DefaultStreamHandler) streamHandler).getNoFragmentedPackets());
         final SipStatistics stats = streamHandler.getSipStatistics();
+        System.out.println(stats.dumpInfo());
+
+        final Map<StreamId, Stream<? extends Packet>> unfinishedStreams = streamHandler.getStreams();
+        for (final Map.Entry<StreamId, Stream<? extends Packet>> entry : unfinishedStreams.entrySet()) {
+            final SipStream stream = (SipStream) entry.getValue();
+            splitter.count(stream);
+        }
+
         System.out.println("Start: " + splitter.count);
         System.out.println("End  : " + splitter.endCount);
         System.out.println("Calls  : " + splitter.calls);
         System.out.println("Fragmented  : " + splitter.fragmented);
-        System.out.println(stats.dumpInfo());
-
+        System.out.println("Max PDD  : " + splitter.maxPDD);
+        System.out.println("Avg PDD  : " + splitter.totalPDD / (double) splitter.pddCount);
+        System.out.println("Max Call Duration  : " + splitter.maxCallDuration);
+        System.out.println("Avg Call Duration  : " + splitter.totalCallDuration / (double) splitter.callDurationCount);
+        System.out.println("Trying  : " + splitter.trying);
+        System.out.println("Ringing  : " + splitter.trying);
+        System.out.println("In Call  : " + splitter.inCall);
         System.out.println("Rejected  : " + splitter.rejected);
         System.out.println("Completed  : " + splitter.completed);
         System.out.println("Failed  : " + splitter.failed);
@@ -140,10 +168,33 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
         // TODO Auto-generated method stub
     }
 
-    @Override
-    public void endStream(final Stream<SipMessage> stream) {
-        ++this.endCount;
-        final SipStream.CallState state = ((SipStream) stream).getCallState();
+    private void checkPDD(final SipStream stream) throws SipParseException {
+        final long pdd = stream.getPostDialDelay() / 1000;
+        if (pdd > 40000) {
+            System.out.println("PDD crazy high: " + stream.getStreamIdentifier());
+        }
+        if (pdd != -1) {
+            this.maxPDD = Math.max(this.maxPDD, pdd);
+            this.totalPDD += pdd;
+            ++this.pddCount;
+        }
+    }
+
+    private void checkDuration(final SipStream stream) throws SipParseException {
+        final long duration = stream.getDuration() / 1000;
+        if (duration != -1) {
+            this.maxCallDuration = Math.max(this.maxCallDuration, duration);
+            this.totalCallDuration += duration;
+            ++this.callDurationCount;
+        }
+    }
+
+    public void count(final SipStream stream) throws SipParseException {
+        if (this.streams.containsKey(stream.getStreamIdentifier())) {
+            return;
+        }
+
+        final SipStream.CallState state = stream.getCallState();
         // System.out.println(state);
         if (state == CallState.REJECTED) {
             ++this.rejected;
@@ -151,18 +202,41 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
             ++this.completed;
         } else if (state == CallState.FAILED) {
             ++this.failed;
+        } else if (state == CallState.RINGING) {
+            ++this.ringing;
+        } else if (state == CallState.TRYING) {
+            ++this.trying;
+        } else if (state == CallState.IN_CALL) {
+            ++this.inCall;
         } else if (state == CallState.CANCELLED) {
             ++this.cancelled;
         }
-        final SipMessage msg = stream.getPackets().next();
-        try {
-            if (msg.isRequest() && msg.isInvite()) {
-                ++this.calls;
+        checkPDD(stream);
+        checkDuration(stream);
+
+        final Iterator<SipMessage> it = stream.getPackets();
+        while (it.hasNext()) {
+            final SipMessage msg = it.next();
+            try {
+                if (msg.isInvite()) {
+                    ++this.calls;
+                    break;
+                }
+            } catch (final SipParseException e) {
+                e.printStackTrace();
             }
-        } catch (final SipParseException e) {
-            e.printStackTrace();
         }
-        this.streams.add((SipStream) stream);
+    }
+
+    @Override
+    public void endStream(final Stream<SipMessage> stream) {
+        ++this.endCount;
+        try {
+            count((SipStream) stream);
+            this.streams.put(stream.getStreamIdentifier(), (SipStream) stream);
+        } catch (final SipParseException e) {
+            e.toString();
+        }
     }
 
     @Override

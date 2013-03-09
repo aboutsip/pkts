@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import com.aboutsip.streams.FragmentListener;
 import com.aboutsip.streams.SipStatistics;
 import com.aboutsip.streams.Stream;
 import com.aboutsip.streams.StreamHandler;
+import com.aboutsip.streams.StreamId;
 import com.aboutsip.streams.StreamListener;
 import com.aboutsip.yajpcap.frame.Frame;
 import com.aboutsip.yajpcap.frame.IPFrame;
@@ -166,6 +168,15 @@ public final class DefaultStreamHandler implements StreamHandler {
     public SipStatistics getSipStatistics() {
         if (this.sipStreamHandler != null) {
             return this.sipStreamHandler.getStatistics();
+        }
+
+        return null;
+    }
+
+    @Override
+    public Map<StreamId, Stream<? extends Packet>> getStreams() {
+        if (this.sipStreamHandler != null) {
+            return (Map<StreamId, Stream<? extends Packet>>) this.sipStreamHandler.getStreams();
         }
 
         return null;

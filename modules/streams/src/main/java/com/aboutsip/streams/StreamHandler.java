@@ -3,6 +3,8 @@
  */
 package com.aboutsip.streams;
 
+import java.util.Map;
+
 import com.aboutsip.yajpcap.FrameHandler;
 import com.aboutsip.yajpcap.packet.Packet;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
@@ -46,5 +48,19 @@ public interface StreamHandler extends FrameHandler {
      *         traffic then all the stats will be zero.
      */
     SipStatistics getSipStatistics();
+
+    /**
+     * Through the {@link StreamListener#startStream(Stream, Packet)} and
+     * {@link StreamListener#endStream(Stream)} you will get notified when a
+     * stream starts and when it ends. However, at the end of a run there may be
+     * many streams that are still "running". E.g., in the case of SIP, there
+     * are probably many un-terminated INVITE dialogs, i.e. calls that are still
+     * in the process of being established or still in call. These streams have
+     * not ended yet so at the end of the run you can use this method to get all
+     * the streams that are left.
+     * 
+     * @return
+     */
+    Map<StreamId, Stream<? extends Packet>> getStreams();
 
 }

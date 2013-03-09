@@ -68,19 +68,11 @@ public interface SipResponse extends SipMessage {
 
     /**
      * Convenience method for checking whether this is a 180 Ringing response or
-     * not.
+     * or a 183 Early Media response.
      * 
-     * @return
+     * @return true if this response is a 180 or a 183 response, false otherwise
      */
     boolean isRinging();
-
-    /**
-     * Convenience method for checking whether this is a 183 Early Media
-     * response or not.
-     * 
-     * @return
-     */
-    boolean isEarlyMedia();
 
     /**
      * Convenience method for checking whether this is a 480 Timeout response or

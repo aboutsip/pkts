@@ -1,0 +1,1 @@
+This directory contains a bunch of SIPp scenarios that I have been using to generate different types of scenarios needed for unit testing etc. Every directory contains a single scenario and all of them run the same way, i.e., start off by executing uas.sh and then uac.sh 127.0.0.1:5090 and that is it.

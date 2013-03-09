@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.aboutsip.streams.SipStream.CallState;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.SipRequest;
 import com.aboutsip.yajpcap.packet.sip.SipResponse;
 import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 
@@ -33,6 +34,10 @@ import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
  * re-ordered since if multiple pcaps are merged you may actually push a pcap
  * that was captured later first and as such we need to be able to handle this
  * use case.
+ * 
+ * Also, this state machine is simplified and will for some use cases report the
+ * wrong state. However, the purpose of this state machine is (currently anyway)
+ * not to be 100% accurate but close enough to be useful and fast.
  * 
  * @author jonas@jonasborjesson.com
  */
@@ -57,6 +62,23 @@ public final class SimpleCallStateMachine {
     private CallState currentState;
 
     private final String callId;
+
+    /**
+     * The 18x ringing response, if we received one. Only the first will be
+     * recorded.
+     */
+    private SipResponse ringingResponse;
+
+    /**
+     * If this call is successfully established, this will be the the first 2xx
+     * that we received.
+     */
+    private SipResponse successResponse;
+
+    /**
+     * The first BYE request we received (if any)
+     */
+    private SipRequest byeRequest;
 
     public SimpleCallStateMachine(final String callId) {
         this.callId = callId;
@@ -84,19 +106,14 @@ public final class SimpleCallStateMachine {
      * @param msg
      */
     public void onEvent(final SipMessage msg) throws SipParseException {
-        // logger.debug("OnEvent: \n{}", msg);
         if (msg == null) {
-            return;
-        }
-
-        if (msg.isResponse() && msg.isInitial() && (msg.isMessage() || msg.isInfo() || msg.isOptions())) {
-            System.err.println("Got not an invite: " + msg);
             return;
         }
 
         final SipMessage previousMsg = this.messages.isEmpty() ? null : this.messages.last();
         this.messages.add(msg);
-        if ((previousMsg != null) && (msg.getArrivalTime() < previousMsg.getArrivalTime())) {
+
+        if (previousMsg != null && msg.getArrivalTime() < previousMsg.getArrivalTime()) {
             redrive();
             return;
         }
@@ -217,6 +234,9 @@ public final class SimpleCallStateMachine {
     private void handleInConfirmedState(final SipMessage msg) throws SipParseException {
         if (msg.isRequest()) {
             if (msg.isBye()) {
+                if (this.byeRequest == null) {
+                    this.byeRequest = msg.toRequest();
+                }
                 transition(CallState.COMPLETED, msg);
             } else if (msg.isAck()) {
                 transition(CallState.IN_CALL, msg);
@@ -270,10 +290,14 @@ public final class SimpleCallStateMachine {
         if (response.is100Trying()) {
             transition(CallState.TRYING, msg);
         } else if (response.isRinging()) {
-            transition(CallState.RINGING, msg);
-        } else if (response.isEarlyMedia()) {
+            if (this.ringingResponse == null) {
+                this.ringingResponse = msg.toResponse();
+            }
             transition(CallState.RINGING, msg);
         } else if (response.isSuccess() && isInvite) {
+            if (this.successResponse == null) {
+                this.successResponse = msg.toResponse();
+            }
             transition(CallState.IN_CALL, msg);
         } else if (response.isRedirect()) {
             transition(CallState.REDIRECT, msg);
@@ -301,8 +325,8 @@ public final class SimpleCallStateMachine {
      * @return
      */
     private boolean isRejected(final int status) {
-        return (status == 401) || (status == 403) || (status == 404) || (status == 407) || (status == 480)
-                || (status == 486);
+        return status == 401 || status == 403 || status == 404 || status == 407 || status == 480
+                || status == 486 || status == 603;
     }
 
     /**
@@ -364,7 +388,7 @@ public final class SimpleCallStateMachine {
         }
         try {
             final String c = msg.getCallIDHeader().getValue().toString();
-            if (c.equals("0e19891a32bf72b370c5295f10be6a7f@204.236.255.193")) {
+            if (c.equals("1259106501_15347925@4.55.2.35")) {
                 logger.error("[{}] {} -> {} Event: {}", this.callId, previousState, this.currentState, msg
                         .getInitialLine());
             }
@@ -417,10 +441,8 @@ public final class SimpleCallStateMachine {
             if (t1 < t2) {
                 return -1;
             }
-
             return 1;
         }
-
     }
 
     /**
@@ -430,8 +452,8 @@ public final class SimpleCallStateMachine {
      * @return
      */
     public boolean isTerminated() {
-        return (this.currentState == COMPLETED) || (this.currentState == REJECTED) || (this.currentState == CANCELLED)
-                || ((this.currentState == FAILED) || (this.currentState == REDIRECT));
+        return this.currentState == COMPLETED || this.currentState == REJECTED || this.currentState == CANCELLED
+                || this.currentState == FAILED || this.currentState == REDIRECT;
     }
 
     /**
@@ -460,6 +482,38 @@ public final class SimpleCallStateMachine {
      */
     public CallState getCallState() {
         return this.currentState;
+    }
+
+    public long getPostDialDelay() throws SipParseException {
+        if (this.messages.isEmpty() || this.ringingResponse == null && this.successResponse == null) {
+            return -1;
+        }
+
+        final long t1 = this.messages.first().getArrivalTime();
+        final long t2 = this.ringingResponse != null ? this.ringingResponse.getArrivalTime() : this.successResponse
+                .getArrivalTime();
+
+        // if equal, then the first message we received
+        // was a 180 or 183 so we can't calculate the PDD
+        if (t1 == t2) {
+            return -1;
+        }
+
+        return t2 - t1;
+    }
+
+    public long getDuration() {
+        if (this.messages.isEmpty() || this.byeRequest == null) {
+            return -1;
+        }
+
+        final long t1 = this.messages.first().getArrivalTime();
+        final long t2 = this.byeRequest.getArrivalTime();
+        if (t1 == t2) {
+            return -1;
+        }
+
+        return t2 - t1;
     }
 
 }

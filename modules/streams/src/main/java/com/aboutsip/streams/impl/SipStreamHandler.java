@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.aboutsip.sdp.RTPInfo;
 import com.aboutsip.sdp.SDP;
 import com.aboutsip.streams.SipStatistics;
+import com.aboutsip.streams.SipStream;
 import com.aboutsip.streams.StreamId;
 import com.aboutsip.streams.StreamListener;
 import com.aboutsip.yajpcap.frame.Frame;
@@ -34,6 +35,7 @@ public class SipStreamHandler {
     private static final Logger logger = LoggerFactory.getLogger(SipStreamHandler.class);
 
     private final Map<StreamId, BasicSipStream> sipStreams = new HashMap<StreamId, BasicSipStream>();
+    private final Map<StreamId, BasicSipStream> terminatedStreams = new HashMap<StreamId, BasicSipStream>();
 
     private StreamListener<SipMessage> sipListener;
 
@@ -61,7 +63,7 @@ public class SipStreamHandler {
 
     public void processFrame(final Frame frame) throws PacketParseException {
         try {
-            final SipFrame sipFrame = ((SipFrame) frame.getFrame(Protocol.SIP));
+            final SipFrame sipFrame = (SipFrame) frame.getFrame(Protocol.SIP);
             final SipMessage msg = sipFrame.parse();
             final StreamId id = getStreamId(msg);
             this.stats.count(msg);
@@ -70,6 +72,9 @@ public class SipStreamHandler {
             }
             // checkMessageForContent(msg);
             BasicSipStream stream = this.sipStreams.get(id);
+            if (stream == null) {
+                stream = this.terminatedStreams.get(id);
+            }
             if (stream == null) {
                 stream = new BasicSipStream(id);
                 stream.addMessage(msg);
@@ -80,6 +85,8 @@ public class SipStreamHandler {
                 stream.addMessage(msg);
                 this.sipListener.packetReceived(stream, msg);
                 if (!wasAlreadyTerminated && stream.isTerminated()) {
+                    this.sipStreams.remove(id);
+                    this.terminatedStreams.put(id, stream);
                     this.sipListener.endStream(stream);
                 }
             }
@@ -225,7 +232,7 @@ public class SipStreamHandler {
             final int[] responses = totalResponses();
             for (int i = 0; i < responses.length; ++i) {
                 if (responses[i] > 0) {
-                    System.out.println((i + 100) + ": " + responses[i]);
+                    System.out.println(i + 100 + ": " + responses[i]);
                 }
             }
         }
@@ -250,7 +257,9 @@ public class SipStreamHandler {
             }
             return sb.toString();
         }
-
     }
 
+    public Map<StreamId, ? extends SipStream> getStreams() {
+        return this.sipStreams;
+    }
 }
