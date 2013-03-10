@@ -56,7 +56,7 @@ public final class InputStreamBuffer extends AbstractBuffer {
     @Override
     public Buffer slice(final int start, final int stop) {
         checkIndex(this.lowerBoundary + start);
-        checkIndex((this.lowerBoundary + stop) - 1);
+        checkIndex(this.lowerBoundary + stop - 1);
 
         // this has to change now that we can have multiple
         // rows of byte buffers
@@ -227,7 +227,7 @@ public final class InputStreamBuffer extends AbstractBuffer {
     private int readFromStream(final int length) throws IOException {
         int total = 0;
         int actual = 0;
-        while ((total < length) && (actual != -1)) {
+        while (total < length && actual != -1) {
 
             final int localIndex = getLocalWriterIndex();
             final int spaceLeft = getAvailableLocalWritingSpace();
@@ -316,7 +316,7 @@ public final class InputStreamBuffer extends AbstractBuffer {
      */
     @Override
     protected void checkIndex(final int index) throws IndexOutOfBoundsException {
-        final int missingBytes = (index + 1) - (this.lowerBoundary + capacity());
+        final int missingBytes = index + 1 - (this.lowerBoundary + capacity());
         if (missingBytes <= 0) {
             // we got all the bytes needed
             return;
@@ -324,7 +324,7 @@ public final class InputStreamBuffer extends AbstractBuffer {
 
         try {
             final int read = readFromStream(missingBytes);
-            if ((read == -1) || (read < missingBytes)) {
+            if (read == -1 || read < missingBytes) {
                 throw new IndexOutOfBoundsException();
             }
         } catch (final IOException e) {
@@ -419,8 +419,14 @@ public final class InputStreamBuffer extends AbstractBuffer {
     @Override
     public void setByte(final int index, final byte value) throws IndexOutOfBoundsException {
         // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void setUnsignedByte(final int index, final short value) throws IndexOutOfBoundsException {
+        // TODO Auto-generated method stub
 
     }
+
 
     @Override
     public Buffer clone() {

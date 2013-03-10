@@ -15,6 +15,18 @@ public interface MACPacket extends Packet {
 
     String getSourceMacAddress();
 
+    /**
+     * Set the MAC address of this {@link MACPacket}.
+     * 
+     * @param macAddress
+     * @throws IllegalArgumentException
+     *             in case the MAC address specified is null or the empty
+     *             string.
+     */
+    void setSourceMacAddress(String macAddress) throws IllegalArgumentException;
+
     String getDestinationMacAddress();
+
+    void setDestinationMacAddress(String macAddress) throws IllegalArgumentException;
 
 }

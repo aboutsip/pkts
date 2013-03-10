@@ -85,7 +85,7 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public Buffer slice(final int start, final int stop) {
-        if ((start != 0) && (stop != 0)) {
+        if (start != 0 && stop != 0) {
             throw new IndexOutOfBoundsException("This buffer is empty");
         }
         return this;
@@ -243,6 +243,11 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public void setByte(final int index, final byte value) throws IndexOutOfBoundsException {
+        throw new IndexOutOfBoundsException("This buffer is empty");
+    }
+
+    @Override
+    public void setUnsignedByte(final int index, final short value) throws IndexOutOfBoundsException {
         throw new IndexOutOfBoundsException("This buffer is empty");
     }
 

@@ -123,4 +123,62 @@ public final class IPPacketImpl implements IPPacket {
         return this.headers.getUnsignedShort(3);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setSourceMacAddress(final String macAddress) {
+        this.parent.setSourceMacAddress(macAddress);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setDestinationMacAddress(final String macAddress) {
+        this.parent.setDestinationMacAddress(macAddress);
+    }
+
+
+    @Override
+    public void setSourceIP(final int a, final int b, final int c, final int d) {
+        this.headers.setByte(12, (byte) a);
+        this.headers.setByte(13, (byte) b);
+        this.headers.setByte(14, (byte) c);
+        this.headers.setByte(15, (byte) d);
+    }
+
+    @Override
+    public void setDestinationIP(final int a, final int b, final int c, final int d) {
+        this.headers.setByte(16, (byte) a);
+        this.headers.setByte(17, (byte) b);
+        this.headers.setByte(18, (byte) c);
+        this.headers.setByte(19, (byte) d);
+    }
+
+    @Override
+    public void setSourceIP(final String sourceIp) {
+        setIP(12, sourceIp);
+    }
+
+    @Override
+    public void setDestinationIP(final String destinationIP) {
+        setIP(16, destinationIP);
+    }
+
+    /**
+     * Very naive initial implementation. Should be changed to do a better job
+     * and its performance probably can go up a lot as well.
+     * 
+     * @param startIndex
+     * @param address
+     */
+    private void setIP(final int startIndex, final String address) {
+        final String[] parts = address.split("\\.");
+        this.headers.setByte(startIndex + 0, (byte) Integer.parseInt(parts[0]));
+        this.headers.setByte(startIndex + 1, (byte) Integer.parseInt(parts[1]));
+        this.headers.setByte(startIndex + 2, (byte) Integer.parseInt(parts[2]));
+        this.headers.setByte(startIndex + 3, (byte) Integer.parseInt(parts[3]));
+    }
+
 }

@@ -24,7 +24,6 @@ import com.aboutsip.streams.StreamListener;
 import com.aboutsip.streams.impl.DefaultStreamHandler;
 import com.aboutsip.yajpcap.Pcap;
 import com.aboutsip.yajpcap.frame.IPFrame;
-import com.aboutsip.yajpcap.packet.Packet;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
 import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 
@@ -100,6 +99,7 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
         final SipSplitter splitter = new SipSplitter();
 
         final String filename = "/home/jonas/development/private/aboutsip/modules/yajpcap/src/test/resources/com/aboutsip/yajpcap/sipp.pcap";
+        // final String filename = "/home/jonas/development/private/aboutsip/big_pcaps/openser-udp-5060_01871_20121112132549.pcap";
 
 
         final long start = System.currentTimeMillis();
@@ -120,8 +120,8 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
         final SipStatistics stats = streamHandler.getSipStatistics();
         System.out.println(stats.dumpInfo());
 
-        final Map<StreamId, Stream<? extends Packet>> unfinishedStreams = streamHandler.getStreams();
-        for (final Map.Entry<StreamId, Stream<? extends Packet>> entry : unfinishedStreams.entrySet()) {
+        final Map<StreamId, ? extends Stream> unfinishedStreams = streamHandler.getStreams();
+        for (final Map.Entry<StreamId, ? extends Stream> entry : unfinishedStreams.entrySet()) {
             final SipStream stream = (SipStream) entry.getValue();
             splitter.count(stream);
         }
