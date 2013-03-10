@@ -2,6 +2,7 @@ package com.aboutsip.yajpcap.packet.sip;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.packet.impl.ApplicationPacket;
+import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
 import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
@@ -23,6 +24,36 @@ public interface SipMessage extends ApplicationPacket {
     Buffer getInitialLine();
 
     /**
+     * Got tired of casting the {@link SipMessage} into a {@link SipRequest} so
+     * you can use this method instead. Just a short cut for:
+     * 
+     * <code>
+     *     (SipRequest)sipMessage;
+     * </code>
+     * 
+     * @return this but casted into a {@link SipRequest}
+     * @throws ClassCastException
+     *             in case this {@link SipMessage} is actually a
+     *             {@link SipResponse}.
+     */
+    SipRequest toRequest() throws ClassCastException;
+
+    /**
+     * Got tired of casting the {@link SipMessage} into a {@link SipResponse} so
+     * you can use this method instead. Just a short cut for:
+     * 
+     * <code>
+     *     (SipResponse)sipMessage;
+     * </code>
+     * 
+     * @return this but casted into a {@link SipResponse}
+     * @throws ClassCastException
+     *             in case this {@link SipMessage} is actually a
+     *             {@link SipResponse}.
+     */
+    SipResponse toResponse() throws ClassCastException;
+
+    /**
      * Check whether this sip message is a response or not
      * 
      * @return
@@ -35,6 +66,29 @@ public interface SipMessage extends ApplicationPacket {
      * @return
      */
     boolean isRequest();
+
+    /**
+     * Returns the content (payload) of the {@link SipMessage} as an
+     * {@link Object}. If the {@link ContentTypeHeader} indicates a content type
+     * that is known (such as an sdp) then an attempt to parse the content into
+     * that type is made. If the payload is unknown then a {@link Buffer}
+     * representing the payload will be returned.
+     * 
+     * @return
+     * @throws SipParseException
+     *             in case anything goes wrong when trying to frame the content
+     *             in any way.
+     */
+    Object getContent() throws SipParseException;
+
+    /**
+     * Checks whether this {@link SipMessage} is carrying anything in its
+     * message body.
+     * 
+     * @return true if this {@link SipMessage} has a message body, false
+     *         otherwise.
+     */
+    boolean hasContent();
 
     /**
      * Get the method of this sip message
@@ -67,6 +121,15 @@ public interface SipMessage extends ApplicationPacket {
     ToHeader getToHeader() throws SipParseException;
 
     /**
+     * Get the {@link ContentTypeHeader} for this message. If there is no
+     * Content-Type header in this SIP message then null will be returned.
+     * 
+     * @return the {@link ContentTypeHeader} or null if there is none.
+     * @throws SipParseException
+     */
+    ContentTypeHeader getContentTypeHeader() throws SipParseException;
+
+    /**
      * Convenience method for fetching the call-id-header
      * 
      * @return the call-id header as a buffer
@@ -75,9 +138,10 @@ public interface SipMessage extends ApplicationPacket {
 
     /**
      * Convenience method for determining whether the method of this message is
-     * an INVITE or not
+     * an INVITE or not. Hence, this is NOT to the method to determine whether
+     * this is a INVITE Request or not!
      * 
-     * @return true if it is an invite, false otherwise.
+     * @return true if the method of this message is a INVITE, false otherwise.
      * @throws SipParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
@@ -86,9 +150,10 @@ public interface SipMessage extends ApplicationPacket {
 
     /**
      * Convenience method for determining whether the method of this message is
-     * a BYE or not
+     * a BYE or not. Hence, this is NOT to the method to determine whether this
+     * is a BYE Request or not!
      * 
-     * @return true if it is a BYE, false otherwise.
+     * @return true if the method of this message is a BYE, false otherwise.
      * @throws SipParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
@@ -97,9 +162,10 @@ public interface SipMessage extends ApplicationPacket {
 
     /**
      * Convenience method for determining whether the method of this message is
-     * an ACK or not
+     * an ACK or not. Hence, this is NOT to the method to determine whether this
+     * is an ACK Request or not!
      * 
-     * @return true if it is an ack, false otherwise.
+     * @return true if the method of this message is a ACK, false otherwise.
      * @throws SipParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
@@ -108,9 +174,45 @@ public interface SipMessage extends ApplicationPacket {
 
     /**
      * Convenience method for determining whether the method of this message is
+     * a OPTIONS or not. Hence, this is NOT to the method to determine whether
+     * this is an OPTIONS Request or not!
+     * 
+     * @return true if the method of this message is a OPTIONS, false otherwise.
+     * @throws SipParseException
+     *             in case the method could not be parsed out of the underlying
+     *             buffer.
+     */
+    boolean isOptions() throws SipParseException;
+
+    /**
+     * Convenience method for determining whether the method of this message is
+     * a MESSAGE or not. Hence, this is NOT to the method to determine whether
+     * this is an MESSAGE Request or not!
+     * 
+     * @return true if the method of this message is a MESSAGE, false otherwise.
+     * @throws SipParseException
+     *             in case the method could not be parsed out of the underlying
+     *             buffer.
+     */
+    boolean isMessage() throws SipParseException;
+
+    /**
+     * Convenience method for determining whether the method of this message is
+     * a INFO or not. Hence, this is NOT to the method to determine whether this
+     * is an INFO Request or not!
+     * 
+     * @return true if the method of this message is a INFO, false otherwise.
+     * @throws SipParseException
+     *             in case the method could not be parsed out of the underlying
+     *             buffer.
+     */
+    boolean isInfo() throws SipParseException;
+
+    /**
+     * Convenience method for determining whether the method of this message is
      * a CANCEL or not
      * 
-     * @return true if it is a cancel, false otherwise.
+     * @return true if the method of this message is a CANCEL, false otherwise.
      * @throws SipParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.

@@ -37,6 +37,9 @@ public final class ByteBuffer extends AbstractBuffer {
      */
     @Override
     public Buffer slice(final int start, final int stop) {
+        if (start == stop) {
+            return Buffers.EMPTY_BUFFER;
+        }
         checkIndex(this.lowerBoundary + start);
         checkIndex((this.lowerBoundary + stop) - 1);
         return new ByteBuffer(0, this.lowerBoundary + start, this.lowerBoundary + stop, this.buffer);
@@ -166,7 +169,12 @@ public final class ByteBuffer extends AbstractBuffer {
         final int i = this.lowerBoundary + index;
         checkIndex(i);
         checkIndex(i + 2);
+
+        // big endian
         return (short) ((this.buffer[i] << 8) | (this.buffer[i + 1] & 0xFF));
+
+        // little endian
+        // return (short) ((this.buffer[i] & 0xFF) | (this.buffer[i + 1] << 8));
     }
 
     /**

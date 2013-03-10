@@ -21,6 +21,10 @@
       <artifactId>aboutsip-buffers</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.aboutsip</groupId>
+      <artifactId>aboutsip-sdp</artifactId>
+    </dependency>
 
     <!-- Test Dependencies -->
     <dependency>

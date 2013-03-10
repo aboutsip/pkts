@@ -53,4 +53,81 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
         return this.initialLine.getStatusCode();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isProvisional() {
+        return (getStatus() / 100) == 1;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isSuccess() {
+        return (getStatus() / 100) == 2;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isRedirect() {
+        return (getStatus() / 100) == 3;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isClientError() {
+        return (getStatus() / 100) == 4;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isServerError() {
+        return (getStatus() / 100) == 5;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isGlobalError() {
+        return (getStatus() / 100) == 6;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean is100Trying() {
+        return getStatus() == 100;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isRinging() {
+        return (getStatus() == 180) || (getStatus() == 183);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isTimeout() {
+        return getStatus() == 480;
+    }
+
+    @Override
+    public SipResponse toResponse() throws ClassCastException {
+        return this;
+    }
+
 }

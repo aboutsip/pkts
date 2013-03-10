@@ -3,11 +3,21 @@
  */
 package com.aboutsip.yajpcap.framer;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.aboutsip.buffer.Buffers;
+import com.aboutsip.yajpcap.RawData;
 import com.aboutsip.yajpcap.YajTestBase;
+import com.aboutsip.yajpcap.frame.Frame;
+import com.aboutsip.yajpcap.frame.IPFrame;
+import com.aboutsip.yajpcap.frame.Layer1Frame;
+import com.aboutsip.yajpcap.packet.Packet;
+import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -53,5 +63,15 @@ public class IPFramerTest extends YajTestBase {
         framer.frame(null, this.ipv4FrameBuffer);
     }
 
+    @Test
+    public void testFragmentedIpPacket() throws Exception {
+        final Layer1Frame parent = mock(Layer1Frame.class);
+        final Packet layer1Pkt = mock(Packet.class);
+        when(parent.parse()).thenReturn(layer1Pkt);
+        final EthernetFramer framer = new EthernetFramer(this.framerManager);
+        final Frame frame = framer.frame(parent, Buffers.wrap(RawData.fragmented));
+        final IPFrame ipFrame = (IPFrame) frame.getFrame(Protocol.IPv4);
+        System.out.println(ipFrame);
+    }
 
 }

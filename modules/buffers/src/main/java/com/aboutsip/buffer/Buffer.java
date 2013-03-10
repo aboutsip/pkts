@@ -195,6 +195,10 @@ public interface Buffer extends Cloneable {
      * Slice off the rest of the buffer. Same as {@link
      * #slice(Buffer.getReaderIndex(), buffer.getCapacity())}
      * 
+     * Note, if you slice an empty buffer you will get back another empty
+     * buffer. Same goes for when you slice a buffer whose bytes already have
+     * been consumed.
+     * 
      * @return
      */
     Buffer slice();

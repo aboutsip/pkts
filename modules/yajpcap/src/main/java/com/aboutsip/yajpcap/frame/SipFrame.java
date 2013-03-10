@@ -69,6 +69,10 @@ public final class SipFrame extends AbstractFrame implements Layer7Frame {
     }
 
     /**
+     * TODO: perhaps the payload of a sip packet should not be framed like this
+     * but rather leave it up to the sip packet to parse its payload in a
+     * "regular" way.
+     * 
      * {@inheritDoc}
      */
     @Override

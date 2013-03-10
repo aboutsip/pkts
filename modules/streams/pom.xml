@@ -21,6 +21,15 @@
       <artifactId>yajpcap</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.aboutsip</groupId>
+      <artifactId>aboutsip-sdp</artifactId>
+    </dependency>
+
+   <dependency> 
+     <groupId>org.slf4j</groupId>
+     <artifactId>slf4j-api</artifactId>
+   </dependency>
 
     <!-- Test Dependencies -->
     <dependency>
@@ -32,6 +41,20 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
     </dependency>
+
+   <!-- Just so that we get out some logging 
+        when running the test cases -->
+   <dependency> 
+     <groupId>org.slf4j</groupId>
+     <artifactId>slf4j-log4j12</artifactId>
+     <scope>test</scope>
+   </dependency>
+
+    <dependency>
+       <groupId>log4j</groupId>
+       <artifactId>log4j</artifactId>
+       <scope>test</scope>
+   </dependency>
 
   </dependencies>
 

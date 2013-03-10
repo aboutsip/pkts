@@ -95,4 +95,9 @@ public final class TransportPacketImpl implements TransportPacket {
         throw new RuntimeException("Sorry, not implemented just yet.");
     }
 
+    @Override
+    public int getTotalLength() {
+        return this.parent.getTotalLength();
+    }
+
 }

@@ -143,13 +143,94 @@ public final class IPv4Frame extends AbstractFrame implements IPFrame {
     @Override
     public void write(final OutputStream out) throws IOException {
         this.parentFrame.write(out);
-        // out.write(this.headers.getArray());
-        // out.write(getPayload().getArray());
     }
 
     @Override
     public long getArrivalTime() {
         return this.parentFrame.getArrivalTime();
     }
+
+    @Override
+    public int getTotalLength() {
+        return this.headers.getUnsignedShort(2);
+    }
+
+    /**
+     * 
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isFragmented() {
+        return isMoreFragmentsSet() || (getFragmentOffset() > 0);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isReservedFlagSet() {
+        try {
+            final byte b = this.headers.getByte(6);
+            return (b & 0x80) == 0x80;
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isDontFragmentSet() {
+        try {
+            final byte b = this.headers.getByte(6);
+            return (b & 0x40) == 0x40;
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isMoreFragmentsSet() {
+        try {
+            final byte b = this.headers.getByte(6);
+            return (b & 0x20) == 0x20;
+        } catch (final IOException e) {
+            throw new RuntimeException();
+        }
+    }
+
+    @Override
+    public short getFragmentOffset() {
+        try {
+            final byte a = this.headers.getByte(6);
+            final byte b = this.headers.getByte(7);
+            return (short) (((a & 0x1F) << 8) | (b & 0xFF));
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public int getIdentification() {
+        return this.headers.getUnsignedShort(4);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("IPv4 ");
+        sb.append(" Total Length: ").append(getTotalLength());
+        sb.append(" ID: ").append(getIdentification());
+        sb.append(" DF: ").append(isDontFragmentSet() ? "Set" : "Not Set");
+        sb.append(" MF: ").append(isMoreFragmentsSet() ? "Set" : "Not Set");
+        sb.append(" Fragment Offset: ").append(getFragmentOffset());
+
+        return sb.toString();
+    }
+
 
 }
