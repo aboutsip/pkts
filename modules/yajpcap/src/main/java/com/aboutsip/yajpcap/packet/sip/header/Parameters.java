@@ -15,7 +15,10 @@ public interface Parameters {
      * Get the value of the named parameter. If the named parameter is a
      * so-called flag parameter, then the value returned will be an empty
      * {@link Buffer}, which can be checked with {@link Buffer#isEmpty()} or
-     * {@link Buffer#capacity()}, which will return zero.
+     * {@link Buffer#capacity()}, which will return zero. As with any empty
+     * {@link Buffer}, if you do {@link Buffer#toString()} you will be getting
+     * an empty {@link String} back, which would be yet another way to check for
+     * a flag parameter.
      * 
      * @param name
      *            the name of the parameter we are looking for.

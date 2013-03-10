@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE scenario SYSTEM "sipp.dtd">
+
+<!-- This program is free software; you can redistribute it and/or      -->
+<!-- modify it under the terms of the GNU General Public License as     -->
+
+<scenario name="simple IMS session setup, server-side">
+
+  <recv request="INVITE" rrs="true">
+  </recv>
+
+  <pause milliseconds="100"/>
+  <send crlf="true">
+    <![CDATA[
+
+      SIP/2.0 100 Trying
+      [last_Via:]
+      [last_From:]
+      [last_To:];tag=[pid]SIPpTag01[call_number]
+      [last_Call-ID:]
+      [last_CSeq:]
+      Contact: <sip:[local_ip]:[local_port];transport=[transport]>
+      Content-Length: 0
+
+    ]]>
+  </send>
+	
+  <pause milliseconds="2000"/>
+  <send crlf="true">
+    <![CDATA[
+
+      SIP/2.0 180 Ringing
+      [last_Via:]
+      [last_From:]
+      [last_To:];tag=[pid]SIPpTag01[call_number]
+      [last_Call-ID:]
+      [last_CSeq:]
+      Contact: <sip:[local_ip]:[local_port];transport=[transport]>
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+
+  <recv request="CANCEL" rrs="true">
+  </recv>
+
+  <send crlf="true">
+    <![CDATA[
+    SIP/2.0 200 OK
+    [last_Via:]
+    [last_From:]
+    [last_To:]
+    [last_Call-ID:]
+    [last_CSeq:]
+    Content-Length: 0
+    ]]>
+  </send>
+
+  <pause milliseconds="1000"/>
+
+  <send crlf="true">
+    <![CDATA[
+    SIP/2.0 487 Request Terminated
+    [last_Via:]
+    [last_From:]
+    [last_To:];tag=[call_number]
+    [last_Call-ID:]
+    CSeq: 1 INVITE
+    Content-Length: [len]
+
+    ]]>
+  </send>
+
+  <recv request="ACK">
+  </recv>
+
+</scenario>
+

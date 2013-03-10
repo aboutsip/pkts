@@ -185,6 +185,27 @@ public class ByteBufferTest extends AbstractBufferTest {
         assertThat(b1.getArray(), is(b2.getArray()));
     }
 
+    @Test
+    public void testSliceEmptyBuffer() throws Exception {
+        Buffer buffer = Buffers.EMPTY_BUFFER;
+        assertEmptyBuffer(buffer.slice());
+
+        buffer = Buffers.wrap("a little harder");
+        buffer.readBytes(buffer.capacity());
+        assertEmptyBuffer(buffer.slice());
+    }
+
+    /**
+     * Convenience method for making sure that the buffer is indeed empty
+     * 
+     * @param buffer
+     */
+    private void assertEmptyBuffer(final Buffer buffer) {
+        assertThat(buffer.capacity(), is(0));
+        assertThat(buffer.hasReadableBytes(), is(false));
+        assertThat(buffer.isEmpty(), is(true));
+    }
+
     /**
      * Since a slice is sharing the same data, changing the data will affect
      * each other.

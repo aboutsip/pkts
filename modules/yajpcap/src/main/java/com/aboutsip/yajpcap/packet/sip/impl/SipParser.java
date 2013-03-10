@@ -307,6 +307,46 @@ public class SipParser {
     }
 
     /**
+     * Convenience method for expecting (and consuming) a SLASH, which is
+     * defined as:
+     * 
+     * 
+     * See RFC3261 section 25.1 Basic Rules
+     * 
+     * @param buffer
+     * @throws SipParseException
+     */
+    public static void expectSLASH(final Buffer buffer) throws SipParseException {
+        try {
+            final int count = consumeSLASH(buffer);
+            if (count == 0) {
+                throw new SipParseException(buffer.getReaderIndex(), "Expected SLASH");
+            }
+        } catch (final IndexOutOfBoundsException e) {
+            throw new SipParseException(buffer.getReaderIndex(), "Expected SLASH but nothing more to read", e);
+
+        } catch (final IOException e) {
+            throw new SipParseException(buffer.getReaderIndex(), "Expected SLASH but problem reading from stream", e);
+        }
+    }
+
+    /**
+     * Consume an slash (SLASH), which according to RFC3261 section 25.1 Basic
+     * Rules is:
+     * 
+     * SLASH = SWS "/" SWS ; slash
+     * 
+     * @param buffer
+     * @return true if we indeed did consume a SLASH
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static int consumeSLASH(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
+    IOException {
+        return consumeSeparator(buffer, SLASH);
+    }
+
+    /**
      * Expect the next byte to be a white space
      * 
      * @param buffer
@@ -373,22 +413,6 @@ public class SipParser {
     public static int consumeSTAR(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
     IOException {
         return consumeSeparator(buffer, STAR);
-    }
-
-    /**
-     * Consume an slash (SLASH), which according to RFC3261 section 25.1 Basic
-     * Rules is:
-     * 
-     * SLASH = SWS "/" SWS ; slash
-     * 
-     * @param buffer
-     * @return true if we indeed did consume a SLASH
-     * @throws IOException
-     * @throws IndexOutOfBoundsException
-     */
-    public static int consumeSLASH(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-    IOException {
-        return consumeSeparator(buffer, SLASH);
     }
 
     /**
@@ -793,6 +817,68 @@ public class SipParser {
             return null;
         }
         return buffer.readBytes(count);
+    }
+
+    /**
+     * Consume a m-type, which according to RFC3261 section 25.1 Basic Rules is:
+     * 
+     * <pre>
+     * m-type           =  discrete-type / composite-type
+     * discrete-type    =  "text" / "image" / "audio" / "video" / "application" / extension-token
+     * composite-type   =  "message" / "multipart" / extension-token
+     * extension-token  =  ietf-token / x-token
+     * ietf-token       =  token
+     * x-token          =  "x-" token
+     * </pre>
+     * 
+     * And if you really read through all of that stuff it all boils down to
+     * "token" so that is all we end up doing in this method. Hence, this method
+     * is really only to put some context to consuming a media-type
+     * 
+     * @return
+     * @throws IndexOutOfBoundsException
+     * @throws IOException
+     */
+    public static Buffer consumeMType(final Buffer buffer) throws SipParseException {
+        try {
+            return consumeToken(buffer);
+        } catch (final IndexOutOfBoundsException e) {
+            throw new SipParseException(buffer.getReaderIndex(), "Tried to consume m-type but buffer ended abruptly", e);
+        } catch (final IOException e) {
+            throw new SipParseException(buffer.getReaderIndex(),
+                    "Tried to consume m-type but problem reading from underlying stream", e);
+        }
+    }
+
+    /**
+     * Consume a m-subtype, which according to RFC3261 section 25.1 Basic Rules
+     * is:
+     * 
+     * <pre>
+     * m-subtype        =  extension-token / iana-token
+     * extension-token  =  ietf-token / x-token
+     * ietf-token       =  token
+     * x-token          =  "x-" token
+     * iana-token       =  token
+     * </pre>
+     * 
+     * And if you really read through all of that stuff it all boils down to
+     * "token" so that is all we end up doing in this method. Hence, this method
+     * is really only to put some context to consuming a media-type
+     * 
+     * @return
+     * @throws IndexOutOfBoundsException
+     * @throws IOException
+     */
+    public static Buffer consumeMSubtype(final Buffer buffer) throws SipParseException {
+        try {
+            return consumeToken(buffer);
+        } catch (final IndexOutOfBoundsException e) {
+            throw new SipParseException(buffer.getReaderIndex(), "Tried to consume m-type but buffer ended abruptly", e);
+        } catch (final IOException e) {
+            throw new SipParseException(buffer.getReaderIndex(),
+                    "Tried to consume m-type but problem reading from underlying stream", e);
+        }
     }
 
     /**

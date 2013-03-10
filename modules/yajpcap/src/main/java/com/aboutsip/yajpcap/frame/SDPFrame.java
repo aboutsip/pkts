@@ -20,6 +20,9 @@ public final class SDPFrame extends AbstractFrame implements Layer7Frame {
 
     private final Frame parentFrame;
 
+    /**
+     * The raw SDP
+     */
     private final Buffer sdp;
 
     /**
@@ -64,8 +67,7 @@ public final class SDPFrame extends AbstractFrame implements Layer7Frame {
      */
     @Override
     public ApplicationPacket parse() throws PacketParseException {
-        // TODO Auto-generated method stub
-        return null;
+        throw new RuntimeException("Not yet implemented");
     }
 
     /**

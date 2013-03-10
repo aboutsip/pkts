@@ -14,6 +14,7 @@
 
   <modules>
     <module>buffers</module>
+    <module>sdp</module>
     <module>yajpcap</module>
     <module>streams</module>
     <module>tools</module>
@@ -25,6 +26,14 @@
     <dependency>
       <groupId>com.aboutsip</groupId>
       <artifactId>aboutsip-buffers</artifactId>
+      <version>${project.version}</version>
+      <type>jar</type>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.aboutsip</groupId>
+      <artifactId>aboutsip-sdp</artifactId>
       <version>${project.version}</version>
       <type>jar</type>
       <scope>compile</scope>
@@ -45,6 +54,43 @@
       <type>jar</type>
       <scope>compile</scope>
     </dependency>
+
+   <!-- only for the SDP support. The reason
+        for including the entire jain sip ri
+        is because I couldn't find an official
+        SDP only release in any maven repos
+        and I didn't want to complicate things
+        for potential contributors so until
+        I write my own SDP library this will
+        be included. -->
+    <dependency>
+       <groupId>javax.sip</groupId>
+       <artifactId>jain-sip-ri</artifactId>
+       <version>1.2.159</version>
+       <type>jar</type>
+       <scope>compile</scope>
+   </dependency>
+
+   <dependency> 
+     <groupId>org.slf4j</groupId>
+     <artifactId>slf4j-api</artifactId>
+     <version>1.7.2</version>
+     <scope>provided</scope>
+   </dependency>
+
+   <dependency> 
+     <groupId>org.slf4j</groupId>
+     <artifactId>slf4j-log4j12</artifactId>
+     <version>1.7.2</version>
+     <scope>runtime</scope>
+   </dependency>
+
+    <dependency>
+       <groupId>log4j</groupId>
+       <artifactId>log4j</artifactId>
+       <version>1.2.14</version>
+       <scope>runtime</scope>
+   </dependency>
 
     <!-- Test Dependencies -->
     <dependency>

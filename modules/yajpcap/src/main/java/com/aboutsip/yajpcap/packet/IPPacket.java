@@ -21,4 +21,20 @@ public interface IPPacket extends MACPacket {
     String getSourceIP();
 
     String getDestinationIP();
+
+    /**
+     * This 16-bit field defines the entire packet (fragment) size, including
+     * header and data, in bytes. The minimum-length packet is 20 bytes (20-byte
+     * header + 0 bytes data) and the maximum is 65,535 bytes — the maximum
+     * value of a 16-bit word. The largest datagram that any host is required to
+     * be able to reassemble is 576 bytes, but most modern hosts handle much
+     * larger packets. Sometimes subnetworks impose further restrictions on the
+     * packet size, in which case datagrams must be fragmented. Fragmentation is
+     * handled in either the host or router in IPv4.
+     * 
+     * (source: http://en.wikipedia.org/wiki/IPv4)
+     * 
+     * @return
+     */
+    int getTotalLength();
 }

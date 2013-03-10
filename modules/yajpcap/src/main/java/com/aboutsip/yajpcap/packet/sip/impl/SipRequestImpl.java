@@ -41,4 +41,9 @@ public final class SipRequestImpl extends SipMessageImpl implements SipRequest {
         return this.requestLine.getRequestUri();
     }
 
+    @Override
+    public SipRequest toRequest() throws ClassCastException {
+        return this;
+    }
+
 }

@@ -4,8 +4,6 @@
 package com.aboutsip.yajpcap.framer;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -14,6 +12,7 @@ import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.Clock;
 import com.aboutsip.yajpcap.Pcap;
 import com.aboutsip.yajpcap.protocol.Protocol;
+import com.aboutsip.yajpcap.protocol.Protocol.Layer;
 
 /**
  * FramerFactory
@@ -24,7 +23,18 @@ public final class FramerManager {
 
     private static final FramerManager instance = new FramerManager();
 
+    /**
+     * may seem un-necessary but since there will be very few framers and they
+     * are fixed this doesn't really waste any memory and I prefer speed and
+     * correctness which this structure will help (it will help to avoid
+     * {@link Framer#accept(Buffer)} falsely reporting success if there simply
+     * are less framers that get a chance to look at the data.)
+     */
     private final Map<Protocol, Framer<?>> framers = new HashMap<Protocol, Framer<?>>();
+    private final Map<Protocol, Framer<?>> layer2Framer = new HashMap<Protocol, Framer<?>>();
+    private final Map<Protocol, Framer<?>> layer3Framer = new HashMap<Protocol, Framer<?>>();
+    private final Map<Protocol, Framer<?>> layer4Framer = new HashMap<Protocol, Framer<?>>();
+    private final Map<Protocol, Framer<?>> layer7Framer = new HashMap<Protocol, Framer<?>>();
 
     /**
      * The current time in the system, which is driven by
@@ -77,6 +87,20 @@ public final class FramerManager {
             throw new IllegalArgumentException("The protocol or framer cannot be null");
         }
         this.framers.put(p, framer);
+        switch (p.getProtocolLayer()) {
+        case LAYER_2:
+            this.layer2Framer.put(p, framer);
+            break;
+        case LAYER_3:
+            this.layer3Framer.put(p, framer);
+            break;
+        case LAYER_4:
+            this.layer4Framer.put(p, framer);
+            break;
+        case LAYER_7:
+            this.layer7Framer.put(p, framer);
+            break;
+        }
     }
 
     /**
@@ -95,6 +119,58 @@ public final class FramerManager {
     }
 
     /**
+     * Try and find a framer for the data but only look among the {@link Framer}
+     * s within the specified {@link Layer}.
+     * 
+     * You typically want to call this method as opposed to
+     * {@link #getFramer(Buffer)} since it will be faster because it will search
+     * a smaller space.
+     * 
+     * @param layer
+     *            the {@link Layer} where we expect that the framer will be
+     *            found.
+     * @param data
+     *            the data to frame.
+     * @return a {@link Framer} suitable to frame the data.
+     * @throws IOException
+     */
+    public Framer<?> getFramer(final Protocol.Layer layer, final Buffer data) throws IOException {
+        switch (layer) {
+        case LAYER_2:
+            return findFramer(this.layer2Framer, data);
+        case LAYER_3:
+            return findFramer(this.layer3Framer, data);
+        case LAYER_4:
+            return findFramer(this.layer4Framer, data);
+        case LAYER_7:
+            return findFramer(this.layer7Framer, data);
+        default:
+            // shouldn't happen since we never
+            // actually frame Layer_1 stuff.
+            throw new RuntimeException("Don't have framers setup for layer " + layer);
+        }
+    }
+
+    /**
+     * Helper method for finding a framer that accepts the data.
+     * 
+     * @param framers
+     * @param data
+     * @return
+     * @throws IOException
+     */
+    private Framer<?> findFramer(final Map<Protocol, Framer<?>> framers, final Buffer data) throws IOException {
+        for (final Framer<?> framer : framers.values()) {
+            if (framer.accept(data)) {
+                return framer;
+            }
+        }
+
+        // unknown
+        return null;
+    }
+
+    /**
      * Try and find a framer for the data
      * 
      * @param data the data we are trying to find a framer for
@@ -107,15 +183,7 @@ public final class FramerManager {
         // for certain protocols. However, this is just an optimization
         // and we would still have to loop over all of them in case
         // the port lookup doesn't turn out to be true
-
-        for (final Framer<?> framer : this.framers.values()) {
-            if (framer.accept(data)) {
-                return framer;
-            }
-        }
-
-        // unknown data type
-        return null;
+        return findFramer(this.framers, data);
     }
 
     private static class PcapClock implements Clock {
