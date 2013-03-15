@@ -46,6 +46,7 @@ public class DefaultStreamHandlerTest extends StreamsTestBase {
      */
     @Test
     public void testBasicSipStreamDetection() throws Exception {
+
         final Pcap pcap = Pcap.openStream(StreamsTestBase.class.getResourceAsStream("sipp.pcap"));
         final StreamHandler streamHandler = new DefaultStreamHandler();
         final StreamCounter streamCounter = new StreamCounter();

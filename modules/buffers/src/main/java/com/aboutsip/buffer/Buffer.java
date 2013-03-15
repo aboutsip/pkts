@@ -311,6 +311,8 @@ public interface Buffer extends Cloneable {
 
     short getUnsignedByte(int index) throws IndexOutOfBoundsException;
 
+    void setUnsignedByte(int index, short value) throws IndexOutOfBoundsException;
+
     /**
      * Dump the content of this buffer as a hex dump ala Wireshark. Mainly for
      * debugging purposes

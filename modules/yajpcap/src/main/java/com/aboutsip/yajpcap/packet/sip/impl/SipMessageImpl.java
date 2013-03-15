@@ -240,8 +240,8 @@ public abstract class SipMessageImpl implements SipMessage {
     public boolean isInvite() throws SipParseException {
         final Buffer m = getMethod();
         try {
-            return (m.getByte(0) == 'I') && (m.getByte(1) == 'N') && (m.getByte(2) == 'V') && (m.getByte(3) == 'I')
-                    && (m.getByte(4) == 'T') && (m.getByte(5) == 'E');
+            return m.getByte(0) == 'I' && m.getByte(1) == 'N' && m.getByte(2) == 'V' && m.getByte(3) == 'I'
+                    && m.getByte(4) == 'T' && m.getByte(5) == 'E';
         } catch (final IOException e) {
             throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
         }
@@ -254,7 +254,7 @@ public abstract class SipMessageImpl implements SipMessage {
     public boolean isBye() throws SipParseException {
         final Buffer m = getMethod();
         try {
-            return (m.getByte(0) == 'B') && (m.getByte(1) == 'Y') && (m.getByte(2) == 'E');
+            return m.getByte(0) == 'B' && m.getByte(1) == 'Y' && m.getByte(2) == 'E';
         } catch (final IOException e) {
             throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
         }
@@ -267,7 +267,7 @@ public abstract class SipMessageImpl implements SipMessage {
     public boolean isAck() throws SipParseException {
         final Buffer m = getMethod();
         try {
-            return (m.getByte(0) == 'A') && (m.getByte(1) == 'C') && (m.getByte(2) == 'K');
+            return m.getByte(0) == 'A' && m.getByte(1) == 'C' && m.getByte(2) == 'K';
         } catch (final IOException e) {
             throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
         }
@@ -280,8 +280,8 @@ public abstract class SipMessageImpl implements SipMessage {
     public boolean isCancel() throws SipParseException {
         final Buffer m = getMethod();
         try {
-            return (m.getByte(0) == 'C') && (m.getByte(1) == 'A') && (m.getByte(2) == 'N') && (m.getByte(3) == 'C')
-                    && (m.getByte(4) == 'E') && (m.getByte(5) == 'L');
+            return m.getByte(0) == 'C' && m.getByte(1) == 'A' && m.getByte(2) == 'N' && m.getByte(3) == 'C'
+                    && m.getByte(4) == 'E' && m.getByte(5) == 'L';
         } catch (final IOException e) {
             throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
         }
@@ -291,8 +291,8 @@ public abstract class SipMessageImpl implements SipMessage {
     public boolean isOptions() throws SipParseException {
         final Buffer m = getMethod();
         try {
-            return (m.getByte(0) == 'O') && (m.getByte(1) == 'P') && (m.getByte(2) == 'T') && (m.getByte(3) == 'I')
-                    && (m.getByte(4) == 'O') && ((m.getByte(5) == 'N') && (m.getByte(6) == 'S'));
+            return m.getByte(0) == 'O' && m.getByte(1) == 'P' && m.getByte(2) == 'T' && m.getByte(3) == 'I'
+                    && m.getByte(4) == 'O' && m.getByte(5) == 'N' && m.getByte(6) == 'S';
         } catch (final IOException e) {
             throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
         }
@@ -302,8 +302,8 @@ public abstract class SipMessageImpl implements SipMessage {
     public boolean isMessage() throws SipParseException {
         final Buffer m = getMethod();
         try {
-            return (m.getByte(0) == 'M') && (m.getByte(1) == 'E') && (m.getByte(2) == 'S') && (m.getByte(3) == 'S')
-                    && (m.getByte(4) == 'A') && ((m.getByte(5) == 'G') && (m.getByte(6) == 'E'));
+            return m.getByte(0) == 'M' && m.getByte(1) == 'E' && m.getByte(2) == 'S' && m.getByte(3) == 'S'
+                    && m.getByte(4) == 'A' && m.getByte(5) == 'G' && m.getByte(6) == 'E';
         } catch (final IOException e) {
             throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
         }
@@ -313,7 +313,7 @@ public abstract class SipMessageImpl implements SipMessage {
     public boolean isInfo() throws SipParseException {
         final Buffer m = getMethod();
         try {
-            return (m.getByte(0) == 'I') && (m.getByte(1) == 'N') && (m.getByte(2) == 'F') && (m.getByte(3) == 'O');
+            return m.getByte(0) == 'I' && m.getByte(1) == 'N' && m.getByte(2) == 'F' && m.getByte(3) == 'O';
         } catch (final IOException e) {
             throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
         }
@@ -359,7 +359,7 @@ public abstract class SipMessageImpl implements SipMessage {
 
     @Override
     public final boolean hasContent() {
-        return (this.payload != null) && this.payload.hasReadableBytes();
+        return this.payload != null && this.payload.hasReadableBytes();
     }
 
     @Override
@@ -400,6 +400,54 @@ public abstract class SipMessageImpl implements SipMessage {
     @Override
     public int getTotalLength() {
         return this.parent.getTotalLength();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setSourceMacAddress(final String macAddress) {
+        this.parent.setSourceMacAddress(macAddress);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setDestinationMacAddress(final String macAddress) {
+        this.parent.setDestinationMacAddress(macAddress);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setSourceIP(final int a, final int b, final int c, final int d) {
+        this.parent.setSourceIP(a, b, c, d);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setDestinationIP(final int a, final int b, final int c, final int d) {
+        this.parent.setDestinationIP(a, b, c, d);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setSourceIP(final String sourceIp) {
+        this.parent.setSourceIP(sourceIp);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setDestinationIP(final String destinationIP) {
+        this.parent.setSourceIP(destinationIP);
     }
 
     @Override

@@ -20,7 +20,59 @@ public interface IPPacket extends MACPacket {
 
     String getSourceIP();
 
+    /**
+     * Setting an IPv4 address the fast way! Specify each part separately. E.g.,
+     * setting 192.168.0.100 would be accomplished like so:
+     * 
+     * {@link #setSourceIP(192, 168, 0, 100)}
+     * 
+     * @param a
+     *            the first part of the IPv4 address, e.g. 192
+     * @param b
+     *            the second part of the IPv4 address, e.g. 168
+     * @param c
+     *            the third part of the IPv4 address, e.g. 0
+     * @param d
+     *            the fourth part of the IPv4 address, e.g. 100
+     */
+    void setSourceIP(int a, int b, int c, int d);
+
+    /**
+     * Set the source IP of this {@link IPPacket}. Note, using
+     * {@link #setSourceIP(int, int, int, int)} will be must faster so try and
+     * use it instead.
+     * 
+     * @param sourceIp
+     */
+    void setSourceIP(String sourceIp);
+
     String getDestinationIP();
+
+    /**
+     * Setting an IPv4 address the fast way! Specify each part separately. E.g.,
+     * setting 192.168.0.100 would be accomplished like so:
+     * 
+     * {@link #setSourceIP(192, 168, 0, 100)}
+     * 
+     * @param a
+     *            the first part of the IPv4 address, e.g. 192
+     * @param b
+     *            the second part of the IPv4 address, e.g. 168
+     * @param c
+     *            the third part of the IPv4 address, e.g. 0
+     * @param d
+     *            the fourth part of the IPv4 address, e.g. 100
+     */
+    void setDestinationIP(int a, int b, int c, int d);
+
+    /**
+     * Set the destination IP of this {@link IPPacket}. Note, using
+     * {@link #setDestinationIP(int, int, int, int)} will be must faster so try
+     * and use it instead.
+     * 
+     * @param sourceIp
+     */
+    void setDestinationIP(String destinationIP);
 
     /**
      * This 16-bit field defines the entire packet (fragment) size, including

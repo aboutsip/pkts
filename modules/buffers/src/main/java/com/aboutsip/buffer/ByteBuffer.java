@@ -41,7 +41,7 @@ public final class ByteBuffer extends AbstractBuffer {
             return Buffers.EMPTY_BUFFER;
         }
         checkIndex(this.lowerBoundary + start);
-        checkIndex((this.lowerBoundary + stop) - 1);
+        checkIndex(this.lowerBoundary + stop - 1);
         return new ByteBuffer(0, this.lowerBoundary + start, this.lowerBoundary + stop, this.buffer);
     }
 
@@ -110,7 +110,7 @@ public final class ByteBuffer extends AbstractBuffer {
     }
 
     public long unsignedInt(final byte a, final byte b, final byte c, final byte d) {
-        return ((a & 0xff) << 24) | ((b & 0xff) << 16) | ((c & 0xff) << 8) | (d & 0xff);
+        return (a & 0xff) << 24 | (b & 0xff) << 16 | (c & 0xff) << 8 | d & 0xff;
     }
 
     /**
@@ -157,8 +157,8 @@ public final class ByteBuffer extends AbstractBuffer {
         final int i = this.lowerBoundary + index;
         checkIndex(i);
         checkIndex(i + 4);
-        return ((this.buffer[i] & 0xff) << 24) | ((this.buffer[i + 1] & 0xff) << 16)
-                | ((this.buffer[i + 2] & 0xff) << 8) | ((this.buffer[i + 3] & 0xff) << 0);
+        return (this.buffer[i] & 0xff) << 24 | (this.buffer[i + 1] & 0xff) << 16
+                | (this.buffer[i + 2] & 0xff) << 8 | (this.buffer[i + 3] & 0xff) << 0;
     }
 
     /**
@@ -171,7 +171,7 @@ public final class ByteBuffer extends AbstractBuffer {
         checkIndex(i + 2);
 
         // big endian
-        return (short) ((this.buffer[i] << 8) | (this.buffer[i + 1] & 0xFF));
+        return (short) (this.buffer[i] << 8 | this.buffer[i + 1] & 0xFF);
 
         // little endian
         // return (short) ((this.buffer[i] & 0xFF) | (this.buffer[i + 1] << 8));
@@ -219,7 +219,7 @@ public final class ByteBuffer extends AbstractBuffer {
     public int hashCode() {
         int result = 1;
         for (int i = this.lowerBoundary + this.readerIndex; i < this.upperBoundary; ++i) {
-            result = (31 * result) + this.buffer[i];
+            result = 31 * result + this.buffer[i];
         }
         return result;
     }
@@ -253,6 +253,17 @@ public final class ByteBuffer extends AbstractBuffer {
         final int i = this.lowerBoundary + index;
         checkIndex(i);
         this.buffer[this.lowerBoundary + index] = value;
+    }
+
+    /**
+     * 
+     * {@inheritDoc}
+     */
+    @Override
+    public void setUnsignedByte(final int index, final short value) throws IndexOutOfBoundsException {
+        final int i = this.lowerBoundary + index;
+        checkIndex(i);
+        this.buffer[this.lowerBoundary + index] = (byte) value;
     }
 
     @Override

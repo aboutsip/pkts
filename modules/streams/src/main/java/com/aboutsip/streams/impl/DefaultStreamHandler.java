@@ -82,7 +82,7 @@ public final class DefaultStreamHandler implements StreamHandler {
                 }
             }
 
-            if ((this.sipStreamHandler != null) && frame.hasProtocol(Protocol.SIP)) {
+            if (this.sipStreamHandler != null && frame.hasProtocol(Protocol.SIP)) {
                 this.sipStreamHandler.processFrame(frame);
             } else if (frame.hasProtocol(Protocol.RTP)) {
                 // processRtpFrame((RtpFrame) frame.getFrame(Protocol.RTP));
@@ -173,10 +173,12 @@ public final class DefaultStreamHandler implements StreamHandler {
         return null;
     }
 
+
     @Override
-    public Map<StreamId, Stream<? extends Packet>> getStreams() {
+    public Map<StreamId, ? extends Stream> getStreams() {
         if (this.sipStreamHandler != null) {
-            return (Map<StreamId, Stream<? extends Packet>>) this.sipStreamHandler.getStreams();
+            return this.sipStreamHandler.getStreams();
+            // return (Map<StreamId, Stream<? extends Packet>>) this.sipStreamHandler.getStreams();
         }
 
         return null;

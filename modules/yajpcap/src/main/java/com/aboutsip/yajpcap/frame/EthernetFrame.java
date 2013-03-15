@@ -8,6 +8,7 @@ import java.io.ObjectOutput;
 import java.io.OutputStream;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.yajpcap.framer.EthernetFramer;
 import com.aboutsip.yajpcap.framer.Framer;
 import com.aboutsip.yajpcap.framer.FramerManager;
 import com.aboutsip.yajpcap.packet.MACPacket;
@@ -26,6 +27,8 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
     private final Buffer srcMacAddress;
     private final EtherType type;
 
+    private final Buffer headers;
+
     /**
      * 
      */
@@ -40,6 +43,38 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
         this.destMacAddress = destMacAddress;
         this.srcMacAddress = srcMacAddress;
         this.type = type;
+        this.headers = null;
+    }
+
+    public EthernetFrame(final FramerManager framerManager, final Layer1Frame parentFrame, final Buffer headers,
+            final Buffer payload) {
+        super(framerManager, Protocol.ETHERNET_II, payload);
+        assert parentFrame != null;
+        this.headers = headers;
+        this.destMacAddress = null;
+        this.srcMacAddress = null;
+
+        this.parentFrame = parentFrame;
+        byte b1 = 0x00;
+        byte b2 = 0x00;
+        try {
+            b1 = this.headers.getByte(12);
+            b2 = this.headers.getByte(13);
+        } catch (final IndexOutOfBoundsException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (final IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        this.type = EthernetFramer.getEtherTypeSafe(b1, b2);
+        if (this.type == null) {
+            throw new RuntimeException("what???");
+        }
+
+        // this.destMacAddress = this.destMacAddress;
+        // this.srcMacAddress = this.srcMacAddress;
+        // this.type = this.type;
     }
 
     /**
@@ -48,7 +83,11 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
      * @return
      */
     public Buffer getRawDestinationMacAddress() {
-        return this.destMacAddress;
+        if (this.destMacAddress != null) {
+            return this.destMacAddress;
+        }
+
+        return this.headers.slice(0, 6);
     }
 
     /**
@@ -57,7 +96,10 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
      * @return
      */
     public Buffer getRawSourceMacAddress() {
-        return this.srcMacAddress;
+        if (this.srcMacAddress != null) {
+            return this.srcMacAddress;
+        }
+        return this.headers.slice(6, 12);
     }
 
     /**
@@ -66,12 +108,14 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
      * @return
      */
     public String getSourceMacAddress() throws IOException {
+        /*
         if (this.srcMacAddress.readableBytes() != 6) {
             // probably want to throw some parse/frame exception
             // or something
             throw new IllegalArgumentException("Not enough bytes in the source mac address");
         }
-        return toHexString(this.srcMacAddress);
+         */
+        return toHexString(getRawSourceMacAddress());
     }
 
     /**
@@ -80,12 +124,14 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
      * @return
      */
     public String getDestinationMacAddress() throws IOException {
+        /*
         if (this.destMacAddress.readableBytes() != 6) {
             // probably want to throw some parse/frame exception
             // or something
             throw new IllegalArgumentException("Not enough bytes in the source mac address");
         }
-        return toHexString(this.destMacAddress);
+         */
+        return toHexString(getRawDestinationMacAddress());
     }
 
     /**
@@ -102,7 +148,7 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
         for (int i = 0; i < buffer.capacity(); ++i) {
             final byte b = buffer.getByte(i);
             sb.append(String.format("%02X", b));
-            if (i < (buffer.capacity() - 1)) {
+            if (i < buffer.capacity() - 1) {
                 sb.append(":");
             }
         }
@@ -114,22 +160,39 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
      */
     @Override
     public MACPacket parse() throws PacketParseException {
+        final Packet parentPacket = this.parentFrame.parse();
+
+        // option 1, pass in the raw headers
+        return new MACPacketImpl(parentPacket, this.headers);
+
+        // option 2, parse out the mac addresses
+        // This is AMAZING! Doing the below is 110%
+        // slower compared to the above! Parsing a 100mb pcap
+        // tool 6.44 seconds with option 1 and 13.99 seconds with
+        // option 2! Gee, that is quite amazing. Another proof that
+        // keeping as much as possible as pure buffers make a big
+        // difference.
+        /*
         try {
-            final Packet parentPacket = this.parentFrame.parse();
             final String source = getSourceMacAddress();
             final String dest = getDestinationMacAddress();
             return new MACPacketImpl(parentPacket, source, dest);
         } catch (final IOException e) {
             throw new RuntimeException("TODO: need to parse exception or something", e);
         }
+         */
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("Destination Mac Address: ").append(this.destMacAddress);
-        sb.append("Source Mac Address: ").append(this.srcMacAddress);
-        sb.append("EtherType: ").append(this.type);
+        try {
+            sb.append("Destination Mac Address: ").append(getDestinationMacAddress());
+            sb.append("Source Mac Address: ").append(getSourceMacAddress());
+            sb.append("EtherType: ").append(this.type);
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
 
         return sb.toString();
     }
