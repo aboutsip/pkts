@@ -73,7 +73,7 @@ public final class RtpPacketImpl implements RtpPacket {
      */
     @Override
     public int getPayloadType() throws IOException {
-        return (this.headers.getByte(1) & 0xff & 0x7f);
+        return this.headers.getByte(1) & 0xff & 0x7f;
     }
 
     /**
@@ -90,8 +90,8 @@ public final class RtpPacketImpl implements RtpPacket {
      */
     @Override
     public long getTimestamp() throws IOException {
-        return ((long) (this.headers.getByte(4) & 0xff) << 24) | ((long) (this.headers.getByte(5) & 0xff) << 16)
-                | ((long) (this.headers.getByte(6) & 0xff) << 8) | ((this.headers.getByte(7) & 0xff));
+        return (long) (this.headers.getByte(4) & 0xff) << 24 | (long) (this.headers.getByte(5) & 0xff) << 16
+                | (long) (this.headers.getByte(6) & 0xff) << 8 | this.headers.getByte(7) & 0xff;
     }
 
     /**
@@ -99,8 +99,8 @@ public final class RtpPacketImpl implements RtpPacket {
      */
     @Override
     public long getSyncronizationSource() throws IOException {
-        return ((long) (this.headers.getByte(8) & 0xff) << 24) | ((long) (this.headers.getByte(9) & 0xff) << 16)
-                | ((long) (this.headers.getByte(10) & 0xff) << 8) | ((this.headers.getByte(11) & 0xff));
+        return (long) (this.headers.getByte(8) & 0xff) << 24 | (long) (this.headers.getByte(9) & 0xff) << 16
+                | (long) (this.headers.getByte(10) & 0xff) << 8 | this.headers.getByte(11) & 0xff;
     }
 
     /**
@@ -174,6 +174,54 @@ public final class RtpPacketImpl implements RtpPacket {
     @Override
     public String getDestinationMacAddress() {
         return this.parent.getDestinationMacAddress();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setSourceMacAddress(final String macAddress) {
+        this.parent.setSourceMacAddress(macAddress);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setDestinationMacAddress(final String macAddress) {
+        this.parent.setDestinationMacAddress(macAddress);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setSourceIP(final int a, final int b, final int c, final int d) {
+        this.parent.setSourceIP(a, b, c, d);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setDestinationIP(final int a, final int b, final int c, final int d) {
+        this.parent.setDestinationIP(a, b, c, d);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setSourceIP(final String sourceIp) {
+        this.parent.setSourceIP(sourceIp);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setDestinationIP(final String destinationIP) {
+        this.parent.setSourceIP(destinationIP);
     }
 
     @Override

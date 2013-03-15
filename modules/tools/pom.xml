@@ -41,8 +41,8 @@
     <dependency>
        <groupId>log4j</groupId>
        <artifactId>log4j</artifactId>
+       <scope>compile</scope>
    </dependency>
-
 
   </dependencies>
 
