@@ -4,6 +4,8 @@ import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.packet.impl.ApplicationPacket;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
+import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
+import com.aboutsip.yajpcap.packet.sip.header.RouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
 import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 
@@ -100,10 +102,22 @@ public interface SipMessage extends ApplicationPacket {
     /**
      * Get the header as a buffer
      * 
-     * @param keyParameter the name of the header we wish to fetch
-     * @return the header as a buffer or null if not found
+     * @param headerName
+     *            the name of the header we wish to fetch
+     * @return the header as a {@link SipHeader} or null if not found
+     * @throws SipParseException
      */
-    SipHeader getHeader(Buffer keyParameter) throws SipParseException;
+    SipHeader getHeader(Buffer headerName) throws SipParseException;
+
+    /**
+     * Same as {@link #getHeader(Buffers.wrap(keyParameter)}.
+     * 
+     * @param headerName
+     *            the name of the header we wish to fetch
+     * @return the header as a {@link SipHeader} or null if not found
+     * @throws SipParseException
+     */
+    SipHeader getHeader(String headerName) throws SipParseException;
 
     /**
      * Convenience method for fetching the from-header
@@ -119,6 +133,25 @@ public interface SipMessage extends ApplicationPacket {
      * @return the to header as a buffer
      */
     ToHeader getToHeader() throws SipParseException;
+
+    /**
+     * Get the top-most {@link RecordRouteHeader} header if present.
+     * 
+     * @return the top-most {@link RecordRouteHeader} header or null if there
+     *         are no {@link RecordRouteHeader} headers found in this
+     *         {@link SipMessage}.
+     * @throws SipParseException
+     */
+    RecordRouteHeader getRecordRouteHeader() throws SipParseException;
+
+    /**
+     * Get the top-most {@link RouteHeader} header if present.
+     * 
+     * @return the top-most {@link RouteHeader} header or null if there are no
+     *         {@link RouteHeader} headers found in this {@link SipMessage}.
+     * @throws SipParseException
+     */
+    RouteHeader getRouteHeader() throws SipParseException;
 
     /**
      * Get the {@link ContentTypeHeader} for this message. If there is no

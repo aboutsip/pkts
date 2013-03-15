@@ -42,7 +42,8 @@ public class SipHeaderImpl implements SipHeader {
 
     @Override
     public String toString() {
-        return getName().toString() + ": " + this.value.toString();
+        // return getName().toString() + ": " + this.value.toString();
+        return getName().toString() + ": " + getValue();
     }
 
 }

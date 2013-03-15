@@ -59,7 +59,7 @@ public abstract class ParametersImpl extends SipHeaderImpl implements Parameters
             throw new IllegalArgumentException("The name of the parameter cannot be null");
         }
 
-        if ((this.paramMap != null) && this.paramMap.containsKey(name)) {
+        if (this.paramMap != null && this.paramMap.containsKey(name)) {
             return this.paramMap.get(name);
         }
 

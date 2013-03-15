@@ -21,9 +21,13 @@ import com.aboutsip.yajpcap.packet.sip.SipRequest;
 import com.aboutsip.yajpcap.packet.sip.SipResponse;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
+import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
+import com.aboutsip.yajpcap.packet.sip.header.RouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
 import com.aboutsip.yajpcap.packet.sip.header.impl.ContentTypeHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.FromHeaderImpl;
+import com.aboutsip.yajpcap.packet.sip.header.impl.RecordRouteHeaderImpl;
+import com.aboutsip.yajpcap.packet.sip.header.impl.RouteHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.ToHeaderImpl;
 
 /**
@@ -156,6 +160,15 @@ public abstract class SipMessageImpl implements SipMessage {
     }
 
     /**
+     * 
+     * {@inheritDoc}
+     */
+    @Override
+    public SipHeader getHeader(final String headerName) throws SipParseException {
+        return getHeader(Buffers.wrap(headerName));
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -169,6 +182,48 @@ public abstract class SipMessageImpl implements SipMessage {
         final FromHeader from = FromHeaderImpl.frame(buffer);
         this.parsedHeaders.put(from.getName(), from);
         return from;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public RecordRouteHeader getRecordRouteHeader() throws SipParseException {
+        final SipHeader header = getHeader(RecordRouteHeader.NAME);
+        if (header instanceof RecordRouteHeader) {
+            return (RecordRouteHeader) header;
+        }
+
+        if (header == null) {
+            return null;
+        }
+
+        final Buffer buffer = header.getValue();
+        final RecordRouteHeader rr = RecordRouteHeaderImpl.frame(buffer);
+
+        this.parsedHeaders.put(rr.getName(), rr);
+        return rr;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public RouteHeader getRouteHeader() throws SipParseException {
+        final SipHeader header = getHeader(RouteHeader.NAME);
+        if (header instanceof RouteHeader) {
+            return (RouteHeader) header;
+        }
+
+        if (header == null) {
+            return null;
+        }
+
+        final Buffer buffer = header.getValue();
+        final RouteHeader route = RouteHeaderImpl.frame(buffer);
+
+        this.parsedHeaders.put(route.getName(), route);
+        return route;
     }
 
     @Override

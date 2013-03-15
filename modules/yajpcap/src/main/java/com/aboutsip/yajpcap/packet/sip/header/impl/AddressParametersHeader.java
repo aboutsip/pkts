@@ -50,7 +50,10 @@ public abstract class AddressParametersHeader extends ParametersImpl implements 
         // TODO: create a composite buffer instead of this crap
         final StringBuilder sb = new StringBuilder();
         sb.append(this.address.toString());
-        sb.append(super.getValue().toString());
+        final Buffer superValue = super.getValue();
+        if (superValue != null) {
+            sb.append(superValue.toString());
+        }
         return Buffers.wrap(sb.toString());
     }
 
@@ -94,5 +97,4 @@ public abstract class AddressParametersHeader extends ParametersImpl implements 
         }
 
     }
-
 }
