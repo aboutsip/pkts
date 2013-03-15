@@ -61,6 +61,7 @@ public interface StreamHandler extends FrameHandler {
      * 
      * @return
      */
-    Map<StreamId, Stream<? extends Packet>> getStreams();
+    Map<StreamId, ? extends Stream> getStreams();
+
 
 }

@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.frame.EthernetFrame;
+import com.aboutsip.yajpcap.frame.EthernetFrame.EtherType;
 import com.aboutsip.yajpcap.frame.Layer1Frame;
 import com.aboutsip.yajpcap.frame.UnknownEtherType;
 import com.aboutsip.yajpcap.protocol.Protocol;
@@ -41,12 +42,16 @@ public class EthernetFramer implements Layer2Framer {
             throw new IllegalArgumentException("The parent frame cannot be null");
         }
 
-        final Buffer destMacAddress = buffer.readBytes(6);
-        final Buffer srcMacAddress = buffer.readBytes(6);
-        final byte b1 = buffer.readByte();
-        final byte b2 = buffer.readByte();
+        // final Buffer destMacAddress = buffer.readBytes(6);
+        // final Buffer srcMacAddress = buffer.readBytes(6);
+        // final byte b1 = buffer.readByte();
+        // final byte b2 = buffer.readByte();
 
-        EthernetFrame.EtherType etherType;
+        final Buffer headers = buffer.readBytes(14);
+        final byte b1 = headers.getByte(12);
+        final byte b2 = headers.getByte(13);
+
+        EtherType etherType = null;
         try {
             etherType = getEtherType(b1, b2);
         } catch (final UnknownEtherType e) {
@@ -55,7 +60,8 @@ public class EthernetFramer implements Layer2Framer {
 
         final Buffer data = buffer.slice(buffer.capacity());
 
-        return new EthernetFrame(this.framerManager, parent, destMacAddress, srcMacAddress, etherType, data);
+        // return new EthernetFrame(this.framerManager, parent, destMacAddress, srcMacAddress, etherType, data);
+        return new EthernetFrame(this.framerManager, parent, headers, data);
     }
 
     public static EthernetFrame.EtherType getEtherType(final byte b1, final byte b2) throws UnknownEtherType {
@@ -69,9 +75,10 @@ public class EthernetFramer implements Layer2Framer {
     }
 
     public static EthernetFrame.EtherType getEtherTypeSafe(final byte b1, final byte b2) {
-        if ((b1 == (byte) 0x08) && (b2 == (byte) 0x00)) {
+        if (b1 == (byte) 0x08 && b2 == (byte) 0x00) {
             return EthernetFrame.EtherType.IPv4;
-        } else if ((b1 == (byte) 0x86) && (b2 == (byte) 0xdd)) {
+        } else if (b1 == (byte) 0x86 && b2 == (byte) 0xdd) {
+            System.err.println("queue");
             return EthernetFrame.EtherType.IPv6;
         }
 

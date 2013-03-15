@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.aboutsip.sdp.RTPInfo;
 import com.aboutsip.sdp.SDP;
 import com.aboutsip.streams.SipStatistics;
-import com.aboutsip.streams.SipStream;
+import com.aboutsip.streams.Stream;
 import com.aboutsip.streams.StreamId;
 import com.aboutsip.streams.StreamListener;
 import com.aboutsip.yajpcap.frame.Frame;
@@ -259,7 +259,7 @@ public class SipStreamHandler {
         }
     }
 
-    public Map<StreamId, ? extends SipStream> getStreams() {
+    public Map<StreamId, ? extends Stream> getStreams() {
         return this.sipStreams;
     }
 }

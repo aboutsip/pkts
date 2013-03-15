@@ -100,4 +100,46 @@ public final class TransportPacketImpl implements TransportPacket {
         return this.parent.getTotalLength();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setSourceMacAddress(final String macAddress) {
+        this.parent.setSourceMacAddress(macAddress);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setDestinationMacAddress(final String macAddress) {
+        this.parent.setDestinationMacAddress(macAddress);
+    }
+
+    @Override
+    public void setSourceIP(final int a, final int b, final int c, final int d) {
+        this.parent.setSourceIP(a, b, c, d);
+    }
+
+    @Override
+    public void setDestinationIP(final int a, final int b, final int c, final int d) {
+        this.parent.setDestinationIP(a, b, c, d);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setSourceIP(final String sourceIp) {
+        this.parent.setSourceIP(sourceIp);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setDestinationIP(final String destinationIP) {
+        this.parent.setDestinationIP(destinationIP);
+    }
+
 }
