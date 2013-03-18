@@ -26,8 +26,8 @@ import com.aboutsip.yajpcap.packet.sip.SipHeader;
  */
 public class SipParserTest {
 
-    protected static final String TAB = (new Character('\t')).toString();
-    protected static final String SP = (new Character(' ')).toString();
+    protected static final String TAB = new Character('\t').toString();
+    protected static final String SP = new Character(' ').toString();
     protected static final String CRLF = "\r\n";
     protected static final String CR = "\r";
     protected static final String LF = "\r";
@@ -44,6 +44,120 @@ public class SipParserTest {
      */
     @After
     public void tearDown() throws Exception {
+    }
+
+    /**
+     * The sent-protocol is the first part of a Via header, i.e. the
+     * "SIP/2.0/UDP" stuff.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testConsumeSentProtocol() throws Exception {
+        assertConsumeSentProtocol("SIP/2.0/UDP", "UDP", "");
+        assertConsumeSentProtocol("SIP/2.0/TCP", "TCP", "");
+        assertConsumeSentProtocol("SIP/2.0/TLS", "TLS", "");
+        assertConsumeSentProtocol("SIP/2.0/SCTP", "SCTP", "");
+        assertConsumeSentProtocol("SIP/2.0/WS", "WS", "");
+        assertConsumeSentProtocol("SIP/2.0/whatever", "whatever", "");
+        assertConsumeSentProtocol("SIP/2.0/UDP some left over", "UDP", " some left over");
+
+        assertConsumeSentProtocolBadFormat("SIP/2.0UDP", "expected SipParseException because of missing slash");
+        assertConsumeSentProtocolBadFormat("SIP/1.0/UDP", "expected SipParseException because of wrong version");
+        assertConsumeSentProtocolBadFormat("APA/2.0/UDP", "expected SipParseException because not SIP");
+        assertConsumeSentProtocolBadFormat("SIP/2.0/", "expected SipParseException because no protocol specified");
+    }
+
+    private void assertConsumeSentProtocolBadFormat(final String toParse, final String failMessage) throws Exception {
+        try {
+            SipParser.consumeSentProtocol(Buffers.wrap(toParse));
+            fail(failMessage);
+        } catch (final SipParseException e) {
+            // expected
+        }
+    }
+
+    private void assertConsumeSentProtocol(final String toParse, final String expectedProtocol,
+            final String expectedLeftOver)
+                    throws Exception {
+        final Buffer buffer = Buffers.wrap(toParse);
+        final Buffer protocol = SipParser.consumeSentProtocol(buffer);
+        assertThat(protocol.toString(), is(expectedProtocol));
+        assertThat(buffer.toString(), is(expectedLeftOver));
+    }
+
+    @Test
+    public void testConsumeUserInfoHostTest() throws Exception {
+        assertConsumeUserInfoHost("alice@example.com", "alice", "example.com", null);
+        assertConsumeUserInfoHost("alice:secret@example.com", "alice:secret", "example.com", null);
+        assertConsumeUserInfoHost("alice@example.com:5090", "alice", "example.com:5090", null);
+        assertConsumeUserInfoHost("alice@example.com:5090;transport=tcp", "alice", "example.com:5090", ";transport=tcp");
+        assertConsumeUserInfoHost("example.com", null, "example.com", null);
+        assertConsumeUserInfoHost("example.com;transport=tcp", null, "example.com", ";transport=tcp");
+        assertConsumeUserInfoHost("example.com:9999;transport=tcp", null, "example.com:9999", ";transport=tcp");
+        assertConsumeUserInfoHost("ali;ce@example.com", "ali;ce", "example.com", null);
+        assertConsumeUserInfoHost("ali?ce@example.com", "ali?ce", "example.com", null);
+        assertConsumeUserInfoHost("ali?c;e@example.com", "ali?c;e", "example.com", null);
+        assertConsumeUserInfoHost("a$&li?c;e@example.com", "a$&li?c;e", "example.com", null);
+        assertConsumeUserInfoHost("ali;ce@example.com;transport=udp?apa=monkey", "ali;ce", "example.com",
+                ";transport=udp?apa=monkey");
+        assertConsumeUserInfoHost("example.com;transport=tcp?apa=monkey", null, "example.com",
+                ";transport=tcp?apa=monkey");
+        assertConsumeUserInfoHost("example.com?apa=monkey", null, "example.com", "?apa=monkey");
+        assertConsumeUserInfoHost("alice@example.com?apa=monkey", "alice", "example.com", "?apa=monkey");
+        assertConsumeUserInfoHost("al?ice@example.com?apa=monkey", "al?ice", "example.com", "?apa=monkey");
+
+        // not very useful but we should parse it. Validation at a later step
+        // has to determine whether this is ok or not. We are just framing
+        // here...
+        assertConsumeUserInfoHost("a", null, "a", null);
+
+    }
+
+    /**
+     * Specifying a @ without user part is illegal.
+     * 
+     * @throws Exception
+     */
+    @Test(expected = SipParseException.class)
+    public void testConsumeUserInfoHostNoUserPart() throws Exception {
+        assertConsumeUserInfoHost("@a.com", "", "a.com", null);
+    }
+
+    /**
+     * Helper method for testing to extract out the user-info and host-port
+     * portion of a sip uri.
+     * 
+     * @param toParse
+     *            what to parse
+     * @param expectedUser
+     *            the expected user. Null if you don't expect one.
+     * @param expectedHost
+     *            the expected host info portion (ports and stuff will be part
+     *            of this)
+     * @param expectedLeftOver
+     *            it is really important that we consume what we should be
+     *            consuming and leave the rest alone. This is what we expect to
+     *            be left after we have parsed it.
+     * @throws Exception
+     */
+    private void assertConsumeUserInfoHost(final String toParse, final String expectedUser, final String expectedHost,
+            final String expectedLeftOver)
+                    throws Exception {
+        final Buffer buffer = Buffers.wrap(toParse);
+        final Buffer[] userHost = SipParser.consumeUserInfoHostPort(buffer);
+        if (expectedUser == null) {
+            assertThat(userHost[0], is((Buffer) null));
+        } else {
+            assertThat(userHost[0].toString(), is(expectedUser));
+        }
+        assertThat(userHost[1].toString(), is(expectedHost));
+
+        if (expectedLeftOver == null) {
+            assertThat(buffer.hasReadableBytes(), is(false));
+        } else {
+            assertThat(buffer.toString(), is(expectedLeftOver));
+        }
     }
 
     /**
@@ -124,7 +238,7 @@ public class SipParserTest {
 
         // and if we haven't found the end after 1000 bytes we will also give up
         sb = new StringBuilder();
-        for (int i = 0; i < 1000; ++i) {
+        for (int i = 0; i < SipParser.MAX_LOOK_AHEAD + 1; ++i) {
             sb.append("a");
         }
         buffer = Buffers.wrap("sip:" + sb.toString());
@@ -204,7 +318,7 @@ public class SipParserTest {
         for (int i = 0; i < noOfParams; ++i) {
             final Buffer[] actual = params.get(i);
             final String expectedKey = expectedKeyValuePairs[i * 2];
-            final String expectedValue = expectedKeyValuePairs[(i * 2) + 1];
+            final String expectedValue = expectedKeyValuePairs[i * 2 + 1];
             assertThat(actual[0].toString(), is(expectedKey));
             if (expectedValue == null) {
                 assertThat(actual[1], is((Buffer) null));
@@ -597,6 +711,73 @@ public class SipParserTest {
         assertLWSConsumption(TAB + SP + CRLF, "monkey");
     }
 
+    @Test
+    public void testConsumeSentBy() throws Exception {
+        assertConsumeSentBy("127.0.0.1", "127.0.0.1", null, "");
+        assertConsumeSentBy("aboutsip.com", "aboutsip.com", null, "");
+        assertConsumeSentBy("aboutsip.com;apa=monkey", "aboutsip.com", null, ";apa=monkey");
+        assertConsumeSentBy("127.0.0.1:5060;apa=monkey", "127.0.0.1", "5060", ";apa=monkey");
+        assertConsumeSentBy("a:5060;apa=monkey", "a", "5060", ";apa=monkey");
+    }
+
+    private void assertConsumeSentBy(final String toParse, final String expectedHost, final String expectedPort,
+            final String leftOver)
+                    throws Exception {
+        final Buffer buffer = Buffers.wrap(toParse);
+        final Buffer[] result = SipParser.consumeSentBye(buffer);
+        if (expectedHost == null) {
+            assertThat(result[0], is((Buffer) null));
+        } else {
+            assertThat(result[0].toString(), is(expectedHost));
+        }
+
+        if (expectedPort == null) {
+            assertThat(result[1], is((Buffer) null));
+        } else {
+            assertThat(result[1].toString(), is(expectedPort));
+        }
+
+        assertThat(buffer.toString(), is(leftOver));
+    }
+
+    @Test
+    public void testConsumePort() throws Exception {
+        assertThat(SipParser.consumePort(Buffers.wrap("123")).toString(), is("123"));
+        assertThat(SipParser.consumePort(Buffers.wrap("0123456789")).toString(), is("0123456789"));
+        assertThat(SipParser.consumePort(Buffers.wrap("1hello")).toString(), is("1"));
+        assertThat(SipParser.consumePort(Buffers.wrap("hello")), is((Buffer) null));
+    }
+
+    /**
+     * Make sure we consume alphanum correctly.
+     */
+    @Test
+    public void testConsumeAlphaNum() throws Exception {
+        assertConsumeAlphaNum("asdf", "asdf", "");
+        assertConsumeAlphaNum("asdf123", "asdf123", "");
+        assertConsumeAlphaNum("asdf123 hello", "asdf123", " hello");
+        assertConsumeAlphaNum("123apa hello", "123apa", " hello");
+        assertConsumeAlphaNum(" ", null, " ");
+        assertConsumeAlphaNum("   space", null, "   space");
+        assertConsumeAlphaNum("0123456789", "0123456789", "");
+        assertConsumeAlphaNum("abcdefghiljklmnopqrstuvw", "abcdefghiljklmnopqrstuvw", "");
+        assertConsumeAlphaNum("ABCDEFGHILJKLMNOPQRSTUVW", "ABCDEFGHILJKLMNOPQRSTUVW", "");
+        assertConsumeAlphaNum("-", null, "-");
+        assertConsumeAlphaNum("/", null, "/");
+    }
+
+    private void assertConsumeAlphaNum(final String toParse, final String expected, final String leftOver)
+            throws Exception {
+        final Buffer buffer = Buffers.wrap(toParse);
+        final Buffer actual = SipParser.consumeAlphaNum(buffer);
+        if (expected == null) {
+            assertThat(actual, is((Buffer) null));
+        } else {
+            assertThat(actual.toString(), is(expected));
+        }
+        assertThat(buffer.toString(), is(leftOver));
+    }
+
     /**
      * Make sure that we can consume LWS according to spec (even though we do
      * consume a little too much WS in certain cases, see comment in test and in
@@ -692,7 +873,7 @@ public class SipParserTest {
 
         // also make sure we return the boolean indicating that we consumed
         // some WS...
-        assertThat(stuffConsumed, is((spBefore + tabBefore) > 0));
+        assertThat(stuffConsumed, is(spBefore + tabBefore > 0));
 
     }
 

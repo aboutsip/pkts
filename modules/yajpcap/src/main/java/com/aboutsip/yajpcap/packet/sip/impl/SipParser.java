@@ -40,7 +40,17 @@ import com.aboutsip.yajpcap.packet.sip.header.impl.SipHeaderImpl;
  */
 public class SipParser {
 
+    /**
+     * There are many situations where you are looking to frame something but
+     * you cannot find the terminating condition. Since an attacker could easily
+     * just have you read a never ending stream we need at some point give up
+     * and abort.
+     */
+    public static final int MAX_LOOK_AHEAD = 1024;
+
     public static final Buffer SIP2_0 = Buffers.wrap("SIP/2.0");
+
+    public static final byte AT = '@';
 
     public static final byte COLON = ':';
 
@@ -118,7 +128,7 @@ public class SipParser {
 
     /**
      * Expect that the next set of bytes is "SIP/2.0" and if not then we will
-     * throw a
+     * throw a {@link SipParseException}
      * 
      * @param buffer
      */
@@ -166,7 +176,7 @@ public class SipParser {
     public static List<Buffer[]> consumeGenericParams(final Buffer buffer) throws IndexOutOfBoundsException,
     IOException {
         final List<Buffer[]> params = new ArrayList<Buffer[]>();
-        while (buffer.hasReadableBytes() && (buffer.peekByte() == SEMI)) {
+        while (buffer.hasReadableBytes() && buffer.peekByte() == SEMI) {
             buffer.readByte(); // consume the SEMI
             params.add(consumeGenericParam(buffer));
         }
@@ -247,7 +257,7 @@ public class SipParser {
     public static boolean isNextDigit(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
         if (buffer.hasReadableBytes()) {
             final char next = (char) buffer.peekByte();
-            return (next >= 48) && (next <= 57);
+            return next >= 48 && next <= 57;
         }
 
         return false;
@@ -356,7 +366,7 @@ public class SipParser {
         try {
             if (buffer.hasReadableBytes()) {
                 final byte b = buffer.getByte(buffer.getReaderIndex());
-                if ((b == SP) || (b == HTAB)) {
+                if (b == SP || b == HTAB) {
                     // ok, it was a WS so consume the byte
                     buffer.readByte();
                     ++consumed;
@@ -773,14 +783,14 @@ public class SipParser {
             final byte b = buffer.readByte();
 
             // emergency breaks...
-            if ((state == 0) && (count > 99)) {
+            if (state == 0 && count > 99) {
                 throw new SipParseException(buffer.getReaderIndex(), "No scheme found after 100 bytes, giving up");
-            } else if (count > 999) {
+            } else if (count > MAX_LOOK_AHEAD) {
                 throw new SipParseException(buffer.getReaderIndex(),
-                        "Have not been able to find the entire addr-spec after 1000 bytes, giving up");
-            } else if ((state == 0) && (b == COLON)) {
+                        "Have not been able to find the entire addr-spec after " + count + " bytes, giving up");
+            } else if (state == 0 && b == COLON) {
                 state = 1;
-            } else if ((state == 1) && ((b == RAQUOT) || (b == SP) || (b == HTAB) || (b == CR) || (b == LF))) {
+            } else if (state == 1 && (b == RAQUOT || b == SP || b == HTAB || b == CR || b == LF)) {
                 done = true;
                 --count;
             }
@@ -797,6 +807,153 @@ public class SipParser {
         }
 
         return null;
+    }
+
+    /**
+     * Consume the userinfo and hostport.
+     * 
+     * The reason why this method does both is because the userinfo portion is
+     * optional and as such you actually don't know whether the stuff you are
+     * currently going over is the hostport or the userinfo. Also, unfortunately
+     * the userinfo is allowed to have characters that normally are reserved
+     * (such as ';'), which complicates things as well.
+     * 
+     * 
+     * <pre>
+     * SIP-URI  =  "sip:" [ userinfo ] hostport
+     *             uri-parameters [ headers ]
+     * SIPS-URI =  "sips:" [ userinfo ] hostport
+     *             uri-parameters [ headers ]
+     * 
+     * userinfo         =  ( user / telephone-subscriber ) [ ":" password ] "@"
+     * user             =  1*( unreserved / escaped / user-unreserved )
+     * user-unreserved  =  "&" / "=" / "+" / "$" / "," / ";" / "?" / "/"
+     * password         =  *( unreserved / escaped / "&" / "=" / "+" / "$" / "," )
+     * hostport         =  host [ ":" port ]
+     * </pre>
+     * 
+     * As you can see, the user-unreserved is what mess things up. it would have
+     * been way easier and more efficient if the user-unreserved wasn't there...
+     * 
+     * @param buffer
+     * @return
+     */
+    public static Buffer[] consumeUserInfoHostPort(final Buffer buffer) throws SipParseException, IOException {
+        int count = 0;
+        Buffer user = null;
+        Buffer host = null;
+        int indexSemi = 0;
+        int indexQuestion = 0;
+
+        // first, try and determine if there is a user portion
+        // present. If we can't find one within MAX_BYTES then assume
+        // there isn't one there. Note, the way this method is typically used
+        // is that you have already framed a buffer so it is very unlikely that
+        // a header will be this long so we will most often quite much
+        // earlier due to buffer.hasReadableBytes() return false
+        int index = buffer.getReaderIndex();
+        while (user == null && buffer.hasReadableBytes() && ++count < MAX_LOOK_AHEAD) {
+            final byte b = buffer.readByte();
+            if (b == SipParser.AT) {
+                buffer.setReaderIndex(index);
+                if (count - 1 == 0) {
+                    throw new SipParseException(count,
+                            "No user portion in URI despite the presence of a '@'. This is not legal");
+                }
+                user = buffer.readBytes(count - 1);
+                buffer.readByte(); // consume the '@' sign
+                // buffer.markReaderIndex();
+
+                // reset these since they were apparently part
+                // of the userinfo and they are legal there so...
+                indexSemi = 0;
+                indexQuestion = 0;
+            } else if (indexSemi == 0 && b == SipParser.SEMI) {
+                indexSemi = count;
+            } else if (indexQuestion == 0 && b == SipParser.QUESTIONMARK) {
+                indexQuestion = count;
+            }
+        }
+
+        if (user == null) {
+            buffer.setReaderIndex(index);
+        }
+
+        // no user portion so see if we have an index for
+        // a semi colon or a question mark since they signify
+        // the split between the hostport part and uri-parameters
+        // or headers.
+        if (user == null && (indexSemi != 0 || indexQuestion != 0)) {
+            if (indexQuestion != 0 && indexQuestion < indexSemi) {
+                throw new SipParseException(indexQuestion, "Headers specified before uri-parameters. Not allowed");
+            }
+            if (indexSemi > 0) {
+                host = buffer.readBytes(indexSemi - 1);
+            } else if (indexQuestion > 0) {
+                host = buffer.readBytes(indexQuestion - 1);
+            }
+        }
+
+        index = buffer.getReaderIndex();
+        count = 0;
+        while (host == null && buffer.hasReadableBytes() && ++count < MAX_LOOK_AHEAD) {
+            final byte b = buffer.readByte();
+            if (b == SipParser.SEMI || b == SipParser.QUESTIONMARK) {
+                buffer.setReaderIndex(index);
+                host = buffer.readBytes(count - 1);
+            }
+        }
+
+        if (!buffer.hasReadableBytes()) {
+            buffer.setReaderIndex(index);
+            host = buffer.readBytes(count);
+        } else if (count == MAX_LOOK_AHEAD) {
+            throw new SipParseException(count, "Was never able to find the end of the SIP URI. Gave up after " + count
+                    + " bytes");
+        }
+        return new Buffer[] {
+                user, host };
+    }
+
+    /**
+     * Consume the "sent-protocol", which according to RFC 3261 is:
+     * 
+     * <pre>
+     * sent-protocol = protocol-name SLASH protocol-version SLASH transport
+     * transport     =  "UDP" / "TCP" / "TLS" / "SCTP" / other-transport
+     * other-transport   =  token
+     * </pre>
+     * 
+     * The "sent-protocol" is only present in a Via header and typically looks
+     * like this: SIP/2.0/UDP
+     * 
+     * The consume method will make sure that "SIP/2.0/" is present and if not,
+     * complain. The transport can really be anything and as such that is what
+     * you will get back as a return value. Hence, in the above example you
+     * would get back a buffer consisting of "UDP".
+     * 
+     * Also note that the transport can be "other-transport" which translates to
+     * a "token" so we allow really anything and as such we will just consume
+     * and return the token after verifying that it start with the SIP/2.0
+     * stuff.
+     * 
+     * @param buffer
+     * @return the transport part of the "sent-protocol". Typically this will be
+     *         one of UDP, TCP or TLS.
+     * @throws IOException
+     * @throws SipParseException
+     *             in case anything goes wrong while parsing including if the
+     *             protocol-name isn't SIP and the version isn't 2.0
+     */
+    public static Buffer consumeSentProtocol(final Buffer buffer) throws IOException, SipParseException {
+        expectSIP2_0(buffer);
+        expect(buffer, SipParser.SLASH);
+
+        final Buffer protocol = consumeToken(buffer);
+        if (protocol == null || protocol.isEmpty()) {
+            throw new SipParseException(buffer.getReaderIndex(), "Expected transport");
+        }
+        return protocol;
     }
 
     /**
@@ -817,6 +974,131 @@ public class SipParser {
             return null;
         }
         return buffer.readBytes(count);
+    }
+
+    /**
+     * Consumes a alphanum.
+     * 
+     * @param buffer
+     * @return
+     * @throws IOException
+     */
+    public static Buffer consumeAlphaNum(final Buffer buffer) throws IOException {
+        final int count = getAlphaNumCount(buffer);
+        if (count == 0) {
+            return null;
+        }
+        return buffer.readBytes(count);
+    }
+
+    /**
+     * Consume a sent-by which according to 3261 is:
+     * 
+     * <pre>
+     * sent-by           =  host [ COLON port ]
+     * host             =  hostname / IPv4address / IPv6reference
+     * hostname         =  *( domainlabel "." ) toplabel [ "." ]
+     * domainlabel      =  alphanum
+     * toplabel         =  ALPHA / ALPHA *( alphanum / "-" ) alphanum
+     * IPv4address    =  1*3DIGIT "." 1*3DIGIT "." 1*3DIGIT "." 1*3DIGIT
+     * IPv6reference  =  "[" IPv6address "]"
+     * IPv6address    =  hexpart [ ":" IPv4address ]
+     * hexpart        =  hexseq / hexseq "::" [ hexseq ] / "::" [ hexseq ]
+     * hexseq         =  hex4 *( ":" hex4)
+     * hex4           =  1*4HEXDIG
+     * port           =  1*DIGIT
+     * </pre>
+     * 
+     * Now, since we want to do things as fast as possible and all the
+     * consumeXXX methods only do framing we will implement something a little
+     * simpler, faster but not 100% according to the BNF.
+     * 
+     * So, consume everything until we either hit a ';' signifying parameters or
+     * a ':' which then forces us to start checking the port. Also, white space
+     * will stop parsing.
+     * 
+     * However, a colon could also signify an IPv6 address, which is not handled
+     * right now.
+     * 
+     * @param buffer
+     * @return
+     * @throws IOException
+     */
+    public static Buffer[] consumeSentBye(final Buffer buffer) throws SipParseException, IOException {
+        final int index = buffer.getReaderIndex();
+        int count = 0;
+        boolean done = false;
+        boolean firstColon = false;
+        boolean consumePort = false;
+        while (!done && buffer.hasReadableBytes()) {
+            final byte b = buffer.readByte();
+            ++count;
+            if (firstColon && isDigit(b)) {
+                // get port
+                consumePort = true;
+                done = true;
+                count -= 2;
+                continue;
+            } else if (firstColon) {
+                // consume
+                firstColon = false;
+                continue;
+            }
+
+            if (b == SipParser.COLON) {
+                firstColon = true;
+            } else if (b == SipParser.SEMI) {
+                --count;
+                done = true;
+            }
+        }
+
+        if (count == 0) {
+            return null;
+        }
+
+        buffer.setReaderIndex(index);
+        final Buffer host = buffer.readBytes(count);
+        Buffer port = null;
+        if (consumePort) {
+            buffer.readByte(); // consume ':'
+            port = consumePort(buffer);
+        }
+        return new Buffer[] {
+                host, port };
+    }
+
+    /**
+     * Consume a port, which according to RFC 3261 is:
+     * 
+     * port = 1*DIGIT
+     * 
+     * @param buffer
+     * @return the buffer containing only digits or null if there was none fun.
+     * @throws IOException
+     */
+    public static Buffer consumePort(final Buffer buffer) throws IOException {
+        int count = 0;
+        final int index = buffer.getReaderIndex();
+        boolean done = false;
+        while (!done && buffer.hasReadableBytes()) {
+            if (isDigit(buffer.readByte())) {
+                ++count;
+            } else {
+                done = true;
+            }
+        }
+
+        buffer.setReaderIndex(index);
+        if (count != 0) {
+            return buffer.readBytes(count);
+        }
+
+        return null;
+    }
+
+    public static Buffer consumeHostname(final Buffer buffer) throws IOException {
+        return null;
     }
 
     /**
@@ -897,9 +1179,9 @@ public class SipParser {
         buffer.markReaderIndex();
         while (buffer.hasReadableBytes() && !done) {
             final byte b = buffer.readByte();
-            final boolean ok = isAlphaNum(b) || (b == DASH) || (b == PERIOD) || (b == EXCLAMATIONPOINT)
-                    || (b == PERCENT) || (b == STAR) || (b == UNDERSCORE) || (b == PLUS) || (b == BACKTICK)
-                    || (b == TICK) || (b == TILDE);
+            final boolean ok = isAlphaNum(b) || b == DASH || b == PERIOD || b == EXCLAMATIONPOINT
+                    || b == PERCENT || b == STAR || b == UNDERSCORE || b == PLUS || b == BACKTICK
+                    || b == TICK || b == TILDE;
             if (ok) {
                 ++count;
             } else {
@@ -907,6 +1189,32 @@ public class SipParser {
             }
         }
         buffer.resetReaderIndex();
+        return count;
+    }
+
+    /**
+     * Helper method that counts the number of bytes that are considered part of
+     * the next alphanum block.
+     * 
+     * @param buffer
+     * @return a count of the number of bytes the next alphaum contains or zero
+     *         if none is found.
+     * @throws IndexOutOfBoundsException
+     * @throws IOException
+     */
+    public static int getAlphaNumCount(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+        boolean done = false;
+        int count = 0;
+        final int index = buffer.getReaderIndex();
+        while (buffer.hasReadableBytes() && !done) {
+            final byte b = buffer.readByte();
+            if (isAlphaNum(b)) {
+                ++count;
+            } else {
+                done = true;
+            }
+        }
+        buffer.setReaderIndex(index);
         return count;
     }
 
@@ -937,11 +1245,19 @@ public class SipParser {
      *         otherwise
      */
     public static boolean isAlphaNum(final char ch) {
-        return ((ch >= 97) && (ch <= 122)) || ((ch >= 48) && (ch <= 57)) || ((ch >= 65) && (ch <= 90));
+        return ch >= 97 && ch <= 122 || ch >= 48 && ch <= 57 || ch >= 65 && ch <= 90;
     }
 
     public static boolean isAlphaNum(final byte b) {
         return isAlphaNum((char) b);
+    }
+
+    public static boolean isDigit(final char ch) {
+        return ch >= 48 && ch <= 57;
+    }
+
+    public static boolean isDigit(final byte b) {
+        return isDigit((char) b);
     }
 
 
@@ -980,7 +1296,7 @@ public class SipParser {
             buffer.markReaderIndex();
             final byte cr = buffer.readByte();
             final byte lf = buffer.readByte();
-            if ((cr == CR) && (lf == LF)) {
+            if (cr == CR && lf == LF) {
                 return 2;
             }
         } catch (final IndexOutOfBoundsException e) {
@@ -1069,7 +1385,7 @@ public class SipParser {
 
             final int startIndex = buffer.getReaderIndex();
             int nameIndex = 0;
-            while (buffer.hasReadableBytes() && (nameIndex == 0)) {
+            while (buffer.hasReadableBytes() && nameIndex == 0) {
                 if (isNext(buffer, SP) || isNext(buffer, HTAB) || isNext(buffer, COLON)) {
                     nameIndex = buffer.getReaderIndex();
                 } else {

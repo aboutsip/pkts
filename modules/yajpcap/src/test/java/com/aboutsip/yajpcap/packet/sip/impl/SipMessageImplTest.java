@@ -73,6 +73,15 @@ public class SipMessageImplTest extends YajTestBase {
         assertThat(sipUri.getHost().toString(), is("aboutsip.com"));
     }
 
+    /**
+     * Make sure that we can handle Via-headers correctly.
+     */
+    @Test
+    public void testGetViaHeaders() throws Exception {
+        final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader, 382);
+
+    }
+
     private SipMessage parseMessage(final byte[] rawData, final int headerSize) throws SipParseException, IOException {
         final Buffer msg = Buffers.wrap(rawData);
         final Buffer line = msg.readLine();
@@ -85,7 +94,6 @@ public class SipMessageImplTest extends YajTestBase {
         } else {
             return new SipResponseImpl(pkt, (SipResponseLine) initialLine, headers, payload, null);
         }
-
     }
 
     @Test
