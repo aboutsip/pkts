@@ -12,10 +12,10 @@ import org.junit.Test;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.MediaTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.Parameters;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 
 /**
  * @author jonas@jonasborjesson.com

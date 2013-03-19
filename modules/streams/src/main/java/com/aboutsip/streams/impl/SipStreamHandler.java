@@ -22,9 +22,9 @@ import com.aboutsip.yajpcap.framer.Framer;
 import com.aboutsip.yajpcap.framer.FramerManager;
 import com.aboutsip.yajpcap.packet.PacketParseException;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
 import com.aboutsip.yajpcap.packet.sip.SipResponse;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**

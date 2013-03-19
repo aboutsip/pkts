@@ -74,6 +74,8 @@ public class AddressImplTest {
         final SipURI sipURI = (SipURI) uri;
         assertThat(sipURI.toBuffer().toString(), is("sip:alice@example.com"));
         assertThat(sipURI.toString(), is("sip:alice@example.com"));
+        assertThat(sipURI.getUser().toString(), is("alice"));
+        assertThat(sipURI.getHost().toString(), is("example.com"));
 
         // no display name
         address = AddressImpl.parse(Buffers.wrap("<sip:alice@example.com>"));

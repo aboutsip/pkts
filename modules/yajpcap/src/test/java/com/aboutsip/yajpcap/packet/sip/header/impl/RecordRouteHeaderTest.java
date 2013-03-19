@@ -12,10 +12,10 @@ import com.aboutsip.yajpcap.packet.sip.SipParseException;
 /**
  * @author jonas@jonasborjesson.com
  */
-public class ToHeaderTest extends AddressParameterHeadersTestBase {
+public class RecordRouteHeaderTest extends AddressParameterHeadersTestBase {
 
     /**
-     * @throws java.lang.Exception
+     * {@inheritDoc}
      */
     @Override
     @Before
@@ -24,7 +24,7 @@ public class ToHeaderTest extends AddressParameterHeadersTestBase {
     }
 
     /**
-     * @throws java.lang.Exception
+     * {@inheritDoc}
      */
     @Override
     @After
@@ -34,8 +34,7 @@ public class ToHeaderTest extends AddressParameterHeadersTestBase {
 
     @Override
     public AddressParametersHeader frameHeader(final Buffer buffer) throws SipParseException {
-        return (ToHeaderImpl) ToHeaderImpl.frame(buffer);
+        return (RecordRouteHeaderImpl) RecordRouteHeaderImpl.frame(buffer);
     }
-
 
 }

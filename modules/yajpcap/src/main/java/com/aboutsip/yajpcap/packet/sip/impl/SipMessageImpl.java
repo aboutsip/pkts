@@ -17,14 +17,21 @@ import com.aboutsip.yajpcap.frame.SipFrame;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
 import com.aboutsip.yajpcap.packet.sip.SipResponse;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
+import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
+import com.aboutsip.yajpcap.packet.sip.header.RouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
+import com.aboutsip.yajpcap.packet.sip.header.ViaHeader;
 import com.aboutsip.yajpcap.packet.sip.header.impl.ContentTypeHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.FromHeaderImpl;
+import com.aboutsip.yajpcap.packet.sip.header.impl.RecordRouteHeaderImpl;
+import com.aboutsip.yajpcap.packet.sip.header.impl.RouteHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.ToHeaderImpl;
+import com.aboutsip.yajpcap.packet.sip.header.impl.ViaHeaderImpl;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -156,6 +163,15 @@ public abstract class SipMessageImpl implements SipMessage {
     }
 
     /**
+     * 
+     * {@inheritDoc}
+     */
+    @Override
+    public SipHeader getHeader(final String headerName) throws SipParseException {
+        return getHeader(Buffers.wrap(headerName));
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -169,6 +185,69 @@ public abstract class SipMessageImpl implements SipMessage {
         final FromHeader from = FromHeaderImpl.frame(buffer);
         this.parsedHeaders.put(from.getName(), from);
         return from;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ViaHeader getViaHeader() throws SipParseException {
+        final SipHeader header = getHeader(ViaHeader.NAME);
+        if (header instanceof ViaHeader) {
+            return (ViaHeader) header;
+        }
+
+        if (header == null) {
+            return null;
+        }
+
+        final Buffer buffer = header.getValue();
+        final ViaHeader via = ViaHeaderImpl.frame(buffer);
+
+        this.parsedHeaders.put(via.getName(), via);
+        return via;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public RecordRouteHeader getRecordRouteHeader() throws SipParseException {
+        final SipHeader header = getHeader(RecordRouteHeader.NAME);
+        if (header instanceof RecordRouteHeader) {
+            return (RecordRouteHeader) header;
+        }
+
+        if (header == null) {
+            return null;
+        }
+
+        final Buffer buffer = header.getValue();
+        final RecordRouteHeader rr = RecordRouteHeaderImpl.frame(buffer);
+
+        this.parsedHeaders.put(rr.getName(), rr);
+        return rr;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public RouteHeader getRouteHeader() throws SipParseException {
+        final SipHeader header = getHeader(RouteHeader.NAME);
+        if (header instanceof RouteHeader) {
+            return (RouteHeader) header;
+        }
+
+        if (header == null) {
+            return null;
+        }
+
+        final Buffer buffer = header.getValue();
+        final RouteHeader route = RouteHeaderImpl.frame(buffer);
+
+        this.parsedHeaders.put(route.getName(), route);
+        return route;
     }
 
     @Override
@@ -447,7 +526,7 @@ public abstract class SipMessageImpl implements SipMessage {
      */
     @Override
     public void setDestinationIP(final String destinationIP) {
-        this.parent.setSourceIP(destinationIP);
+        this.parent.setDestinationIP(destinationIP);
     }
 
     @Override
@@ -466,5 +545,15 @@ public abstract class SipMessageImpl implements SipMessage {
         // since you cannot modify a SipMessage right now anyway (well, not
         // entirely true) we'll stick with this for now.
         this.sipFrame.write(out);
+    }
+
+    @Override
+    public int getIpChecksum() {
+        return this.parent.getIpChecksum();
+    }
+
+    @Override
+    public boolean verifyIpChecksum() {
+        return this.parent.verifyIpChecksum();
     }
 }

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.aboutsip.yajpcap.packet.sip.impl;
+package com.aboutsip.yajpcap.packet.sip;
 
 import com.aboutsip.yajpcap.packet.PacketParseException;
 

@@ -38,6 +38,31 @@ public final class IPPacketImpl implements IPPacket {
         // this.destinationIp = this.destinationIp;
     }
 
+    @Override
+    public int getIpChecksum() {
+        return this.headers.getUnsignedShort(10);
+    }
+
+    /**
+     * Algorithm adopted from RFC 1071 - Computing the Internet Checksum
+     * 
+     * @return
+     */
+    private int calculateChecksum() {
+        long sum = 0;
+        for (int i = 0; i < this.headers.capacity() - 1; i += 2) {
+            if (i != 10) {
+                sum += this.headers.getUnsignedShort(i);
+            }
+        }
+
+        while (sum >> 16 != 0) {
+            sum = (sum & 0xffff) + (sum >> 16);
+        }
+
+        return (int) ~sum & 0xFFFF;
+    }
+
     /**
      * Get the raw source ip.
      * 
@@ -146,6 +171,7 @@ public final class IPPacketImpl implements IPPacket {
         this.headers.setByte(13, (byte) b);
         this.headers.setByte(14, (byte) c);
         this.headers.setByte(15, (byte) d);
+        reCalculateChecksum();
     }
 
     @Override
@@ -154,6 +180,7 @@ public final class IPPacketImpl implements IPPacket {
         this.headers.setByte(17, (byte) b);
         this.headers.setByte(18, (byte) c);
         this.headers.setByte(19, (byte) d);
+        reCalculateChecksum();
     }
 
     @Override
@@ -179,6 +206,23 @@ public final class IPPacketImpl implements IPPacket {
         this.headers.setByte(startIndex + 1, (byte) Integer.parseInt(parts[1]));
         this.headers.setByte(startIndex + 2, (byte) Integer.parseInt(parts[2]));
         this.headers.setByte(startIndex + 3, (byte) Integer.parseInt(parts[3]));
+        reCalculateChecksum();
+    }
+
+    /**
+     * Whenever we change a value in the IP packet we need to update the
+     * checksum as well.
+     */
+    private void reCalculateChecksum() {
+        final int checksum = calculateChecksum();
+        System.out.println("Recalculating checksum. Old is: " + Integer.toHexString(getIpChecksum()) + " New is: "
+                + Integer.toHexString(checksum));
+        this.headers.setUnsignedShort(10, checksum);
+    }
+
+    @Override
+    public boolean verifyIpChecksum() {
+        return calculateChecksum() == getIpChecksum();
     }
 
 }

@@ -1,8 +1,11 @@
 package com.aboutsip.yajpcap.packet.sip.impl;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+
+import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Before;
@@ -10,11 +13,19 @@ import org.junit.Test;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
+import com.aboutsip.yajpcap.RawData;
 import com.aboutsip.yajpcap.YajTestBase;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
+import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
+import com.aboutsip.yajpcap.packet.sip.address.SipURI;
+import com.aboutsip.yajpcap.packet.sip.address.URI;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
+import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
+import com.aboutsip.yajpcap.packet.sip.header.RouteHeader;
+import com.aboutsip.yajpcap.packet.sip.header.ViaHeader;
 
 public class SipMessageImplTest extends YajTestBase {
 
@@ -43,6 +54,61 @@ public class SipMessageImplTest extends YajTestBase {
     public void tearDown() throws Exception {
     }
 
+    /**
+     * Record-Route headers are typically handled a little differently since
+     * they actually are ordered. These tests focuses on making sure that we
+     * maintain the order of the RR headers as found in the original request.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testGetRecordRouteHeaders() throws Exception {
+        final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader, 382);
+        final RecordRouteHeader rr = msg.getRecordRouteHeader();
+        assertThat(rr, not((RecordRouteHeader) null));
+        assertThat(rr.toString(), is("Record-Route: <sip:one@aboutsip.com;transport=udp>"));
+        assertThat(rr.getValue().toString(), is("<sip:one@aboutsip.com;transport=udp>"));
+        assertThat(rr.getAddress().getDisplayName().isEmpty(), is(true));
+        final URI uri = rr.getAddress().getURI();
+        assertThat(uri.isSipURI(), is(true));
+        final SipURI sipUri = (SipURI) uri;
+        assertThat(sipUri.getHost().toString(), is("aboutsip.com"));
+    }
+
+    @Test
+    public void testGetViaHeader() throws Exception {
+        final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader, 382);
+        final ViaHeader via = msg.getViaHeader();
+        assertThat(via.getPort(), is(5060));
+        assertThat(via.getHost().toString(), is("127.0.0.1"));
+        assertThat(via.getBranch().toString(), is("z9hG4bK-5647-1-0"));
+        assertThat(via.getRPort(), is(-1));
+        assertThat(via.hasRPort(), is(false));
+    }
+
+    /**
+     * Make sure that we can handle Via-headers correctly.
+     */
+    @Test
+    public void testGetViaHeaders() throws Exception {
+        final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader, 382);
+
+    }
+
+    private SipMessage parseMessage(final byte[] rawData, final int headerSize) throws SipParseException, IOException {
+        final Buffer msg = Buffers.wrap(rawData);
+        final Buffer line = msg.readLine();
+        final Buffer headers = msg.readBytes(headerSize);
+        final Buffer payload = msg.slice();
+        final SipInitialLine initialLine = SipInitialLine.parse(line);
+        final TransportPacket pkt = mock(TransportPacket.class);
+        if (initialLine.isRequestLine()) {
+            return new SipRequestImpl(pkt, (SipRequestLine) initialLine, headers, payload, null);
+        } else {
+            return new SipResponseImpl(pkt, (SipResponseLine) initialLine, headers, payload, null);
+        }
+    }
+
     @Test
     public void testGetHeaders() throws Exception {
         SipHeader from = this.request.getFromHeader();
@@ -64,6 +130,17 @@ public class SipMessageImplTest extends YajTestBase {
         final SipHeader contact = this.request.getHeader(Buffers.wrap("Contact"));
         assertThat(contact.getName(), is(Buffers.wrap("Contact")));
         assertThat(contact.getValue(), is(Buffers.wrap("sip:sipp@127.0.1.1:5060")));
+
+        // fetch a header that doesn't exist.
+        assertThat(this.request.getHeader("Whatever"), is((SipHeader) null));
+
+        // this message does not have a Record-Route header
+        final RecordRouteHeader rr = this.request.getRecordRouteHeader();
+        assertThat(rr, is((RecordRouteHeader) null));
+
+        // nor does it have a route header
+        final RouteHeader route = this.request.getRouteHeader();
+        assertThat(route, is((RouteHeader) null));
 
         // and the purpose with that is that now that we ask for a header that
         // appear before the contact, we should actually find it in the internal

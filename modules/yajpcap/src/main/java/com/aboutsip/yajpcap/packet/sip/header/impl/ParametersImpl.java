@@ -9,8 +9,8 @@ import java.util.Map;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.header.Parameters;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.impl.SipParser;
 
 /**
@@ -59,7 +59,7 @@ public abstract class ParametersImpl extends SipHeaderImpl implements Parameters
             throw new IllegalArgumentException("The name of the parameter cannot be null");
         }
 
-        if ((this.paramMap != null) && this.paramMap.containsKey(name)) {
+        if (this.paramMap != null && this.paramMap.containsKey(name)) {
             return this.paramMap.get(name);
         }
 

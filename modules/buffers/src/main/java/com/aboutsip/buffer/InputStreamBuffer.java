@@ -424,9 +424,12 @@ public final class InputStreamBuffer extends AbstractBuffer {
     @Override
     public void setUnsignedByte(final int index, final short value) throws IndexOutOfBoundsException {
         // TODO Auto-generated method stub
-
     }
 
+    @Override
+    public void setUnsignedShort(final int index, final int value) throws IndexOutOfBoundsException {
+        // TODO Auto-generated method stub
+    }
 
     @Override
     public Buffer clone() {

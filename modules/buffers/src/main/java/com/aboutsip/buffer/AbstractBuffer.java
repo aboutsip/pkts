@@ -157,7 +157,7 @@ public abstract class AbstractBuffer implements Buffer {
         final int start = getReaderIndex();
         int index = -1;
 
-        while (hasReadableBytes() && ((getReaderIndex() - start) < maxBytes) && (index == -1)) {
+        while (hasReadableBytes() && getReaderIndex() - start < maxBytes && index == -1) {
             if (isByteInArray(readByte(), bytes)) {
                 index = this.readerIndex - 1;
             }
@@ -165,7 +165,7 @@ public abstract class AbstractBuffer implements Buffer {
 
         this.readerIndex = start;
 
-        if ((getReaderIndex() - start) >= maxBytes) {
+        if (getReaderIndex() - start >= maxBytes) {
             throw new ByteNotFoundException(maxBytes, bytes);
         }
 
@@ -202,7 +202,7 @@ public abstract class AbstractBuffer implements Buffer {
             default:
                 if (foundCR) {
                     --this.readerIndex;
-                    return slice(start, (this.lowerBoundary + this.readerIndex) - 1);
+                    return slice(start, this.lowerBoundary + this.readerIndex - 1);
                 }
             }
         }
@@ -245,7 +245,8 @@ public abstract class AbstractBuffer implements Buffer {
      * @throws IndexOutOfBoundsException
      */
     protected void checkIndex(final int index) throws IndexOutOfBoundsException {
-        if (index >= (this.lowerBoundary + capacity())) {
+        if (index >= this.lowerBoundary + capacity()) {
+            // if (index > this.lowerBoundary + capacity()) {
             throw new IndexOutOfBoundsException();
         }
     }

@@ -10,7 +10,7 @@ import java.util.Iterator;
 import com.aboutsip.streams.SipStream;
 import com.aboutsip.streams.StreamId;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 
 /**
  * The {@link BasicSipStream} only does some very basic analysis of the SIP

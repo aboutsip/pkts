@@ -5,6 +5,7 @@ package com.aboutsip.yajpcap.packet.sip.header.impl;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -42,7 +43,15 @@ public class SipHeaderImpl implements SipHeader {
 
     @Override
     public String toString() {
-        return getName().toString() + ": " + this.value.toString();
+        return getName().toString() + ": " + getValue();
+    }
+
+    @Override
+    public void verify() throws SipParseException {
+        // by default, everything is assumed to be correct.
+        // Subclasses should override this method and
+        // check that everything is ok...
+
     }
 
 }
