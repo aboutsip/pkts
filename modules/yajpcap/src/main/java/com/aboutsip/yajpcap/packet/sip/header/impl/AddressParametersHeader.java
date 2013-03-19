@@ -7,13 +7,13 @@ import java.io.IOException;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.address.Address;
 import com.aboutsip.yajpcap.packet.sip.address.impl.AddressImpl;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
 import com.aboutsip.yajpcap.packet.sip.header.HeaderAddress;
 import com.aboutsip.yajpcap.packet.sip.header.Parameters;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 
 /**
  * A base class for all headers that implmenets both the {@link Address} and
@@ -50,7 +50,10 @@ public abstract class AddressParametersHeader extends ParametersImpl implements 
         // TODO: create a composite buffer instead of this crap
         final StringBuilder sb = new StringBuilder();
         sb.append(this.address.toString());
-        sb.append(super.getValue().toString());
+        final Buffer superValue = super.getValue();
+        if (superValue != null) {
+            sb.append(superValue.toString());
+        }
         return Buffers.wrap(sb.toString());
     }
 
@@ -94,5 +97,4 @@ public abstract class AddressParametersHeader extends ParametersImpl implements 
         }
 
     }
-
 }

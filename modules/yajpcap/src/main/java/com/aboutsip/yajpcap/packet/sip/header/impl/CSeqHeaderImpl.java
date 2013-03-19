@@ -6,8 +6,8 @@ package com.aboutsip.yajpcap.packet.sip.header.impl;
 import java.io.IOException;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.header.CSeqHeader;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.impl.SipParser;
 
 /**

@@ -251,6 +251,11 @@ public class EmptyBuffer implements Buffer {
         throw new IndexOutOfBoundsException("This buffer is empty");
     }
 
+    @Override
+    public void setUnsignedShort(final int index, final int value) throws IndexOutOfBoundsException {
+        throw new IndexOutOfBoundsException("This buffer is empty");
+    }
+
     /**
      * Really nothing to clone so just return this since this
      * {@link EmptyBuffer} is by definition immutable.

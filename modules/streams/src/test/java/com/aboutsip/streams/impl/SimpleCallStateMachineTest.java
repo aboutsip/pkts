@@ -22,7 +22,7 @@ import org.junit.Test;
 import com.aboutsip.streams.SipStream.CallState;
 import com.aboutsip.streams.StreamsTestBase;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 
 /**
  * @author jonas@jonasborjesson.com

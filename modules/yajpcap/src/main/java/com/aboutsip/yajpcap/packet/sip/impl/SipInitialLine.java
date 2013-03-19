@@ -8,6 +8,7 @@ import java.io.IOException;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.ByteNotFoundException;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 
 /**
  * @author jonas@jonasborjesson.com

@@ -7,6 +7,7 @@ import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.frame.SipFrame;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipResponse;
 import com.aboutsip.yajpcap.packet.sip.header.CSeqHeader;
 import com.aboutsip.yajpcap.packet.sip.header.impl.CSeqHeaderImpl;

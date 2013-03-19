@@ -7,6 +7,8 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -15,11 +17,13 @@ import org.junit.BeforeClass;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.frame.Frame;
+import com.aboutsip.yajpcap.frame.IPv4Frame;
 import com.aboutsip.yajpcap.frame.PcapFrame;
 import com.aboutsip.yajpcap.frame.PcapGlobalHeader;
 import com.aboutsip.yajpcap.frame.SipFrame;
 import com.aboutsip.yajpcap.framer.FramerManager;
 import com.aboutsip.yajpcap.framer.PcapFramer;
+import com.aboutsip.yajpcap.packet.IPPacket;
 import com.aboutsip.yajpcap.packet.Packet;
 import com.aboutsip.yajpcap.packet.PacketParseException;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
@@ -115,7 +119,7 @@ public class YajTestBase {
         final PcapFramer framer = new PcapFramer(this.defaultByteOrder, this.framerManager);
         this.defaultPcapFrame = framer.frame(null, this.pcapStream);
         this.defaultFrame = this.defaultPcapFrame.getPayload();
-        assertThat(547, is((this.defaultFrame.capacity())));
+        assertThat(547, is(this.defaultFrame.capacity()));
 
         this.ethernetFrameBuffer = Buffers.wrap(RawData.rawEthernetFrame);
 
@@ -135,6 +139,31 @@ public class YajTestBase {
 
     @After
     public void tearDown() throws Exception {
+    }
+
+    public List<Frame> loadStream(final String streamName) throws Exception {
+        final InputStream stream = YajTestBase.class.getResourceAsStream(streamName);
+        final Pcap pcap = Pcap.openStream(stream);
+        final List<Frame> frames = new ArrayList<Frame>();
+        pcap.loop(new FrameHandler() {
+            @Override
+            public void nextFrame(final Frame frame) {
+                frames.add(frame);
+            }
+        });
+        pcap.close();
+        return frames;
+    }
+
+    public List<IPPacket> loadIPPackets(final String streamName) throws Exception {
+        final List<Frame> frames = loadStream(streamName);
+        final List<IPPacket> packets = new ArrayList<IPPacket>();
+        for (final Frame frame : frames) {
+            final IPv4Frame ipv4Frame = (IPv4Frame) frame.getFrame(Protocol.IPv4);
+            final IPPacket ip = ipv4Frame.parse();
+            packets.add(ip);
+        }
+        return packets;
     }
 
     /**

@@ -27,8 +27,8 @@ public interface SipURI extends URI {
     Buffer getHost();
 
     /**
-     * Get the port. If the port isn't set the default port for the scheme will
-     * be returned (i.e. 5060 for sip and 5061 for sips)
+     * Get the port. If the port isn't set then -1 (negative one) will be
+     * returned.
      * 
      * @return
      */

@@ -142,4 +142,14 @@ public final class TransportPacketImpl implements TransportPacket {
         this.parent.setDestinationIP(destinationIP);
     }
 
+    @Override
+    public int getIpChecksum() {
+        return this.parent.getIpChecksum();
+    }
+
+    @Override
+    public boolean verifyIpChecksum() {
+        return this.parent.verifyIpChecksum();
+    }
+
 }

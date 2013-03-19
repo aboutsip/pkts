@@ -3,7 +3,7 @@ package com.aboutsip.streams;
 import java.util.Iterator;
 
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 
 /**
  * Represents a stream of related SIP messages.

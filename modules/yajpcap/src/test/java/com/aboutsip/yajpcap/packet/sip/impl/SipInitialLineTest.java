@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 
 /**
  * @author jonas@jonasborjesson.com

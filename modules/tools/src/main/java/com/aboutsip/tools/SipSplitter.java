@@ -25,7 +25,7 @@ import com.aboutsip.streams.impl.DefaultStreamHandler;
 import com.aboutsip.yajpcap.Pcap;
 import com.aboutsip.yajpcap.frame.IPFrame;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 
 /**
  * Simple class that takes one or more pcaps and separates out all SIP dialogs

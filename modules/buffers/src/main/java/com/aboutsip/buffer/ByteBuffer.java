@@ -168,13 +168,22 @@ public final class ByteBuffer extends AbstractBuffer {
     public short getShort(final int index) {
         final int i = this.lowerBoundary + index;
         checkIndex(i);
-        checkIndex(i + 2);
+        checkIndex(i + 1);
 
         // big endian
         return (short) (this.buffer[i] << 8 | this.buffer[i + 1] & 0xFF);
 
         // little endian
-        // return (short) ((this.buffer[i] & 0xFF) | (this.buffer[i + 1] << 8));
+        // return (short) (this.buffer[i] & 0xFF | this.buffer[i + 1] << 8);
+    }
+
+    @Override
+    public void setUnsignedShort(final int index, final int value) {
+        final int i = this.lowerBoundary + index;
+        checkIndex(i);
+        checkIndex(i + 1);
+        this.buffer[i] = (byte) (value >> 8);
+        this.buffer[i + 1] = (byte) value;
     }
 
     /**
@@ -198,7 +207,7 @@ public final class ByteBuffer extends AbstractBuffer {
      */
     @Override
     public String dumpAsHex() {
-        return null;
+        return "dumpAsHex isn't implemented just yet";
     }
 
     /**

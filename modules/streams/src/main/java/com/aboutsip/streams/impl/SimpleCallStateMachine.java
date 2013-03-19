@@ -23,9 +23,9 @@ import org.slf4j.LoggerFactory;
 
 import com.aboutsip.streams.SipStream.CallState;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
 import com.aboutsip.yajpcap.packet.sip.SipResponse;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 
 /**
  * A "state machine" for SIP but really mainly for SIP VoIP calls. The reason

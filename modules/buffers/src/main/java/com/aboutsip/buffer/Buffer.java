@@ -305,6 +305,8 @@ public interface Buffer extends Cloneable {
 
     int getUnsignedShort(int index) throws IndexOutOfBoundsException;
 
+    void setUnsignedShort(int index, int value) throws IndexOutOfBoundsException;
+
     short readShort() throws IndexOutOfBoundsException;
 
     short readUnsignedByte() throws IndexOutOfBoundsException, IOException;

@@ -89,4 +89,17 @@ public interface IPPacket extends MACPacket {
      * @return
      */
     int getTotalLength();
+
+    /**
+     * The checksum of the IP-packet. The checksum in an IP-packet is a 16 bit
+     * checksum of the header bytes (which the checksum set to zero) and is
+     * returned as a unsigned short (hence an int)
+     * 
+     * Checkout
+     * 
+     * @return
+     */
+    int getIpChecksum();
+
+    boolean verifyIpChecksum();
 }
