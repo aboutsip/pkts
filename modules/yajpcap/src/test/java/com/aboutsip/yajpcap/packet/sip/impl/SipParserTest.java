@@ -17,6 +17,7 @@ import org.junit.Test;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 
 /**
  * Tests to verify that basic parsing functionality that is provided by the
@@ -684,6 +685,113 @@ public class SipParserTest {
         final SipHeader header = SipParser.nextHeader(buffer);
         assertThat(header.getName().toString(), is(name));
         assertThat(header.getValue().toString(), is(value));
+    }
+
+    /**
+     * Consuming a Via can be difficult since it is quite special around the
+     * multiple usage of ipv6 + ipv4 addresses etc.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testConsumeVia() throws Exception {
+        assertVia("SIP/2.0/UDP 127.0.0.1:5088;branch=asdf", "UDP", "127.0.0.1", "5088", null, "branch", "asdf");
+        assertVia("SIP/2.0/UDP 127.0.0.1;branch=asdf", "UDP", "127.0.0.1", null, null, "branch", "asdf");
+        assertVia("SIP/2.0/UDP 127.0.0.1;branch=asdf;rport", "UDP", "127.0.0.1", null, null, "branch", "asdf", "rport",
+                null);
+        assertVia("SIP/2.0/TCP 127.0.0.1;branch=asdf;apa=monkey", "TCP", "127.0.0.1", null, null, "branch", "asdf",
+                "apa", "monkey");
+        assertVia("SIP/2.0/TLS test.aboutsip.com;ttl=45;branch=asdf;apa=monkey", "TLS", "test.aboutsip.com", null,
+                null, "ttl", "45", "branch", "asdf", "apa", "monkey");
+
+        final String ipv6 = "2001:0db8:85a3:0042:1000:8a2e:0370:7334";
+        assertVia("SIP/2.0/UDP " + ipv6 + ";branch=asdf", "UDP", ipv6, null, null, "branch", "asdf");
+        assertVia("SIP/2.0/UDP " + ipv6 + ":9090;branch=asdf", "UDP", ipv6, "9090", null, "branch", "asdf");
+        assertVia("SIP/2.0/TLS " + ipv6 + ":9090;rport;branch=asdf", "TLS", ipv6, "9090", null, "rport", null,
+                "branch", "asdf");
+    }
+
+    /**
+     * Check so that we detect and handle bad Via's correctly
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testConsumeBadVia() throws Exception {
+        assertBadVia("XML/1.0UDP 127.0.0.1:5088;branch=asdf", 1, "wrong protocol");
+        assertBadVia("SIP/1.0UDP 127.0.0.1:5088;branch=asdf", 5, "wrong protocol version");
+        assertBadVia("SIP/2.0UDP 127.0.0.1:5088;branch=asdf", 8, "expected to freak out on a missing slash");
+        assertBadVia("SIP/2.0/UDP sip.com", 19, "no branch parameter. Should not have accepted this");
+        assertBadVia("SIP/2.0/UDP :::", 15, "Strange number of colons. Cant parse a valid host out of it.");
+        assertBadVia("SIP/2.0/UDP 127.0.0.1:;branch=asdf", 23, "No port specified after the colon");
+    }
+
+    /**
+     * Helper method to make sure that we complain when we should.
+     * 
+     * @param toParse
+     * @param expectedErrorOffset
+     * @param failMessage
+     */
+    private void assertBadVia(final String toParse, final int expectedErrorOffset, final String failMessage)
+            throws IOException {
+        try {
+            SipParser.consumeVia(Buffers.wrap(toParse));
+            fail(failMessage);
+        } catch (final SipParseException e) {
+            assertThat(e.getErroOffset(), is(expectedErrorOffset));
+        }
+    }
+
+    /**
+     * Helper method to validate the consumption of a Via header.
+     * 
+     * @param toParse
+     *            what you want to parse. I.e. the value of the via header.
+     * @param expectedProtocol
+     *            the
+     * @param expectedHost
+     * @param expectedPort
+     * @param expectedLeftOver
+     *            if there is anything that should be left in the buffer.
+     * @param expectedParams
+     *            note, this is a String[] and you MUST supply a key value pair
+     *            here. See the examples...
+     * @throws Exception
+     */
+    private void assertVia(final String toParse, final String expectedProtocol, final String expectedHost,
+            final String expectedPort, final String expectedLeftOver, final String... expectedParams) throws Exception {
+        final Buffer buffer = Buffers.wrap(toParse);
+        final Object[] viaParts = SipParser.consumeVia(buffer);
+
+        assertThat(viaParts[0].toString(), is(expectedProtocol));
+        assertThat(viaParts[1].toString(), is(expectedHost));
+        if (expectedPort == null) {
+            assertThat(viaParts[2], is((Object) null));
+        } else {
+            assertThat(viaParts[2].toString(), is(expectedPort));
+        }
+
+        final List<Buffer[]> actualParams = (List<Buffer[]>) viaParts[3];
+        assertThat(actualParams.size(), is(expectedParams.length / 2));
+        for (int i = 0; i < actualParams.size(); ++i) {
+            final Buffer[] keyValue = actualParams.get(i);
+            final String expectedKey = expectedParams[i * 2];
+            final String expectedValue = expectedParams[i * 2 + 1];
+            assertThat(keyValue[0].toString(), is(expectedKey));
+            if ( expectedValue == null) {
+                assertThat(keyValue[1], is((Buffer) null));
+            } else {
+                assertThat(keyValue[1].toString(), is(expectedValue));
+            }
+        }
+
+        if (expectedLeftOver == null) {
+            assertThat(buffer.hasReadableBytes(), is(false));
+        } else {
+            assertThat(buffer.toString(), is(expectedLeftOver));
+        }
+
     }
 
     /**

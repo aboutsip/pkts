@@ -7,8 +7,8 @@ import org.junit.After;
 import org.junit.Before;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 
 /**
  * Test the {@link FromHeader}.

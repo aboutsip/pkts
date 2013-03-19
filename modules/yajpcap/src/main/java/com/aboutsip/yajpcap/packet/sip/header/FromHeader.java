@@ -6,7 +6,7 @@ package com.aboutsip.yajpcap.packet.sip.header;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 
 /**
  * Source: RFC 3261 section 8.1.1.3

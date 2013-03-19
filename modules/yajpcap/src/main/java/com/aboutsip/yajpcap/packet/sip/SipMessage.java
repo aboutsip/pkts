@@ -7,7 +7,7 @@ import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
+import com.aboutsip.yajpcap.packet.sip.header.ViaHeader;
 
 /**
  * Packet representing a SIP message.
@@ -133,6 +133,18 @@ public interface SipMessage extends ApplicationPacket {
      * @return the to header as a buffer
      */
     ToHeader getToHeader() throws SipParseException;
+
+    /**
+     * Get the top-most {@link ViaHeader} if present. If this is a request that
+     * has been sent then there should always be a {@link ViaHeader} present.
+     * However, you just created a {@link SipMessage} youself then this method
+     * may return null so please check for it.
+     * 
+     * @return the top-most {@link ViaHeader} or null if there are no
+     *         {@link ViaHeader}s on this message just yet.
+     * @throws SipParseException
+     */
+    ViaHeader getViaHeader() throws SipParseException;
 
     /**
      * Get the top-most {@link RecordRouteHeader} header if present.

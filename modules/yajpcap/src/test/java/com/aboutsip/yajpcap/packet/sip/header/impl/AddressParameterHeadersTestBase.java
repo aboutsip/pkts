@@ -13,10 +13,10 @@ import org.junit.Test;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.address.Address;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
 
 /**
  * The test base for testing all headers that are considered to be

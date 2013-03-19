@@ -4,7 +4,7 @@
 package com.aboutsip.yajpcap.packet.sip.address;
 
 import com.aboutsip.buffer.Buffer;
-import com.aboutsip.yajpcap.packet.sip.impl.SipParseException;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 
 /**
  * @author jonas@jonasborjesson.com

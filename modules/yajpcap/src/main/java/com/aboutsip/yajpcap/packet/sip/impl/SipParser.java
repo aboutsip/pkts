@@ -11,6 +11,7 @@ import java.util.List;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.header.impl.SipHeaderImpl;
 
 /**
@@ -989,6 +990,116 @@ public class SipParser {
             return null;
         }
         return buffer.readBytes(count);
+    }
+
+    /**
+     * Consume a Via-header, which according to RFC3261 is:
+     * 
+     * <pre>
+     * Via               =  ( "Via" / "v" ) HCOLON via-parm *(COMMA via-parm)
+     * via-parm          =  sent-protocol LWS sent-by *( SEMI via-params )
+     * via-params        =  via-ttl / via-maddr / via-received / via-branch / via-extension
+     * via-ttl           =  "ttl" EQUAL ttl
+     * via-maddr         =  "maddr" EQUAL host
+     * via-received      =  "received" EQUAL (IPv4address / IPv6address)
+     * via-branch        =  "branch" EQUAL token
+     * via-extension     =  generic-param
+     * sent-protocol     =  protocol-name SLASH protocol-version SLASH transport
+     * </pre>
+     * 
+     * Note, this method assumes that you have already stripped off the "Via" or
+     * "v". I.e., the header name.
+     * 
+     * The return value is ALWAYS an array of objects of size 4. However, the
+     * port can be null (index 2 = the third value) so make sure to check it.
+     * Also, the 4th value (index 3) contains a List<Buffer[]> containing all
+     * the via-parameters. Each entry in the list is a two dimensional array
+     * where the first element is the key and the second is the value. For flag
+     * parameters, the value will be null so make sure to check. For more info
+     * regarding how parameters are parsed, see
+     * {@link #consumeGenericParams(Buffer)}.
+     * 
+     * <ul>
+     * <li>result[0] - the protocol. Will never ever be null</li>
+     * <li>result[1] - the sent-by host. Will never ever be null</li>
+     * <li>result[2] - the sent-by port. May be null if port wasn't specified</li>
+     * <li>result[3] - the via-parameters as a List<Buffer[]>. Will always have
+     * elements in it since a via without a branch parameter is illegal.</li>
+     * </ul>
+     * 
+     * @param buffer
+     * @return returns an array of 4 elements. See above for details
+     * @throws SipParseException
+     * @throws IOException
+     */
+    public static Object[] consumeVia(final Buffer buffer) throws SipParseException, IOException {
+        final Object[] result = new Object[4];
+        // start off by just finding the ';'. A Via-header MUST have a branch parameter and as such
+        // there must be a ';' present. If there isn't one, then bail out and complain.
+        int count = 0;
+        int indexOfSemi = 0;
+        int countOfColons = 0;
+        int indexOfLastColon = 0;
+        int readerIndexOfLastColon = 0; // for reporting
+
+        result[0] = consumeSentProtocol(buffer);
+        consumeLWS(buffer);
+
+        final int index = buffer.getReaderIndex();
+        while (indexOfSemi == 0 && buffer.hasReadableBytes() && ++count < MAX_LOOK_AHEAD) {
+            final byte b = buffer.readByte();
+            if (b == SipParser.SEMI) {
+                indexOfSemi = count;
+            } else if (b == SipParser.COLON) {
+                ++countOfColons;
+                indexOfLastColon = count;
+                readerIndexOfLastColon = buffer.getReaderIndex();
+            }
+        }
+
+        if (count == 0) {
+            return null;
+        }
+
+        if (count == MAX_LOOK_AHEAD) {
+            throw new SipParseException(buffer.getReaderIndex(),
+                    "Unable to find the parameters part of the Via-header "
+                            + "even after searching for " + MAX_LOOK_AHEAD + " bytes.");
+        }
+
+        if (indexOfSemi == 0) {
+            // well, we don't check if the branch parameter is there but
+            // if there are no parameters present at all then there
+            // is no chance it is present.
+            throw new SipParseException(buffer.getReaderIndex(),
+                    "No via-parameters found. The Via-header MUST contain at least the branch parameter.");
+        }
+
+        buffer.setReaderIndex(index);
+
+        if (countOfColons == 0 || countOfColons == 7) {
+            // no port, just host
+            result[1] = buffer.readBytes(indexOfSemi - 1);
+        } else if (indexOfLastColon != 0 && (countOfColons == 1 || countOfColons == 8)) {
+            // found either a single colon or 8 colons where 8 colons indicates
+            // that we have an ipv6 address in front of us.
+            result[1] = buffer.readBytes(indexOfLastColon - 1);
+            buffer.readByte(); // consume ':'
+            result[2] = buffer.readBytes(indexOfSemi - indexOfLastColon - 1); // consume port
+            if (result[2] == null || ((Buffer) result[2]).isEmpty()) {
+                throw new SipParseException(readerIndexOfLastColon + 1, "Expected port after colon");
+            }
+        } else {
+            // indication an strange number of colons. May be the strange
+            // ipv4 address after ipv6 thing which we currently dont handle
+            throw new SipParseException(indexOfLastColon, "Found " + countOfColons + " which seems odd."
+                    + " Expecting 0, 1, 7 or 8 colons in the Via-host:port portion. Please check your traffic");
+        }
+
+        final List<Buffer[]> params = consumeGenericParams(buffer);
+        result[3] = params;
+
+        return result;
     }
 
     /**

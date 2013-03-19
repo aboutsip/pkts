@@ -18,12 +18,14 @@ import com.aboutsip.yajpcap.YajTestBase;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
 import com.aboutsip.yajpcap.packet.sip.address.SipURI;
 import com.aboutsip.yajpcap.packet.sip.address.URI;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RouteHeader;
+import com.aboutsip.yajpcap.packet.sip.header.ViaHeader;
 
 public class SipMessageImplTest extends YajTestBase {
 
@@ -71,6 +73,17 @@ public class SipMessageImplTest extends YajTestBase {
         assertThat(uri.isSipURI(), is(true));
         final SipURI sipUri = (SipURI) uri;
         assertThat(sipUri.getHost().toString(), is("aboutsip.com"));
+    }
+
+    @Test
+    public void testGetViaHeader() throws Exception {
+        final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader, 382);
+        final ViaHeader via = msg.getViaHeader();
+        assertThat(via.getPort(), is(5060));
+        assertThat(via.getHost().toString(), is("127.0.0.1"));
+        assertThat(via.getBranch().toString(), is("z9hG4bK-5647-1-0"));
+        assertThat(via.getRPort(), is(-1));
+        assertThat(via.hasRPort(), is(false));
     }
 
     /**

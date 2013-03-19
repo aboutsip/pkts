@@ -4,6 +4,7 @@
 package com.aboutsip.yajpcap.packet.sip.header;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
 
 /**
@@ -64,6 +65,16 @@ import com.aboutsip.yajpcap.packet.sip.SipHeader;
  */
 public interface ViaHeader extends Parameters, SipHeader {
 
+    Buffer NAME = Buffers.wrap("Via");
+
+    /**
+     * The protocol, which typically is "UDP", "TCP" or "TLS" but can really be
+     * anything according to RFC3261.
+     * 
+     * @return
+     */
+    Buffer getTransport();
+
     Buffer getHost();
 
     int getPort();
@@ -95,9 +106,20 @@ public interface ViaHeader extends Parameters, SipHeader {
     int getRPort();
 
 
+    /**
+     * The branch-parameter is mandatory and as such should always be there.
+     * However, everything is done lazily in this library so there is not a 100%
+     * guarantee that the branch header actually is present. Hence, you MUST be
+     * prepared to check for null in case the Via-header is bad. If important to
+     * your application (and if you are building a stack it probably will be)
+     * then please call {@link #verify()} on your headers since that will
+     * guarantee that they conform to whatever the various RFC's mandates.
+     * 
+     * @return
+     */
     Buffer getBranch();
 
-    Buffer getProtocol();
+    int getTTL();
 
     /**
      * Convenience method for checking whether the protocol is UDP or not.
