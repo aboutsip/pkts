@@ -34,6 +34,11 @@ public final class SipFrame extends AbstractFrame implements Layer7Frame {
     private final Buffer headers;
 
     /**
+     * The parsed message. No need to parse it twice.
+     */
+    private SipMessage msg = null;
+
+    /**
      * @param framerManager
      * @param p
      * @param payload
@@ -107,12 +112,16 @@ public final class SipFrame extends AbstractFrame implements Layer7Frame {
      */
     @Override
     public SipMessage parse() throws PacketParseException {
-        final TransportPacket pkt = this.parentFrame.parse();
-        final SipInitialLine initialLine = SipInitialLine.parse(this.initialLine);
-        if (initialLine.isRequestLine()) {
-            return new SipRequestImpl(pkt, (SipRequestLine) initialLine, this.headers, getPayload(), this);
+        if (this.msg == null) {
+            final TransportPacket pkt = this.parentFrame.parse();
+            final SipInitialLine initialLine = SipInitialLine.parse(this.initialLine);
+            if (initialLine.isRequestLine()) {
+                this.msg = new SipRequestImpl(pkt, (SipRequestLine) initialLine, this.headers, getPayload(), this);
+            } else {
+                this.msg = new SipResponseImpl(pkt, (SipResponseLine) initialLine, this.headers, getPayload(), this);
+            }
         }
-        return new SipResponseImpl(pkt, (SipResponseLine) initialLine, this.headers, getPayload(), this);
+        return this.msg;
     }
 
     /**
@@ -137,7 +146,7 @@ public final class SipFrame extends AbstractFrame implements Layer7Frame {
      * @return
      */
     private Protocol getPayloadProtocol(final Buffer payload) throws IOException {
-        if ((payload == null) || !payload.hasReadableBytes()) {
+        if (payload == null || !payload.hasReadableBytes()) {
             return null;
         }
 
@@ -169,7 +178,7 @@ public final class SipFrame extends AbstractFrame implements Layer7Frame {
 
     private Buffer getContentType(final Buffer contentTypeHeader) throws IOException {
         contentTypeHeader.markReaderIndex();
-        while (contentTypeHeader.hasReadableBytes() && (contentTypeHeader.readByte() != ':')) {
+        while (contentTypeHeader.hasReadableBytes() && contentTypeHeader.readByte() != ':') {
             // do nothing
         }
         final Buffer contentType = contentTypeHeader.slice();
@@ -189,13 +198,13 @@ public final class SipFrame extends AbstractFrame implements Layer7Frame {
             final byte c = line.getByte(2);
 
             // could be Content-Type, but also other things so check
-            if ((a == 'C') && (b == 'o') && (c == 'n')) {
+            if (a == 'C' && b == 'o' && c == 'n') {
                 final String tmp = line.toString();
                 if (tmp.startsWith("Content-Type")) {
                     contentType = line;
                     break;
                 }
-            } else if ((a == 'c') && (b == ':')) {
+            } else if (a == 'c' && b == ':') {
                 // compact form of content type. Note though, there could
                 // actually be spaces before the ':' but we'll ignore that case
                 // for now
