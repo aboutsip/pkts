@@ -62,7 +62,7 @@ public final class RTPFramer implements Layer7Framer {
         // check the version. Currently we only check for version 2
         // and if this is true then we'll just return true.
         final byte b = data.getByte(0);
-        return ((b & 0xC0) >> 6) == 0x02;
+        return (b & 0xC0) >> 6 == 0x02;
     }
 
     @Override
@@ -85,8 +85,8 @@ public final class RTPFramer implements Layer7Framer {
             final Buffer extensionData = buffer.readBytes(length);
         }
 
-        if (hasPadding || hasExtension || (csrcCount > 0)) {
-            throw new RuntimeException("TODO - have not implemented the case of handling padding, extensions etc");
+        if (hasPadding || hasExtension || csrcCount > 0) {
+            // throw new RuntimeException("TODO - have not implemented the case of handling padding, extensions etc");
         }
 
         final Buffer payload = buffer.slice();

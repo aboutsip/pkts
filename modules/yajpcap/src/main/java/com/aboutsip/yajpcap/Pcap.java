@@ -7,6 +7,9 @@ import java.nio.ByteOrder;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
+import com.aboutsip.yajpcap.filters.Filter;
+import com.aboutsip.yajpcap.filters.FilterFactory;
+import com.aboutsip.yajpcap.filters.FilterParseException;
 import com.aboutsip.yajpcap.frame.Frame;
 import com.aboutsip.yajpcap.frame.PcapGlobalHeader;
 import com.aboutsip.yajpcap.framer.FramerManager;
@@ -23,12 +26,37 @@ public class Pcap {
     private final Buffer buffer;
     private final FramerManager framerManager;
 
+    /**
+     * If the filter is set then only frames that are accepted by the filter
+     * will be further processed.
+     */
+    private Filter filter = null;
+
+    private final FilterFactory filterFactory = FilterFactory.getInstance();
+
     private Pcap(final PcapGlobalHeader header, final Buffer buffer) {
         assert header != null;
         assert buffer != null;
         this.header = header;
         this.buffer = buffer;
         this.framerManager = FramerManager.getInstance();
+    }
+
+    /**
+     * It is possible to specify a filter so that only packets that matches the
+     * filter will be passed onto the registered {@link FrameHandler}.
+     * 
+     * E.g., to only accept packets of type sip with the Call-ID of "123" you
+     * could pass in the following filter:
+     * 
+     * "sip.Call-ID == 123"
+     * 
+     * @param expression
+     * @throws FilterParseException
+     *             in case the expression is not a valid filter expression.
+     */
+    public void setFilter(final String expression) throws FilterParseException {
+        this.filter = this.filterFactory.createFilter(expression);
     }
 
     public void loop(final FrameHandler callback) throws IOException {
@@ -39,7 +67,11 @@ public class Pcap {
         while ((frame = framer.frame(null, this.buffer)) != null) {
             final long time = frame.getArrivalTime();
             this.framerManager.tick(time);
-            callback.nextFrame(frame);
+            if (this.filter == null) {
+                callback.nextFrame(frame);
+            } else if (this.filter != null && this.filter.accept(frame)) {
+                callback.nextFrame(frame);
+            }
         }
 
     }
