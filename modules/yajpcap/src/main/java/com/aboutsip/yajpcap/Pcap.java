@@ -52,11 +52,15 @@ public class Pcap {
      * "sip.Call-ID == 123"
      * 
      * @param expression
+     *            the expression. If the expression is null or the empty string,
+     *            it will silently be ignored.
      * @throws FilterParseException
      *             in case the expression is not a valid filter expression.
      */
     public void setFilter(final String expression) throws FilterParseException {
-        this.filter = this.filterFactory.createFilter(expression);
+        if (expression != null && !expression.isEmpty()) {
+            this.filter = this.filterFactory.createFilter(expression);
+        }
     }
 
     public void loop(final FrameHandler callback) throws IOException {
@@ -73,7 +77,6 @@ public class Pcap {
                 callback.nextFrame(frame);
             }
         }
-
     }
 
     /**

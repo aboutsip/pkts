@@ -20,12 +20,14 @@ import com.aboutsip.yajpcap.packet.sip.SipMessage;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
 import com.aboutsip.yajpcap.packet.sip.SipResponse;
+import com.aboutsip.yajpcap.packet.sip.header.ContactHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ViaHeader;
+import com.aboutsip.yajpcap.packet.sip.header.impl.ContactHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.ContentTypeHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.FromHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.RecordRouteHeaderImpl;
@@ -248,6 +250,27 @@ public abstract class SipMessageImpl implements SipMessage {
 
         this.parsedHeaders.put(route.getName(), route);
         return route;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ContactHeader getContactHeader() throws SipParseException {
+        final SipHeader header = getHeader(ContactHeader.NAME);
+        if (header instanceof ContactHeader) {
+            return (ContactHeader) header;
+        }
+
+        if (header == null) {
+            return null;
+        }
+
+        final Buffer buffer = header.getValue();
+        final ContactHeader contact = ContactHeaderImpl.frame(buffer);
+
+        this.parsedHeaders.put(contact.getName(), contact);
+        return contact;
     }
 
     @Override

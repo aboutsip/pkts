@@ -3,7 +3,7 @@
  */
 package com.aboutsip.yajpcap.packet.sip;
 
-import com.aboutsip.buffer.Buffer;
+import com.aboutsip.yajpcap.packet.sip.address.URI;
 
 
 /**
@@ -16,7 +16,7 @@ public interface SipRequest extends SipMessage {
      * 
      * @return
      */
-    Buffer getRequestUri();
+    URI getRequestUri() throws SipParseException;
 
 
 }
