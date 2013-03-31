@@ -2,6 +2,7 @@ package com.aboutsip.yajpcap.packet.sip;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.packet.impl.ApplicationPacket;
+import com.aboutsip.yajpcap.packet.sip.header.ContactHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
@@ -164,6 +165,14 @@ public interface SipMessage extends ApplicationPacket {
      * @throws SipParseException
      */
     RouteHeader getRouteHeader() throws SipParseException;
+
+    /**
+     * Get the {@link ContactHeader}
+     * 
+     * @return
+     * @throws SipParseException
+     */
+    ContactHeader getContactHeader() throws SipParseException;
 
     /**
      * Get the {@link ContentTypeHeader} for this message. If there is no

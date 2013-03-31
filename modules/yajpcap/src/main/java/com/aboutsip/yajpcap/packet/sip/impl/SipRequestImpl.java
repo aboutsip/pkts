@@ -6,7 +6,9 @@ package com.aboutsip.yajpcap.packet.sip.impl;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.frame.SipFrame;
 import com.aboutsip.yajpcap.packet.TransportPacket;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
+import com.aboutsip.yajpcap.packet.sip.address.URI;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -37,7 +39,7 @@ public final class SipRequestImpl extends SipMessageImpl implements SipRequest {
      * {@inheritDoc}
      */
     @Override
-    public Buffer getRequestUri() {
+    public URI getRequestUri() throws SipParseException {
         return this.requestLine.getRequestUri();
     }
 

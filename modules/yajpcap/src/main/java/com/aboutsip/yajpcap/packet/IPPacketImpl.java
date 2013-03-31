@@ -215,8 +215,6 @@ public final class IPPacketImpl implements IPPacket {
      */
     private void reCalculateChecksum() {
         final int checksum = calculateChecksum();
-        System.out.println("Recalculating checksum. Old is: " + Integer.toHexString(getIpChecksum()) + " New is: "
-                + Integer.toHexString(checksum));
         this.headers.setUnsignedShort(10, checksum);
     }
 
