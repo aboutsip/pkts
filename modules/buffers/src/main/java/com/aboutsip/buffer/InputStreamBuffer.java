@@ -100,11 +100,12 @@ public final class InputStreamBuffer extends AbstractBuffer {
     @Override
     public Buffer readBytes(final int length) throws IndexOutOfBoundsException, IOException {
         if (!checkReadableBytesSafe(length)) {
-            final int read = internalReadBytes(length);
+            final int availableBytes = readableBytes();
+            final int read = internalReadBytes(length - availableBytes);
             if (read == -1) {
                 // end-of-file
                 return null;
-            } else if (read < length) {
+            } else if (read + availableBytes < length) {
                 // do something else?
                 throw new IndexOutOfBoundsException("Not enough bytes left in the stream. Wanted " + length
                         + " but only read " + read);
@@ -234,7 +235,15 @@ public final class InputStreamBuffer extends AbstractBuffer {
             final int readAtMost = Math.min(length - total, spaceLeft);
 
             final java.nio.ByteBuffer bb = getWritingRow();
-            actual = this.is.read(bb.array(), localIndex, readAtMost);
+            try {
+                actual = this.is.read(bb.array(), localIndex, readAtMost);
+            } catch (final Exception e) {
+                e.printStackTrace();
+                System.err.println("Got the stupid exception again");
+                System.err.println("LocalIndex: " + localIndex);
+                System.err.println("ReadAtMost: " + readAtMost);
+                System.exit(1);
+            }
             if (actual > 0) {
                 this.upperBoundary += actual;
                 total += actual;
@@ -482,6 +491,21 @@ public final class InputStreamBuffer extends AbstractBuffer {
         // slow
         final Buffer b = this.slice();
         return b.toString();
+    }
+
+    @Override
+    public void write(final byte b) throws IndexOutOfBoundsException {
+        throw new IndexOutOfBoundsException("This is a input stream buffer. Cant write to it");
+    }
+
+    @Override
+    public int getWritableBytes() {
+        return 0;
+    }
+
+    @Override
+    public boolean hasWritableBytes() {
+        return false;
     }
 
 }

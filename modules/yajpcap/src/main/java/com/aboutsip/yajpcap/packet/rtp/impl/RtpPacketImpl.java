@@ -266,6 +266,21 @@ public final class RtpPacketImpl implements RtpPacket {
     }
 
     @Override
+    public void setSourceIP(final byte a, final byte b, final byte c, final byte d) {
+        this.parent.setSourceIP(a, b, c, d);
+    }
+
+    @Override
+    public void setDestinationIP(final byte a, final byte b, final byte c, final byte d) {
+        this.parent.setDestinationIP(a, b, c, d);
+    }
+
+    @Override
+    public void reCalculateChecksum() {
+        this.parent.reCalculateChecksum();
+    }
+
+    @Override
     public boolean verifyIpChecksum() {
         return this.parent.verifyIpChecksum();
     }

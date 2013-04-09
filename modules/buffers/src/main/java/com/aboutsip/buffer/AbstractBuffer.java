@@ -56,6 +56,11 @@ public abstract class AbstractBuffer implements Buffer {
     }
 
     @Override
+    public int getWriterIndex() {
+        return -1;
+    }
+
+    @Override
     public void setReaderIndex(final int index) {
         this.readerIndex = index;
     }

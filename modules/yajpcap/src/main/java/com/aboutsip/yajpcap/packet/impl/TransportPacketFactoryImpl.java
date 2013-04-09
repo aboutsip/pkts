@@ -81,5 +81,28 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
         return new TransportPacketImpl(ipPacket, true, srcPort, destPort);
     }
 
+    @Override
+    public TransportPacket create(final Protocol protocol, final byte[] srcAddress, final int srcPort,
+            final byte[] destAddress, final int destPort, final Buffer payload) throws IllegalArgumentException,
+            IllegalProtocolException {
+
+        final byte[] ethernet = new byte[this.ehternetII.length];
+        System.arraycopy(this.ehternetII, 0, ethernet, 0, this.ehternetII.length);
+        final MACPacket mac = MACPacketImpl.create(null, Buffers.wrap(ethernet));
+
+        final byte[] rawIpv4 = new byte[this.ipv4.length];
+        System.arraycopy(this.ipv4, 0, rawIpv4, 0, this.ipv4.length);
+        final Buffer ipHeaders = Buffers.wrap(rawIpv4);
+        final IPPacket ipPacket = new IPPacketImpl(mac, ipHeaders, 0);
+        try {
+            ipPacket.setSourceIP(srcAddress[0], srcAddress[1], srcAddress[2], srcAddress[3]);
+            ipPacket.setDestinationIP(destAddress[0], destAddress[1], destAddress[2], destAddress[3]);
+        } catch (final IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("Not enough bytes for setting an IPv4 address");
+        }
+
+        return new TransportPacketImpl(ipPacket, true, srcPort, destPort);
+    }
+
 
 }

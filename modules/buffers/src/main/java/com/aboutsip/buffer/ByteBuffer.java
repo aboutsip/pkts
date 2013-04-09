@@ -18,6 +18,7 @@ public final class ByteBuffer extends AbstractBuffer {
      */
     protected final byte[] buffer;
 
+    private int writerIndex;
 
     /**
      * 
@@ -27,8 +28,14 @@ public final class ByteBuffer extends AbstractBuffer {
     }
 
     protected ByteBuffer(final int readerIndex, final int lowerBoundary, final int upperBoundary, final byte[] buffer) {
+        this(readerIndex, lowerBoundary, upperBoundary, buffer.length, buffer);
+    }
+
+    protected ByteBuffer(final int readerIndex, final int lowerBoundary, final int upperBoundary,
+            final int writerIndex, final byte[] buffer) {
         super(readerIndex, lowerBoundary, upperBoundary);
         assert buffer != null;
+        this.writerIndex = writerIndex;
         this.buffer = buffer;
     }
 
@@ -80,6 +87,13 @@ public final class ByteBuffer extends AbstractBuffer {
     public byte getByte(final int index) throws IndexOutOfBoundsException {
         checkIndex(this.lowerBoundary + index);
         return this.buffer[this.lowerBoundary + index];
+    }
+
+    @Override
+    public void write(final byte b) throws IndexOutOfBoundsException {
+        checkIndex(this.writerIndex);
+        this.buffer[this.lowerBoundary + this.writerIndex] = b;
+        ++this.writerIndex;
     }
 
     /**
@@ -278,6 +292,21 @@ public final class ByteBuffer extends AbstractBuffer {
     @Override
     public String toString() {
         return new String(getArray());
+    }
+
+    @Override
+    public int getWriterIndex() {
+        return this.writerIndex;
+    }
+
+    @Override
+    public int getWritableBytes() {
+        return capacity() - this.writerIndex;
+    }
+
+    @Override
+    public boolean hasWritableBytes() {
+        return getWritableBytes() > 0;
     }
 
 }

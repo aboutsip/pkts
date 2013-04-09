@@ -38,6 +38,14 @@ public interface IPPacket extends MACPacket {
     void setSourceIP(int a, int b, int c, int d);
 
     /**
+     * Setting an IPv4 address the fast(est?) way! Specify each part separately.
+     * E.g., setting 192.168.0.100 would be accomplished like so:
+     * 
+     * @param rawIp
+     */
+    void setSourceIP(byte a, byte b, byte c, byte d);
+
+    /**
      * Set the source IP of this {@link IPPacket}. Note, using
      * {@link #setSourceIP(int, int, int, int)} will be must faster so try and
      * use it instead.
@@ -64,6 +72,8 @@ public interface IPPacket extends MACPacket {
      *            the fourth part of the IPv4 address, e.g. 100
      */
     void setDestinationIP(int a, int b, int c, int d);
+
+    void setDestinationIP(byte a, byte b, byte c, byte d);
 
     /**
      * Set the destination IP of this {@link IPPacket}. Note, using
@@ -100,6 +110,14 @@ public interface IPPacket extends MACPacket {
      * @return
      */
     int getIpChecksum();
+
+    /**
+     * After you change anything in an IP packet (apart from the payload) you
+     * should re-calculate the checksum. If you don't, if this then is written
+     * to a pcap and later opened in e.g. wireshark, then all packets will be
+     * flagged as bad checksums.
+     */
+    void reCalculateChecksum();
 
     boolean verifyIpChecksum();
 }

@@ -175,12 +175,28 @@ public final class IPPacketImpl implements IPPacket {
     }
 
     @Override
+    public void setSourceIP(final byte a, final byte b, final byte c, final byte d) {
+        this.headers.setByte(12, a);
+        this.headers.setByte(13, b);
+        this.headers.setByte(14, c);
+        this.headers.setByte(15, d);
+    }
+
+    @Override
     public void setDestinationIP(final int a, final int b, final int c, final int d) {
         this.headers.setByte(16, (byte) a);
         this.headers.setByte(17, (byte) b);
         this.headers.setByte(18, (byte) c);
         this.headers.setByte(19, (byte) d);
         reCalculateChecksum();
+    }
+
+    @Override
+    public void setDestinationIP(final byte a, final byte b, final byte c, final byte d) {
+        this.headers.setByte(16, a);
+        this.headers.setByte(17, b);
+        this.headers.setByte(18, c);
+        this.headers.setByte(19, d);
     }
 
     @Override
@@ -213,7 +229,7 @@ public final class IPPacketImpl implements IPPacket {
      * Whenever we change a value in the IP packet we need to update the
      * checksum as well.
      */
-    private void reCalculateChecksum() {
+    public void reCalculateChecksum() {
         final int checksum = calculateChecksum();
         this.headers.setUnsignedShort(10, checksum);
     }

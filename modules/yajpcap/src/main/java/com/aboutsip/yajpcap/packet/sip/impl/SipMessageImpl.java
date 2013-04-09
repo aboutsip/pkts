@@ -13,13 +13,14 @@ import com.aboutsip.buffer.Buffers;
 import com.aboutsip.sdp.SDPFactory;
 import com.aboutsip.sdp.SdpException;
 import com.aboutsip.sdp.SdpParseException;
-import com.aboutsip.yajpcap.frame.SipFrame;
+import com.aboutsip.yajpcap.frame.Layer7Frame;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
 import com.aboutsip.yajpcap.packet.sip.SipResponse;
+import com.aboutsip.yajpcap.packet.sip.header.CallIdHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ContactHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
@@ -27,6 +28,7 @@ import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ViaHeader;
+import com.aboutsip.yajpcap.packet.sip.header.impl.CallIdHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.ContactHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.ContentTypeHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.FromHeaderImpl;
@@ -92,7 +94,7 @@ public abstract class SipMessageImpl implements SipMessage {
      * actually use the data in the frame when we are asked to write ourselves
      * to an output stream.
      */
-    private final SipFrame sipFrame;
+    private final Layer7Frame sipFrame;
 
     /**
      * 
@@ -102,7 +104,7 @@ public abstract class SipMessageImpl implements SipMessage {
      * @param payload the payload or null if there is none
      */
     public SipMessageImpl(final TransportPacket parent, final SipInitialLine initialLine, final Buffer headers,
-            final Buffer payload, final SipFrame sipFrame) {
+            final Buffer payload, final Layer7Frame sipFrame) {
         assert initialLine != null;
         assert headers != null;
         assert parent != null;
@@ -306,8 +308,16 @@ public abstract class SipMessageImpl implements SipMessage {
      * {@inheritDoc}
      */
     @Override
-    public SipHeader getCallIDHeader() throws SipParseException {
-        return getHeader(Call_ID_HEADER);
+    public CallIdHeader getCallIDHeader() throws SipParseException {
+        final SipHeader header = getHeader(CallIdHeader.NAME);
+        if (header instanceof CallIdHeader) {
+            return (CallIdHeader) header;
+        }
+
+        final Buffer buffer = header.getValue();
+        final CallIdHeader callId = CallIdHeaderImpl.frame(buffer);
+        this.parsedHeaders.put(callId.getName(), callId);
+        return callId;
     }
 
     /**
@@ -460,6 +470,15 @@ public abstract class SipMessageImpl implements SipMessage {
     }
 
     @Override
+    public final Buffer getRawContent() {
+        if (!hasContent()) {
+            return null;
+        }
+
+        return this.payload;
+    }
+
+    @Override
     public final boolean hasContent() {
         return this.payload != null && this.payload.hasReadableBytes();
     }
@@ -573,6 +592,21 @@ public abstract class SipMessageImpl implements SipMessage {
     @Override
     public int getIpChecksum() {
         return this.parent.getIpChecksum();
+    }
+
+    @Override
+    public void setSourceIP(final byte a, final byte b, final byte c, final byte d) {
+        this.parent.setSourceIP(a, b, c, d);
+    }
+
+    @Override
+    public void setDestinationIP(final byte a, final byte b, final byte c, final byte d) {
+        this.parent.setDestinationIP(a, b, c, d);
+    }
+
+    @Override
+    public void reCalculateChecksum() {
+        this.parent.reCalculateChecksum();
     }
 
     @Override

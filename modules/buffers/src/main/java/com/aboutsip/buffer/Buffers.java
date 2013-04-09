@@ -39,13 +39,24 @@ public final class Buffers {
     }
 
     /**
+     * Create a new Buffer
+     * 
+     * @param capacity
+     * @return
+     */
+    public static Buffer createBuffer(final int capacity) {
+        final byte[] buffer = new byte[capacity];
+        return new ByteBuffer(0, 0, buffer.length, 0, buffer);
+    }
+
+    /**
      * Wrap the supplied byte array
      * 
      * @param buffer
      * @return
      */
     public static Buffer wrap(final byte[] buffer) {
-        if ((buffer == null) || (buffer.length == 0)) {
+        if (buffer == null || buffer.length == 0) {
             throw new IllegalArgumentException("the buffer cannot be null or empty");
         }
 

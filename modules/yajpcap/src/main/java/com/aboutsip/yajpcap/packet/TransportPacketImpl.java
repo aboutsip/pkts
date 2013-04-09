@@ -152,4 +152,19 @@ public final class TransportPacketImpl implements TransportPacket {
         return this.parent.verifyIpChecksum();
     }
 
+    @Override
+    public void setSourceIP(final byte a, final byte b, final byte c, final byte d) {
+        this.parent.setSourceIP(a, b, c, d);
+    }
+
+    @Override
+    public void setDestinationIP(final byte a, final byte b, final byte c, final byte d) {
+        this.parent.setDestinationIP(a, b, c, d);
+    }
+
+    @Override
+    public void reCalculateChecksum() {
+        this.parent.reCalculateChecksum();
+    }
+
 }

@@ -2,6 +2,7 @@ package com.aboutsip.yajpcap.packet.sip;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.packet.impl.ApplicationPacket;
+import com.aboutsip.yajpcap.packet.sip.header.CallIdHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ContactHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
@@ -83,6 +84,13 @@ public interface SipMessage extends ApplicationPacket {
      *             in any way.
      */
     Object getContent() throws SipParseException;
+
+    /**
+     * Get the content as a {@link Buffer}.
+     * 
+     * @return
+     */
+    Buffer getRawContent();
 
     /**
      * Checks whether this {@link SipMessage} is carrying anything in its
@@ -188,7 +196,7 @@ public interface SipMessage extends ApplicationPacket {
      * 
      * @return the call-id header as a buffer
      */
-    SipHeader getCallIDHeader() throws SipParseException;
+    CallIdHeader getCallIDHeader() throws SipParseException;
 
     /**
      * Convenience method for determining whether the method of this message is

@@ -4,7 +4,7 @@
 package com.aboutsip.yajpcap.packet.sip.impl;
 
 import com.aboutsip.buffer.Buffer;
-import com.aboutsip.yajpcap.frame.SipFrame;
+import com.aboutsip.yajpcap.frame.Layer7Frame;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
@@ -22,7 +22,7 @@ public final class SipRequestImpl extends SipMessageImpl implements SipRequest {
      * 
      */
     public SipRequestImpl(final TransportPacket parent, final SipRequestLine requestLine, final Buffer headers,
-            final Buffer payload, final SipFrame sipFrame) {
+            final Buffer payload, final Layer7Frame sipFrame) {
         super(parent, requestLine, headers, payload, sipFrame);
         this.requestLine = requestLine;
     }

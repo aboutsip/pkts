@@ -305,4 +305,24 @@ public class EmptyBuffer implements Buffer {
         // ignored
     }
 
+    @Override
+    public void write(final byte b) throws IndexOutOfBoundsException {
+        throw new IndexOutOfBoundsException("This is an empty buffer. Cant write to it");
+    }
+
+    @Override
+    public int getWriterIndex() {
+        return -1;
+    }
+
+    @Override
+    public int getWritableBytes() {
+        return 0;
+    }
+
+    @Override
+    public boolean hasWritableBytes() {
+        return false;
+    }
+
 }

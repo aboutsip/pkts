@@ -342,6 +342,42 @@ public interface Buffer extends Cloneable {
     void setByte(int index, byte value) throws IndexOutOfBoundsException;
 
     /**
+     * The writer index. This is where we will be writing our next byte if asked
+     * to do so.
+     * 
+     * @return
+     */
+    int getWriterIndex();
+
+    /**
+     * Get the number of writable bytes.
+     * 
+     * @return
+     */
+    int getWritableBytes();
+
+    /**
+     * Checks whether this {@link Buffer} has any space left for writing. Same
+     * as {@link #getWritableBytes()} > 0
+     * 
+     * @return
+     */
+    boolean hasWritableBytes();
+
+    /**
+     * Write a byte to to where the current writer index is pointing. Note, many
+     * implementations may not support writing and if they don't, they will
+     * throw a {@link IndexOutOfBoundsException}
+     * 
+     * @param b
+     * @throws IndexOutOfBoundsException
+     *             in case there is no more space to write to (which includes
+     *             those cases where the underlying implementation does not
+     *             support writing)
+     */
+    void write(byte b) throws IndexOutOfBoundsException;
+
+    /**
      * Check whether to buffers are considered to be equal.
      * 
      * To buffers are equal if the underlying visible area of the byte array are
