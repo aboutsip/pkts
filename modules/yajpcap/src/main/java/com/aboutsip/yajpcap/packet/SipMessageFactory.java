@@ -3,6 +3,7 @@
  */
 package com.aboutsip.yajpcap.packet;
 
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
 import com.aboutsip.yajpcap.packet.sip.SipResponse;
 import com.aboutsip.yajpcap.packet.sip.header.CSeqHeader;
@@ -31,7 +32,10 @@ public interface SipMessageFactory {
      * @param statusCode
      * @param request
      * @return
+     * @throws SipParseException
+     *             in case anything goes wrong when parsing out headers from the
+     *             {@link SipRequest}
      */
-    SipResponse createResponse(int statusCode, SipRequest request);
+    SipResponse createResponse(int statusCode, SipRequest request) throws SipParseException;
 
 }

@@ -2,6 +2,7 @@ package com.aboutsip.yajpcap.packet.sip;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.packet.impl.ApplicationPacket;
+import com.aboutsip.yajpcap.packet.sip.header.CSeqHeader;
 import com.aboutsip.yajpcap.packet.sip.header.CallIdHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ContactHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
@@ -128,6 +129,10 @@ public interface SipMessage extends ApplicationPacket {
      */
     SipHeader getHeader(String headerName) throws SipParseException;
 
+    void addHeader(SipHeader header);
+
+    void setHeader(SipHeader header);
+
     /**
      * Convenience method for fetching the from-header
      * 
@@ -197,6 +202,14 @@ public interface SipMessage extends ApplicationPacket {
      * @return the call-id header as a buffer
      */
     CallIdHeader getCallIDHeader() throws SipParseException;
+
+    /**
+     * Convenience method for fetching the CSeq header
+     * 
+     * @return
+     * @throws SipParseException
+     */
+    CSeqHeader getCSeqHeader() throws SipParseException;
 
     /**
      * Convenience method for determining whether the method of this message is
@@ -338,5 +351,18 @@ public interface SipMessage extends ApplicationPacket {
      */
     @Override
     void verify();
+
+    /**
+     * Get the {@link Buffer} that is representing this {@link SipMessage}.
+     * Note, the data behind the buffer is shared with the actual
+     * {@link SipMessage} so any changes to the {@link Buffer} will affect this
+     * {@link SipMessage}. Hence, by changing this buffer directly, you bypass
+     * all checks for valid inputs and the end-result of doing so is undefined
+     * (most likely you will either blow up at some point or you will end up
+     * sending garbage across the network).
+     * 
+     * @return
+     */
+    Buffer toBuffer();
 
 }

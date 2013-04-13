@@ -4,6 +4,9 @@
 package com.aboutsip.buffer;
 
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 /**
@@ -18,8 +21,6 @@ public final class ByteBuffer extends AbstractBuffer {
      */
     protected final byte[] buffer;
 
-    private int writerIndex;
-
     /**
      * 
      */
@@ -28,14 +29,13 @@ public final class ByteBuffer extends AbstractBuffer {
     }
 
     protected ByteBuffer(final int readerIndex, final int lowerBoundary, final int upperBoundary, final byte[] buffer) {
-        this(readerIndex, lowerBoundary, upperBoundary, buffer.length, buffer);
+        this(readerIndex, lowerBoundary, upperBoundary, upperBoundary, buffer);
     }
 
     protected ByteBuffer(final int readerIndex, final int lowerBoundary, final int upperBoundary,
             final int writerIndex, final byte[] buffer) {
-        super(readerIndex, lowerBoundary, upperBoundary);
+        super(readerIndex, lowerBoundary, upperBoundary, writerIndex);
         assert buffer != null;
-        this.writerIndex = writerIndex;
         this.buffer = buffer;
     }
 
@@ -49,7 +49,9 @@ public final class ByteBuffer extends AbstractBuffer {
         }
         checkIndex(this.lowerBoundary + start);
         checkIndex(this.lowerBoundary + stop - 1);
-        return new ByteBuffer(0, this.lowerBoundary + start, this.lowerBoundary + stop, this.buffer);
+        final int upperBoundary = this.lowerBoundary + stop;
+        final int writerIndex = upperBoundary;
+        return new ByteBuffer(0, this.lowerBoundary + start, upperBoundary, writerIndex, this.buffer);
     }
 
     /**
@@ -61,7 +63,9 @@ public final class ByteBuffer extends AbstractBuffer {
         checkReadableBytes(length);
         final int lowerBoundary = this.readerIndex + this.lowerBoundary;
         this.readerIndex += length;
-        return new ByteBuffer(0, lowerBoundary, this.readerIndex + this.lowerBoundary, this.buffer);
+        final int upperBoundary = this.readerIndex + this.lowerBoundary;
+        final int writerIndex = upperBoundary;
+        return new ByteBuffer(0, lowerBoundary, upperBoundary, writerIndex, this.buffer);
     }
 
     /**
@@ -170,7 +174,7 @@ public final class ByteBuffer extends AbstractBuffer {
     public int getInt(final int index) {
         final int i = this.lowerBoundary + index;
         checkIndex(i);
-        checkIndex(i + 4);
+        checkIndex(i + 3);
         return (this.buffer[i] & 0xff) << 24 | (this.buffer[i + 1] & 0xff) << 16
                 | (this.buffer[i + 2] & 0xff) << 8 | (this.buffer[i + 3] & 0xff) << 0;
     }
@@ -300,13 +304,43 @@ public final class ByteBuffer extends AbstractBuffer {
     }
 
     @Override
-    public int getWritableBytes() {
-        return capacity() - this.writerIndex;
+    public void getBytes(final Buffer dst) {
+        final int max = dst.getWritableBytes();
+        final int stop = Math.min(this.lowerBoundary + max, this.writerIndex);
+        for (int i = this.lowerBoundary; i < stop; ++i) {
+            dst.write(this.buffer[i]);
+        }
+    }
+
+    public void writeExternal(final ObjectOutput out) throws IOException {
+        out.write(this.buffer, this.lowerBoundary, this.writerIndex - this.lowerBoundary);
+    }
+
+    public void readExternal(final ObjectInput in) throws IOException, ClassNotFoundException {
+        // TODO Auto-generated method stub
     }
 
     @Override
-    public boolean hasWritableBytes() {
-        return getWritableBytes() > 0;
+    public boolean hasWriteSupport() {
+        return true;
+    }
+
+    @Override
+    public void write(final String s) throws IndexOutOfBoundsException, WriteNotSupportedException,
+    UnsupportedEncodingException {
+        write(s, "UTF-8");
+    }
+
+    @Override
+    public void write(final String s, final String charset) throws IndexOutOfBoundsException,
+    WriteNotSupportedException, UnsupportedEncodingException {
+        final byte[] bytes = s.getBytes(charset);
+        if (!checkWritableBytesSafe(bytes.length)) {
+            throw new IndexOutOfBoundsException("Unable to write the entire String to this buffer. Nothing was written");
+        }
+
+        System.arraycopy(bytes, 0, this.buffer, this.writerIndex, bytes.length);
+        this.writerIndex += bytes.length;
     }
 
 }

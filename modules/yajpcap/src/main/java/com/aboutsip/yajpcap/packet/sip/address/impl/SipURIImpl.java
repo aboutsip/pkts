@@ -16,6 +16,8 @@ import com.aboutsip.yajpcap.packet.sip.impl.SipParser;
  */
 public class SipURIImpl extends URIImpl implements SipURI {
 
+    private static final Buffer DEFAULT_PORT = Buffers.wrap(5060);
+
     public static final Buffer SCHEME_SIP = Buffers.wrap("sip");
 
     public static final Buffer SCHEME_SIPS = Buffers.wrap("sips");
@@ -38,7 +40,7 @@ public class SipURIImpl extends URIImpl implements SipURI {
     /**
      * The port
      */
-    private final Buffer port;
+    private Buffer port;
 
     /**
      * contains the uri-parameters and/or headers.
@@ -69,14 +71,16 @@ public class SipURIImpl extends URIImpl implements SipURI {
      *            the original buffer just because as long as no one is changing
      *            the content we can just return this buffer fast and easy.
      */
-    private SipURIImpl(final boolean isSips, final Buffer userInfo, final Buffer host, final Buffer port,
+    protected SipURIImpl(final boolean isSips, final Buffer userInfo, final Buffer host, final Buffer port,
             final Buffer paramsHeaders,
             final Buffer original) {
         super(isSips ? SCHEME_SIPS : SCHEME_SIP);
         this.isSecure = isSips;
         this.userInfo = userInfo;
         this.host = host;
-        this.port = port;
+        if (port != null) {
+            this.port = port;
+        }
         this.paramsHeaders = paramsHeaders;
         this.buffer = original;
     }
@@ -137,7 +141,7 @@ public class SipURIImpl extends URIImpl implements SipURI {
         if (this.port == null) {
             return -1;
         }
-        return 0;
+        return this.port.getInt(0);
     }
 
     /**
@@ -210,6 +214,10 @@ public class SipURIImpl extends URIImpl implements SipURI {
 
         SipParser.expect(buffer, SipParser.COLON);
         return true;
+    }
+
+    @Override
+    public void setPort(final int port) {
     }
 
 }

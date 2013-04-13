@@ -4,6 +4,7 @@
 package com.aboutsip.buffer;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 
 /**
@@ -15,6 +16,11 @@ public abstract class AbstractBuffer implements Buffer {
      * From where we will continue reading
      */
     protected int readerIndex;
+
+    /**
+     * This is where we will write the next byte.
+     */
+    protected int writerIndex;
 
     /**
      * The position of the reader index that has been marked. I.e., this is the
@@ -36,12 +42,14 @@ public abstract class AbstractBuffer implements Buffer {
     // protected AbstractBuffer(final int readerIndex, final int lowerBoundary,
     // final int upperBoundary,
     // final byte[] buffer) {
-    protected AbstractBuffer(final int readerIndex, final int lowerBoundary, final int upperBoundary) {
+    protected AbstractBuffer(final int readerIndex, final int lowerBoundary, final int upperBoundary,
+            final int writerIndex) {
         assert lowerBoundary <= upperBoundary;
         this.readerIndex = readerIndex;
         this.markedReaderIndex = readerIndex;
         this.lowerBoundary = lowerBoundary;
         this.upperBoundary = upperBoundary;
+        this.writerIndex = writerIndex;
     }
 
     @Override
@@ -57,7 +65,7 @@ public abstract class AbstractBuffer implements Buffer {
 
     @Override
     public int getWriterIndex() {
-        return -1;
+        return this.writerIndex;
     }
 
     @Override
@@ -71,6 +79,16 @@ public abstract class AbstractBuffer implements Buffer {
     @Override
     public int capacity() {
         return this.upperBoundary - this.lowerBoundary;
+    }
+
+    @Override
+    public int getWritableBytes() {
+        return this.upperBoundary - this.writerIndex;
+    }
+
+    @Override
+    public boolean hasWritableBytes() {
+        return getWritableBytes() > 0;
     }
 
     /**
@@ -91,7 +109,7 @@ public abstract class AbstractBuffer implements Buffer {
 
     @Override
     public Buffer slice() {
-        return this.slice(getReaderIndex(), capacity());
+        return this.slice(getReaderIndex(), getWriterIndex());
     }
 
     /**
@@ -100,7 +118,7 @@ public abstract class AbstractBuffer implements Buffer {
      */
     @Override
     public int readableBytes() {
-        return this.upperBoundary - this.readerIndex - this.lowerBoundary;
+        return this.writerIndex - this.readerIndex - this.lowerBoundary;
     }
 
     /**
@@ -251,7 +269,29 @@ public abstract class AbstractBuffer implements Buffer {
      */
     protected void checkIndex(final int index) throws IndexOutOfBoundsException {
         if (index >= this.lowerBoundary + capacity()) {
-            // if (index > this.lowerBoundary + capacity()) {
+            throw new IndexOutOfBoundsException();
+        }
+    }
+
+    /**
+     * Check whether we have enough space for writing the desired length.
+     * 
+     * @param length
+     * @return
+     */
+    protected boolean checkWritableBytesSafe(final int length) {
+        return getWritableBytes() >= length;
+    }
+
+    /**
+     * Convenience method for checking whether we can write at the specified
+     * index.
+     * 
+     * @param index
+     * @throws IndexOutOfBoundsException
+     */
+    protected void checkWriterIndex(final int index) throws IndexOutOfBoundsException {
+        if (index < this.writerIndex || index >= this.upperBoundary) {
             throw new IndexOutOfBoundsException();
         }
     }
@@ -262,6 +302,32 @@ public abstract class AbstractBuffer implements Buffer {
     @Override
     public final short readUnsignedByte() throws IndexOutOfBoundsException, IOException {
         return (short) (readByte() & 0xFF);
+    }
+
+    /**
+     * The underlying subclass should override this if it has write support.
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasWriteSupport() {
+        return false;
+    }
+
+    @Override
+    public void write(final byte b) throws IndexOutOfBoundsException {
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+    }
+
+    @Override
+    public void write(final String s) throws IndexOutOfBoundsException, WriteNotSupportedException,
+    UnsupportedEncodingException {
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+    }
+
+    @Override
+    public void write(final String s, final String charset) throws IndexOutOfBoundsException,
+    WriteNotSupportedException, UnsupportedEncodingException {
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
     }
 
     @Override

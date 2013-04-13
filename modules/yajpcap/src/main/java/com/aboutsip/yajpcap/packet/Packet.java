@@ -8,7 +8,6 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 
 
-
 /**
  * Represents a captured packet.
  * 

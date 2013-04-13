@@ -3,6 +3,7 @@
  */
 package com.aboutsip.yajpcap.packet.sip.impl;
 
+import java.io.Externalizable;
 import java.io.IOException;
 
 import com.aboutsip.buffer.Buffer;
@@ -13,7 +14,7 @@ import com.aboutsip.yajpcap.packet.sip.SipParseException;
 /**
  * @author jonas@jonasborjesson.com
  */
-public abstract class SipInitialLine extends SipParser {
+public abstract class SipInitialLine extends SipParser implements Externalizable {
 
     protected SipInitialLine() {
         // left empty intentionally
@@ -67,7 +68,7 @@ public abstract class SipInitialLine extends SipParser {
         } catch (final SipParseException e) {
             // is only thrown by the expectSIP2_0. Calculate the correct
             // index into the buffer
-            final int index = ((buffer.getReaderIndex() - part3.capacity()) + e.getErroOffset()) - 1;
+            final int index = buffer.getReaderIndex() - part3.capacity() + e.getErroOffset() - 1;
             throw new SipParseException(index, "Wrong SIP version");
         } catch (final IOException e) {
             throw new SipParseException(buffer.getReaderIndex(), "could not read from stream", e);

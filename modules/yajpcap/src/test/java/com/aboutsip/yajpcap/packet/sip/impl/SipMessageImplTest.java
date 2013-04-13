@@ -52,6 +52,7 @@ public class SipMessageImplTest extends YajTestBase {
     @Override
     @After
     public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     /**

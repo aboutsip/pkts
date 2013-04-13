@@ -22,6 +22,16 @@ public final class Buffers {
      */
     public static Buffer EMPTY_BUFFER = new EmptyBuffer();
 
+    public static Buffer wrap(final int value) {
+        final byte[] buffer = new byte[4];
+        buffer[0] = (byte) (value >>> 24);
+        buffer[1] = (byte) (value >>> 16);
+        buffer[2] = (byte) (value >>> 8);
+        buffer[3] = (byte) value;
+        return new ByteBuffer(0, 0, buffer.length, 0, buffer);
+
+    }
+
     public static Buffer wrap(final String s) {
         if (s == null) {
             throw new IllegalArgumentException("String cannot be null");

@@ -6,7 +6,6 @@ package com.aboutsip.yajpcap.packet;
 import java.io.IOException;
 import java.io.OutputStream;
 
-
 /**
  * @author jonas@jonasborjesson.com
  */

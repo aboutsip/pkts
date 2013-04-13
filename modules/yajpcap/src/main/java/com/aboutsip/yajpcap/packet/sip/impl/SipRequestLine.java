@@ -4,6 +4,8 @@
 package com.aboutsip.yajpcap.packet.sip.impl;
 
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
@@ -76,9 +78,27 @@ public final class SipRequestLine extends SipInitialLine {
         return this.requestLine;
     }
 
+
     @Override
     public String toString() {
         return getBuffer().toString();
+    }
+
+    @Override
+    public void writeExternal(final ObjectOutput out) throws IOException {
+        /*
+        this.requestLine.writeExternal(out);
+        this.method.writeExternal(out);
+        out.write(SipParser.SP);
+        this.requestUriBuffer.writeExternal(out);
+        out.write(SipParser.SP);
+        SipParser.SIP2_0.writeExternal(out);
+         */
+    }
+
+    @Override
+    public void readExternal(final ObjectInput in) throws IOException, ClassNotFoundException {
+        // TODO Auto-generated method stub
     }
 
 }

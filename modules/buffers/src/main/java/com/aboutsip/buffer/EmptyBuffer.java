@@ -4,6 +4,7 @@
 package com.aboutsip.buffer;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Represents an empty buffer.
@@ -307,8 +308,20 @@ public class EmptyBuffer implements Buffer {
 
     @Override
     public void write(final byte b) throws IndexOutOfBoundsException {
-        throw new IndexOutOfBoundsException("This is an empty buffer. Cant write to it");
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
     }
+
+    @Override
+    public void write(final String s) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+    }
+
+    @Override
+    public void write(final String s, final String charset) throws IndexOutOfBoundsException,
+    WriteNotSupportedException, UnsupportedEncodingException {
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+    }
+
 
     @Override
     public int getWriterIndex() {
@@ -322,6 +335,17 @@ public class EmptyBuffer implements Buffer {
 
     @Override
     public boolean hasWritableBytes() {
+        return false;
+    }
+
+    @Override
+    public void getBytes(final Buffer dst) {
+        // since it is empty, there are no bytes to get
+        // so therefore leaving empty.
+    }
+
+    @Override
+    public boolean hasWriteSupport() {
         return false;
     }
 

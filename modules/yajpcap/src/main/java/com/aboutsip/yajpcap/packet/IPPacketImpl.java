@@ -229,6 +229,7 @@ public final class IPPacketImpl implements IPPacket {
      * Whenever we change a value in the IP packet we need to update the
      * checksum as well.
      */
+    @Override
     public void reCalculateChecksum() {
         final int checksum = calculateChecksum();
         this.headers.setUnsignedShort(10, checksum);

@@ -41,7 +41,7 @@ public final class InputStreamBuffer extends AbstractBuffer {
      * @param is
      */
     public InputStreamBuffer(final int initialCapacity, final InputStream is) {
-        super(0, 0, 0);
+        super(0, 0, 0, 0);
         assert is != null;
         this.is = is;
         this.localCapacity = initialCapacity;
@@ -61,7 +61,9 @@ public final class InputStreamBuffer extends AbstractBuffer {
         // this has to change now that we can have multiple
         // rows of byte buffers
         final java.nio.ByteBuffer buf = getWritingRow();
-        return new ByteBuffer(0, this.lowerBoundary + start, this.lowerBoundary + stop, buf.array());
+        final int upperBoundary = this.lowerBoundary + stop;
+        final int writerIndex = upperBoundary;
+        return new ByteBuffer(0, this.lowerBoundary + start, upperBoundary, writerIndex, buf.array());
     }
 
     /**
@@ -159,7 +161,7 @@ public final class InputStreamBuffer extends AbstractBuffer {
      * @return
      */
     private int getLocalWriterIndex() {
-        return this.upperBoundary % this.localCapacity;
+        return this.writerIndex % this.localCapacity;
     }
 
     /**
@@ -197,7 +199,7 @@ public final class InputStreamBuffer extends AbstractBuffer {
      * @return
      */
     private java.nio.ByteBuffer getWritingRow() {
-        final int row = this.upperBoundary / this.localCapacity;
+        final int row = this.writerIndex / this.localCapacity;
         if (row >= this.storage.size()) {
             final java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(this.localCapacity);
             this.storage.add(buf);
@@ -246,6 +248,7 @@ public final class InputStreamBuffer extends AbstractBuffer {
             }
             if (actual > 0) {
                 this.upperBoundary += actual;
+                this.writerIndex = this.upperBoundary;
                 total += actual;
             }
         }
@@ -257,7 +260,8 @@ public final class InputStreamBuffer extends AbstractBuffer {
      */
     @Override
     public int readableBytes() {
-        return this.upperBoundary - this.readerIndex;
+        return super.readableBytes();
+        // return this.upperBoundary - this.readerIndex;
     }
 
     /**
@@ -494,11 +498,6 @@ public final class InputStreamBuffer extends AbstractBuffer {
     }
 
     @Override
-    public void write(final byte b) throws IndexOutOfBoundsException {
-        throw new IndexOutOfBoundsException("This is a input stream buffer. Cant write to it");
-    }
-
-    @Override
     public int getWritableBytes() {
         return 0;
     }
@@ -506,6 +505,15 @@ public final class InputStreamBuffer extends AbstractBuffer {
     @Override
     public boolean hasWritableBytes() {
         return false;
+    }
+
+    public void getBytes() {
+
+    }
+
+    @Override
+    public void getBytes(final Buffer dst) {
+        throw new RuntimeException("Not implemented just yet");
     }
 
 }

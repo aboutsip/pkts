@@ -20,6 +20,7 @@ import com.aboutsip.yajpcap.packet.sip.SipMessage;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
 import com.aboutsip.yajpcap.packet.sip.SipResponse;
+import com.aboutsip.yajpcap.packet.sip.header.CSeqHeader;
 import com.aboutsip.yajpcap.packet.sip.header.CallIdHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ContactHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
@@ -28,6 +29,7 @@ import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ViaHeader;
+import com.aboutsip.yajpcap.packet.sip.header.impl.CSeqHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.CallIdHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.ContactHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.ContentTypeHeaderImpl;
@@ -42,7 +44,6 @@ import com.aboutsip.yajpcap.packet.sip.header.impl.ViaHeaderImpl;
  * 
  */
 public abstract class SipMessageImpl implements SipMessage {
-
 
     public static final Buffer FROM_HEADER = Buffers.wrap("From".getBytes());
 
@@ -71,7 +72,7 @@ public abstract class SipMessageImpl implements SipMessage {
      * Stupid, just to fix it quickly and since a sliced buffer
      * is kind of cheap perhaps it is ok for now
      */
-    private final Buffer headersCopy;
+    private Buffer headersCopy;
 
     /**
      * The payload, which may be null
@@ -106,13 +107,14 @@ public abstract class SipMessageImpl implements SipMessage {
     public SipMessageImpl(final TransportPacket parent, final SipInitialLine initialLine, final Buffer headers,
             final Buffer payload, final Layer7Frame sipFrame) {
         assert initialLine != null;
-        assert headers != null;
         assert parent != null;
 
         this.parent = parent;
         this.initialLine = initialLine;
         this.headers = headers;
-        this.headersCopy = headers.slice();
+        if (headers != null) {
+            this.headersCopy = headers.slice();
+        }
         this.payload = payload;
         this.sipFrame = sipFrame;
     }
@@ -151,7 +153,7 @@ public abstract class SipMessageImpl implements SipMessage {
             return h;
         }
 
-        while (this.headers.hasReadableBytes()) {
+        while (this.headers != null && this.headers.hasReadableBytes()) {
             final SipHeader header = SipParser.nextHeader(this.headers);
             if (header == null) {
                 return null;
@@ -164,6 +166,16 @@ public abstract class SipMessageImpl implements SipMessage {
 
         // didn't find the header that was requested
         return null;
+    }
+
+    @Override
+    public void addHeader(final SipHeader header) {
+        this.parsedHeaders.put(header.getName(), header);
+    }
+
+    @Override
+    public void setHeader(final SipHeader header) {
+        this.parsedHeaders.put(header.getName(), header);
     }
 
     /**
@@ -302,6 +314,19 @@ public abstract class SipMessageImpl implements SipMessage {
         final ToHeader to = ToHeaderImpl.frame(buffer);
         this.parsedHeaders.put(to.getName(), to);
         return to;
+    }
+
+    @Override
+    public CSeqHeader getCSeqHeader() throws SipParseException {
+        final SipHeader header = getHeader(CSeqHeader.NAME);
+        if (header instanceof CSeqHeader) {
+            return (CSeqHeader) header;
+        }
+
+        final Buffer buffer = header.getValue();
+        final CSeqHeader cseq = CSeqHeaderImpl.parseValue(buffer);
+        this.parsedHeaders.put(cseq.getName(), cseq);
+        return cseq;
     }
 
     /**
@@ -612,5 +637,20 @@ public abstract class SipMessageImpl implements SipMessage {
     @Override
     public boolean verifyIpChecksum() {
         return this.parent.verifyIpChecksum();
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public TransportPacket getTransportPacket() {
+        return this.parent;
+    }
+
+    @Override
+    public Buffer toBuffer() {
+        final Buffer buffer = Buffers.createBuffer(1024);
+
+        return null;
     }
 }

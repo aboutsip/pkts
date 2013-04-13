@@ -6,6 +6,7 @@ package com.aboutsip.buffer;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -221,6 +222,166 @@ public class ByteBufferTest extends AbstractBufferTest {
         b1.setByte(0, (byte)0xFF);
         assertThat(b1.getByte(0), is((byte) 0xFF));
         assertThat(buffer.getByte(10), is((byte) 0xFF));
+    }
+
+    /**
+     * Make sure that we are able to write to a buffer.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testWrite() throws Exception {
+        final Buffer buffer = Buffers.createBuffer(100);
+        assertThat(buffer.toString(), is(""));
+        assertThat(buffer.getWritableBytes(), is(100));
+
+        final String s = "hello world";
+        buffer.write(s);
+        assertThat(buffer.getWritableBytes(), is(100 - s.length()));
+        assertThat(buffer.toString(), is(s));
+        assertThat(buffer.readBytes(6).toString(), is("hello "));
+        assertThat(buffer.toString(), is("world"));
+
+        // just because we read from the buffer shouldn't affect
+        // the writer area.
+        assertThat(buffer.getWritableBytes(), is(100 - s.length()));
+
+        // consume everything by using the readLine()
+        assertThat(buffer.readLine().toString(), is("world"));
+
+        // which means that the buffer now has nothing left in
+        // the reader area
+        assertThat(buffer.toString(), is(""));
+        assertThat(buffer.readableBytes(), is(0));
+
+        // however, we can write some stuff back to the buffer
+        buffer.write((byte) 'a');
+        buffer.write("boutsip.com");
+        assertThat(buffer.getWritableBytes(), is(100 - s.length() - "aboutsip.com".length()));
+        assertThat(buffer.toString(), is("aboutsip.com"));
+
+        // the slice should be independent
+        final Buffer b = buffer.slice();
+        assertThat(b.readableBytes(), is(12));
+        assertThat(b.getByte(0), is((byte) 'a'));
+        assertThat(b.getByte(1), is((byte) 'b'));
+        assertThat(b.getByte(2), is((byte) 'o'));
+        assertThat(b.toString(), is("aboutsip.com"));
+        assertThat(b.getWritableBytes(), is(0));
+        assertThat(b.readLine().toString(), is("aboutsip.com"));
+        assertThat(b.getWritableBytes(), is(0));
+        try {
+            b.write((byte) 'h');
+            fail("Should not have been able to write");
+        } catch (final IndexOutOfBoundsException e) {
+            // expected
+        }
+
+        buffer.write(" " + s);
+        assertThat(buffer.getWritableBytes(), is(100 - s.length() * 2 - 1 - "aboutsip.com".length()));
+        assertThat(buffer.toString(), is("aboutsip.com hello world"));
+    }
+
+    /**
+     * Make sure that we can write exactly the amount we allocated for.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testWriteJustEnough() throws Exception {
+        final Buffer buffer = Buffers.createBuffer("hello world".length() * 2 + 1);
+        buffer.write("hello world");
+        buffer.write(" ");
+        buffer.write("hello world");
+        assertThat(buffer.toString(), is("hello world hello world"));
+
+        // nothing more to write
+        assertThat(buffer.getWritableBytes(), is(0));
+
+        // but everything to read, which should be the same as the
+        // actual capacity of the buffer
+        assertThat(buffer.readableBytes(), is(buffer.capacity()));
+
+        try {
+            buffer.write("b");
+            fail("Expected an IndexOutOfBoundsException");
+        } catch (final IndexOutOfBoundsException e) {
+            // out of space so all good
+        }
+    }
+
+    /**
+     * Make sure we handle the case where we write too much
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testWriteTooMuch() throws Exception {
+        final int capacity = "hello world".length() + 1;
+        final Buffer buffer = Buffers.createBuffer(capacity);
+        try {
+            buffer.write("hello world wont fit");
+            fail("Expected an IndexOutOfBoundsException");
+        } catch (final IndexOutOfBoundsException e) {
+            // out of space so all good
+        }
+
+        // according to our javadoc, we should not have written
+        // nothing to the buffer so it should have been left at the
+        // same place we "found" it
+        assertThat(buffer.getWritableBytes(), is(capacity));
+        assertThat(buffer.readableBytes(), is(0));
+
+        buffer.write("hello");
+        assertThat(buffer.getWritableBytes(), is(capacity - "hello".length()));
+        assertThat(buffer.readableBytes(), is("hello".length()));
+
+        buffer.write(" world");
+        assertThat(buffer.getWritableBytes(), is(capacity - "hello world".length()));
+        assertThat(buffer.readableBytes(), is("hello world".length()));
+
+        try {
+            buffer.write("too much again");
+            fail("Expected an IndexOutOfBoundsException");
+        } catch (final IndexOutOfBoundsException e) {
+            // out of space so all good
+        }
+        assertThat(buffer.getWritableBytes(), is(capacity - "hello world".length()));
+        assertThat(buffer.readableBytes(), is("hello world".length()));
+        assertThat(buffer.toString(), is("hello world"));
+        assertThat(buffer.readLine().toString(), is("hello world"));
+        assertThat(buffer.readableBytes(), is(0));
+    }
+
+    @Test
+    public void testWriteToSmall() throws Exception {
+        final Buffer buffer = Buffers.createBuffer(1);
+        assertThat(buffer.getWritableBytes(), is(1));
+        assertThat(buffer.readableBytes(), is(0));
+        assertThat(buffer.toString(), is(""));
+
+        buffer.write((byte) 'h');
+        assertThat(buffer.getWritableBytes(), is(0));
+        assertThat(buffer.readableBytes(), is(1));
+        assertThat(buffer.toString(), is("h"));
+        assertThat(buffer.getByte(0), is((byte) 'h'));
+
+        assertThat(buffer.readByte(), is((byte) 'h'));
+        assertThat(buffer.getWritableBytes(), is(0));
+        assertThat(buffer.readableBytes(), is(0));
+
+        try {
+            buffer.write("b");
+            fail("Expected an IndexOutOfBoundsException");
+        } catch (final IndexOutOfBoundsException e) {
+        }
+
+        try {
+            buffer.write((byte) 'b');
+            fail("Expected an IndexOutOfBoundsException");
+        } catch (final IndexOutOfBoundsException e) {
+        }
+
     }
 
     @Override

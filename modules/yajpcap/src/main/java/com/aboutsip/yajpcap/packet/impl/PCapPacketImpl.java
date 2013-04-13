@@ -31,7 +31,7 @@ public final class PCapPacketImpl implements PCapPacket {
      */
     @Override
     public long getArrivalTime() {
-        return (this.pcapHeader.getTimeStampSeconds() * 1000000) + this.pcapHeader.getTimeStampMicroSeconds();
+        return this.pcapHeader.getTimeStampSeconds() * 1000000 + this.pcapHeader.getTimeStampMicroSeconds();
     }
 
     @Override
@@ -71,6 +71,5 @@ public final class PCapPacketImpl implements PCapPacket {
     public void write(final OutputStream out) throws IOException {
         throw new RuntimeException("Sorry, not implemented just yet.");
     }
-
 
 }
