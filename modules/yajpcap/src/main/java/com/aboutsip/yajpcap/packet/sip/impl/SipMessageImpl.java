@@ -650,7 +650,8 @@ public abstract class SipMessageImpl implements SipMessage {
     @Override
     public Buffer toBuffer() {
         final Buffer buffer = Buffers.createBuffer(1024);
+        this.initialLine.getBytes(buffer);
 
-        return null;
+        return buffer;
     }
 }

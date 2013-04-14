@@ -19,14 +19,26 @@ import java.io.UnsupportedEncodingException;
 public interface Buffer extends Cloneable {
 
     /**
-     * Transfer this buffer's data to the destination buffer. This method does
-     * not change the <code>readerIndex</code> or the <code>writerIndex</code>
-     * of this buffer but will increase the <code>writerIndex</code> of the
-     * destination buffer.
+     * Same as calling {@link #getBytes(int, Buffer)} where the index is
+     * {@link #getReaderIndex()}.
      * 
      * @param buffer
+     * @throws IndexOutOfBoundsException
      */
     void getBytes(Buffer dst);
+
+    /**
+     * Transfer this buffer's data to the destination buffer. This method does
+     * not change the <code>readerIndex</code> or the <code>writerIndex</code>
+     * of the src buffer (i.e. this) but will increase the
+     * <code>writerIndex</code> of the destination buffer.
+     * 
+     * @param index
+     * @param dst
+     * @throws IndexOutOfBoundsException
+     *             in case index < 0
+     */
+    void getBytes(final int index, final Buffer dst) throws IndexOutOfBoundsException;
 
     /**
      * Read the requested number of bytes and increase the readerIndex with the
@@ -60,7 +72,7 @@ public interface Buffer extends Cloneable {
      * 
      * @return
      */
-    int readableBytes();
+    int getReadableBytes();
 
     /**
      * Checks whether this buffer has any bytes available for reading without
@@ -309,6 +321,8 @@ public interface Buffer extends Cloneable {
      */
     int getInt(int index) throws IndexOutOfBoundsException;
 
+    void setInt(int index, int value) throws IndexOutOfBoundsException;
+
     short getShort(int index) throws IndexOutOfBoundsException;
 
     int readUnsignedShort() throws IndexOutOfBoundsException;
@@ -401,6 +415,8 @@ public interface Buffer extends Cloneable {
      */
     void write(byte b) throws IndexOutOfBoundsException, WriteNotSupportedException;
 
+    void write(int value) throws IndexOutOfBoundsException, WriteNotSupportedException;
+
     /**
      * Same as {@link Buffer#write(String, String)} where the charset is set to
      * "UTF-8"
@@ -415,6 +431,17 @@ public interface Buffer extends Cloneable {
      *             in case the charset "UTF-8" is not supported by the platform.
      */
     void write(String s) throws IndexOutOfBoundsException, WriteNotSupportedException, UnsupportedEncodingException;
+
+    /**
+     * Write the integer value to this {@link Buffer} as a String.
+     * 
+     * @param value
+     *            the value that will be converted to a String before being
+     *            written to this {@link Buffer}.
+     * @throws IndexOutOfBoundsException
+     * @throws WriteNotSupportedException
+     */
+    void writeAsString(int value) throws IndexOutOfBoundsException, WriteNotSupportedException;
 
     /**
      * Write a string to this buffer using the specified charset to convert the

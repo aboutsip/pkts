@@ -109,7 +109,7 @@ public abstract class AbstractBuffer implements Buffer {
 
     @Override
     public Buffer slice() {
-        return this.slice(getReaderIndex(), getWriterIndex());
+        return this.slice(getReaderIndex(), getWriterIndex() - this.lowerBoundary);
     }
 
     /**
@@ -117,7 +117,7 @@ public abstract class AbstractBuffer implements Buffer {
      * {@inheritDoc}
      */
     @Override
-    public int readableBytes() {
+    public int getReadableBytes() {
         return this.writerIndex - this.readerIndex - this.lowerBoundary;
     }
 
@@ -258,7 +258,7 @@ public abstract class AbstractBuffer implements Buffer {
      * @return true if we have enough bytes available for read
      */
     protected boolean checkReadableBytesSafe(final int length) {
-        return readableBytes() >= length;
+        return getReadableBytes() >= length;
     }
 
     /**
@@ -269,6 +269,7 @@ public abstract class AbstractBuffer implements Buffer {
      */
     protected void checkIndex(final int index) throws IndexOutOfBoundsException {
         if (index >= this.lowerBoundary + capacity()) {
+            //if (index >= this.lowerBoundary + this.writerIndex) {
             throw new IndexOutOfBoundsException();
         }
     }
@@ -335,5 +336,6 @@ public abstract class AbstractBuffer implements Buffer {
 
     @Override
     public abstract int hashCode();
+
 
 }

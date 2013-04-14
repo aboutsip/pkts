@@ -3,7 +3,6 @@
  */
 package com.aboutsip.yajpcap.packet.sip.impl;
 
-import java.io.Externalizable;
 import java.io.IOException;
 
 import com.aboutsip.buffer.Buffer;
@@ -14,7 +13,7 @@ import com.aboutsip.yajpcap.packet.sip.SipParseException;
 /**
  * @author jonas@jonasborjesson.com
  */
-public abstract class SipInitialLine extends SipParser implements Externalizable {
+public abstract class SipInitialLine extends SipParser {
 
     protected SipInitialLine() {
         // left empty intentionally
@@ -82,5 +81,13 @@ public abstract class SipInitialLine extends SipParser implements Externalizable
     public boolean isRequestLine() {
         return false;
     }
+
+    /**
+     * Write the bytes representing this {@link SipInitialLine} into the
+     * destination {@link Buffer}.
+     * 
+     * @param dst
+     */
+    public abstract void getBytes(Buffer dst);
 
 }

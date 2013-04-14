@@ -144,6 +144,15 @@ public class SipURIImpl extends URIImpl implements SipURI {
         return this.port.getInt(0);
     }
 
+    @Override
+    public void setPort(final int port) {
+        if (this.port == null) {
+            this.port = Buffers.wrap(port);
+        } else {
+            this.port.setInt(0, port);
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -214,10 +223,6 @@ public class SipURIImpl extends URIImpl implements SipURI {
 
         SipParser.expect(buffer, SipParser.COLON);
         return true;
-    }
-
-    @Override
-    public void setPort(final int port) {
     }
 
 }

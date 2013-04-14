@@ -51,6 +51,8 @@ public class SipParser {
 
     public static final Buffer SIP2_0 = Buffers.wrap("SIP/2.0");
 
+    public static final Buffer SIP2_0_SLASH = Buffers.wrap("SIP/2.0/");
+
     public static final byte AT = '@';
 
     public static final byte COLON = ':';

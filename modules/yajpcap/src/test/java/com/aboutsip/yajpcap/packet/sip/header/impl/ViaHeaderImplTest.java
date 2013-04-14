@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.sip.header.ViaHeader;
 
@@ -27,6 +28,7 @@ public class ViaHeaderImplTest {
         assertVia("SIP/2.0/UDP aboutsip.com:9;branch=45", "UDP", "aboutsip.com", 9, "45");
         assertVia("SIP/2.0/UDP aboutsip.com:9999;branch=z9klj-kljfljk-kjkjkj-ouklj", "UDP", "aboutsip.com", 9999,
                 "z9klj-kljfljk-kjkjkj-ouklj");
+        assertVia("SIP/2.0/UDP aboutsip.com:9;branch=45;foo=boo;rport", "UDP", "aboutsip.com", 9, "45");
     }
 
     private void assertVia(final String toParse, final String expectedTransport, final String expectedHost,
@@ -35,6 +37,10 @@ public class ViaHeaderImplTest {
         assertTransport(via, expectedTransport);
         assertThat(via.getBranch().toString(), is(expectedBranch));
         assertThat(via.getPort(), is(expectedPort));
+
+        final Buffer copy = Buffers.createBuffer(512);
+        via.getBytes(copy);
+        assertThat(copy.toString(), is("Via: " + toParse));
     }
 
     private void assertTransport(final ViaHeader via, final String expectedTransport) {

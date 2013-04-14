@@ -54,7 +54,7 @@ public final class AddressImpl implements Address {
      */
     private AddressImpl(final Buffer displayName, final Buffer uri, final boolean enclosedDisplayName,
             final boolean angleBrackets) {
-        this.displayName = (displayName == null ? Buffers.EMPTY_BUFFER : displayName);
+        this.displayName = displayName == null ? Buffers.EMPTY_BUFFER : displayName;
         this.uriBuffer = uri;
         this.enclosedDisplayName = enclosedDisplayName;
         this.angleBrackets = angleBrackets;
@@ -121,7 +121,7 @@ public final class AddressImpl implements Address {
 
         // if no display name, then there may be a '<' present
         // and if so, consume it.
-        if (displayName.isEmpty() && (buffer.peekByte() == SipParser.LAQUOT)) {
+        if (displayName.isEmpty() && buffer.peekByte() == SipParser.LAQUOT) {
             buffer.readByte();
         } else if (!displayName.isEmpty()) {
             // if display name, we DO expect a '<'. Note, there may or may
@@ -163,7 +163,7 @@ public final class AddressImpl implements Address {
             throw new SipParseException(buffer.getReaderIndex(), "Unable to find the name-addr portion");
         }
 
-        if (displayName.isEmpty() && buffer.hasReadableBytes() && (buffer.peekByte() == SipParser.RAQUOT)) {
+        if (displayName.isEmpty() && buffer.hasReadableBytes() && buffer.peekByte() == SipParser.RAQUOT) {
             buffer.readByte();
         } else if (!displayName.isEmpty()) {
             // if display name, we DO expect a '>'
@@ -202,5 +202,26 @@ public final class AddressImpl implements Address {
             sb.append(this.uriBuffer.toString());
         }
         return sb.toString();
+    }
+
+    @Override
+    public void getBytes(final Buffer dst) {
+        if (!this.displayName.isEmpty()) {
+            if (this.enclosedDisplayName) {
+                dst.write(SipParser.DQUOT);
+                this.displayName.getBytes(0, dst);
+                dst.write(SipParser.DQUOT);
+            } else {
+                this.displayName.getBytes(0, dst);
+            }
+            dst.write(SipParser.SP);
+        }
+        if (this.angleBrackets) {
+            dst.write(SipParser.LAQUOT);
+            this.uriBuffer.getBytes(0, dst);
+            dst.write(SipParser.RAQUOT);
+        } else {
+            this.uriBuffer.getBytes(0, dst);
+        }
     }
 }

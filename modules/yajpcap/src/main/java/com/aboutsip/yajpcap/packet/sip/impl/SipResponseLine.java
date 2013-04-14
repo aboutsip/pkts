@@ -3,10 +3,6 @@
  */
 package com.aboutsip.yajpcap.packet.sip.impl;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 
@@ -71,21 +67,11 @@ public final class SipResponseLine extends SipInitialLine {
     }
 
     @Override
-    public void writeExternal(final ObjectOutput out) throws IOException {
-        // TODO Auto-generated method stub
-        /*
-        SipParser.SIP2_0.writeExternal(out);
-        out.write(SipParser.SP);
-        out.writeInt(this.statusCode);
-        out.write(SipParser.SP);
-        this.reason.writeExternal(out);
-         */
+    public void getBytes(final Buffer dst) {
+        SipParser.SIP2_0.getBytes(0, dst);
+        dst.write(SipParser.SP);
+        dst.writeAsString(this.statusCode);
+        dst.write(SipParser.SP);
+        this.reason.getBytes(0, dst);
     }
-
-    @Override
-    public void readExternal(final ObjectInput in) throws IOException, ClassNotFoundException {
-        // TODO Auto-generated method stub
-
-    }
-
 }

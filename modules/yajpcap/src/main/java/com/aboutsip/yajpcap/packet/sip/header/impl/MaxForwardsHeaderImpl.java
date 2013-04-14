@@ -4,6 +4,7 @@
 package com.aboutsip.yajpcap.packet.sip.header.impl;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.header.MaxForwardsHeader;
 
@@ -31,7 +32,7 @@ public class MaxForwardsHeaderImpl extends SipHeaderImpl implements MaxForwardsH
 
     @Override
     public Buffer getValue() {
-        return null;
+        return Buffers.wrap(this.maxForwards);
     }
 
     public static MaxForwardsHeader frame(final Buffer buffer) throws SipParseException {

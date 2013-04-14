@@ -34,4 +34,6 @@ public interface SipHeader {
 
     void verify() throws SipParseException;
 
+    void getBytes(Buffer dst);
+
 }

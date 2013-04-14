@@ -51,14 +51,23 @@ public class SipInitialLineTest {
      */
     @Test
     public void testParseRequestLine() throws Exception {
-        final Buffer buffer = Buffers.wrap("INVITE sip:alice@example.com SIP/2.0");
+        final String s = "INVITE sip:alice@example.com SIP/2.0";
+        final Buffer buffer = Buffers.wrap(s);
         final SipInitialLine initialLine = SipInitialLine.parse(buffer);
         assertThat(initialLine.isRequestLine(), is(true));
         assertThat(initialLine.isResponseLine(), is(false));
 
+        Buffer copy = Buffers.createBuffer(100);
+        initialLine.getBytes(copy);
+        assertThat(copy.toString(), is(s));
+
         final SipRequestLine requestLine = (SipRequestLine) initialLine;
         assertThat(requestLine.getMethod().toString(), is("INVITE"));
         assertThat(requestLine.getRequestUri().toString(), is("sip:alice@example.com"));
+
+        copy = Buffers.createBuffer(100);
+        initialLine.getBytes(copy);
+        assertThat(copy.toString(), is(s));
     }
 
     /**
@@ -68,7 +77,8 @@ public class SipInitialLineTest {
      */
     @Test
     public void testParseResponseLine() throws Exception {
-        final Buffer buffer = Buffers.wrap("SIP/2.0 200 OK");
+        final String s = "SIP/2.0 200 OK";
+        final Buffer buffer = Buffers.wrap(s);
         final SipInitialLine initialLine = SipInitialLine.parse(buffer);
         assertThat(initialLine.isRequestLine(), is(false));
         assertThat(initialLine.isResponseLine(), is(true));
@@ -76,6 +86,10 @@ public class SipInitialLineTest {
         final SipResponseLine requestLine = (SipResponseLine) initialLine;
         assertThat(requestLine.getStatusCode(), is(200));
         assertThat(requestLine.getReason().toString(), is("OK"));
+
+        final Buffer copy = Buffers.createBuffer(100);
+        initialLine.getBytes(copy);
+        assertThat(copy.toString(), is(s));
     }
 
     /**

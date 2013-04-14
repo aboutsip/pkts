@@ -31,6 +31,19 @@ public class ByteBufferTest extends AbstractBufferTest {
         super.setUp();
     }
 
+    @Test
+    public void testWriteAsString() throws Exception {
+        final Buffer buffer = Buffers.createBuffer(100);
+        buffer.writeAsString(0);
+        buffer.write((byte) ' ');
+        buffer.writeAsString(10);
+        buffer.write((byte) ' ');
+        buffer.writeAsString(100);
+        buffer.write((byte) ' ');
+        buffer.writeAsString(9712);
+        assertThat(buffer.toString(), is("0 10 100 9712"));
+    }
+
     /**
      * When cloning, the underlying array will also be copied meaning that any
      * changes to the original buffer will not affect the cloned one.
@@ -225,6 +238,132 @@ public class ByteBufferTest extends AbstractBufferTest {
     }
 
     /**
+     * Test get bytes when the destination is always bigger than the src.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testGetBytesDestinationBigger() throws Exception {
+        final Buffer buffer = Buffers.wrap("hello world");
+        Buffer b = Buffers.createBuffer(100);
+        buffer.getBytes(b);
+        assertThat(b.toString(), is("hello world"));
+        assertThat(b.getWritableBytes(), is(100 - "hello world".length()));
+        assertThat(b.getReadableBytes(), is("hello world".length()));
+
+        b = Buffers.createBuffer(100);
+        buffer.getBytes(5, b);
+        assertThat(b.toString(), is(" world"));
+        assertThat(b.getWritableBytes(), is(100 - " world".length()));
+        assertThat(b.getReadableBytes(), is(" world".length()));
+    }
+
+    /**
+     * Make sure that slicing multiple times works since that is a very common
+     * operation.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testDoubleSlice() throws Exception {
+        final String str = "This is a fairly long sentance and all together this should be 71 bytes";
+        final Buffer buffer = createBuffer(str);
+        buffer.readByte();
+        final Buffer b1 = buffer.slice();
+        assertThat(b1.toString(), is(str.substring(1)));
+
+        final Buffer b2 = b1.readBytes(20);
+        assertThat(b2.toString(), is(str.subSequence(1, 21)));
+
+        // now, slice the already sliced b1_1. Since we haven't ready anything
+        // from b1_1Slice just yet we should end up with the exact same thing.
+        final Buffer b2Slice = b2.slice();
+        assertThat(b2Slice.toString(), is(str.subSequence(1, 21)));
+
+        final Buffer again = b2Slice.slice(4, 10);
+        assertThat(again.toString(), is("is a f"));
+    }
+
+    /**
+     * Make sure that we can do getBytes after we have written bytes a few
+     * times.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testGetBytesAfterBunchOfWrites() throws Exception {
+        final Buffer buffer = Buffers.createBuffer(100);
+        buffer.write("hello");
+
+        final Buffer copy = Buffers.createBuffer(100);
+        buffer.getBytes(copy);
+        assertThat(copy.toString(), is("hello"));
+        copy.write((byte) ' ');
+        copy.write((byte) 'a');
+        copy.write((byte) 'b');
+        copy.write((byte) ' ');
+        copy.write("tjo");
+        copy.write((byte) ' ');
+        copy.writeAsString(5060);
+        copy.write((byte) ' ');
+        copy.write("fup");
+        assertThat(copy.toString(), is("hello ab tjo 5060 fup"));
+    }
+
+
+    /**
+     * Test the getBytes method where the destination is always smaller than the
+     * buffer we are getting the bytes from
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testGetBytes() throws Exception {
+        final Buffer buffer = Buffers.wrap("hello world");
+        Buffer b = Buffers.createBuffer(5);
+        assertThat(b.getWritableBytes(), is(5));
+        assertThat(b.getReadableBytes(), is(0));
+        buffer.getBytes(b);
+        assertThat(b.toString(), is("hello"));
+        assertThat(b.getWritableBytes(), is(0));
+        assertThat(b.getReadableBytes(), is(5));
+
+        // original buffer should have been left intact
+        assertThat(buffer.getWritableBytes(), is(0));
+        assertThat(buffer.getReadableBytes(), is("hello world".length()));
+        assertThat(buffer.toString(), is("hello world"));
+
+        // now, if we read the first part and then do
+        // getBytes we should be getting just "world"
+        buffer.readBytes("hello ".length());
+        b = Buffers.createBuffer(5);
+        buffer.getBytes(b);
+        assertThat(b.toString(), is("world"));
+
+        // however, if we specify the index we should
+        // be getting stuff from there.
+        b = Buffers.createBuffer(5);
+        buffer.getBytes(2, b);
+        assertThat(b.toString(), is("llo w"));
+    }
+
+    /**
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testGetBytesAfterSlice() throws Exception {
+        final Buffer buffer = Buffers.wrap("hello world");
+        buffer.readBytes(5);
+        buffer.readByte();
+        final Buffer world = buffer.slice();
+        assertThat(world.toString(), is("world"));
+        final Buffer copy = Buffers.createBuffer(50);
+        world.getBytes(0, copy);
+        assertThat(copy.toString(), is("world"));
+    }
+
+    /**
      * Make sure that we are able to write to a buffer.
      * 
      * @throws Exception
@@ -252,7 +391,7 @@ public class ByteBufferTest extends AbstractBufferTest {
         // which means that the buffer now has nothing left in
         // the reader area
         assertThat(buffer.toString(), is(""));
-        assertThat(buffer.readableBytes(), is(0));
+        assertThat(buffer.getReadableBytes(), is(0));
 
         // however, we can write some stuff back to the buffer
         buffer.write((byte) 'a');
@@ -262,7 +401,7 @@ public class ByteBufferTest extends AbstractBufferTest {
 
         // the slice should be independent
         final Buffer b = buffer.slice();
-        assertThat(b.readableBytes(), is(12));
+        assertThat(b.getReadableBytes(), is(12));
         assertThat(b.getByte(0), is((byte) 'a'));
         assertThat(b.getByte(1), is((byte) 'b'));
         assertThat(b.getByte(2), is((byte) 'o'));
@@ -300,7 +439,7 @@ public class ByteBufferTest extends AbstractBufferTest {
 
         // but everything to read, which should be the same as the
         // actual capacity of the buffer
-        assertThat(buffer.readableBytes(), is(buffer.capacity()));
+        assertThat(buffer.getReadableBytes(), is(buffer.capacity()));
 
         try {
             buffer.write("b");
@@ -330,15 +469,15 @@ public class ByteBufferTest extends AbstractBufferTest {
         // nothing to the buffer so it should have been left at the
         // same place we "found" it
         assertThat(buffer.getWritableBytes(), is(capacity));
-        assertThat(buffer.readableBytes(), is(0));
+        assertThat(buffer.getReadableBytes(), is(0));
 
         buffer.write("hello");
         assertThat(buffer.getWritableBytes(), is(capacity - "hello".length()));
-        assertThat(buffer.readableBytes(), is("hello".length()));
+        assertThat(buffer.getReadableBytes(), is("hello".length()));
 
         buffer.write(" world");
         assertThat(buffer.getWritableBytes(), is(capacity - "hello world".length()));
-        assertThat(buffer.readableBytes(), is("hello world".length()));
+        assertThat(buffer.getReadableBytes(), is("hello world".length()));
 
         try {
             buffer.write("too much again");
@@ -347,28 +486,28 @@ public class ByteBufferTest extends AbstractBufferTest {
             // out of space so all good
         }
         assertThat(buffer.getWritableBytes(), is(capacity - "hello world".length()));
-        assertThat(buffer.readableBytes(), is("hello world".length()));
+        assertThat(buffer.getReadableBytes(), is("hello world".length()));
         assertThat(buffer.toString(), is("hello world"));
         assertThat(buffer.readLine().toString(), is("hello world"));
-        assertThat(buffer.readableBytes(), is(0));
+        assertThat(buffer.getReadableBytes(), is(0));
     }
 
     @Test
     public void testWriteToSmall() throws Exception {
         final Buffer buffer = Buffers.createBuffer(1);
         assertThat(buffer.getWritableBytes(), is(1));
-        assertThat(buffer.readableBytes(), is(0));
+        assertThat(buffer.getReadableBytes(), is(0));
         assertThat(buffer.toString(), is(""));
 
         buffer.write((byte) 'h');
         assertThat(buffer.getWritableBytes(), is(0));
-        assertThat(buffer.readableBytes(), is(1));
+        assertThat(buffer.getReadableBytes(), is(1));
         assertThat(buffer.toString(), is("h"));
         assertThat(buffer.getByte(0), is((byte) 'h'));
 
         assertThat(buffer.readByte(), is((byte) 'h'));
         assertThat(buffer.getWritableBytes(), is(0));
-        assertThat(buffer.readableBytes(), is(0));
+        assertThat(buffer.getReadableBytes(), is(0));
 
         try {
             buffer.write("b");

@@ -102,7 +102,7 @@ public final class InputStreamBuffer extends AbstractBuffer {
     @Override
     public Buffer readBytes(final int length) throws IndexOutOfBoundsException, IOException {
         if (!checkReadableBytesSafe(length)) {
-            final int availableBytes = readableBytes();
+            final int availableBytes = getReadableBytes();
             final int read = internalReadBytes(length - availableBytes);
             if (read == -1) {
                 // end-of-file
@@ -259,8 +259,8 @@ public final class InputStreamBuffer extends AbstractBuffer {
      * {@inheritDoc}
      */
     @Override
-    public int readableBytes() {
-        return super.readableBytes();
+    public int getReadableBytes() {
+        return super.getReadableBytes();
         // return this.upperBoundary - this.readerIndex;
     }
 
@@ -514,6 +514,26 @@ public final class InputStreamBuffer extends AbstractBuffer {
     @Override
     public void getBytes(final Buffer dst) {
         throw new RuntimeException("Not implemented just yet");
+    }
+
+    @Override
+    public void getBytes(final int index, final Buffer dst) throws IndexOutOfBoundsException {
+        throw new RuntimeException("Not implemented just yet");
+    }
+
+    @Override
+    public void setInt(final int index, final int value) throws IndexOutOfBoundsException {
+        throw new RuntimeException("Not implemented just yet");
+    }
+
+    @Override
+    public void write(final int value) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        throw new WriteNotSupportedException("Cannot write to an InputStreamBuffer");
+    }
+
+    @Override
+    public void writeAsString(final int value) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        throw new WriteNotSupportedException("Cannot write to an InputStreamBuffer");
     }
 
 }

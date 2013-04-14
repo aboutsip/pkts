@@ -115,6 +115,9 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
      */
     @Override
     public Buffer getValue() {
+        // TODO: we can use the original in case the value hasn't changed.
+        // However, if it has, then we can re-build one through the getBytes stuff
+        // and store it for future reference.
         return this.original;
     }
 
@@ -275,6 +278,30 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
     @Override
     public String toString() {
         return "Via: " + this.original.toString();
+    }
+
+    @Override
+    public void getBytes(final Buffer dst) {
+        NAME.getBytes(0, dst);
+        dst.write(SipParser.COLON);
+        dst.write(SipParser.SP);
+        SipParser.SIP2_0_SLASH.getBytes(0, dst);
+        this.transport.getBytes(0, dst);
+        dst.write(SipParser.SP);
+        this.host.getBytes(0, dst);
+        if (this.port != -1) {
+            dst.write(SipParser.COLON);
+            dst.writeAsString(this.port);
+        }
+
+        for (final Buffer[] param : this.params) {
+            dst.write(SipParser.SEMI);
+            param[0].getBytes(0, dst);
+            if (param[1] != null) {
+                dst.write(SipParser.EQ);
+                param[1].getBytes(0, dst);
+            }
+        }
     }
 
 }

@@ -45,7 +45,7 @@ public class EmptyBuffer implements Buffer {
      * {@inheritDoc}
      */
     @Override
-    public int readableBytes() {
+    public int getReadableBytes() {
         return 0;
     }
 
@@ -322,6 +322,16 @@ public class EmptyBuffer implements Buffer {
         throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
     }
 
+    @Override
+    public void write(final int value) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+    }
+
+    @Override
+    public void writeAsString(final int value) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+    }
+
 
     @Override
     public int getWriterIndex() {
@@ -345,8 +355,19 @@ public class EmptyBuffer implements Buffer {
     }
 
     @Override
+    public void getBytes(final int index, final Buffer dst) throws IndexOutOfBoundsException {
+        // since it is empty, there are no bytes to get
+        // so therefore leaving empty.
+    }
+
+    @Override
     public boolean hasWriteSupport() {
         return false;
+    }
+
+    @Override
+    public void setInt(final int index, final int value) throws IndexOutOfBoundsException {
+        throw new IndexOutOfBoundsException("Sorry, this buffer is empty");
     }
 
 }

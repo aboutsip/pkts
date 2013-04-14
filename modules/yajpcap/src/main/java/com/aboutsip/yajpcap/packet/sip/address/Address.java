@@ -34,4 +34,6 @@ public interface Address {
      */
     Buffer toBuffer();
 
+    void getBytes(Buffer dst);
+
 }

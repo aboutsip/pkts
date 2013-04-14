@@ -95,6 +95,11 @@ public abstract class AddressParametersHeader extends ParametersImpl implements 
             throw new SipParseException(buffer.getReaderIndex(),
                     "Unable to process the To-header to due an IOException");
         }
+    }
 
+    @Override
+    protected void transferValue(final Buffer dst) {
+        this.address.getBytes(dst);
+        super.transferValue(dst);
     }
 }
