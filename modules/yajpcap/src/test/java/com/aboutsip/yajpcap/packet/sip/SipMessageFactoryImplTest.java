@@ -44,6 +44,7 @@ public class SipMessageFactoryImplTest extends YajTestBase {
     @Test
     public void testCreateResponseBasedOnRequest() throws Exception {
         final SipRequest req = (SipRequest) loadStream("sipp.pcap").get(0).getFrame(Protocol.SIP).parse();
+        System.out.println(req);
         final SipResponse resp = this.factory.createResponse(200, req);
         assertThat(resp.getStatus(), is(200));
         assertThat(resp.getFromHeader().getValue().toString(), is("sipp <sip:sipp@127.0.1.1:5060>;tag=16732SIPpTag001"));

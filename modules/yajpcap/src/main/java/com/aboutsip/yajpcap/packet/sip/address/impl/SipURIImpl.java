@@ -16,8 +16,6 @@ import com.aboutsip.yajpcap.packet.sip.impl.SipParser;
  */
 public class SipURIImpl extends URIImpl implements SipURI {
 
-    private static final Buffer DEFAULT_PORT = Buffers.wrap(5060);
-
     public static final Buffer SCHEME_SIP = Buffers.wrap("sip");
 
     public static final Buffer SCHEME_SIPS = Buffers.wrap("sips");
@@ -141,16 +139,23 @@ public class SipURIImpl extends URIImpl implements SipURI {
         if (this.port == null) {
             return -1;
         }
-        return this.port.getInt(0);
+
+        try {
+            return this.port.parseToInt();
+        } catch (final NumberFormatException e) {
+            // all of this should already have
+            // been checked so should be impossible
+            throw new RuntimeException(
+                    "The port could not be parsed as an integer. This should not be possible. The port was "
+                            + this.port);
+        } catch (final IOException e) {
+            throw new RuntimeException("IOException while extracting out the port. This should not be possible.");
+        }
     }
 
     @Override
     public void setPort(final int port) {
-        if (this.port == null) {
-            this.port = Buffers.wrap(port);
-        } else {
-            this.port.setInt(0, port);
-        }
+        this.port = Buffers.wrap(port);
     }
 
     /**
@@ -196,13 +201,22 @@ public class SipURIImpl extends URIImpl implements SipURI {
             final byte b = hostPort.readByte();
             if (b == SipParser.COLON) {
                 final int index = hostPort.getReaderIndex();
-                host = hostPort.slice(0, index);
+                host = hostPort.slice(0, index - 1); // skip the ':'
                 port = hostPort;
             }
         }
         if (host == null) {
             hostPort.setReaderIndex(0);
             host = hostPort;
+        }
+
+        if (port != null) {
+            try {
+                port.parseToInt();
+            } catch (final NumberFormatException e) {
+                throw new SipParseException(0, "The SipURI had a port but it was not an integer: \"" + port.toString()
+                        + "\"");
+            }
         }
         return new SipURIImpl(isSips, userHost[0], host, port, buffer, original);
     }

@@ -341,6 +341,27 @@ public interface Buffer extends Cloneable {
     void setUnsignedByte(int index, short value) throws IndexOutOfBoundsException;
 
     /**
+     * Parse all the readable bytes in this buffer as a unsigned integer value.
+     * The reader index will not be modified.
+     * 
+     * @return
+     * @throws NumberFormatException
+     *             in case the bytes in the buffer cannot be converted into an
+     *             integer value.
+     * @throws IOException
+     *             in case anything goes wrong when reading from the underlying
+     */
+    int parseToInt() throws NumberFormatException, IOException;
+
+    /**
+     * Convert the entire buffer to a signed integer value
+     * 
+     * @param radix
+     * @return
+     */
+    int parseToInt(int radix) throws NumberFormatException, IOException;
+
+    /**
      * Dump the content of this buffer as a hex dump ala Wireshark. Mainly for
      * debugging purposes
      * 

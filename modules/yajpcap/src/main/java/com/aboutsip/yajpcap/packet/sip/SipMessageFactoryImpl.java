@@ -48,12 +48,12 @@ public class SipMessageFactoryImpl implements SipMessageFactory {
         // TODO: need to extract all via headers
         final ViaHeader via = request.getViaHeader();
         final SipHeader maxForwards = req.getHeader(MaxForwardsHeader.NAME);
-        response.setHeader(callID);
         response.setHeader(from);
         response.setHeader(to);
-        response.setHeader(maxForwards);
+        response.setHeader(callID);
         response.setHeader(cseq);
         response.setHeader(via);
+        response.setHeader(maxForwards);
 
         // The TimeStamp header should be there as well but screw it.
         // TODO: need to add any record-route headers

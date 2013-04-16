@@ -5,8 +5,9 @@ package com.aboutsip.yajpcap.packet.sip.impl;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
@@ -88,7 +89,7 @@ public abstract class SipMessageImpl implements SipMessage {
      * around 10ish headers but in real life there will be much more so get some
      * real world examples and set an appropriate size based on that.
      */
-    private final Map<Buffer, SipHeader> parsedHeaders = new HashMap<Buffer, SipHeader>(16, 0.75f);
+    private final Map<Buffer, SipHeader> parsedHeaders = new LinkedHashMap<Buffer, SipHeader>(16, 0.75f);
 
     /**
      * Our raw frame and if set and the message isn't marked as dirty we will
@@ -458,13 +459,7 @@ public abstract class SipMessageImpl implements SipMessage {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append(this.initialLine.toString()).append("\n");
-        sb.append(this.headersCopy.toString()).append("\n");
-        if (this.payload != null) {
-            sb.append(this.payload.toString()).append("\n");
-        }
-        return sb.toString();
+        return toBuffer().toString();
     }
 
     @Override
@@ -651,7 +646,17 @@ public abstract class SipMessageImpl implements SipMessage {
     public Buffer toBuffer() {
         final Buffer buffer = Buffers.createBuffer(1024);
         this.initialLine.getBytes(buffer);
+        buffer.write(SipParser.CR);
+        buffer.write(SipParser.LF);
+        for (final Entry<Buffer, SipHeader> headers : this.parsedHeaders.entrySet()) {
+            headers.getValue().getBytes(buffer);
+            buffer.write(SipParser.CR);
+            buffer.write(SipParser.LF);
+        }
 
+        if (this.headers != null) {
+            this.headers.getBytes(buffer);
+        }
         return buffer;
     }
 }

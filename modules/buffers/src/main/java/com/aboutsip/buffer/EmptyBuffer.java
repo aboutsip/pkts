@@ -370,4 +370,14 @@ public class EmptyBuffer implements Buffer {
         throw new IndexOutOfBoundsException("Sorry, this buffer is empty");
     }
 
+    @Override
+    public int parseToInt() throws NumberFormatException {
+        throw new NumberFormatException("This buffer is empty and therefore cannot be parsed as an integer");
+    }
+
+    @Override
+    public int parseToInt(final int radix) {
+        throw new NumberFormatException("This buffer is empty and therefore cannot be parsed as an integer");
+    }
+
 }

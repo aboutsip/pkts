@@ -108,7 +108,9 @@ public abstract class ParametersImpl extends SipHeaderImpl implements Parameters
     @Override
     protected void transferValue(final Buffer dst) {
         // TODO: this is not correct
-        this.originalParams.getBytes(0, dst);
+        if (this.originalParams != null) {
+            this.originalParams.getBytes(0, dst);
+        }
     }
 
 }

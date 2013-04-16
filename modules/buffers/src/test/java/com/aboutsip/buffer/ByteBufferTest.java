@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,6 +43,79 @@ public class ByteBufferTest extends AbstractBufferTest {
         buffer.write((byte) ' ');
         buffer.writeAsString(9712);
         assertThat(buffer.toString(), is("0 10 100 9712"));
+    }
+
+    /**
+     * A buffer can be parsed as an integer assuming there are no bad characters
+     * in there.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testParseAsInt() throws Exception {
+        assertParseAsInt("1234", 1234);
+        assertParseAsInt("-1234", -1234);
+        assertParseAsInt("0", 0);
+        assertParseAsInt("5060", 5060);
+
+        // negative tests
+        assertParseAsIntBadInput("apa");
+        assertParseAsIntBadInput("");
+        assertParseAsIntBadInput("-5 nope, everything needs to be digits");
+        assertParseAsIntBadInput("5 nope, everything needs to be digits");
+
+        assertParseAsIntSliceFirst("hello:5060:asdf", 6, 10, 5060);
+        assertParseAsIntSliceFirst("hello:-5:asdf", 6, 8, -5);
+
+    }
+
+    /**
+     * Bug found when parsing a SIP URI. The port wasn't picked up because we
+     * were doing parseToInt without regards to the offset within the buffer
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testParseAsIntBugWhenParsingSipURI() throws Exception {
+        final Buffer b = Buffers.wrap("sip:alice@example.com:5099");
+        assertThat(b.readBytes(4).toString(), is("sip:"));
+        assertThat(b.readBytes(5).toString(), is("alice"));
+        assertThat(b.readByte(), is((byte) '@'));
+        final Buffer hostPort = b.slice();
+        assertThat(hostPort.toString(), is("example.com:5099"));
+        assertThat(hostPort.readBytes(11).toString(), is("example.com"));
+        final Buffer host = hostPort.slice(0, 11);
+        assertThat(host.toString(), is("example.com"));
+        assertThat(hostPort.readByte(), is((byte) ':'));
+        assertThat(hostPort.parseToInt(), is(5099));
+    }
+
+    private void assertParseAsIntSliceFirst(final String s, final int lowerSlice, final int upperSlice,
+            final int expected) throws Exception {
+        final Buffer buffer = createBuffer(s);
+        buffer.readByte(); // should affect nothing
+        buffer.readByte(); // should affect nothing
+        buffer.readByte(); // should affect nothing
+        buffer.readByte(); // should affect nothing
+        final Buffer number = buffer.slice(lowerSlice, upperSlice);
+        assertThat(number.parseToInt(), is(expected));
+
+    }
+
+    private void assertParseAsIntBadInput(final String badNumber) throws IOException {
+        try {
+            final Buffer buffer = createBuffer(badNumber);
+            buffer.parseToInt();
+            fail("Expected a NumberFormatException");
+        } catch (final NumberFormatException e) {
+            // expected
+        }
+    }
+
+    private void assertParseAsInt(final String number, final int expectedNumber) throws NumberFormatException,
+    IOException {
+        final Buffer buffer = createBuffer(number);
+        assertThat(buffer.parseToInt(), is(expectedNumber));
     }
 
     /**

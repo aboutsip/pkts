@@ -27,12 +27,13 @@ public class SipUriImplTest {
 
     @Test
     public void testFramingSipURI() throws Exception {
+        assertSipUri("sip:alice@example.com:5090", "alice", "example.com", 5090);
         assertSipUri("sip:alice@example.com", "alice", "example.com", -1);
         assertSipUri("sip:example.com", "", "example.com", -1);
-        assertSipUri("sip:example.com;transport=udp", "", "example.com", -1);
+        assertSipUri("sip:example.com:4;transport=udp", "", "example.com", 4);
         assertSipUri("sip:alice@example.com;transport=udp", "alice", "example.com", -1);
         assertSipUri("sip:a@example.com;transport=udp", "a", "example.com", -1);
-        assertSipUri("sip:alice@example.com?hello=world", "alice", "example.com", -1);
+        assertSipUri("sip:alice@example.com:5555?hello=world", "alice", "example.com", 5555);
     }
 
     /**
