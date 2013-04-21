@@ -324,6 +324,17 @@ public final class ByteBuffer extends AbstractBuffer {
         }
     }
 
+    public void getBytes(final int index, final java.nio.ByteBuffer dst) {
+        if (index < 0) {
+            throw new IndexOutOfBoundsException("Index less than zero");
+        }
+        final int stop = this.lowerBoundary + index;
+        // for (int i = this.lowerBoundary + index; i < stop; ++i) {
+        for (int i = stop - 1; i >= this.lowerBoundary + index; --i) {
+            dst.put(this.buffer[i]);
+        }
+    }
+
     public void writeExternal(final ObjectOutput out) throws IOException {
         out.write(this.buffer, this.lowerBoundary, this.writerIndex - this.lowerBoundary);
     }

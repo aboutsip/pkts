@@ -645,6 +645,7 @@ public abstract class SipMessageImpl implements SipMessage {
     @Override
     public Buffer toBuffer() {
         final Buffer buffer = Buffers.createBuffer(1024);
+        // final Buffer buffer = new NioByteBuffer(ByteBuffer.allocate(1024));
         this.initialLine.getBytes(buffer);
         buffer.write(SipParser.CR);
         buffer.write(SipParser.LF);

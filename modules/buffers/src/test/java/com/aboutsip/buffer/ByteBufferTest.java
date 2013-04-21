@@ -46,6 +46,24 @@ public class ByteBufferTest extends AbstractBufferTest {
     }
 
     /**
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testWrapArraySpecifyingTheWindows() throws Exception {
+        final Buffer buffer = Buffers.wrap("hello world".getBytes(), 3, 9);
+        assertThat(buffer.toString(), is("lo wor"));
+        assertThat(buffer.getByte(0), is((byte) 'l'));
+        assertThat(buffer.getByte(1), is((byte) 'o'));
+
+        assertThat(buffer.readByte(), is((byte) 'l'));
+        assertThat(buffer.readByte(), is((byte) 'o'));
+
+        assertThat(buffer.getByte(0), is((byte) 'l'));
+        assertThat(buffer.getByte(1), is((byte) 'o'));
+    }
+
+    /**
      * A buffer can be parsed as an integer assuming there are no bad characters
      * in there.
      * 

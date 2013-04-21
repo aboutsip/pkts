@@ -102,6 +102,40 @@ public final class Buffers {
     }
 
     /**
+     * Wrap the supplied byte array specifying the allowed range of visible
+     * bytes.
+     * 
+     * @param buffer
+     * @param lowerBoundary
+     *            the index of the lowest byte that is accessible to this Buffer
+     *            (zero based index)
+     * @param upperBoundary
+     *            the upper boundary (exclusive) of the range of visible bytes.
+     * @return
+     */
+    public static Buffer wrap(final byte[] buffer, final int lowerBoundary, final int upperBoundary) {
+        if (buffer == null || buffer.length == 0) {
+            throw new IllegalArgumentException("the buffer cannot be null or empty");
+        }
+        if (upperBoundary > buffer.length) {
+            throw new IllegalArgumentException("The upper boundary cannot exceed the length of the buffer");
+        }
+        if (lowerBoundary >= upperBoundary) {
+            System.err.println("Lower: " + lowerBoundary);
+            System.err.println("Upper: " + upperBoundary);
+            throw new IllegalArgumentException("The lower boundary must be lower than the upper boundary");
+        }
+
+        if (lowerBoundary < 0) {
+            throw new IllegalArgumentException("The lower boundary must be a equal or greater than zero");
+        }
+
+        final int readerIndex = 0;
+        final int writerIndex = upperBoundary;
+        return new ByteBuffer(readerIndex, lowerBoundary, upperBoundary, writerIndex, buffer);
+    }
+
+    /**
      * Copied straight from the Integer class
      * 
      * Places characters representing the integer i into the character array
