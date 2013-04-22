@@ -10,7 +10,7 @@ public enum Protocol {
     ICMP("icmp", Layer.LAYER_3), IGMP("igmp", Layer.LAYER_3), TCP("tcp", Layer.LAYER_4), UDP("udp", Layer.LAYER_4), SCTP(
             "sctp", Layer.LAYER_4), SIP("sip", Layer.LAYER_7), SDP("sdp", Layer.LAYER_7), ETHERNET_II("eth",
             Layer.LAYER_2), SLL("sll", Layer.LAYER_2), IPv4("ip", Layer.LAYER_3), PCAP("pcap", Layer.LAYER_1), RTP(
-                    "rtp", Layer.LAYER_7), UNKNOWN("unknown", null);
+            "rtp", Layer.LAYER_7), UNKNOWN("unknown", null);
 
     private final String name;
 
@@ -31,6 +31,11 @@ public enum Protocol {
      * @return
      */
     public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public String toString() {
         return this.name;
     }
 
