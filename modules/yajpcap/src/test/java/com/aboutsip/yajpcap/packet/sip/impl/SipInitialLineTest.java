@@ -4,6 +4,7 @@
 package com.aboutsip.yajpcap.packet.sip.impl;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -19,6 +20,7 @@ import org.junit.Test;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
+import com.aboutsip.yajpcap.packet.sip.address.SipURI;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -52,8 +54,7 @@ public class SipInitialLineTest {
     @Test
     public void testParseRequestLine() throws Exception {
         final String s = "INVITE sip:alice@example.com SIP/2.0";
-        final Buffer buffer = Buffers.wrap(s);
-        final SipInitialLine initialLine = SipInitialLine.parse(buffer);
+        final SipInitialLine initialLine = parseRequestLine(s);
         assertThat(initialLine.isRequestLine(), is(true));
         assertThat(initialLine.isResponseLine(), is(false));
 
@@ -68,6 +69,39 @@ public class SipInitialLineTest {
         copy = Buffers.createBuffer(100);
         initialLine.getBytes(copy);
         assertThat(copy.toString(), is(s));
+    }
+
+    /**
+     * Make sure that cloning works and that we do a deep cloning so they are
+     * totally seperated.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testCloneRequestLine() throws Exception {
+        final String s = "INVITE sip:hello@aboutsip.com;transport=udp SIP/2.0";
+        final SipRequestLine line1 = parseRequestLine(s);
+        final SipRequestLine line2 = line1.clone();
+        assertThat(line1.toString(), is(line2.toString()));
+
+        final SipURI uri1 = (SipURI) line1.getRequestUri();
+        final SipURI uri2 = (SipURI) line2.getRequestUri();
+
+        assertThat(uri1.getPort(), is(uri2.getPort()));
+        assertThat(uri1.getHost(), is(uri2.getHost()));
+        assertThat(uri1.getHost().toString(), is(uri2.getHost().toString()));
+
+        uri1.setPort(1111);
+        assertThat(uri1.getPort(), is(1111));
+        assertThat(uri2.getPort(), not(1111));
+
+        assertThat(line1.toString(), not(line2.toString()));
+
+    }
+
+    private SipRequestLine parseRequestLine(final String s) throws SipParseException {
+        final Buffer buffer = Buffers.wrap(s);
+        return (SipRequestLine) SipInitialLine.parse(buffer);
     }
 
     /**

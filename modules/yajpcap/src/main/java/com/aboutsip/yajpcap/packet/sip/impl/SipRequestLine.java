@@ -20,7 +20,6 @@ public final class SipRequestLine extends SipInitialLine {
 
     private final Buffer method;
     private final Buffer requestUriBuffer;
-    private Buffer requestLine;
 
     /**
      * The parsed request uri, which may be null if no one has asked about it
@@ -59,22 +58,15 @@ public final class SipRequestLine extends SipInitialLine {
         return this.requestURI;
     }
 
-
     /**
      * {@inheritDoc}
      */
     @Override
     public Buffer getBuffer() {
-        // TODO: redo
-        if (this.requestLine == null) {
-            final StringBuilder sb = new StringBuilder();
-            sb.append(this.method.toString()).append(" ").append(this.requestUriBuffer.toString()).append(" SIP/2.0");
-            this.requestLine = Buffers.wrap(sb.toString());
-        }
-
-        return this.requestLine;
+        final Buffer tmp = Buffers.createBuffer(1024);
+        getBytes(tmp);
+        return tmp;
     }
-
 
     @Override
     public String toString() {
@@ -82,12 +74,21 @@ public final class SipRequestLine extends SipInitialLine {
     }
 
     @Override
+    public SipRequestLine clone() {
+        final Buffer requestURI = this.requestUriBuffer.clone();
+        return new SipRequestLine(this.method, requestURI);
+    }
+
+    @Override
     public void getBytes(final Buffer dst) {
         this.method.getBytes(0, dst);
         dst.write(SipParser.SP);
-        this.requestUriBuffer.getBytes(0, dst);
+        if (this.requestURI != null) {
+            this.requestURI.getBytes(dst);
+        } else {
+            this.requestUriBuffer.getBytes(0, dst);
+        }
         dst.write(SipParser.SP);
         SipParser.SIP2_0.getBytes(0, dst);
     }
-
 }

@@ -16,14 +16,10 @@ import com.aboutsip.yajpcap.packet.sip.impl.SipParser;
  */
 public class SipURIImpl extends URIImpl implements SipURI {
 
-    public static final Buffer SCHEME_SIP = Buffers.wrap("sip");
-
-    public static final Buffer SCHEME_SIPS = Buffers.wrap("sips");
-
     /**
      * The full raw sip(s) URI
      */
-    private final Buffer buffer;
+    private Buffer buffer;
 
     /**
      * The "userinfo" part.
@@ -51,6 +47,12 @@ public class SipURIImpl extends URIImpl implements SipURI {
     private final boolean isSecure;
 
     /**
+     * Flag telling us whether we need to rebuild the buffer because values have
+     * changed.
+     */
+    private boolean isDirty = false;
+
+    /**
      * 
      * @param isSips
      *            whether this is a sip or sips URL
@@ -72,7 +74,7 @@ public class SipURIImpl extends URIImpl implements SipURI {
     protected SipURIImpl(final boolean isSips, final Buffer userInfo, final Buffer host, final Buffer port,
             final Buffer paramsHeaders,
             final Buffer original) {
-        super(isSips ? SCHEME_SIPS : SCHEME_SIP);
+        super(isSips ? SipParser.SCHEME_SIPS : SipParser.SCHEME_SIP);
         this.isSecure = isSips;
         this.userInfo = userInfo;
         this.host = host;
@@ -99,14 +101,49 @@ public class SipURIImpl extends URIImpl implements SipURI {
         return this.isSecure;
     }
 
+    @Override
+    public void getBytes(final Buffer dst) {
+        if (!this.isDirty) {
+            this.buffer.getBytes(dst);
+        } else {
+            if (this.isSecure) {
+                SipParser.SCHEME_SIPS_COLON.getBytes(0, dst);
+            } else {
+                SipParser.SCHEME_SIP_COLON.getBytes(0, dst);
+            }
+            if (this.userInfo != null) {
+                this.userInfo.getBytes(0, dst);
+                dst.write(SipParser.AT);
+            }
+            this.host.getBytes(0, dst);
+            if (this.port != null) {
+                dst.write(SipParser.COLON);
+                this.port.getBytes(0, dst);
+            }
+
+            if (this.paramsHeaders != null) {
+                this.paramsHeaders.getBytes(dst);
+            }
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public Buffer toBuffer() {
-        // Currently, we cannot actually change the URI
-        // so we will just return the raw original buffer.
-        return this.buffer;
+        if (!this.isDirty) {
+            return this.buffer;
+        }
+
+        // TODO: need a better strategy around this.
+        // Probably want to create a dynamic buffer
+        // implementation where this is only the initial size
+        final Buffer buffer = Buffers.createBuffer(this.buffer.capacity() + 100);
+        getBytes(buffer);
+        this.isDirty = false;
+        this.buffer = buffer;
+        return buffer;
     }
 
     /**
@@ -155,6 +192,7 @@ public class SipURIImpl extends URIImpl implements SipURI {
 
     @Override
     public void setPort(final int port) {
+        this.isDirty = true;
         this.port = Buffers.wrap(port);
     }
 
@@ -166,7 +204,7 @@ public class SipURIImpl extends URIImpl implements SipURI {
         return toBuffer().toString();
     }
 
-    /**
+/**
      * Frame a sip or sips-uri, which according to RFC3261 is:
      * 
      * <pre>

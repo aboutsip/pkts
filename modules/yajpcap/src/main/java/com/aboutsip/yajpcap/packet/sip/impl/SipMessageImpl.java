@@ -16,7 +16,6 @@ import com.aboutsip.sdp.SdpException;
 import com.aboutsip.sdp.SdpParseException;
 import com.aboutsip.yajpcap.frame.Layer7Frame;
 import com.aboutsip.yajpcap.packet.TransportPacket;
-import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
@@ -28,6 +27,7 @@ import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RouteHeader;
+import com.aboutsip.yajpcap.packet.sip.header.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ViaHeader;
 import com.aboutsip.yajpcap.packet.sip.header.impl.CSeqHeaderImpl;
@@ -70,8 +70,8 @@ public abstract class SipMessageImpl implements SipMessage {
     private final Buffer headers;
 
     /**
-     * Stupid, just to fix it quickly and since a sliced buffer
-     * is kind of cheap perhaps it is ok for now
+     * Stupid, just to fix it quickly and since a sliced buffer is kind of cheap
+     * perhaps it is ok for now
      */
     private Buffer headersCopy;
 
@@ -100,10 +100,12 @@ public abstract class SipMessageImpl implements SipMessage {
 
     /**
      * 
-     * @param initialLine the initial line, which is either a request or a
-     *            response line
-     * @param headers all the headers (un-parsed) of the SIP message
-     * @param payload the payload or null if there is none
+     * @param initialLine
+     *            the initial line, which is either a request or a response line
+     * @param headers
+     *            all the headers (un-parsed) of the SIP message
+     * @param payload
+     *            the payload or null if there is none
      */
     public SipMessageImpl(final TransportPacket parent, final SipInitialLine initialLine, final Buffer headers,
             final Buffer payload, final Layer7Frame sipFrame) {
@@ -644,20 +646,67 @@ public abstract class SipMessageImpl implements SipMessage {
 
     @Override
     public Buffer toBuffer() {
-        final Buffer buffer = Buffers.createBuffer(1024);
-        // final Buffer buffer = new NioByteBuffer(ByteBuffer.allocate(1024));
+        final Buffer buffer = Buffers.createBuffer(2048);
         this.initialLine.getBytes(buffer);
         buffer.write(SipParser.CR);
         buffer.write(SipParser.LF);
-        for (final Entry<Buffer, SipHeader> headers : this.parsedHeaders.entrySet()) {
-            headers.getValue().getBytes(buffer);
+        transferHeaders(buffer);
+        if (this.payload != null) {
             buffer.write(SipParser.CR);
             buffer.write(SipParser.LF);
-        }
-
-        if (this.headers != null) {
-            this.headers.getBytes(buffer);
+            this.payload.getBytes(0, buffer);
         }
         return buffer;
     }
+
+    /**
+     * Helper method to clone all the headers into one continuous buffer.
+     * 
+     * @return
+     */
+    protected Buffer cloneHeaders() {
+        if (this.headers.getReaderIndex() == 0) {
+            return this.headers.clone();
+        }
+
+        final Buffer headerClone = Buffers.createBuffer(this.headers.capacity() + 200);
+        transferHeaders(headerClone);
+        return headerClone;
+    }
+
+    /**
+     * Helper method to clone the payload.
+     * 
+     * @return
+     */
+    protected Buffer clonePayload() {
+        if (this.payload != null) {
+            return this.payload.clone();
+        }
+
+        return null;
+    }
+
+    /**
+     * Transfer the data of all headers into the supplied buffer.
+     * 
+     * @param dst
+     */
+    protected void transferHeaders(final Buffer dst) {
+        for (final Entry<Buffer, SipHeader> headers : this.parsedHeaders.entrySet()) {
+            headers.getValue().getBytes(dst);
+            dst.write(SipParser.CR);
+            dst.write(SipParser.LF);
+        }
+
+        if (this.headers != null) {
+            this.headers.getBytes(dst);
+            dst.write(SipParser.CR);
+            dst.write(SipParser.LF);
+        }
+    }
+
+    @Override
+    public abstract SipMessage clone();
+
 }

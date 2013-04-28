@@ -166,4 +166,11 @@ public final class TransportPacketImpl implements TransportPacket {
         this.parent.reCalculateChecksum();
     }
 
+    @Override
+    public TransportPacket clone() {
+        final IPPacket ipPacket = this.parent.clone();
+        final TransportPacket pkt = new TransportPacketImpl(ipPacket, this.isUdp, this.sourcePort, this.destinationPort);
+        return pkt;
+    }
+
 }

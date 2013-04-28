@@ -113,7 +113,6 @@ public final class IPPacketImpl implements IPPacket {
         return a + "." + b + "." + c + "." + d;
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -163,7 +162,6 @@ public final class IPPacketImpl implements IPPacket {
     public void setDestinationMacAddress(final String macAddress) {
         this.parent.setDestinationMacAddress(macAddress);
     }
-
 
     @Override
     public void setSourceIP(final int a, final int b, final int c, final int d) {
@@ -238,6 +236,13 @@ public final class IPPacketImpl implements IPPacket {
     @Override
     public boolean verifyIpChecksum() {
         return calculateChecksum() == getIpChecksum();
+    }
+
+    @Override
+    public IPPacket clone() {
+        final MACPacket mac = this.parent.clone();
+        final IPPacket pkt = new IPPacketImpl(mac, this.headers.clone(), this.options);
+        return pkt;
     }
 
 }

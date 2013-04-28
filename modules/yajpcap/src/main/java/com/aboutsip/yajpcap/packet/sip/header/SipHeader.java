@@ -1,9 +1,10 @@
 /**
  * 
  */
-package com.aboutsip.yajpcap.packet.sip;
+package com.aboutsip.yajpcap.packet.sip.header;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 
 /**
  * Represents any header in SIP.
@@ -16,7 +17,7 @@ import com.aboutsip.buffer.Buffer;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface SipHeader {
+public interface SipHeader extends Cloneable {
 
     /**
      * Get the name of the header
@@ -35,5 +36,7 @@ public interface SipHeader {
     void verify() throws SipParseException;
 
     void getBytes(Buffer dst);
+
+    SipHeader clone();
 
 }

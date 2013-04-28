@@ -285,4 +285,9 @@ public final class RtpPacketImpl implements RtpPacket {
         return this.parent.verifyIpChecksum();
     }
 
+    @Override
+    public RtpPacket clone() {
+        throw new RuntimeException("Sorry, not implemented just yet");
+    }
+
 }

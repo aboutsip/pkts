@@ -7,13 +7,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 
-
 /**
  * Represents a captured packet.
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface Packet {
+public interface Packet extends Cloneable {
     /**
      * The arrival time of this packet in microseconds relative to epoch
      * (midnight UTC of January 1, 1970).
@@ -60,5 +59,7 @@ public interface Packet {
     void verify();
 
     void write(OutputStream out) throws IOException;
+
+    Packet clone();
 
 }

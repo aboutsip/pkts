@@ -4,8 +4,9 @@
 package com.aboutsip.yajpcap.packet.sip.header.impl;
 
 import com.aboutsip.buffer.Buffer;
-import com.aboutsip.yajpcap.packet.sip.SipHeader;
+import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
+import com.aboutsip.yajpcap.packet.sip.header.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.impl.SipParser;
 
 /**
@@ -16,6 +17,7 @@ public class SipHeaderImpl implements SipHeader {
     private final Buffer name;
 
     private final Buffer value;
+
     /**
      * 
      */
@@ -72,6 +74,13 @@ public class SipHeaderImpl implements SipHeader {
     protected void transferValue(final Buffer dst) {
         final Buffer value = getValue();
         value.getBytes(0, dst);
+    }
+
+    @Override
+    public SipHeader clone() {
+        final Buffer buffer = Buffers.createBuffer(1024);
+        transferValue(buffer);
+        return new SipHeaderImpl(this.name.clone(), buffer);
     }
 
 }

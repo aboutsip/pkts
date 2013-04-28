@@ -48,4 +48,22 @@ public final class SipRequestImpl extends SipMessageImpl implements SipRequest {
         return this;
     }
 
+    /**
+     * Get the request line of this request.
+     * 
+     * @return
+     */
+    protected SipRequestLine getRequestLine() {
+        return this.requestLine.clone();
+    }
+
+    @Override
+    public SipRequest clone() {
+        final TransportPacket transportPkt = getTransportPacket().clone();
+        final SipRequestLine requestLine = this.requestLine.clone();
+        final Buffer headers = this.cloneHeaders();
+        final Buffer payload = this.clonePayload();
+        return new SipRequestImpl(transportPkt, requestLine, headers, payload, null);
+    }
+
 }

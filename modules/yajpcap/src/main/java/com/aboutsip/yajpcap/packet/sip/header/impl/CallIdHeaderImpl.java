@@ -29,4 +29,13 @@ public final class CallIdHeaderImpl extends SipHeaderImpl implements CallIdHeade
         return new CallIdHeaderImpl(buffer);
     }
 
+    @Override
+    public CallIdHeader clone() {
+        try {
+            return CallIdHeaderImpl.frame(getValue().clone());
+        } catch (final SipParseException e) {
+            throw new RuntimeException("Unable to clone the CallId-header", e);
+        }
+    }
+
 }

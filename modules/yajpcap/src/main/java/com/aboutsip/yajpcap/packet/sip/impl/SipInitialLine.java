@@ -90,4 +90,7 @@ public abstract class SipInitialLine extends SipParser {
      */
     public abstract void getBytes(Buffer dst);
 
+    @Override
+    protected abstract SipInitialLine clone();
+
 }

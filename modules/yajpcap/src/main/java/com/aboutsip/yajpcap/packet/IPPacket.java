@@ -3,7 +3,6 @@
  */
 package com.aboutsip.yajpcap.packet;
 
-
 /**
  * Represents a packet from the Network Layer (layer 3). Actually, to be
  * completely honest, the model implemented (at least so far) is more geared
@@ -16,7 +15,7 @@ package com.aboutsip.yajpcap.packet;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface IPPacket extends MACPacket {
+public interface IPPacket extends MACPacket, Cloneable {
 
     String getSourceIP();
 
@@ -120,4 +119,7 @@ public interface IPPacket extends MACPacket {
     void reCalculateChecksum();
 
     boolean verifyIpChecksum();
+
+    @Override
+    IPPacket clone();
 }

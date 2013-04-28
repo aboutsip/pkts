@@ -27,4 +27,11 @@ public interface URI {
      */
     boolean isSipURI();
 
+    /**
+     * Write the bytes of this URI into the destination buffer
+     * 
+     * @param dst
+     */
+    void getBytes(Buffer dst);
+
 }

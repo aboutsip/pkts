@@ -9,7 +9,7 @@ import com.aboutsip.yajpcap.packet.sip.SipParseException;
 /**
  * @author jonas@jonasborjesson.com
  */
-public interface Parameters {
+public interface Parameters extends SipHeader {
 
     /**
      * Get the value of the named parameter. If the named parameter is a

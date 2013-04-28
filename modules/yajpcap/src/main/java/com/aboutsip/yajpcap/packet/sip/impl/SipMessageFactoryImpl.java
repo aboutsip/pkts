@@ -1,20 +1,21 @@
 /**
  * 
  */
-package com.aboutsip.yajpcap.packet.sip;
+package com.aboutsip.yajpcap.packet.sip.impl;
 
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.SipMessageFactory;
 import com.aboutsip.yajpcap.packet.TransportPacket;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
+import com.aboutsip.yajpcap.packet.sip.SipRequest;
+import com.aboutsip.yajpcap.packet.sip.SipResponse;
 import com.aboutsip.yajpcap.packet.sip.header.CSeqHeader;
 import com.aboutsip.yajpcap.packet.sip.header.CallIdHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
 import com.aboutsip.yajpcap.packet.sip.header.MaxForwardsHeader;
+import com.aboutsip.yajpcap.packet.sip.header.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ViaHeader;
-import com.aboutsip.yajpcap.packet.sip.impl.SipRequestImpl;
-import com.aboutsip.yajpcap.packet.sip.impl.SipResponseImpl;
-import com.aboutsip.yajpcap.packet.sip.impl.SipResponseLine;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -28,6 +29,14 @@ public class SipMessageFactoryImpl implements SipMessageFactory {
     public SipMessageFactoryImpl() {
         // TODO Auto-generated constructor stub
     }
+
+    /**
+     * This dummy frame is only needed because currently the {@link SipMessage}
+     * is "dummy". Will re-write the {@link SipMessage} to do things in a better
+     * way and then I can get rid of this stupidity...
+     */
+    // private static final DummyLayer7Frame dummyFrame = new
+    // DummyLayer7Frame();
 
     /**
      * {@inheritDoc}
@@ -61,4 +70,9 @@ public class SipMessageFactoryImpl implements SipMessageFactory {
         return response;
     }
 
+    @Override
+    public SipRequest createRequest(final SipRequest originalRequest) throws SipParseException {
+        final SipRequestImpl impl = (SipRequestImpl) originalRequest;
+        return impl.clone();
+    }
 }

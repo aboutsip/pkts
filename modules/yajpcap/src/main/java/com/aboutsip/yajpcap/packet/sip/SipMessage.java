@@ -9,6 +9,7 @@ import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RouteHeader;
+import com.aboutsip.yajpcap.packet.sip.header.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ViaHeader;
 
@@ -137,7 +138,8 @@ public interface SipMessage extends ApplicationPacket {
      * Convenience method for fetching the from-header
      * 
      * @return the from header as a buffer
-     * @throws SipParseException TODO
+     * @throws SipParseException
+     *             TODO
      */
     FromHeader getFromHeader() throws SipParseException;
 
@@ -303,7 +305,6 @@ public interface SipMessage extends ApplicationPacket {
      */
     boolean isInitial() throws SipParseException;
 
-
     /**
      * {@inheritDoc}
      * 
@@ -364,5 +365,8 @@ public interface SipMessage extends ApplicationPacket {
      * @return
      */
     Buffer toBuffer();
+
+    @Override
+    SipMessage clone();
 
 }

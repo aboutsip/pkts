@@ -78,10 +78,7 @@ public final class AddressImpl implements Address {
     public URI getURI() throws SipParseException {
         if (this.uri == null) {
             try {
-                // TODO: slicing it for now so we can write things out more
-                // efficiently. Will remove once I have implemented an efficient
-                // composite buffer
-                this.uri = URIImpl.frame(this.uriBuffer.slice());
+                this.uri = URIImpl.frame(this.uriBuffer);
             } catch (final IndexOutOfBoundsException e) {
                 throw new SipParseException(this.uriBuffer.getReaderIndex(),
                         "Unable to process the value due to a IndexOutOfBoundsException", e);
@@ -109,7 +106,7 @@ public final class AddressImpl implements Address {
      * @throws IOException
      */
     public static final Address parse(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-    IOException {
+            IOException {
         SipParser.consumeWS(buffer);
         boolean doubleQuote = false;
         if (buffer.peekByte() == SipParser.DQUOT) {
@@ -179,29 +176,14 @@ public final class AddressImpl implements Address {
      */
     @Override
     public Buffer toBuffer() {
-        return Buffers.wrap(toString());
+        final Buffer buffer = Buffers.createBuffer(1024);
+        getBytes(buffer);
+        return buffer;
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        if (!this.displayName.isEmpty()) {
-            final String displayName = this.displayName.toString();
-            if (this.enclosedDisplayName) {
-                sb.append("\"").append(displayName).append("\"");
-            } else {
-                sb.append(displayName);
-            }
-            sb.append(" ");
-        }
-        if (this.angleBrackets) {
-            sb.append("<");
-            sb.append(this.uriBuffer.toString());
-            sb.append(">");
-        } else {
-            sb.append(this.uriBuffer.toString());
-        }
-        return sb.toString();
+        return toBuffer().toString();
     }
 
     @Override
@@ -218,10 +200,18 @@ public final class AddressImpl implements Address {
         }
         if (this.angleBrackets) {
             dst.write(SipParser.LAQUOT);
-            this.uriBuffer.getBytes(0, dst);
+            if (this.uri == null) {
+                this.uriBuffer.getBytes(0, dst);
+            } else {
+                this.uri.getBytes(dst);
+            }
             dst.write(SipParser.RAQUOT);
         } else {
-            this.uriBuffer.getBytes(0, dst);
+            if (this.uri == null) {
+                this.uriBuffer.getBytes(0, dst);
+            } else {
+                this.uri.getBytes(dst);
+            }
         }
     }
 }

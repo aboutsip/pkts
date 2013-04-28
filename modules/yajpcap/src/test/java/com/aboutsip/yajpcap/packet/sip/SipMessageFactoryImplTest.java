@@ -14,11 +14,12 @@ import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.YajTestBase;
 import com.aboutsip.yajpcap.packet.SipMessageFactory;
 import com.aboutsip.yajpcap.packet.sip.header.MaxForwardsHeader;
+import com.aboutsip.yajpcap.packet.sip.impl.SipMessageFactoryImpl;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
  * @author jonas
- *
+ * 
  */
 public class SipMessageFactoryImplTest extends YajTestBase {
 
@@ -44,7 +45,6 @@ public class SipMessageFactoryImplTest extends YajTestBase {
     @Test
     public void testCreateResponseBasedOnRequest() throws Exception {
         final SipRequest req = (SipRequest) loadStream("sipp.pcap").get(0).getFrame(Protocol.SIP).parse();
-        System.out.println(req);
         final SipResponse resp = this.factory.createResponse(200, req);
         assertThat(resp.getStatus(), is(200));
         assertThat(resp.getFromHeader().getValue().toString(), is("sipp <sip:sipp@127.0.1.1:5060>;tag=16732SIPpTag001"));
@@ -55,6 +55,14 @@ public class SipMessageFactoryImplTest extends YajTestBase {
 
         final Buffer buffer = resp.toBuffer();
         System.out.println(buffer);
+    }
+
+    @Test
+    public void testCreateRequestBasedOnOtherRequest() throws Exception {
+        final SipRequest original = (SipRequest) loadStream("sipp.pcap").get(0).getFrame(Protocol.SIP).parse();
+        System.err.println(original.toString());
+        final SipRequest request = this.factory.createRequest(original);
+        System.out.println(request);
     }
 
 }

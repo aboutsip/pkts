@@ -5,7 +5,6 @@ package com.aboutsip.yajpcap.packet.sip.header;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
-import com.aboutsip.yajpcap.packet.sip.SipHeader;
 
 /**
  * 
@@ -27,6 +26,7 @@ import com.aboutsip.yajpcap.packet.sip.SipHeader;
  *    Record-Route: &lt;sip:server10.biloxi.com;lr&gt;,
  *                  &lt;sip:bigbox3.site3.atlanta.com;lr&gt;
  * </pre>
+ * 
  * </p>
  * 
  * @author jonas@jonasborjesson.com
@@ -34,5 +34,7 @@ import com.aboutsip.yajpcap.packet.sip.SipHeader;
 public interface RecordRouteHeader extends HeaderAddress, SipHeader, Parameters {
 
     Buffer NAME = Buffers.wrap("Record-Route");
+
+    RecordRouteHeader clone();
 
 }

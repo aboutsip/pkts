@@ -62,6 +62,11 @@ public final class SipResponseLine extends SipInitialLine {
     }
 
     @Override
+    public SipResponseLine clone() {
+        return new SipResponseLine(this.statusCode, this.reason.clone());
+    }
+
+    @Override
     public String toString() {
         return getBuffer().toString();
     }

@@ -64,7 +64,11 @@ public final class CSeqHeaderImpl extends SipHeaderImpl implements CSeqHeader {
             throw new SipParseException(value.getReaderIndex(),
                     "Could not read from the underlying stream while parsing method");
         }
+    }
 
+    @Override
+    public CSeqHeader clone() {
+        return new CSeqHeaderImpl(this.cseqNumber, this.method.clone(), getValue().clone());
     }
 
 }

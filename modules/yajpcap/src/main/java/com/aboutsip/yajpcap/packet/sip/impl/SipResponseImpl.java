@@ -6,10 +6,10 @@ package com.aboutsip.yajpcap.packet.sip.impl;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.frame.Layer7Frame;
 import com.aboutsip.yajpcap.packet.TransportPacket;
-import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipResponse;
 import com.aboutsip.yajpcap.packet.sip.header.CSeqHeader;
+import com.aboutsip.yajpcap.packet.sip.header.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.header.impl.CSeqHeaderImpl;
 
 /**
@@ -129,6 +129,11 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
     @Override
     public SipResponse toResponse() throws ClassCastException {
         return this;
+    }
+
+    @Override
+    public SipResponse clone() {
+        throw new RuntimeException("Sorry, not implemented right now");
     }
 
 }

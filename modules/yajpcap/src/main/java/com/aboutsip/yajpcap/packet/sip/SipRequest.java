@@ -5,7 +5,6 @@ package com.aboutsip.yajpcap.packet.sip;
 
 import com.aboutsip.yajpcap.packet.sip.address.URI;
 
-
 /**
  * @author jonas@jonasborjesson.com
  */
@@ -18,5 +17,7 @@ public interface SipRequest extends SipMessage {
      */
     URI getRequestUri() throws SipParseException;
 
+    @Override
+    SipRequest clone();
 
 }

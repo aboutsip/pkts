@@ -16,7 +16,6 @@ import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.RawData;
 import com.aboutsip.yajpcap.YajTestBase;
 import com.aboutsip.yajpcap.packet.TransportPacket;
-import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
@@ -25,6 +24,7 @@ import com.aboutsip.yajpcap.packet.sip.address.URI;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RouteHeader;
+import com.aboutsip.yajpcap.packet.sip.header.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ViaHeader;
 
 public class SipMessageImplTest extends YajTestBase {

@@ -38,4 +38,14 @@ public interface SipMessageFactory {
      */
     SipResponse createResponse(int statusCode, SipRequest request) throws SipParseException;
 
+    /**
+     * Creates a new {@link SipRequest} using the original request as a
+     * template.
+     * 
+     * @param originalRequest
+     * @return
+     * @throws SipParseException
+     */
+    SipRequest createRequest(SipRequest originalRequest) throws SipParseException;
+
 }

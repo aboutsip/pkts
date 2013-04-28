@@ -5,7 +5,6 @@ package com.aboutsip.yajpcap.packet.sip.header;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
-import com.aboutsip.yajpcap.packet.sip.SipHeader;
 
 /**
  * Source: RFC 3261 section 20.30
@@ -22,6 +21,7 @@ import com.aboutsip.yajpcap.packet.sip.SipHeader;
  *    Route: &lt;sip:bigbox3.site3.atlanta.com;lr&gt;,
  *           &lt;sip:server10.biloxi.com;lr&gt;
  * </pre>
+ * 
  * </p>
  * 
  * @author jonas@jonasborjesson.com
@@ -29,5 +29,7 @@ import com.aboutsip.yajpcap.packet.sip.SipHeader;
 public interface RouteHeader extends HeaderAddress, Parameters, SipHeader {
 
     Buffer NAME = Buffers.wrap("Route");
+
+    RouteHeader clone();
 
 }

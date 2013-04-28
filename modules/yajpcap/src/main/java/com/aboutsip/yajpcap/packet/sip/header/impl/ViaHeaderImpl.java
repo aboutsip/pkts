@@ -8,9 +8,9 @@ import java.util.List;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
-import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.header.Parameters;
+import com.aboutsip.yajpcap.packet.sip.header.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ViaHeader;
 import com.aboutsip.yajpcap.packet.sip.impl.SipParser;
 
@@ -116,7 +116,8 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
     @Override
     public Buffer getValue() {
         // TODO: we can use the original in case the value hasn't changed.
-        // However, if it has, then we can re-build one through the getBytes stuff
+        // However, if it has, then we can re-build one through the getBytes
+        // stuff
         // and store it for future reference.
         return this.original;
     }
@@ -145,7 +146,20 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
         if (this.indexOfReceived == -1) {
             return null;
         }
-        return this.params.get(this.indexOfBranch)[1];
+        return this.params.get(this.indexOfReceived)[1];
+    }
+
+    @Override
+    public void setReceived(final Buffer received) {
+        if (this.indexOfReceived == -1) {
+            this.indexOfReceived = findParameter(RECEIVED);
+        }
+        if (this.indexOfReceived == -1) {
+            this.indexOfReceived = this.params.size();
+            this.params.add(new Buffer[] { RECEIVED, received });
+        } else {
+            this.params.get(this.indexOfReceived)[1] = received;
+        }
     }
 
     @Override
@@ -173,7 +187,26 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
         }
         // TODO: perhaps save it plus implement my own
         // to string function in buffer
-        return Integer.parseInt(port.toString());
+        try {
+            return port.parseToInt();
+        } catch (final NumberFormatException e) {
+            return -1;
+        } catch (final IOException e) {
+            return -1;
+        }
+    }
+
+    @Override
+    public void setRPort(final int port) {
+        if (this.indexOfRPort == -1) {
+            this.indexOfRPort = findParameter(RPORT);
+        }
+        if (this.indexOfRPort == -1) {
+            this.indexOfRPort = this.params.size();
+            this.params.add(new Buffer[] { RPORT, Buffers.wrap(port) });
+        } else {
+            this.params.get(this.indexOfBranch)[1] = Buffers.wrap(port);
+        }
     }
 
     @Override
@@ -272,12 +305,15 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
         if (getBranch() == null) {
             throw new SipParseException(0, "Did not find the mandatory branch parameter. Via is illegal");
         }
-
     }
 
     @Override
     public String toString() {
-        return "Via: " + this.original.toString();
+        // TODO: need to do something else. This is probably
+        // not that efficient but performance testing will reveal
+        final Buffer buffer = Buffers.createBuffer(1024);
+        getBytes(buffer);
+        return buffer.toString();
     }
 
     @Override
@@ -285,11 +321,18 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
         NAME.getBytes(0, dst);
         dst.write(SipParser.COLON);
         dst.write(SipParser.SP);
+        transferValue(dst);
+    }
+
+    protected void transferValue(final Buffer dst) {
         SipParser.SIP2_0_SLASH.getBytes(0, dst);
         this.transport.getBytes(0, dst);
         dst.write(SipParser.SP);
         this.host.getBytes(0, dst);
-        if (this.port != -1) {
+        if (this.port == -2 && this.rawPort != null) {
+            dst.write(SipParser.COLON);
+            this.rawPort.getBytes(dst);
+        } else if (this.port != -1) {
             dst.write(SipParser.COLON);
             dst.writeAsString(this.port);
         }
@@ -301,6 +344,17 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
                 dst.write(SipParser.EQ);
                 param[1].getBytes(0, dst);
             }
+        }
+    }
+
+    @Override
+    public ViaHeader clone() {
+        final Buffer buffer = Buffers.createBuffer(1024);
+        transferValue(buffer);
+        try {
+            return ViaHeaderImpl.frame(buffer);
+        } catch (final SipParseException e) {
+            throw new RuntimeException("Unable to clone the Via-header", e);
         }
     }
 

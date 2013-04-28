@@ -37,6 +37,29 @@ public class SipUriImplTest {
     }
 
     /**
+     * Make sure that we can set the port as expected
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testSetPort() throws Exception {
+        assertSetPort("sip:alice@example.com", 9999, "sip:alice@example.com:9999");
+        assertSetPort("sip:alice@example.com:8888", 7777, "sip:alice@example.com:7777");
+        assertSetPort("sip:alice@example.com:7", 8, "sip:alice@example.com:8");
+        assertSetPort("sip:alice@example.com:7;transport=udp", 8, "sip:alice@example.com:8;transport=udp");
+        assertSetPort("sip:alice@example.com;transport=tcp&hello=world", 9999,
+                "sip:alice@example.com:9999;transport=tcp&hello=world");
+    }
+
+    private void assertSetPort(final String toParse, final int port, final String expected) throws Exception {
+        final SipURI uri = SipURIImpl.frame(Buffers.wrap(toParse));
+        uri.setPort(port);
+        assertThat(uri.getPort(), is(port));
+        assertThat(uri.toString(), is(expected));
+
+    }
+
+    /**
      * Helper method for ensuring that we parse SIP Uri's correctly
      * 
      * @param toParse

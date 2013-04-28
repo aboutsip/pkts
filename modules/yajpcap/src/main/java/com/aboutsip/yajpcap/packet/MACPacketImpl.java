@@ -29,7 +29,8 @@ public final class MACPacketImpl implements MACPacket {
         }
 
         if (packet == null) {
-            // throw new IllegalArgumentException("The parent packet cannot be null");
+            // throw new
+            // IllegalArgumentException("The parent packet cannot be null");
         }
 
         return new MACPacketImpl(packet, headers);
@@ -174,6 +175,13 @@ public final class MACPacketImpl implements MACPacket {
                     .charAt(1), 16));
             this.headers.setByte(i + offset, b);
         }
+    }
+
+    @Override
+    public MACPacket clone() {
+        final Packet pkt = this.parentPacket.clone();
+        final MACPacket mac = new MACPacketImpl(pkt, this.headers.clone());
+        return mac;
     }
 
 }

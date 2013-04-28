@@ -60,7 +60,7 @@ public final class PCapPacketImpl implements PCapPacket {
         final Date date = new Date(getArrivalTime() / 1000);
         sb.append("Arrival Time: ").append(formatter.format(date));
         sb.append(" Epoch Time: ").append(this.pcapHeader.getTimeStampSeconds()).append(".")
-        .append(this.pcapHeader.getTimeStampMicroSeconds());
+                .append(this.pcapHeader.getTimeStampMicroSeconds());
         sb.append(" Frame Length: ").append(getTotalLength());
         sb.append(" Capture Length: ").append(getCapturedLength());
 
@@ -70,6 +70,11 @@ public final class PCapPacketImpl implements PCapPacket {
     @Override
     public void write(final OutputStream out) throws IOException {
         throw new RuntimeException("Sorry, not implemented just yet.");
+    }
+
+    @Override
+    public PCapPacket clone() {
+        return new PCapPacketImpl(this.pcapHeader);
     }
 
 }

@@ -55,7 +55,7 @@ public abstract class MediaTypeHeaderImpl extends ParametersImpl implements Medi
     public boolean isSDP() {
         try {
 
-            if ((this.subType.capacity() != 3) || (this.mType.capacity() != 11)) {
+            if (this.subType.capacity() != 3 || this.mType.capacity() != 11) {
                 return false;
             }
 
@@ -64,7 +64,7 @@ public abstract class MediaTypeHeaderImpl extends ParametersImpl implements Medi
             final byte c = this.subType.getByte(2);
 
             // check for sdp
-            if (!(((a == 's') || (a == 'S')) && ((b == 'd') || (b == 'D')) && ((c == 'p') || (c == 'P')))) {
+            if (!((a == 's' || a == 'S') && (b == 'd' || b == 'D') && (c == 'p' || c == 'P'))) {
                 return false;
             }
 
@@ -81,10 +81,10 @@ public abstract class MediaTypeHeaderImpl extends ParametersImpl implements Medi
             final byte n = this.mType.getByte(10);
 
             // check for application
-            return (((d == 'a') || (d == 'A')) && ((e == 'p') || (e == 'P')) && ((f == 'p') || (f == 'P'))
-                    && ((g == 'l') || (g == 'L')) && ((h == 'i') || (h == 'I')) && ((i == 'c') || (i == 'C'))
-                    && ((j == 'a') || (j == 'A')) && ((k == 't') || (k == 'T')) && ((l == 'i') || (l == 'I'))
-                    && ((m == 'o') || (m == 'O')) && ((n == 'n') || (n == 'N')));
+            return (d == 'a' || d == 'A') && (e == 'p' || e == 'P') && (f == 'p' || f == 'P')
+                    && (g == 'l' || g == 'L') && (h == 'i' || h == 'I') && (i == 'c' || i == 'C')
+                    && (j == 'a' || j == 'A') && (k == 't' || k == 'T') && (l == 'i' || l == 'I')
+                    && (m == 'o' || m == 'O') && (n == 'n' || n == 'N');
 
         } catch (final IOException e) {
             // should really never happen because at this point
@@ -132,7 +132,7 @@ public abstract class MediaTypeHeaderImpl extends ParametersImpl implements Medi
         sb.append(this.subType.toString());
 
         final Buffer params = super.getValue();
-        if ((params != null) && !params.isEmpty()) {
+        if (params != null && !params.isEmpty()) {
             sb.append(params.toString());
         }
 

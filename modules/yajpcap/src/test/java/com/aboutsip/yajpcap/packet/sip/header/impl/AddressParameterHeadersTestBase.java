@@ -15,6 +15,7 @@ import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.address.Address;
+import com.aboutsip.yajpcap.packet.sip.address.SipURI;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
 
@@ -132,7 +133,27 @@ public abstract class AddressParameterHeadersTestBase {
         } else if (to instanceof FromHeader) {
             assertThat(((ToHeader) to).getTag().toString(), is("asdf"));
         }
+    }
 
+    /**
+     * Make sure clone works.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testClone() throws Exception {
+        final AddressParametersHeader header = frameHeader(Buffers.wrap("sip:alice@example.com"));
+        final AddressParametersHeader clone = (AddressParametersHeader) header.clone();
+        assertThat(header.toString(), is(clone.toString()));
+        final Address a1 = header.getAddress();
+        final Address a2 = clone.getAddress();
+
+        assertThat(a1.toString(), is(a2.toString()));
+        ((SipURI) a1.getURI()).setPort(876);
+        ((SipURI) a2.getURI()).setPort(7777);
+
+        assertThat(a1.toString().contains("876"), is(true));
+        assertThat(a2.toString().contains("7777"), is(true));
     }
 
     /**
@@ -155,6 +176,5 @@ public abstract class AddressParameterHeadersTestBase {
         assertThat(to.getParameter("hello").toString(), is("world"));
         assertThat(to.getParameter("apa").toString(), is("monkey"));
     }
-
 
 }

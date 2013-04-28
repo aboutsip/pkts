@@ -21,7 +21,6 @@ public class MaxForwardsHeaderImpl extends SipHeaderImpl implements MaxForwardsH
         this.maxForwards = value;
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -38,6 +37,11 @@ public class MaxForwardsHeaderImpl extends SipHeaderImpl implements MaxForwardsH
     public static MaxForwardsHeader frame(final Buffer buffer) throws SipParseException {
         final int value = 5;
         return new MaxForwardsHeaderImpl(value);
+    }
+
+    @Override
+    public MaxForwardsHeader clone() {
+        return new MaxForwardsHeaderImpl(this.maxForwards);
     }
 
 }
