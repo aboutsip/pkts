@@ -7,6 +7,7 @@ import com.aboutsip.yajpcap.packet.sip.header.CallIdHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ContactHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
+import com.aboutsip.yajpcap.packet.sip.header.MaxForwardsHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.SipHeader;
@@ -161,6 +162,13 @@ public interface SipMessage extends ApplicationPacket {
      * @throws SipParseException
      */
     ViaHeader getViaHeader() throws SipParseException;
+
+    /**
+     * 
+     * @return
+     * @throws SipParseException
+     */
+    MaxForwardsHeader getMaxForwards() throws SipParseException;
 
     /**
      * Get the top-most {@link RecordRouteHeader} header if present.

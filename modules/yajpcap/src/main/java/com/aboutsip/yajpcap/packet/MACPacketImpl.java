@@ -29,8 +29,7 @@ public final class MACPacketImpl implements MACPacket {
         }
 
         if (packet == null) {
-            // throw new
-            // IllegalArgumentException("The parent packet cannot be null");
+            throw new IllegalArgumentException("The parent packet cannot be null");
         }
 
         return new MACPacketImpl(packet, headers);

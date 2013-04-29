@@ -3,12 +3,16 @@
  */
 package com.aboutsip.yajpcap.packet.impl;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.IPPacket;
 import com.aboutsip.yajpcap.packet.IPPacketImpl;
 import com.aboutsip.yajpcap.packet.MACPacket;
 import com.aboutsip.yajpcap.packet.MACPacketImpl;
+import com.aboutsip.yajpcap.packet.Packet;
 import com.aboutsip.yajpcap.packet.PacketFactory;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.TransportPacketFactory;
@@ -64,12 +68,15 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
      * {@inheritDoc}
      */
     @Override
-    public TransportPacket create(final Protocol protocol, final String srcAddress, final int srcPort, final String destAddress, final int destPort,
+    public TransportPacket create(final Protocol protocol, final String srcAddress, final int srcPort,
+            final String destAddress, final int destPort,
             final Buffer payload) throws IllegalArgumentException, IllegalProtocolException {
 
         final byte[] ethernet = new byte[this.ehternetII.length];
         System.arraycopy(this.ehternetII, 0, ethernet, 0, this.ehternetII.length);
-        final MACPacket mac = MACPacketImpl.create(null, Buffers.wrap(ethernet));
+        final long ts = System.currentTimeMillis() * 1000;
+        final Packet pkt = new SimplePacket(ts);
+        final MACPacket mac = MACPacketImpl.create(pkt, Buffers.wrap(ethernet));
 
         final byte[] rawIpv4 = new byte[this.ipv4.length];
         System.arraycopy(this.ipv4, 0, rawIpv4, 0, this.ipv4.length);
@@ -88,7 +95,9 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
 
         final byte[] ethernet = new byte[this.ehternetII.length];
         System.arraycopy(this.ehternetII, 0, ethernet, 0, this.ehternetII.length);
-        final MACPacket mac = MACPacketImpl.create(null, Buffers.wrap(ethernet));
+        final long ts = System.currentTimeMillis() * 1000;
+        final Packet pkt = new SimplePacket(ts);
+        final MACPacket mac = MACPacketImpl.create(pkt, Buffers.wrap(ethernet));
 
         final byte[] rawIpv4 = new byte[this.ipv4.length];
         System.arraycopy(this.ipv4, 0, rawIpv4, 0, this.ipv4.length);
@@ -104,5 +113,34 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
         return new TransportPacketImpl(ipPacket, true, srcPort, destPort);
     }
 
+    private static class SimplePacket implements Packet {
+        private final long arrivalTime;
+
+        public SimplePacket(final long arrivalTime) {
+            this.arrivalTime = arrivalTime;
+        }
+
+        @Override
+        public long getArrivalTime() {
+            return this.arrivalTime;
+        }
+
+        @Override
+        public void verify() {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void write(final OutputStream out) throws IOException {
+            throw new RuntimeException("Sorry, not implemented");
+        }
+
+        @Override
+        public SimplePacket clone() {
+            return new SimplePacket(this.arrivalTime);
+        }
+
+    }
 
 }

@@ -16,6 +16,9 @@ public interface MaxForwardsHeader extends SipHeader {
 
     int getMaxForwards();
 
+    void setMaxForwards(int value);
+
+    @Override
     MaxForwardsHeader clone();
 
 }

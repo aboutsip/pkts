@@ -25,6 +25,7 @@ import com.aboutsip.yajpcap.packet.sip.header.CallIdHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ContactHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
+import com.aboutsip.yajpcap.packet.sip.header.MaxForwardsHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.SipHeader;
@@ -35,6 +36,7 @@ import com.aboutsip.yajpcap.packet.sip.header.impl.CallIdHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.ContactHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.ContentTypeHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.FromHeaderImpl;
+import com.aboutsip.yajpcap.packet.sip.header.impl.MaxForwardsHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.RecordRouteHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.RouteHeaderImpl;
 import com.aboutsip.yajpcap.packet.sip.header.impl.ToHeaderImpl;
@@ -267,6 +269,25 @@ public abstract class SipMessageImpl implements SipMessage {
 
         this.parsedHeaders.put(route.getName(), route);
         return route;
+    }
+
+    @Override
+    public MaxForwardsHeader getMaxForwards() throws SipParseException {
+        final SipHeader header = getHeader(MaxForwardsHeader.NAME);
+        if (header instanceof MaxForwardsHeader) {
+            return (MaxForwardsHeader) header;
+        }
+
+        if (header == null) {
+            return null;
+        }
+
+        final Buffer buffer = header.getValue();
+        final MaxForwardsHeader max = MaxForwardsHeaderImpl.frame(buffer);
+
+        this.parsedHeaders.put(max.getName(), max);
+        return max;
+
     }
 
     /**
@@ -652,8 +673,6 @@ public abstract class SipMessageImpl implements SipMessage {
         buffer.write(SipParser.LF);
         transferHeaders(buffer);
         if (this.payload != null) {
-            buffer.write(SipParser.CR);
-            buffer.write(SipParser.LF);
             this.payload.getBytes(0, buffer);
         }
         return buffer;
@@ -701,8 +720,6 @@ public abstract class SipMessageImpl implements SipMessage {
 
         if (this.headers != null) {
             this.headers.getBytes(dst);
-            dst.write(SipParser.CR);
-            dst.write(SipParser.LF);
         }
     }
 

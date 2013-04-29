@@ -77,6 +77,16 @@ public class SipMessageImplTest extends YajTestBase {
     }
 
     @Test
+    public void testSetMaxForwardsHeader() throws Exception {
+        final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader, 382);
+        assertThat(msg.toString().contains("Max-Forwards: 70"), is(true));
+        msg.getMaxForwards().setMaxForwards(55);
+        assertThat(msg.toString().contains("Max-Forwards: 55"), is(true));
+        msg.getMaxForwards().setMaxForwards(32);
+        assertThat(msg.toBuffer().toString().contains("Max-Forwards: 32"), is(true));
+    }
+
+    @Test
     public void testGetViaHeader() throws Exception {
         final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader, 382);
         final ViaHeader via = msg.getViaHeader();
