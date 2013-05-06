@@ -61,7 +61,7 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
     /**
      * 
      */
-    private ViaHeaderImpl(final Buffer original, final Buffer transport, final Buffer host, final Buffer port,
+    protected ViaHeaderImpl(final Buffer original, final Buffer transport, final Buffer host, final Buffer port,
             final List<Buffer[]> params) {
         this.original = original;
         this.transport = transport;
@@ -79,8 +79,12 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
      */
     @Override
     public Buffer getParameter(final Buffer name) throws SipParseException, IllegalArgumentException {
-        // TODO Auto-generated method stub
-        return null;
+        final int index = findParameter(name);
+        if (index == -1) {
+            return null;
+        }
+
+        return this.params.get(index)[1];
     }
 
     /**
@@ -88,8 +92,22 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
      */
     @Override
     public Buffer getParameter(final String name) throws SipParseException, IllegalArgumentException {
-        // TODO Auto-generated method stub
-        return null;
+        return getParameter(Buffers.wrap(name));
+    }
+
+    @Override
+    public Buffer setParameter(final Buffer name, final Buffer value) throws SipParseException,
+            IllegalArgumentException {
+        final int index = findParameter(name);
+        Buffer previousValue = null;
+        if (index == -1) {
+            this.params.add(new Buffer[] { name, value });
+        } else {
+            previousValue = this.params.get(index)[1];
+            this.params.get(index)[1] = value;
+        }
+
+        return previousValue;
     }
 
     /**

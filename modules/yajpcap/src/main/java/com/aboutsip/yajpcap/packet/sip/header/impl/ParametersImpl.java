@@ -68,7 +68,8 @@ public abstract class ParametersImpl extends SipHeaderImpl implements Parameters
                 SipParser.consumeSEMI(this.params);
                 final Buffer[] keyValue = SipParser.consumeGenericParam(this.params);
                 if (this.paramMap == null) {
-                    // default map size is 16 but params are rarely more than a few
+                    // default map size is 16 but params are rarely more than a
+                    // few
                     this.paramMap = new HashMap<Buffer, Buffer>(8);
                 }
 
@@ -95,13 +96,22 @@ public abstract class ParametersImpl extends SipHeaderImpl implements Parameters
         return getParameter(Buffers.wrap(name));
     }
 
+    @Override
+    public Buffer setParameter(final Buffer name, final Buffer value) throws SipParseException,
+            IllegalArgumentException {
+        final Buffer previousValue = getParameter(name);
+        this.paramMap.put(name, value);
+        return previousValue;
+    }
+
     /**
      * Will only return the parameters. Sub-classes will have to build up the
      * rest of the buffer {@inheritDoc}
      */
     @Override
     public Buffer getValue() {
-        // TODO: need to mark things as dirty etc in case things have been changed
+        // TODO: need to mark things as dirty etc in case things have been
+        // changed
         return this.originalParams;
     }
 

@@ -45,6 +45,25 @@ public class ViaHeaderImplTest {
         assertViaRport("SIP/2.0/TCP aboutsip.com;received=10.36.10.10;branch=45", 9997);
     }
 
+    @Test
+    public void testSetParam() throws Exception {
+        final ViaHeader via = ViaHeaderImpl.frame(Buffers.wrap("SIP/2.0/TCP aboutsip.com;branch=3;hello=world"));
+        assertThat(via.getParameter("hello").toString(), is("world"));
+        via.setParameter(Buffers.wrap("hello"), Buffers.wrap("fup"));
+        assertThat(via.getParameter("hello").toString(), is("fup"));
+
+        via.setParameter(Buffers.wrap("apa"), Buffers.wrap("monkey"));
+        assertThat(via.getParameter("apa").toString(), is("monkey"));
+
+        assertThat(via.toString().contains("hello=fup"), is(true));
+        assertThat(via.toString().contains("apa=monkey"), is(true));
+        final Buffer copy = Buffers.createBuffer(1000);
+        via.getBytes(copy);
+        assertThat(copy.toString().contains("hello=fup"), is(true));
+        assertThat(copy.toString().contains("apa=monkey"), is(true));
+
+    }
+
     private void assertViaRport(final String toParse, final int port) throws Exception {
         final ViaHeader via = ViaHeaderImpl.frame(Buffers.wrap(toParse));
         via.setRPort(port);

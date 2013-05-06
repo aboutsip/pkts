@@ -44,4 +44,25 @@ public interface Parameters extends SipHeader {
      */
     Buffer getParameter(String name) throws SipParseException, IllegalArgumentException;
 
+    /**
+     * Sets the value of the specified parameter. If there already is a
+     * parameter with the same name its value will be overridden.
+     * 
+     * A value of null or a zero length buffer means that this parameter is a
+     * flag parameter
+     * 
+     * @param name
+     *            the name of the parameter
+     * @param value
+     *            the value of the parameter or null if you just want to set a
+     *            flag parameter
+     * @return the previous value or null if there were none associated with
+     *         this parameter name
+     * @throws SipParseException
+     *             in case anything goes wrong when setting the parameter.
+     * @throws IllegalArgumentException
+     *             in case the name is null or empty.
+     */
+    Buffer setParameter(Buffer name, Buffer value) throws SipParseException, IllegalArgumentException;
+
 }

@@ -5,7 +5,9 @@ package com.aboutsip.yajpcap.packet.sip.impl;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -91,7 +93,7 @@ public abstract class SipMessageImpl implements SipMessage {
      * around 10ish headers but in real life there will be much more so get some
      * real world examples and set an appropriate size based on that.
      */
-    private final Map<Buffer, SipHeader> parsedHeaders = new LinkedHashMap<Buffer, SipHeader>(16, 0.75f);
+    private final Map<Buffer, List<SipHeader>> parsedHeaders = new LinkedHashMap<Buffer, List<SipHeader>>(16, 0.75f);
 
     /**
      * Our raw frame and if set and the message isn't marked as dirty we will
@@ -153,7 +155,8 @@ public abstract class SipMessageImpl implements SipMessage {
      */
     @Override
     public SipHeader getHeader(final Buffer headerName) throws SipParseException {
-        final SipHeader h = this.parsedHeaders.get(headerName);
+        List<SipHeader> headers = this.parsedHeaders.get(headerName);
+        final SipHeader h = headers == null || headers.isEmpty() ? null : headers.get(0);
         if (h != null) {
             return h;
         }
@@ -163,7 +166,13 @@ public abstract class SipMessageImpl implements SipMessage {
             if (header == null) {
                 return null;
             }
-            this.parsedHeaders.put(header.getName(), header);
+            headers = this.parsedHeaders.get(header.getName());
+            if (headers == null) {
+                headers = new ArrayList<SipHeader>();
+                this.parsedHeaders.put(header.getName(), headers);
+            }
+
+            headers.add(header);
             if (header.getName().equals(headerName)) {
                 return header;
             }
@@ -175,12 +184,57 @@ public abstract class SipMessageImpl implements SipMessage {
 
     @Override
     public void addHeader(final SipHeader header) {
-        this.parsedHeaders.put(header.getName(), header);
+        internalAddHeader(header, false);
+    }
+
+    /**
+     * There are situations, such as when user does a
+     * {@link #setHeader(SipHeader)}, where we must frame all headers, this
+     * method does that.
+     * 
+     * @throws SipParseException
+     */
+    private void frameAllHeaders() throws SipParseException {
+        while (this.headers != null && this.headers.hasReadableBytes()) {
+            final SipHeader header = SipParser.nextHeader(this.headers);
+            if (header == null) {
+                return;
+            }
+            List<SipHeader> headers = this.parsedHeaders.get(header.getName());
+
+            if (headers == null) {
+                headers = new ArrayList<SipHeader>();
+                this.parsedHeaders.put(header.getName(), headers);
+            }
+            headers.add(header);
+        }
+    }
+
+    private void internalAddHeader(final SipHeader header, final boolean addFirst) {
+        List<SipHeader> headers = this.parsedHeaders.get(header.getName());
+        if (headers == null) {
+            headers = new ArrayList<SipHeader>();
+            this.parsedHeaders.put(header.getName(), headers);
+        }
+
+        if (addFirst) {
+            headers.add(0, header);
+        } else {
+            headers.add(header);
+        }
     }
 
     @Override
-    public void setHeader(final SipHeader header) {
-        this.parsedHeaders.put(header.getName(), header);
+    public void addHeaderFirst(final SipHeader header) throws SipParseException {
+        internalAddHeader(header, true);
+    }
+
+    @Override
+    public void setHeader(final SipHeader header) throws SipParseException {
+        frameAllHeaders();
+        final List<SipHeader> headers = new ArrayList<SipHeader>();
+        headers.add(header);
+        this.parsedHeaders.put(header.getName(), headers);
     }
 
     /**
@@ -204,7 +258,8 @@ public abstract class SipMessageImpl implements SipMessage {
 
         final Buffer buffer = header.getValue();
         final FromHeader from = FromHeaderImpl.frame(buffer);
-        this.parsedHeaders.put(from.getName(), from);
+        final List<SipHeader> headers = this.parsedHeaders.get(from.getName());
+        headers.set(0, from);
         return from;
     }
 
@@ -224,8 +279,8 @@ public abstract class SipMessageImpl implements SipMessage {
 
         final Buffer buffer = header.getValue();
         final ViaHeader via = ViaHeaderImpl.frame(buffer);
-
-        this.parsedHeaders.put(via.getName(), via);
+        final List<SipHeader> headers = this.parsedHeaders.get(via.getName());
+        headers.set(0, via);
         return via;
     }
 
@@ -245,8 +300,8 @@ public abstract class SipMessageImpl implements SipMessage {
 
         final Buffer buffer = header.getValue();
         final RecordRouteHeader rr = RecordRouteHeaderImpl.frame(buffer);
-
-        this.parsedHeaders.put(rr.getName(), rr);
+        final List<SipHeader> headers = this.parsedHeaders.get(rr.getName());
+        headers.set(0, rr);
         return rr;
     }
 
@@ -266,8 +321,8 @@ public abstract class SipMessageImpl implements SipMessage {
 
         final Buffer buffer = header.getValue();
         final RouteHeader route = RouteHeaderImpl.frame(buffer);
-
-        this.parsedHeaders.put(route.getName(), route);
+        final List<SipHeader> headers = this.parsedHeaders.get(route.getName());
+        headers.set(0, route);
         return route;
     }
 
@@ -284,8 +339,8 @@ public abstract class SipMessageImpl implements SipMessage {
 
         final Buffer buffer = header.getValue();
         final MaxForwardsHeader max = MaxForwardsHeaderImpl.frame(buffer);
-
-        this.parsedHeaders.put(max.getName(), max);
+        final List<SipHeader> headers = this.parsedHeaders.get(max.getName());
+        headers.set(0, max);
         return max;
 
     }
@@ -306,8 +361,8 @@ public abstract class SipMessageImpl implements SipMessage {
 
         final Buffer buffer = header.getValue();
         final ContactHeader contact = ContactHeaderImpl.frame(buffer);
-
-        this.parsedHeaders.put(contact.getName(), contact);
+        final List<SipHeader> headers = this.parsedHeaders.get(contact.getName());
+        headers.set(0, contact);
         return contact;
     }
 
@@ -320,7 +375,8 @@ public abstract class SipMessageImpl implements SipMessage {
 
         final Buffer buffer = header.getValue();
         final ContentTypeHeader ct = ContentTypeHeaderImpl.frame(buffer);
-        this.parsedHeaders.put(ct.getName(), ct);
+        final List<SipHeader> headers = this.parsedHeaders.get(ct.getName());
+        headers.set(0, ct);
         return ct;
     }
 
@@ -336,7 +392,8 @@ public abstract class SipMessageImpl implements SipMessage {
 
         final Buffer buffer = header.getValue();
         final ToHeader to = ToHeaderImpl.frame(buffer);
-        this.parsedHeaders.put(to.getName(), to);
+        final List<SipHeader> headers = this.parsedHeaders.get(to.getName());
+        headers.set(0, to);
         return to;
     }
 
@@ -349,7 +406,8 @@ public abstract class SipMessageImpl implements SipMessage {
 
         final Buffer buffer = header.getValue();
         final CSeqHeader cseq = CSeqHeaderImpl.parseValue(buffer);
-        this.parsedHeaders.put(cseq.getName(), cseq);
+        final List<SipHeader> headers = this.parsedHeaders.get(cseq.getName());
+        headers.set(0, cseq);
         return cseq;
     }
 
@@ -365,7 +423,8 @@ public abstract class SipMessageImpl implements SipMessage {
 
         final Buffer buffer = header.getValue();
         final CallIdHeader callId = CallIdHeaderImpl.frame(buffer);
-        this.parsedHeaders.put(callId.getName(), callId);
+        final List<SipHeader> headers = this.parsedHeaders.get(callId.getName());
+        headers.set(0, callId);
         return callId;
     }
 
@@ -712,10 +771,12 @@ public abstract class SipMessageImpl implements SipMessage {
      * @param dst
      */
     protected void transferHeaders(final Buffer dst) {
-        for (final Entry<Buffer, SipHeader> headers : this.parsedHeaders.entrySet()) {
-            headers.getValue().getBytes(dst);
-            dst.write(SipParser.CR);
-            dst.write(SipParser.LF);
+        for (final Entry<Buffer, List<SipHeader>> headers : this.parsedHeaders.entrySet()) {
+            for (final SipHeader header : headers.getValue()) {
+                header.getBytes(dst);
+                dst.write(SipParser.CR);
+                dst.write(SipParser.LF);
+            }
         }
 
         if (this.headers != null) {

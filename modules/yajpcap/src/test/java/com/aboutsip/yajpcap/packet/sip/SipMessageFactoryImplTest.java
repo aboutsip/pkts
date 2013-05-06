@@ -11,19 +11,25 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.YajTestBase;
 import com.aboutsip.yajpcap.packet.SipMessageFactory;
+import com.aboutsip.yajpcap.packet.sip.header.HeaderFactory;
 import com.aboutsip.yajpcap.packet.sip.header.MaxForwardsHeader;
+import com.aboutsip.yajpcap.packet.sip.header.ViaHeader;
+import com.aboutsip.yajpcap.packet.sip.header.impl.HeaderFactoryImpl;
 import com.aboutsip.yajpcap.packet.sip.impl.SipMessageFactoryImpl;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
- * @author jonas
+ * @author jonas@jonasborjesson.com
  * 
  */
 public class SipMessageFactoryImplTest extends YajTestBase {
 
     private final SipMessageFactory factory = new SipMessageFactoryImpl();
+
+    private final HeaderFactory headerFactory = new HeaderFactoryImpl();
 
     /**
      * @throws java.lang.Exception
@@ -60,9 +66,14 @@ public class SipMessageFactoryImplTest extends YajTestBase {
     @Test
     public void testCreateRequestBasedOnOtherRequest() throws Exception {
         final SipRequest original = (SipRequest) loadStream("sipp.pcap").get(0).getFrame(Protocol.SIP).parse();
-        System.err.println(original.toString());
         final SipRequest request = this.factory.createRequest(original);
-        System.out.println(request);
+        final ViaHeader topMostVia = request.getViaHeader();
+        assertThat(topMostVia.getBranch().toString(), is("z9hG4bK-16732-1-0"));
+
+        final ViaHeader via = this.headerFactory.createViaHeader(Buffers.wrap("127.0.0.1"), 9898, Buffers.wrap("UDP"),
+                null);
+        request.addHeaderFirst(via);
+        System.err.println(request.toString());
     }
 
 }

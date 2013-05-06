@@ -131,9 +131,18 @@ public interface SipMessage extends ApplicationPacket {
      */
     SipHeader getHeader(String headerName) throws SipParseException;
 
-    void addHeader(SipHeader header);
+    void addHeader(SipHeader header) throws SipParseException;
 
-    void setHeader(SipHeader header);
+    void addHeaderFirst(SipHeader header) throws SipParseException;
+
+    /**
+     * Set the specified header, which will replace the existing header of the
+     * same name. If there are multiple headers of this header, then all "old"
+     * ones are removed.
+     * 
+     * @param header
+     */
+    void setHeader(SipHeader header) throws SipParseException;
 
     /**
      * Convenience method for fetching the from-header
