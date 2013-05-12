@@ -44,6 +44,10 @@ public class ParametersTest {
         };
 
         assertThat(params.getParameter("foo").toString(), is("boo"));
+        params.setParameter(Buffers.wrap("monkey"), Buffers.wrap("apa"));
+        assertThat(params.getParameter("monkey").toString(), is("apa"));
+
+        assertThat(params.getParameter("hello").toString(), is(""));
     }
 
 }

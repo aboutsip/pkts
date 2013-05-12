@@ -54,6 +54,15 @@ public class AddressImplTest {
         assertAddressToStringIsTheSame("\"alice smith\" <sip:alice@whatever.com;foo=boo>");
     }
 
+    @Test
+    public void testChangeURI() throws Exception {
+        final Address address = AddressImpl.parse(Buffers.wrap("hello <sip:alice@example.com>"));
+        final SipURI uri = (SipURI) address.getURI();
+        uri.setPort(876);
+        assertThat(address.toString().contains("876"), is(true));
+
+    }
+
     private void assertAddressToStringIsTheSame(final String address) throws Exception {
         assertThat(AddressImpl.parse(Buffers.wrap(address)).toString(), is(address));
     }
@@ -138,8 +147,10 @@ public class AddressImplTest {
         assertThat(address.getURI().toString(), is("sip:alice@example.com;transport=tcp"));
         assertThat(buffer.toString(), is(";expires=0;lr;foo=woo"));
 
-        // now the tricky part, nop <> even though it is technically forbidden (I think)
-        // Note that the transport=tcp is not a header parameter because it is not
+        // now the tricky part, nop <> even though it is technically forbidden
+        // (I think)
+        // Note that the transport=tcp is not a header parameter because it is
+        // not
         // protected by the < > construct.
         buffer = Buffers.wrap("sip:alice@example.com;transport=tcp;expires=0;lr;foo=woo");
         address = AddressImpl.parse(buffer);

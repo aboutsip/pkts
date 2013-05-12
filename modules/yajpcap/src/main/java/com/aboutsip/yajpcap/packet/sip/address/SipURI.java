@@ -35,6 +35,13 @@ public interface SipURI extends URI {
     int getPort();
 
     /**
+     * Set the port.
+     * 
+     * @param port
+     */
+    void setPort(int port);
+
+    /**
      * Check whether this is a sips URI.
      * 
      * @return true if this indeed is a sips URI, false otherwise.

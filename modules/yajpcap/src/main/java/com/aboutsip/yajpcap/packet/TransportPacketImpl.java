@@ -6,7 +6,6 @@ package com.aboutsip.yajpcap.packet;
 import java.io.IOException;
 import java.io.OutputStream;
 
-
 /**
  * @author jonas@jonasborjesson.com
  */
@@ -150,6 +149,28 @@ public final class TransportPacketImpl implements TransportPacket {
     @Override
     public boolean verifyIpChecksum() {
         return this.parent.verifyIpChecksum();
+    }
+
+    @Override
+    public void setSourceIP(final byte a, final byte b, final byte c, final byte d) {
+        this.parent.setSourceIP(a, b, c, d);
+    }
+
+    @Override
+    public void setDestinationIP(final byte a, final byte b, final byte c, final byte d) {
+        this.parent.setDestinationIP(a, b, c, d);
+    }
+
+    @Override
+    public void reCalculateChecksum() {
+        this.parent.reCalculateChecksum();
+    }
+
+    @Override
+    public TransportPacket clone() {
+        final IPPacket ipPacket = this.parent.clone();
+        final TransportPacket pkt = new TransportPacketImpl(ipPacket, this.isUdp, this.sourcePort, this.destinationPort);
+        return pkt;
     }
 
 }

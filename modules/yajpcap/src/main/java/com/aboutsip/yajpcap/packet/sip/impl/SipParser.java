@@ -10,8 +10,8 @@ import java.util.List;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
-import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
+import com.aboutsip.yajpcap.packet.sip.header.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.header.impl.SipHeaderImpl;
 
 /**
@@ -50,6 +50,16 @@ public class SipParser {
     public static final int MAX_LOOK_AHEAD = 1024;
 
     public static final Buffer SIP2_0 = Buffers.wrap("SIP/2.0");
+
+    public static final Buffer SIP2_0_SLASH = Buffers.wrap("SIP/2.0/");
+
+    public static final Buffer SCHEME_SIP = Buffers.wrap("sip");
+
+    public static final Buffer SCHEME_SIP_COLON = Buffers.wrap("sip:");
+
+    public static final Buffer SCHEME_SIPS = Buffers.wrap("sips");
+
+    public static final Buffer SCHEME_SIPS_COLON = Buffers.wrap("sips:");
 
     public static final byte AT = '@';
 
@@ -175,7 +185,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static List<Buffer[]> consumeGenericParams(final Buffer buffer) throws IndexOutOfBoundsException,
-    IOException {
+            IOException {
         final List<Buffer[]> params = new ArrayList<Buffer[]>();
         while (buffer.hasReadableBytes() && buffer.peekByte() == SEMI) {
             buffer.readByte(); // consume the SEMI
@@ -183,7 +193,6 @@ public class SipParser {
         }
         return params;
     }
-
 
     /**
      * Consumes a generic param, which according to RFC 3261 section 25.1 is:
@@ -229,12 +238,13 @@ public class SipParser {
                 key, value };
     }
 
-
     /**
      * Will check whether the next readable byte in the buffer is a certain byte
      * 
-     * @param buffer the buffer to peek into
-     * @param b the byte we are checking is the next byte in the buffer to be
+     * @param buffer
+     *            the buffer to peek into
+     * @param b
+     *            the byte we are checking is the next byte in the buffer to be
      *            read
      * @return true if the next byte to read indeed is what we hope it is
      */
@@ -268,11 +278,12 @@ public class SipParser {
      * Will expect at least 1 digit and will continue consuming bytes until a
      * non-digit is encountered
      * 
-     * @param buffer the buffer to consume the digits from
+     * @param buffer
+     *            the buffer to consume the digits from
      * @return the buffer containing digits only
-     * @throws SipParseException in case there is not one digit at the first
-     *             position in the buffer (where the current reader index is
-     *             pointing to)
+     * @throws SipParseException
+     *             in case there is not one digit at the first position in the
+     *             buffer (where the current reader index is pointing to)
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
@@ -353,7 +364,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeSLASH(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-    IOException {
+            IOException {
         return consumeSeparator(buffer, SLASH);
     }
 
@@ -409,7 +420,6 @@ public class SipParser {
         }
     }
 
-
     /**
      * Consume an asterisk/star (STAR), which according to RFC3261 section 25.1
      * Basic Rules is:
@@ -422,7 +432,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeSTAR(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-    IOException {
+            IOException {
         return consumeSeparator(buffer, STAR);
     }
 
@@ -486,7 +496,7 @@ public class SipParser {
         return consumeSeparator(buffer, RAQUOT);
     }
 
-    /**
+/**
      * Consume left angle quote (LAQUOT), which according to RFC3261 section
      * 25.1 Basic Rules is:
      * 
@@ -513,7 +523,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeCOMMA(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-    IOException {
+            IOException {
         return consumeSeparator(buffer, COMMA);
     }
 
@@ -529,7 +539,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeSEMI(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-    IOException {
+            IOException {
         return consumeSeparator(buffer, SEMI);
     }
 
@@ -545,7 +555,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeCOLON(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-    IOException {
+            IOException {
         return consumeSeparator(buffer, COLON);
     }
 
@@ -561,7 +571,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeLDQUOT(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-    IOException {
+            IOException {
         buffer.markReaderIndex();
         int consumed = consumeSWS(buffer);
         if (isNext(buffer, DQUOT)) {
@@ -586,7 +596,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeRDQUOT(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-    IOException {
+            IOException {
         buffer.markReaderIndex();
         int consumed = 0;
         if (isNext(buffer, DQUOT)) {
@@ -600,7 +610,7 @@ public class SipParser {
         return consumed;
     }
 
-    /**
+/**
      * Helper function for checking stuff as described below. It is all the same pattern so...
      * (from rfc 3261 section 25.1)
      * 
@@ -627,7 +637,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     private static int consumeSeparator(final Buffer buffer, final byte b) throws IndexOutOfBoundsException,
-    IOException {
+            IOException {
         buffer.markReaderIndex();
         int consumed = consumeSWS(buffer);
         if (isNext(buffer, b)) {
@@ -655,7 +665,7 @@ public class SipParser {
      *             in case there is no token
      */
     public static Buffer expectToken(final Buffer buffer) throws IndexOutOfBoundsException, IOException,
-    SipParseException {
+            SipParseException {
         final Buffer token = consumeToken(buffer);
         if (token == null) {
             throw new SipParseException(buffer.getReaderIndex(), "Expected TOKEN");
@@ -773,10 +783,11 @@ public class SipParser {
      *             in case we cannot successfully frame the addr-spec.
      */
     public static Buffer consumeAddressSpec(final Buffer buffer) throws IndexOutOfBoundsException, IOException,
-    SipParseException {
+            SipParseException {
         buffer.markReaderIndex();
         int count = 0;
-        int state = 0; // zero is to look for colon, everything else is to find the end
+        int state = 0; // zero is to look for colon, everything else is to find
+                       // the end
         boolean done = false;
 
         while (buffer.hasReadableBytes() && !done) {
@@ -1034,8 +1045,10 @@ public class SipParser {
      */
     public static Object[] consumeVia(final Buffer buffer) throws SipParseException, IOException {
         final Object[] result = new Object[4];
-        // start off by just finding the ';'. A Via-header MUST have a branch parameter and as such
-        // there must be a ';' present. If there isn't one, then bail out and complain.
+        // start off by just finding the ';'. A Via-header MUST have a branch
+        // parameter and as such
+        // there must be a ';' present. If there isn't one, then bail out and
+        // complain.
         int count = 0;
         int indexOfSemi = 0;
         int countOfColons = 0;
@@ -1085,7 +1098,8 @@ public class SipParser {
             // that we have an ipv6 address in front of us.
             result[1] = buffer.readBytes(indexOfLastColon - 1);
             buffer.readByte(); // consume ':'
-            result[2] = buffer.readBytes(indexOfSemi - indexOfLastColon - 1); // consume port
+            result[2] = buffer.readBytes(indexOfSemi - indexOfLastColon - 1); // consume
+                                                                              // port
             if (result[2] == null || ((Buffer) result[2]).isEmpty()) {
                 throw new SipParseException(readerIndexOfLastColon + 1, "Expected port after colon");
             }
@@ -1371,7 +1385,6 @@ public class SipParser {
         return isDigit((char) b);
     }
 
-
     /**
      * Consume linear whitespace (LWS), which according to RFC3261 section 25.1
      * Basic Rules is:
@@ -1422,11 +1435,13 @@ public class SipParser {
     /**
      * Check so that the next byte in the passed in buffer is the expected one.
      * 
-     * @param buffer the buffer that we will check.
-     * @param expected the buffer that contains the expected byte (note, it is 1
+     * @param buffer
+     *            the buffer that we will check.
+     * @param expected
+     *            the buffer that contains the expected byte (note, it is 1
      *            byte, not bytes)
-     * @throws ParseException in case the expected byte is not the next byte in
-     *             the buffer
+     * @throws ParseException
+     *             in case the expected byte is not the next byte in the buffer
      */
     public static void expect(final Buffer buffer, final byte expected) throws SipParseException, IOException {
         final byte actual = buffer.readByte();
@@ -1465,11 +1480,13 @@ public class SipParser {
     /**
      * Check so that the next byte in the passed in buffer is the expected one.
      * 
-     * @param buffer the buffer that we will check.
-     * @param expected the expected char
-     * @throws SipParseException in case the expected char is not the next char
-     *             in the buffer or if there is an error reading from the
-     *             underlying stream
+     * @param buffer
+     *            the buffer that we will check.
+     * @param expected
+     *            the expected char
+     * @throws SipParseException
+     *             in case the expected char is not the next char in the buffer
+     *             or if there is an error reading from the underlying stream
      */
     public static void expect(final Buffer buffer, final char ch) throws SipParseException {
         try {
@@ -1477,12 +1494,10 @@ public class SipParser {
             if (i != ch) {
                 throw new SipParseException(buffer.getReaderIndex(), "Expected '" + ch + "' got '" + i + "'");
             }
-        }
-        catch (final IOException e) {
+        } catch (final IOException e) {
             throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
         }
     }
-
 
     /**
      * 

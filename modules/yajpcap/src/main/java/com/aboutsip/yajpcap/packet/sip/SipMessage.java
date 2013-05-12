@@ -2,11 +2,15 @@ package com.aboutsip.yajpcap.packet.sip;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.packet.impl.ApplicationPacket;
+import com.aboutsip.yajpcap.packet.sip.header.CSeqHeader;
+import com.aboutsip.yajpcap.packet.sip.header.CallIdHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ContactHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.FromHeader;
+import com.aboutsip.yajpcap.packet.sip.header.MaxForwardsHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RouteHeader;
+import com.aboutsip.yajpcap.packet.sip.header.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ViaHeader;
 
@@ -85,6 +89,13 @@ public interface SipMessage extends ApplicationPacket {
     Object getContent() throws SipParseException;
 
     /**
+     * Get the content as a {@link Buffer}.
+     * 
+     * @return
+     */
+    Buffer getRawContent();
+
+    /**
      * Checks whether this {@link SipMessage} is carrying anything in its
      * message body.
      * 
@@ -120,11 +131,25 @@ public interface SipMessage extends ApplicationPacket {
      */
     SipHeader getHeader(String headerName) throws SipParseException;
 
+    void addHeader(SipHeader header) throws SipParseException;
+
+    void addHeaderFirst(SipHeader header) throws SipParseException;
+
+    /**
+     * Set the specified header, which will replace the existing header of the
+     * same name. If there are multiple headers of this header, then all "old"
+     * ones are removed.
+     * 
+     * @param header
+     */
+    void setHeader(SipHeader header) throws SipParseException;
+
     /**
      * Convenience method for fetching the from-header
      * 
      * @return the from header as a buffer
-     * @throws SipParseException TODO
+     * @throws SipParseException
+     *             TODO
      */
     FromHeader getFromHeader() throws SipParseException;
 
@@ -146,6 +171,13 @@ public interface SipMessage extends ApplicationPacket {
      * @throws SipParseException
      */
     ViaHeader getViaHeader() throws SipParseException;
+
+    /**
+     * 
+     * @return
+     * @throws SipParseException
+     */
+    MaxForwardsHeader getMaxForwards() throws SipParseException;
 
     /**
      * Get the top-most {@link RecordRouteHeader} header if present.
@@ -188,7 +220,15 @@ public interface SipMessage extends ApplicationPacket {
      * 
      * @return the call-id header as a buffer
      */
-    SipHeader getCallIDHeader() throws SipParseException;
+    CallIdHeader getCallIDHeader() throws SipParseException;
+
+    /**
+     * Convenience method for fetching the CSeq header
+     * 
+     * @return
+     * @throws SipParseException
+     */
+    CSeqHeader getCSeqHeader() throws SipParseException;
 
     /**
      * Convenience method for determining whether the method of this message is
@@ -282,7 +322,6 @@ public interface SipMessage extends ApplicationPacket {
      */
     boolean isInitial() throws SipParseException;
 
-
     /**
      * {@inheritDoc}
      * 
@@ -330,5 +369,21 @@ public interface SipMessage extends ApplicationPacket {
      */
     @Override
     void verify();
+
+    /**
+     * Get the {@link Buffer} that is representing this {@link SipMessage}.
+     * Note, the data behind the buffer is shared with the actual
+     * {@link SipMessage} so any changes to the {@link Buffer} will affect this
+     * {@link SipMessage}. Hence, by changing this buffer directly, you bypass
+     * all checks for valid inputs and the end-result of doing so is undefined
+     * (most likely you will either blow up at some point or you will end up
+     * sending garbage across the network).
+     * 
+     * @return
+     */
+    Buffer toBuffer();
+
+    @Override
+    SipMessage clone();
 
 }
