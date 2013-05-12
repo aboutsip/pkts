@@ -4,12 +4,12 @@
 package com.aboutsip.yajpcap.packet.sip.impl;
 
 import com.aboutsip.buffer.Buffer;
-import com.aboutsip.yajpcap.frame.SipFrame;
+import com.aboutsip.yajpcap.frame.Layer7Frame;
 import com.aboutsip.yajpcap.packet.TransportPacket;
-import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipResponse;
 import com.aboutsip.yajpcap.packet.sip.header.CSeqHeader;
+import com.aboutsip.yajpcap.packet.sip.header.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.header.impl.CSeqHeaderImpl;
 
 /**
@@ -27,7 +27,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      * @param payload
      */
     public SipResponseImpl(final TransportPacket pkt, final SipResponseLine initialLine, final Buffer headers,
-            final Buffer payload, final SipFrame sipFrame) {
+            final Buffer payload, final Layer7Frame sipFrame) {
         super(pkt, initialLine, headers, payload, sipFrame);
         this.initialLine = initialLine;
     }
@@ -59,7 +59,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      */
     @Override
     public boolean isProvisional() {
-        return (getStatus() / 100) == 1;
+        return getStatus() / 100 == 1;
     }
 
     /**
@@ -67,7 +67,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      */
     @Override
     public boolean isSuccess() {
-        return (getStatus() / 100) == 2;
+        return getStatus() / 100 == 2;
     }
 
     /**
@@ -75,7 +75,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      */
     @Override
     public boolean isRedirect() {
-        return (getStatus() / 100) == 3;
+        return getStatus() / 100 == 3;
     }
 
     /**
@@ -83,7 +83,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      */
     @Override
     public boolean isClientError() {
-        return (getStatus() / 100) == 4;
+        return getStatus() / 100 == 4;
     }
 
     /**
@@ -91,7 +91,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      */
     @Override
     public boolean isServerError() {
-        return (getStatus() / 100) == 5;
+        return getStatus() / 100 == 5;
     }
 
     /**
@@ -99,7 +99,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      */
     @Override
     public boolean isGlobalError() {
-        return (getStatus() / 100) == 6;
+        return getStatus() / 100 == 6;
     }
 
     /**
@@ -115,7 +115,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      */
     @Override
     public boolean isRinging() {
-        return (getStatus() == 180) || (getStatus() == 183);
+        return getStatus() == 180 || getStatus() == 183;
     }
 
     /**
@@ -129,6 +129,11 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
     @Override
     public SipResponse toResponse() throws ClassCastException {
         return this;
+    }
+
+    @Override
+    public SipResponse clone() {
+        throw new RuntimeException("Sorry, not implemented right now");
     }
 
 }

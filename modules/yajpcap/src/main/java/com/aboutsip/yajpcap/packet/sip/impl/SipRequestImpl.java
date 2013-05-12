@@ -4,7 +4,7 @@
 package com.aboutsip.yajpcap.packet.sip.impl;
 
 import com.aboutsip.buffer.Buffer;
-import com.aboutsip.yajpcap.frame.SipFrame;
+import com.aboutsip.yajpcap.frame.Layer7Frame;
 import com.aboutsip.yajpcap.packet.TransportPacket;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
@@ -22,7 +22,7 @@ public final class SipRequestImpl extends SipMessageImpl implements SipRequest {
      * 
      */
     public SipRequestImpl(final TransportPacket parent, final SipRequestLine requestLine, final Buffer headers,
-            final Buffer payload, final SipFrame sipFrame) {
+            final Buffer payload, final Layer7Frame sipFrame) {
         super(parent, requestLine, headers, payload, sipFrame);
         this.requestLine = requestLine;
     }
@@ -46,6 +46,24 @@ public final class SipRequestImpl extends SipMessageImpl implements SipRequest {
     @Override
     public SipRequest toRequest() throws ClassCastException {
         return this;
+    }
+
+    /**
+     * Get the request line of this request.
+     * 
+     * @return
+     */
+    protected SipRequestLine getRequestLine() {
+        return this.requestLine.clone();
+    }
+
+    @Override
+    public SipRequest clone() {
+        final TransportPacket transportPkt = getTransportPacket().clone();
+        final SipRequestLine requestLine = this.requestLine.clone();
+        final Buffer headers = this.cloneHeaders();
+        final Buffer payload = this.clonePayload();
+        return new SipRequestImpl(transportPkt, requestLine, headers, payload, null);
     }
 
 }

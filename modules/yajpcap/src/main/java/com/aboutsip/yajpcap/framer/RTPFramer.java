@@ -43,7 +43,7 @@ public final class RTPFramer implements Layer7Framer {
     @Override
     public boolean accept(final Buffer data) throws IOException {
         // a RTP packet has at least 12 bytes. Check that
-        if (data.readableBytes() < 12) {
+        if (data.getReadableBytes() < 12) {
             // not enough bytes but see if we actually could
             // get another 12 bytes by forcing the underlying
             // implementation to read further ahead

@@ -3,7 +3,6 @@
  */
 package com.aboutsip.yajpcap.packet;
 
-
 /**
  * Represents a packet from the Network Layer (layer 3). Actually, to be
  * completely honest, the model implemented (at least so far) is more geared
@@ -16,7 +15,7 @@ package com.aboutsip.yajpcap.packet;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface IPPacket extends MACPacket {
+public interface IPPacket extends MACPacket, Cloneable {
 
     String getSourceIP();
 
@@ -36,6 +35,14 @@ public interface IPPacket extends MACPacket {
      *            the fourth part of the IPv4 address, e.g. 100
      */
     void setSourceIP(int a, int b, int c, int d);
+
+    /**
+     * Setting an IPv4 address the fast(est?) way! Specify each part separately.
+     * E.g., setting 192.168.0.100 would be accomplished like so:
+     * 
+     * @param rawIp
+     */
+    void setSourceIP(byte a, byte b, byte c, byte d);
 
     /**
      * Set the source IP of this {@link IPPacket}. Note, using
@@ -64,6 +71,8 @@ public interface IPPacket extends MACPacket {
      *            the fourth part of the IPv4 address, e.g. 100
      */
     void setDestinationIP(int a, int b, int c, int d);
+
+    void setDestinationIP(byte a, byte b, byte c, byte d);
 
     /**
      * Set the destination IP of this {@link IPPacket}. Note, using
@@ -101,5 +110,16 @@ public interface IPPacket extends MACPacket {
      */
     int getIpChecksum();
 
+    /**
+     * After you change anything in an IP packet (apart from the payload) you
+     * should re-calculate the checksum. If you don't, if this then is written
+     * to a pcap and later opened in e.g. wireshark, then all packets will be
+     * flagged as bad checksums.
+     */
+    void reCalculateChecksum();
+
     boolean verifyIpChecksum();
+
+    @Override
+    IPPacket clone();
 }

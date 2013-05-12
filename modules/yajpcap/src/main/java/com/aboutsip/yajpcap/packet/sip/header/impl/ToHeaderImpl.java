@@ -4,6 +4,7 @@
 package com.aboutsip.yajpcap.packet.sip.header.impl;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.address.Address;
 import com.aboutsip.yajpcap.packet.sip.header.ToHeader;
@@ -47,6 +48,17 @@ public final class ToHeaderImpl extends AddressParametersHeader implements ToHea
     public static ToHeader frame(final Buffer buffer) throws SipParseException {
         final Object[] result = AddressParametersHeader.frameAddressParameters(buffer);
         return new ToHeaderImpl((Address) result[0], (Buffer) result[1]);
+    }
+
+    @Override
+    public ToHeader clone() {
+        final Buffer buffer = Buffers.createBuffer(1024);
+        transferValue(buffer);
+        try {
+            return ToHeaderImpl.frame(buffer);
+        } catch (final SipParseException e) {
+            throw new RuntimeException("Unable to clone the To-header", e);
+        }
     }
 
 }

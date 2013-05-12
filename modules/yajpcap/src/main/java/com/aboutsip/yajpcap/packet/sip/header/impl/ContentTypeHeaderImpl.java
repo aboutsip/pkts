@@ -4,6 +4,7 @@
 package com.aboutsip.yajpcap.packet.sip.header.impl;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 
@@ -11,7 +12,6 @@ import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
  * @author jonas@jonasborjesson.com
  */
 public final class ContentTypeHeaderImpl extends MediaTypeHeaderImpl implements ContentTypeHeader {
-
 
     /**
      * @param name
@@ -43,4 +43,14 @@ public final class ContentTypeHeaderImpl extends MediaTypeHeaderImpl implements 
         return new ContentTypeHeaderImpl(mediaType[0], mediaType[1], buffer);
     }
 
+    @Override
+    public ContentTypeHeader clone() {
+        final Buffer buffer = Buffers.createBuffer(1024);
+        transferValue(buffer);
+        try {
+            return ContentTypeHeaderImpl.frame(buffer);
+        } catch (final SipParseException e) {
+            throw new RuntimeException("Unable to clone the ContentType-header", e);
+        }
+    }
 }

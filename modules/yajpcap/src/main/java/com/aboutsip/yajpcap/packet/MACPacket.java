@@ -3,7 +3,6 @@
  */
 package com.aboutsip.yajpcap.packet;
 
-
 /**
  * Represents a packet from the Data Link Layer (DLL - Layer 2 in the OSI
  * model). Now, this is not 100% accurate since the MAC layer is really a sub
@@ -11,7 +10,7 @@ package com.aboutsip.yajpcap.packet;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface MACPacket extends Packet {
+public interface MACPacket extends Packet, Cloneable {
 
     String getSourceMacAddress();
 
@@ -28,5 +27,7 @@ public interface MACPacket extends Packet {
     String getDestinationMacAddress();
 
     void setDestinationMacAddress(String macAddress) throws IllegalArgumentException;
+
+    MACPacket clone();
 
 }

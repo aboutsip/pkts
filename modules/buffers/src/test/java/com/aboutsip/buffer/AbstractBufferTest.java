@@ -207,7 +207,7 @@ public abstract class AbstractBufferTest {
             final Buffer hundred = buffer.readBytes(100);
             assertThat(hundred.capacity(), is(100));
             for (int k = 0; k < 100; ++k) {
-                assertThat(hundred.getByte(k), is(RawData.rawEthernetFrame[k + (i * 100)]));
+                assertThat(hundred.getByte(k), is(RawData.rawEthernetFrame[k + i * 100]));
             }
         }
 
@@ -319,7 +319,7 @@ public abstract class AbstractBufferTest {
         assertThat(buffer.getByte(32), is((byte) 0x20));
 
         // and this one should be 10 of course
-        assertThat(b1.readableBytes(), is(10));
+        assertThat(b1.getReadableBytes(), is(10));
         assertThat(b1.capacity(), is(10));
 
         assertThat(b1.getByte(0), is((byte) 0x00));

@@ -16,7 +16,6 @@ import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.RawData;
 import com.aboutsip.yajpcap.YajTestBase;
 import com.aboutsip.yajpcap.packet.TransportPacket;
-import com.aboutsip.yajpcap.packet.sip.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.packet.sip.SipRequest;
@@ -25,6 +24,7 @@ import com.aboutsip.yajpcap.packet.sip.address.URI;
 import com.aboutsip.yajpcap.packet.sip.header.ContentTypeHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RecordRouteHeader;
 import com.aboutsip.yajpcap.packet.sip.header.RouteHeader;
+import com.aboutsip.yajpcap.packet.sip.header.SipHeader;
 import com.aboutsip.yajpcap.packet.sip.header.ViaHeader;
 
 public class SipMessageImplTest extends YajTestBase {
@@ -52,6 +52,7 @@ public class SipMessageImplTest extends YajTestBase {
     @Override
     @After
     public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     /**
@@ -73,6 +74,16 @@ public class SipMessageImplTest extends YajTestBase {
         assertThat(uri.isSipURI(), is(true));
         final SipURI sipUri = (SipURI) uri;
         assertThat(sipUri.getHost().toString(), is("aboutsip.com"));
+    }
+
+    @Test
+    public void testSetMaxForwardsHeader() throws Exception {
+        final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader, 382);
+        assertThat(msg.toString().contains("Max-Forwards: 70"), is(true));
+        msg.getMaxForwards().setMaxForwards(55);
+        assertThat(msg.toString().contains("Max-Forwards: 55"), is(true));
+        msg.getMaxForwards().setMaxForwards(32);
+        assertThat(msg.toBuffer().toString().contains("Max-Forwards: 32"), is(true));
     }
 
     @Test

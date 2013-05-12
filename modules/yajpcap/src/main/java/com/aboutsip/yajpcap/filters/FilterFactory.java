@@ -28,17 +28,33 @@ public final class FilterFactory {
      * @return
      */
     public Filter createFilter(final String expression) throws FilterParseException {
-        if (!expression.toLowerCase().startsWith("sip.call-id")) {
-            throw new FilterParseException(0, "The only valid expression at this time is sip.Call-ID");
+        final String expr = expression.toLowerCase();
+        if (!expr.startsWith("sip.")) {
+            throw new FilterParseException(0, "Not a valid sip expression");
         }
 
         final int index = expression.indexOf("==");
         if (index == -1) {
-            throw new FilterParseException(expression.length(), "Expected a value for the sip-call-id. Missing '=='");
+            throw new FilterParseException(expression.length(), "Expected a value. Missing '=='");
         }
 
-        final String callId = expression.substring(index + 2, expression.length()).trim();
-        return new SipCallIdFilter(callId);
-    }
+        final String token = expression.substring(0, index).trim();
+        final String value = expression.substring(index + 2, expression.length()).trim();
+        if (token.equalsIgnoreCase("sip.call-id")) {
+            return new SipCallIdFilter(value);
+        }
 
+        // assume everything else is a generic header filter.
+        final String[] parts = token.split("\\.");
+        if (parts.length == 1) {
+            throw new FilterParseException(0, "Expected \"sip.\"<value> but didn't find a dot");
+        } else if (parts.length > 2) {
+            throw new FilterParseException(0,
+                    "Expected \"sip.\"<value> but found multiple dots so now I'm not sure what to do");
+        }
+
+        final String headername = parts[1];
+        return new SipHeaderFilter(headername, value);
+
+    }
 }

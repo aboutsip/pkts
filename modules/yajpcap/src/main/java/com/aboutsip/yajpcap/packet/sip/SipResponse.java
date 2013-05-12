@@ -3,7 +3,6 @@
  */
 package com.aboutsip.yajpcap.packet.sip;
 
-
 /**
  * @author jonas@jonasborjesson.com
  */
@@ -81,5 +80,8 @@ public interface SipResponse extends SipMessage {
      * @return
      */
     boolean isTimeout();
+
+    @Override
+    SipResponse clone();
 
 }

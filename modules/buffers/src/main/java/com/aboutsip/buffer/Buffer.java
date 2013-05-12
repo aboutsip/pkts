@@ -2,6 +2,7 @@ package com.aboutsip.buffer;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Yet another buffer class!
@@ -16,6 +17,28 @@ import java.io.InputStream;
  * @author jonas@jonasborjesson.com
  */
 public interface Buffer extends Cloneable {
+
+    /**
+     * Same as calling {@link #getBytes(int, Buffer)} where the index is
+     * {@link #getReaderIndex()}.
+     * 
+     * @param buffer
+     * @throws IndexOutOfBoundsException
+     */
+    void getBytes(Buffer dst);
+
+    /**
+     * Transfer this buffer's data to the destination buffer. This method does
+     * not change the <code>readerIndex</code> or the <code>writerIndex</code>
+     * of the src buffer (i.e. this) but will increase the
+     * <code>writerIndex</code> of the destination buffer.
+     * 
+     * @param index
+     * @param dst
+     * @throws IndexOutOfBoundsException
+     *             in case index < 0
+     */
+    void getBytes(final int index, final Buffer dst) throws IndexOutOfBoundsException;
 
     /**
      * Read the requested number of bytes and increase the readerIndex with the
@@ -49,7 +72,7 @@ public interface Buffer extends Cloneable {
      * 
      * @return
      */
-    int readableBytes();
+    int getReadableBytes();
 
     /**
      * Checks whether this buffer has any bytes available for reading without
@@ -298,6 +321,8 @@ public interface Buffer extends Cloneable {
      */
     int getInt(int index) throws IndexOutOfBoundsException;
 
+    void setInt(int index, int value) throws IndexOutOfBoundsException;
+
     short getShort(int index) throws IndexOutOfBoundsException;
 
     int readUnsignedShort() throws IndexOutOfBoundsException;
@@ -314,6 +339,27 @@ public interface Buffer extends Cloneable {
     short getUnsignedByte(int index) throws IndexOutOfBoundsException;
 
     void setUnsignedByte(int index, short value) throws IndexOutOfBoundsException;
+
+    /**
+     * Parse all the readable bytes in this buffer as a unsigned integer value.
+     * The reader index will not be modified.
+     * 
+     * @return
+     * @throws NumberFormatException
+     *             in case the bytes in the buffer cannot be converted into an
+     *             integer value.
+     * @throws IOException
+     *             in case anything goes wrong when reading from the underlying
+     */
+    int parseToInt() throws NumberFormatException, IOException;
+
+    /**
+     * Convert the entire buffer to a signed integer value
+     * 
+     * @param radix
+     * @return
+     */
+    int parseToInt(int radix) throws NumberFormatException, IOException;
 
     /**
      * Dump the content of this buffer as a hex dump ala Wireshark. Mainly for
@@ -340,6 +386,102 @@ public interface Buffer extends Cloneable {
      * @throws IndexOutOfBoundsException
      */
     void setByte(int index, byte value) throws IndexOutOfBoundsException;
+
+    /**
+     * The writer index. This is where we will be writing our next byte if asked
+     * to do so.
+     * 
+     * @return
+     */
+    int getWriterIndex();
+
+    /**
+     * Get the number of writable bytes.
+     * 
+     * @return
+     */
+    int getWritableBytes();
+
+    /**
+     * Checks whether this {@link Buffer} has any space left for writing. Same
+     * as {@link #getWritableBytes()} > 0
+     * 
+     * @return
+     */
+    boolean hasWritableBytes();
+
+    /**
+     * Check whether this {@link Buffer} has write support or not. There are
+     * buffers that do not allow you to write to them (such as the
+     * {@link EmptyBuffer}) so if you try and write to such a buffer it will
+     * throw a {@link WriteNotSupportedException}.
+     * 
+     * @return
+     */
+    boolean hasWriteSupport();
+
+    /**
+     * Write a byte to where the current writer index is pointing. Note, many
+     * implementations may not support writing and if they don't, they will
+     * throw a {@link WriteNotSupportedException}
+     * 
+     * @param b
+     * @throws IndexOutOfBoundsException
+     *             in case there is no more space to write to (which includes
+     *             those cases where the underlying implementation does not
+     *             support writing)
+     * @throws WriteNotSupportedException
+     *             in case the underlying implementation does not support
+     *             writes.
+     */
+    void write(byte b) throws IndexOutOfBoundsException, WriteNotSupportedException;
+
+    void write(int value) throws IndexOutOfBoundsException, WriteNotSupportedException;
+
+    /**
+     * Same as {@link Buffer#write(String, String)} where the charset is set to
+     * "UTF-8"
+     * 
+     * @param s
+     * @throws IndexOutOfBoundsException
+     *             in case we cannot write entire String to this {@link Buffer}.
+     * @throws WriteNotSupportedException
+     *             in case the underlying implementation does not support
+     *             writes.
+     * @throws UnsupportedEncodingException
+     *             in case the charset "UTF-8" is not supported by the platform.
+     */
+    void write(String s) throws IndexOutOfBoundsException, WriteNotSupportedException, UnsupportedEncodingException;
+
+    /**
+     * Write the integer value to this {@link Buffer} as a String.
+     * 
+     * @param value
+     *            the value that will be converted to a String before being
+     *            written to this {@link Buffer}.
+     * @throws IndexOutOfBoundsException
+     * @throws WriteNotSupportedException
+     */
+    void writeAsString(int value) throws IndexOutOfBoundsException, WriteNotSupportedException;
+
+    /**
+     * Write a string to this buffer using the specified charset to convert the
+     * String into bytes. The <code>writerInxex</code> of this buffer will be
+     * increased with the corresponding number of bytes.
+     * 
+     * Note, either the entire string is written to this buffer or if it doesn't
+     * fit then nothing is written to this buffer.
+     * 
+     * @param s
+     * @param charset
+     * @throws IndexOutOfBoundsException
+     *             in case we cannot write entire String to this {@link Buffer}.
+     * @throws WriteNotSupportedException
+     * @throws UnsupportedEncodingException
+     *             in case the specified charset is not supported
+     */
+    void write(final String s, String charset) throws IndexOutOfBoundsException, WriteNotSupportedException,
+    UnsupportedEncodingException;
 
     /**
      * Check whether to buffers are considered to be equal.

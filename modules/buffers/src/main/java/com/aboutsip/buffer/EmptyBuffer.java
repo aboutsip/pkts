@@ -4,6 +4,7 @@
 package com.aboutsip.buffer;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Represents an empty buffer.
@@ -44,7 +45,7 @@ public class EmptyBuffer implements Buffer {
      * {@inheritDoc}
      */
     @Override
-    public int readableBytes() {
+    public int getReadableBytes() {
         return 0;
     }
 
@@ -303,6 +304,80 @@ public class EmptyBuffer implements Buffer {
     @Override
     public void setReaderIndex(final int index) {
         // ignored
+    }
+
+    @Override
+    public void write(final byte b) throws IndexOutOfBoundsException {
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+    }
+
+    @Override
+    public void write(final String s) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+    }
+
+    @Override
+    public void write(final String s, final String charset) throws IndexOutOfBoundsException,
+    WriteNotSupportedException, UnsupportedEncodingException {
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+    }
+
+    @Override
+    public void write(final int value) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+    }
+
+    @Override
+    public void writeAsString(final int value) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+    }
+
+
+    @Override
+    public int getWriterIndex() {
+        return -1;
+    }
+
+    @Override
+    public int getWritableBytes() {
+        return 0;
+    }
+
+    @Override
+    public boolean hasWritableBytes() {
+        return false;
+    }
+
+    @Override
+    public void getBytes(final Buffer dst) {
+        // since it is empty, there are no bytes to get
+        // so therefore leaving empty.
+    }
+
+    @Override
+    public void getBytes(final int index, final Buffer dst) throws IndexOutOfBoundsException {
+        // since it is empty, there are no bytes to get
+        // so therefore leaving empty.
+    }
+
+    @Override
+    public boolean hasWriteSupport() {
+        return false;
+    }
+
+    @Override
+    public void setInt(final int index, final int value) throws IndexOutOfBoundsException {
+        throw new IndexOutOfBoundsException("Sorry, this buffer is empty");
+    }
+
+    @Override
+    public int parseToInt() throws NumberFormatException {
+        throw new NumberFormatException("This buffer is empty and therefore cannot be parsed as an integer");
+    }
+
+    @Override
+    public int parseToInt(final int radix) {
+        throw new NumberFormatException("This buffer is empty and therefore cannot be parsed as an integer");
     }
 
 }

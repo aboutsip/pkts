@@ -67,7 +67,7 @@ public abstract class SipInitialLine extends SipParser {
         } catch (final SipParseException e) {
             // is only thrown by the expectSIP2_0. Calculate the correct
             // index into the buffer
-            final int index = ((buffer.getReaderIndex() - part3.capacity()) + e.getErroOffset()) - 1;
+            final int index = buffer.getReaderIndex() - part3.capacity() + e.getErroOffset() - 1;
             throw new SipParseException(index, "Wrong SIP version");
         } catch (final IOException e) {
             throw new SipParseException(buffer.getReaderIndex(), "could not read from stream", e);
@@ -81,5 +81,16 @@ public abstract class SipInitialLine extends SipParser {
     public boolean isRequestLine() {
         return false;
     }
+
+    /**
+     * Write the bytes representing this {@link SipInitialLine} into the
+     * destination {@link Buffer}.
+     * 
+     * @param dst
+     */
+    public abstract void getBytes(Buffer dst);
+
+    @Override
+    protected abstract SipInitialLine clone();
 
 }

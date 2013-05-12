@@ -5,7 +5,6 @@ package com.aboutsip.yajpcap.packet.sip.header;
 
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
-import com.aboutsip.yajpcap.packet.sip.SipHeader;
 
 /**
  * Source rfc 3261 section 8.1.1.7
@@ -81,6 +80,8 @@ public interface ViaHeader extends Parameters, SipHeader {
 
     Buffer getReceived();
 
+    void setReceived(Buffer received);
+
     /**
      * For a request, the rport value will not be filled out since the
      * downstream element will do so when it discovers the rport parameter on a
@@ -105,6 +106,7 @@ public interface ViaHeader extends Parameters, SipHeader {
      */
     int getRPort();
 
+    void setRPort(int port);
 
     /**
      * The branch-parameter is mandatory and as such should always be there.
