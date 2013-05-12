@@ -397,7 +397,6 @@ public final class SimpleCallStateMachine {
         }
     }
 
-
     /**
      * When a messages (or event in general) "arrives" to this state machine but
      * this message's arrival time is actually before our last seen message then
@@ -499,7 +498,7 @@ public final class SimpleCallStateMachine {
             return -1;
         }
 
-        return t2 - t1;
+        return (t2 - t1) / 1000;
     }
 
     public long getDuration() {
