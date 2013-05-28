@@ -80,6 +80,17 @@ public final class SimpleCallStateMachine {
      */
     private SipRequest byeRequest;
 
+    /**
+     * flag telling us whether we received the ACK on the final response to the
+     * INVITE.
+     */
+    private boolean handshakeIsComplete;
+
+    /**
+     * If we detect any kind of re-transmissions we will set this flag.
+     */
+    private boolean reTransmisionsDetected = false;
+
     public SimpleCallStateMachine(final String callId) {
         this.callId = callId;
         init();
@@ -92,6 +103,14 @@ public final class SimpleCallStateMachine {
         this.currentState = CallState.START;
         this.callTransitions = new ArrayList<CallState>();
         this.messages = new TreeSet<SipMessage>(new SipMessageComparator());
+    }
+
+    public boolean isHandshakeCompleted() {
+        return this.handshakeIsComplete;
+    }
+
+    public boolean reTransmitsDetected() {
+        return this.reTransmisionsDetected;
     }
 
     /**
@@ -160,6 +179,9 @@ public final class SimpleCallStateMachine {
     }
 
     private void handleInCancelledState(final SipMessage msg) throws SipParseException {
+        if (msg.isRequest() && msg.isAck()) {
+            this.handshakeIsComplete = true;
+        }
         transition(this.currentState, msg);
     }
 
@@ -204,6 +226,9 @@ public final class SimpleCallStateMachine {
         // just fall through. Note, we are in a terminal state
         // so we'll just pass in the current state again since we
         // want to stay in this state.
+        if (msg.isRequest() && msg.isAck()) {
+            this.handshakeIsComplete = true;
+        }
         transition(this.currentState, msg);
     }
 
@@ -239,11 +264,16 @@ public final class SimpleCallStateMachine {
                 }
                 transition(CallState.COMPLETED, msg);
             } else if (msg.isAck()) {
+                this.handshakeIsComplete = true;
                 transition(CallState.IN_CALL, msg);
             }
         } else {
             final SipResponse response = (SipResponse) msg;
-            if (response.isBye()) {
+            if (response.isSuccess()) {
+                // probably re-transmits.
+                // need to check it better
+                this.reTransmisionsDetected = true;
+            } else if (response.isBye()) {
                 // already in completed (or should be)
             }
         }
@@ -498,7 +528,7 @@ public final class SimpleCallStateMachine {
             return -1;
         }
 
-        return (t2 - t1) / 1000;
+        return t2 - t1;
     }
 
     public long getDuration() {

@@ -31,7 +31,7 @@ public class PcapFrameTest extends YajTestBase {
         super.setUp();
         // remember, the defaultByteOrder etc has already been parsed out by
         // the test base
-        this.framer = new PcapFramer(this.defaultByteOrder, this.framerManager);
+        this.framer = new PcapFramer(this.defaultPcapHeader, this.framerManager);
     }
 
     /**
@@ -44,7 +44,7 @@ public class PcapFrameTest extends YajTestBase {
     public void testParsePacket() throws Exception {
         // remember, this is the first packet in the pcap and it has already
         // been framed by the test base class
-        final PCapPacket p = (PCapPacket) this.defaultPcapFrame.parse();
+        final PCapPacket p = this.defaultPcapFrame.parse();
         assertThat(p.getTotalLength(), is(547L));
         assertThat(p.getCapturedLength(), is(547L));
         assertThat(p.getArrivalTime(), is(1340495109792454L));
@@ -69,9 +69,9 @@ public class PcapFrameTest extends YajTestBase {
     private void verifyNextPacket(final Buffer in, final int expectedLength, final long expectedArrivalTime)
             throws Exception {
         final PcapFrame frame = this.framer.frame(null, in);
-        final PCapPacket p = (PCapPacket) frame.parse();
-        assertThat(p.getTotalLength(), is(((long) expectedLength)));
-        assertThat(p.getCapturedLength(), is(((long) expectedLength)));
+        final PCapPacket p = frame.parse();
+        assertThat(p.getTotalLength(), is((long) expectedLength));
+        assertThat(p.getCapturedLength(), is((long) expectedLength));
         assertThat(p.getArrivalTime(), is(expectedArrivalTime));
     }
 

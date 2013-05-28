@@ -56,7 +56,7 @@ public final class TCPFramer implements Layer4Framer {
         // once again, the minimum size of a tcp header is 5 words
         // and since we already have read that off the buffer, this
         // is what we have left to read
-        final int size = ((offset >> 4) & 0x0F) - 5;
+        final int size = (offset >> 4 & 0x0F) - 5;
         if (size > 0) {
             options = buffer.readBytes(size * 4);
         }
@@ -66,9 +66,8 @@ public final class TCPFramer implements Layer4Framer {
             payload = buffer.slice();
         }
 
-        return new TCPFrame(this.framerManager, parent, headers, options, payload);
+        return new TCPFrame(this.framerManager, parent.getPcapGlobalHeader(), parent, headers, options, payload);
     }
-
 
     /**
      * {@inheritDoc}

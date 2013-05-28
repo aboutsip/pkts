@@ -24,7 +24,6 @@ import com.aboutsip.yajpcap.packet.sip.SipParseException;
  */
 public final class DefaultSipStream implements SipStream {
 
-
     /**
      * 
      */
@@ -64,6 +63,23 @@ public final class DefaultSipStream implements SipStream {
     public CallState getCallState() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public boolean handshakeComplete() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean reTranmitsDetected() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public void save(final String filename) {
+        throw new RuntimeException("sorry, not implemeneted yet");
     }
 
 }

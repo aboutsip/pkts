@@ -16,6 +16,8 @@ import com.aboutsip.yajpcap.protocol.Protocol;
  */
 public abstract class AbstractFrame implements Frame {
 
+    private final PcapGlobalHeader pcapGlobalHader;
+
     /**
      * The framer manager we use to lookup framers for protocols
      */
@@ -40,9 +42,11 @@ public abstract class AbstractFrame implements Frame {
     /**
      * 
      */
-    public AbstractFrame(final FramerManager framerManager, final Protocol p, final Buffer payload) {
+    public AbstractFrame(final FramerManager framerManager, final PcapGlobalHeader header, final Protocol p,
+            final Buffer payload) {
         assert framerManager != null;
         assert p != null;
+        this.pcapGlobalHader = header;
         this.framerManager = framerManager;
         this.protocol = p;
         this.payload = payload;
@@ -115,6 +119,11 @@ public abstract class AbstractFrame implements Frame {
     @Override
     public final Buffer getPayload() {
         return this.payload;
+    }
+
+    @Override
+    public PcapGlobalHeader getPcapGlobalHeader() {
+        return this.pcapGlobalHader;
     }
 
     /**

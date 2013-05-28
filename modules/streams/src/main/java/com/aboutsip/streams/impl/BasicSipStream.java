@@ -3,12 +3,16 @@
  */
 package com.aboutsip.streams.impl;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 
 import com.aboutsip.streams.SipStream;
 import com.aboutsip.streams.StreamId;
+import com.aboutsip.yajpcap.PcapOutputStream;
+import com.aboutsip.yajpcap.frame.PcapGlobalHeader;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
 import com.aboutsip.yajpcap.packet.sip.SipParseException;
 
@@ -38,10 +42,13 @@ public class BasicSipStream implements SipStream {
 
     private final SimpleCallStateMachine fsm;
 
+    private final PcapGlobalHeader globalHeader;
+
     /**
      * 
      */
-    public BasicSipStream(final StreamId streamIdentifier) {
+    public BasicSipStream(final PcapGlobalHeader globalHeader, final StreamId streamIdentifier) {
+        this.globalHeader = globalHeader;
         this.streamIdentifier = streamIdentifier;
         this.fsm = new SimpleCallStateMachine(this.streamIdentifier.asString());
     }
@@ -86,7 +93,6 @@ public class BasicSipStream implements SipStream {
         return this.streamIdentifier;
     }
 
-
     @Override
     public void write(final OutputStream out) throws IOException {
         final Iterator<SipMessage> it = this.fsm.getMessages();
@@ -100,4 +106,30 @@ public class BasicSipStream implements SipStream {
         return this.fsm.getCallState();
     }
 
+    @Override
+    public boolean handshakeComplete() {
+        return this.fsm.isHandshakeCompleted();
+    }
+
+    @Override
+    public boolean reTranmitsDetected() {
+        return this.fsm.reTransmitsDetected();
+    }
+
+    @Override
+    public void save(final String filename) throws IOException {
+        final File file = new File(filename);
+        final FileOutputStream os = new FileOutputStream(file);
+        final PcapOutputStream out = PcapOutputStream.create(this.globalHeader, os);
+        try {
+            this.write(out);
+        } catch (final IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } finally {
+            if (out != null) {
+                out.close();
+            }
+        }
+    }
 }

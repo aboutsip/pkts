@@ -53,16 +53,20 @@ public final class IPv4Frame extends AbstractFrame implements IPFrame {
 
     /**
      * 
-     * @param length the header length
-     * @param headers all the ipv4 headers in a buffer.
-     * @param options if header length > 5, then we have a set of options as
-     *            well
-     * @param data the payload of the ip4v frame
+     * @param length
+     *            the header length
+     * @param headers
+     *            all the ipv4 headers in a buffer.
+     * @param options
+     *            if header length > 5, then we have a set of options as well
+     * @param data
+     *            the payload of the ip4v frame
      */
-    public IPv4Frame(final FramerManager framerManager, final Layer2Frame parent, final int length,
+    public IPv4Frame(final FramerManager framerManager, final PcapGlobalHeader header, final Layer2Frame parent,
+            final int length,
             final Buffer headers, final int options,
             final Buffer payload) throws IOException {
-        super(framerManager, Protocol.IPv4, payload);
+        super(framerManager, header, Protocol.IPv4, payload);
         assert parent != null;
 
         this.parentFrame = parent;
@@ -79,8 +83,9 @@ public final class IPv4Frame extends AbstractFrame implements IPFrame {
      * Check out http://en.wikipedia.org/wiki/IPv4 for a good explanation of the
      * IPv4 header frame
      * 
-     * @param payload the total payload of the previous frame, which contains
-     *            the ipv4 headers and its payload
+     * @param payload
+     *            the total payload of the previous frame, which contains the
+     *            ipv4 headers and its payload
      * @return
      */
     // public static IPv4Frame frame(final Buffer payload) {
@@ -161,7 +166,7 @@ public final class IPv4Frame extends AbstractFrame implements IPFrame {
      */
     @Override
     public boolean isFragmented() {
-        return isMoreFragmentsSet() || (getFragmentOffset() > 0);
+        return isMoreFragmentsSet() || getFragmentOffset() > 0;
     }
 
     /**
@@ -209,7 +214,7 @@ public final class IPv4Frame extends AbstractFrame implements IPFrame {
         try {
             final byte a = this.headers.getByte(6);
             final byte b = this.headers.getByte(7);
-            return (short) (((a & 0x1F) << 8) | (b & 0xFF));
+            return (short) ((a & 0x1F) << 8 | b & 0xFF);
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
@@ -231,6 +236,5 @@ public final class IPv4Frame extends AbstractFrame implements IPFrame {
 
         return sb.toString();
     }
-
 
 }
