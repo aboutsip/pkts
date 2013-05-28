@@ -32,11 +32,12 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
     /**
      * 
      */
-    public EthernetFrame(final FramerManager framerManager, final Layer1Frame parentFrame, final Buffer destMacAddress,
+    public EthernetFrame(final FramerManager framerManager, final PcapGlobalHeader header,
+            final Layer1Frame parentFrame, final Buffer destMacAddress,
             final Buffer srcMacAddress,
             final EtherType type,
             final Buffer payload) {
-        super(framerManager, Protocol.ETHERNET_II, payload);
+        super(framerManager, header, Protocol.ETHERNET_II, payload);
         assert parentFrame != null;
 
         this.parentFrame = parentFrame;
@@ -46,9 +47,10 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
         this.headers = null;
     }
 
-    public EthernetFrame(final FramerManager framerManager, final Layer1Frame parentFrame, final Buffer headers,
+    public EthernetFrame(final FramerManager framerManager, final PcapGlobalHeader header,
+            final Layer1Frame parentFrame, final Buffer headers,
             final Buffer payload) {
-        super(framerManager, Protocol.ETHERNET_II, payload);
+        super(framerManager, header, Protocol.ETHERNET_II, payload);
         assert parentFrame != null;
         this.headers = headers;
         this.destMacAddress = null;
@@ -109,11 +111,10 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
      */
     public String getSourceMacAddress() throws IOException {
         /*
-        if (this.srcMacAddress.readableBytes() != 6) {
-            // probably want to throw some parse/frame exception
-            // or something
-            throw new IllegalArgumentException("Not enough bytes in the source mac address");
-        }
+         * if (this.srcMacAddress.readableBytes() != 6) { // probably want to
+         * throw some parse/frame exception // or something throw new
+         * IllegalArgumentException
+         * ("Not enough bytes in the source mac address"); }
          */
         return toHexString(getRawSourceMacAddress());
     }
@@ -125,11 +126,10 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
      */
     public String getDestinationMacAddress() throws IOException {
         /*
-        if (this.destMacAddress.readableBytes() != 6) {
-            // probably want to throw some parse/frame exception
-            // or something
-            throw new IllegalArgumentException("Not enough bytes in the source mac address");
-        }
+         * if (this.destMacAddress.readableBytes() != 6) { // probably want to
+         * throw some parse/frame exception // or something throw new
+         * IllegalArgumentException
+         * ("Not enough bytes in the source mac address"); }
          */
         return toHexString(getRawDestinationMacAddress());
     }
@@ -173,13 +173,10 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
         // keeping as much as possible as pure buffers make a big
         // difference.
         /*
-        try {
-            final String source = getSourceMacAddress();
-            final String dest = getDestinationMacAddress();
-            return new MACPacketImpl(parentPacket, source, dest);
-        } catch (final IOException e) {
-            throw new RuntimeException("TODO: need to parse exception or something", e);
-        }
+         * try { final String source = getSourceMacAddress(); final String dest
+         * = getDestinationMacAddress(); return new MACPacketImpl(parentPacket,
+         * source, dest); } catch (final IOException e) { throw new
+         * RuntimeException("TODO: need to parse exception or something", e); }
          */
     }
 
@@ -210,7 +207,7 @@ public final class EthernetFrame extends AbstractFrame implements Layer2Frame {
      */
     @Override
     protected Frame framePayload(final FramerManager framerManager, final Buffer buffer) throws IOException {
-        switch(this.type){
+        switch (this.type) {
         case IPv4:
             final Framer framer = framerManager.getFramer(Protocol.IPv4);
             return framer.frame(this, buffer);

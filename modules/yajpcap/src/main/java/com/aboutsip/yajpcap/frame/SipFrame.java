@@ -43,10 +43,11 @@ public final class SipFrame extends AbstractFrame implements Layer7Frame {
      * @param p
      * @param payload
      */
-    public SipFrame(final FramerManager framerManager, final Layer4Frame parentFrame, final Buffer initalLine,
+    public SipFrame(final FramerManager framerManager, final PcapGlobalHeader header, final Layer4Frame parentFrame,
+            final Buffer initalLine,
             final Buffer headers,
             final Buffer payload) {
-        super(framerManager, Protocol.SIP, payload);
+        super(framerManager, header, Protocol.SIP, payload);
         assert parentFrame != null;
         this.parentFrame = parentFrame;
         this.initialLine = initalLine;

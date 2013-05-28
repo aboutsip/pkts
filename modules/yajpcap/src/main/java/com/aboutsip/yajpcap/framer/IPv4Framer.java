@@ -57,8 +57,8 @@ public class IPv4Framer implements Layer3Framer {
         // final int version = ((i >>> 28) & 0x0F);
         // final int length = ((i >>> 24) & 0x0F);
 
-        final int version = ((b >>> 5) & 0x0F);
-        final int length = (b & 0x0F);
+        final int version = b >>> 5 & 0x0F;
+        final int length = b & 0x0F;
 
         // byte 2 - dscp and ecn
         // final byte b2 = headers.readByte();
@@ -115,7 +115,8 @@ public class IPv4Framer implements Layer3Framer {
 
         final Buffer data = payload.slice();
 
-        return new IPv4Frame(this.framerManager, parentFrame, length, headers, options, data);
+        return new IPv4Frame(this.framerManager, parentFrame.getPcapGlobalHeader(), parentFrame, length, headers,
+                options, data);
     }
 
     @Override

@@ -34,9 +34,10 @@ public final class SllFrame extends AbstractFrame implements Layer2Frame {
      * @param p
      * @param payload
      */
-    public SllFrame(final FramerManager framerManager, final Layer1Frame parentFrame, final Buffer headers,
+    public SllFrame(final FramerManager framerManager, final PcapGlobalHeader header, final Layer1Frame parentFrame,
+            final Buffer headers,
             final Buffer payload) {
-        super(framerManager, Protocol.SLL, payload);
+        super(framerManager, header, Protocol.SLL, payload);
         assert parentFrame != null;
         this.parentFrame = parentFrame;
         this.headers = headers;

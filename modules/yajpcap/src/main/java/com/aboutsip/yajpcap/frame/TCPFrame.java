@@ -40,9 +40,10 @@ public final class TCPFrame extends AbstractFrame implements Layer4Frame {
      * @param p
      * @param payload
      */
-    public TCPFrame(final FramerManager framerManager, final Layer3Frame parent, final Buffer headers,
+    public TCPFrame(final FramerManager framerManager, final PcapGlobalHeader header, final Layer3Frame parent,
+            final Buffer headers,
             final Buffer options, final Buffer payload) {
-        super(framerManager, Protocol.TCP, payload);
+        super(framerManager, header, Protocol.TCP, payload);
         assert parent != null;
         assert headers != null;
         this.parentFrame = parent;

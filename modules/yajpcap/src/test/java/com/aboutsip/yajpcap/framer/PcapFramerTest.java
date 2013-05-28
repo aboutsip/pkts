@@ -31,7 +31,7 @@ public class PcapFramerTest extends YajTestBase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        this.framer = new PcapFramer(this.defaultByteOrder, this.framerManager);
+        this.framer = new PcapFramer(this.defaultPcapHeader, this.framerManager);
     }
 
     /**
@@ -61,7 +61,7 @@ public class PcapFramerTest extends YajTestBase {
         }
 
         // the last frame is supposed to 340 according to wireshark
-        assertThat(340, is((frame.getPayload().capacity())));
+        assertThat(340, is(frame.getPayload().capacity()));
 
         // we have read all the 30 frames so trying to frame
         // another one shouldn't work. Hence, we should be getting
@@ -75,7 +75,7 @@ public class PcapFramerTest extends YajTestBase {
             throws IOException {
         final PcapFrame frame = this.framer.frame(null, in);
         final Buffer payload = frame.getPayload();
-        assertThat(expectedLength, is((payload.capacity())));
+        assertThat(expectedLength, is(payload.capacity()));
     }
 
 }

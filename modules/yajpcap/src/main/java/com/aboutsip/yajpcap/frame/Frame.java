@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import com.aboutsip.buffer.Buffer;
+import com.aboutsip.yajpcap.PcapOutputStream;
 import com.aboutsip.yajpcap.packet.Packet;
 import com.aboutsip.yajpcap.packet.PacketParseException;
 import com.aboutsip.yajpcap.protocol.Protocol;
@@ -30,8 +31,9 @@ public interface Frame extends Externalizable {
      * 
      * @param p
      * @return
-     * @throws IOException in case something goes wrong when framing the rest of
-     *             the protocol stack
+     * @throws IOException
+     *             in case something goes wrong when framing the rest of the
+     *             protocol stack
      */
     boolean hasProtocol(Protocol p) throws IOException;
 
@@ -48,8 +50,9 @@ public interface Frame extends Externalizable {
      * @param p
      * @return the frame that encapsulates the protocol or null if this protocol
      *         doesn't exist
-     * @throws IOException in case something goes wrong when framing the rest of
-     *             the protocol stack
+     * @throws IOException
+     *             in case something goes wrong when framing the rest of the
+     *             protocol stack
      */
     Frame getFrame(Protocol p) throws IOException;
 
@@ -100,9 +103,21 @@ public interface Frame extends Externalizable {
      * it is dealing with.
      * 
      * @return
-     * @throws PacketParseException TODO
+     * @throws PacketParseException
+     *             TODO
      */
     Packet parse() throws PacketParseException;
+
+    /**
+     * Each {@link Frame} was captured in a pcap that had this
+     * {@link PcapGlobalHeader}. Using this header you can create a new
+     * {@link PcapOutputStream} and then write this {@link Frame} to the output
+     * stream without having to worry about which byte order etc this
+     * {@link Frame} is encoded in.
+     * 
+     * @return
+     */
+    PcapGlobalHeader getPcapGlobalHeader();
 
     void write(OutputStream out) throws IOException;
 

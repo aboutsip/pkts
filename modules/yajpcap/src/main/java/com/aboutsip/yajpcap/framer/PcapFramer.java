@@ -10,6 +10,7 @@ import java.nio.ByteOrder;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.yajpcap.frame.Frame;
 import com.aboutsip.yajpcap.frame.PcapFrame;
+import com.aboutsip.yajpcap.frame.PcapGlobalHeader;
 import com.aboutsip.yajpcap.frame.PcapRecordHeader;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
@@ -18,17 +19,19 @@ import com.aboutsip.yajpcap.protocol.Protocol;
  */
 public final class PcapFramer implements Layer1Framer {
 
+    private final PcapGlobalHeader globalHeader;
     private final FramerManager framerManager;
     private final ByteOrder byteOrder;
 
     /**
      * 
      */
-    public PcapFramer(final ByteOrder byteOrder, final FramerManager framerManager) {
-        assert byteOrder != null;
+    public PcapFramer(final PcapGlobalHeader globalHeader, final FramerManager framerManager) {
+        assert globalHeader != null;
         assert framerManager != null;
 
-        this.byteOrder = byteOrder;
+        this.globalHeader = globalHeader;
+        this.byteOrder = this.globalHeader.getByteOrder();
         this.framerManager = framerManager;
     }
 
@@ -57,7 +60,7 @@ public final class PcapFramer implements Layer1Framer {
         final Buffer payload = buffer.readBytes(length);
 
         final FramerManager framerManager = FramerManager.getInstance();
-        return new PcapFrame(framerManager, header, payload);
+        return new PcapFrame(framerManager, this.globalHeader, header, payload);
     }
 
     /**

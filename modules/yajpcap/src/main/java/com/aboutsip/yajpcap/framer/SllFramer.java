@@ -49,7 +49,6 @@ public class SllFramer implements Layer2Framer {
      */
     private static final byte LINUX_SLL_P_802_2 = (byte) 0x04;
 
-
     /**
      * 
      */
@@ -76,22 +75,21 @@ public class SllFramer implements Layer2Framer {
 
         final Buffer headers = buffer.readBytes(16);
         final Buffer payload = buffer.slice(buffer.capacity());
-        return new SllFrame(this.framerManager, parent, headers, payload);
+        return new SllFrame(this.framerManager, parent.getPcapGlobalHeader(), parent, headers, payload);
     }
 
     /**
      * (taken from pcap/sll.sh)
      * 
-     * For captures on Linux cooked sockets, we construct a fake header
-     * that includes:
+     * For captures on Linux cooked sockets, we construct a fake header that
+     * includes:
      * 
      * a 2-byte "packet type" which is one of:
      * 
-     * LINUX_SLL_HOST packet was sent to us
-     * LINUX_SLL_BROADCAST packet was broadcast
-     * LINUX_SLL_MULTICAST packet was multicast
-     * LINUX_SLL_OTHERHOST packet was sent to somebody else
-     * LINUX_SLL_OUTGOING packet was sent *by* us;
+     * LINUX_SLL_HOST packet was sent to us LINUX_SLL_BROADCAST packet was
+     * broadcast LINUX_SLL_MULTICAST packet was multicast LINUX_SLL_OTHERHOST
+     * packet was sent to somebody else LINUX_SLL_OUTGOING packet was sent *by*
+     * us;
      * 
      * a 2-byte Ethernet protocol field;
      * 
@@ -99,21 +97,20 @@ public class SllFramer implements Layer2Framer {
      * 
      * a 2-byte link-layer address length;
      * 
-     * an 8-byte source link-layer address, whose actual length is
-     * specified by the previous value.
+     * an 8-byte source link-layer address, whose actual length is specified by
+     * the previous value.
      * 
      * All fields except for the link-layer address are in network byte order.
      * 
      * DO NOT change the layout of this structure, or change any of the
-     * LINUX_SLL_ values below. If you must change the link-layer header
-     * for a "cooked" Linux capture, introduce a new DLT_ type (ask
-     * "tcpdump-workers@lists.tcpdump.org" for one, so that you don't give it
-     * a value that collides with a value already being used), and use the
-     * new header in captures of that type, so that programs that can
-     * handle DLT_LINUX_SLL captures will continue to handle them correctly
-     * without any change, and so that capture files with different headers
-     * can be told apart and programs that read them can dissect the
-     * packets in them.
+     * LINUX_SLL_ values below. If you must change the link-layer header for a
+     * "cooked" Linux capture, introduce a new DLT_ type (ask
+     * "tcpdump-workers@lists.tcpdump.org" for one, so that you don't give it a
+     * value that collides with a value already being used), and use the new
+     * header in captures of that type, so that programs that can handle
+     * DLT_LINUX_SLL captures will continue to handle them correctly without any
+     * change, and so that capture files with different headers can be told
+     * apart and programs that read them can dissect the packets in them.
      * 
      * 
      * {@inheritDoc}
@@ -145,7 +142,7 @@ public class SllFramer implements Layer2Framer {
             return false;
         }
 
-        return (b2 == LINUX_SLL_HOST) || (b2 == LINUX_SLL_BROADCAST) || (b2 == LINUX_SLL_MULTICAST)
-                || (b2 == LINUX_SLL_OTHERHOST) || (b2 == LINUX_SLL_OUTGOING);
+        return b2 == LINUX_SLL_HOST || b2 == LINUX_SLL_BROADCAST || b2 == LINUX_SLL_MULTICAST
+                || b2 == LINUX_SLL_OTHERHOST || b2 == LINUX_SLL_OUTGOING;
     }
 }

@@ -90,7 +90,7 @@ public final class RTPFramer implements Layer7Framer {
         }
 
         final Buffer payload = buffer.slice();
-        return new RtpFrame(this.framerManager, parent, headers, payload);
+        return new RtpFrame(this.framerManager, parent.getPcapGlobalHeader(), parent, headers, payload);
     }
 
 }

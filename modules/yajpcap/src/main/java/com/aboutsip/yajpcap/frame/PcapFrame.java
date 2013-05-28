@@ -32,13 +32,13 @@ public final class PcapFrame extends AbstractFrame implements Layer1Frame {
     /**
      * 
      */
-    public PcapFrame(final FramerManager framerManager, final PcapRecordHeader header, final Buffer payload) {
-        super(framerManager, Protocol.PCAP, payload);
+    public PcapFrame(final FramerManager framerManager, final PcapGlobalHeader globalHeader,
+            final PcapRecordHeader header, final Buffer payload) {
+        super(framerManager, globalHeader, Protocol.PCAP, payload);
         assert framerManager != null;
         assert header != null;
         this.header = header;
     }
-
 
     @Override
     protected Frame framePayload(final FramerManager framerManager, final Buffer payload) throws IOException {
@@ -73,9 +73,8 @@ public final class PcapFrame extends AbstractFrame implements Layer1Frame {
      */
     @Override
     public long getArrivalTime() {
-        return (this.header.getTimeStampSeconds() * 1000000) + this.header.getTimeStampMicroSeconds();
+        return this.header.getTimeStampSeconds() * 1000000 + this.header.getTimeStampMicroSeconds();
     }
-
 
     /**
      * {@inheritDoc}

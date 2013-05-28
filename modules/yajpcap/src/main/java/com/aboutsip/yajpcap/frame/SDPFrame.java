@@ -27,10 +27,12 @@ public final class SDPFrame extends AbstractFrame implements Layer7Frame {
 
     /**
      * @param framerManager
-     * @param sdp the raw SDP
+     * @param sdp
+     *            the raw SDP
      */
-    public SDPFrame(final FramerManager framerManager, final Frame parentFrame, final Buffer sdp) {
-        super(framerManager, Protocol.SDP, null);
+    public SDPFrame(final FramerManager framerManager, final PcapGlobalHeader header, final Frame parentFrame,
+            final Buffer sdp) {
+        super(framerManager, header, Protocol.SDP, null);
         assert parentFrame != null;
         this.parentFrame = parentFrame;
         this.sdp = sdp;

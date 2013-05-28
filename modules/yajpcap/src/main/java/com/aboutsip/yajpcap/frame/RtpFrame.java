@@ -27,9 +27,10 @@ public class RtpFrame extends AbstractFrame implements Layer7Frame {
 
     private final Buffer payload;
 
-    public RtpFrame(final FramerManager framerManager, final Layer4Frame parentFrame, final Buffer headers,
+    public RtpFrame(final FramerManager framerManager, final PcapGlobalHeader header, final Layer4Frame parentFrame,
+            final Buffer headers,
             final Buffer payload) {
-        super(framerManager, Protocol.RTP, payload);
+        super(framerManager, header, Protocol.RTP, payload);
         assert parentFrame != null;
         this.parentFrame = parentFrame;
         this.headers = headers;
