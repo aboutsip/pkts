@@ -65,7 +65,7 @@ public class Pcap {
 
     public void loop(final FrameHandler callback) throws IOException {
         final ByteOrder byteOrder = this.header.getByteOrder();
-        final PcapFramer framer = new PcapFramer(byteOrder, this.framerManager);
+        final PcapFramer framer = new PcapFramer(this.header, this.framerManager);
 
         Frame frame = null;
         while ((frame = framer.frame(null, this.buffer)) != null) {

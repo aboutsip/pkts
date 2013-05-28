@@ -18,7 +18,7 @@ import com.aboutsip.yajpcap.packet.MACPacket;
 
 /**
  * @author jonas
- *
+ * 
  */
 public class EthernetFrameTest extends YajTestBase {
 
@@ -48,7 +48,7 @@ public class EthernetFrameTest extends YajTestBase {
      */
     @Test
     public void testParsePacket() throws Exception {
-        final Layer1Framer pcapFramer = new PcapFramer(this.defaultByteOrder, this.framerManager);
+        final Layer1Framer pcapFramer = new PcapFramer(this.defaultPcapHeader, this.framerManager);
         final Layer1Frame pcapFrame = pcapFramer.frame(null, this.pcapStream);
 
         final EthernetFramer framer = new EthernetFramer(this.framerManager);

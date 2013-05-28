@@ -38,7 +38,7 @@ public final class SDPFramer implements Framer {
     public SDPFrame frame(final Frame parent, final Buffer buffer) throws IOException {
         // nothing really to frame in the case of SDP.
         // just assuming that everything is ok
-        return new SDPFrame(this.framerManager, parent, buffer);
+        return new SDPFrame(this.framerManager, parent.getPcapGlobalHeader(), parent, buffer);
     }
 
     /**

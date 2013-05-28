@@ -99,7 +99,6 @@ public class YajTestBase {
      */
     protected Buffer sipFrameBuffer180Response;
 
-
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
     }
@@ -116,7 +115,7 @@ public class YajTestBase {
         // broken so do some assertions on it...
         this.defaultPcapHeader = PcapGlobalHeader.parse(this.pcapStream);
         this.defaultByteOrder = this.defaultPcapHeader.getByteOrder();
-        final PcapFramer framer = new PcapFramer(this.defaultByteOrder, this.framerManager);
+        final PcapFramer framer = new PcapFramer(this.defaultPcapHeader, this.framerManager);
         this.defaultPcapFrame = framer.frame(null, this.pcapStream);
         this.defaultFrame = this.defaultPcapFrame.getPayload();
         assertThat(547, is(this.defaultFrame.capacity()));
@@ -205,8 +204,8 @@ public class YajTestBase {
     }
 
     /**
-     *  Helper class that will write either {@link Frame}s or {@link Packet} to the output stream. It will ONLY
-     *  write INVITE and BYE messages.
+     * Helper class that will write either {@link Frame}s or {@link Packet} to
+     * the output stream. It will ONLY write INVITE and BYE messages.
      */
     public static class TestWriteStreamHandler implements FrameHandler {
 
@@ -249,6 +248,5 @@ public class YajTestBase {
             }
         }
     }
-
 
 }

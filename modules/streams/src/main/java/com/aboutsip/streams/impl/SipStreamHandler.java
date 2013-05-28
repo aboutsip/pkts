@@ -76,7 +76,7 @@ public class SipStreamHandler {
                 stream = this.terminatedStreams.get(id);
             }
             if (stream == null) {
-                stream = new BasicSipStream(id);
+                stream = new BasicSipStream(frame.getPcapGlobalHeader(), id);
                 stream.addMessage(msg);
                 this.sipListener.startStream(stream, msg);
                 this.sipStreams.put(id, stream);

@@ -30,16 +30,16 @@ public final class UDPFrame extends AbstractFrame implements Layer4Frame {
     /**
      * 
      */
-    public UDPFrame(final FramerManager framerManager, final Layer3Frame parent, final Buffer headers,
+    public UDPFrame(final FramerManager framerManager, final PcapGlobalHeader header, final Layer3Frame parent,
+            final Buffer headers,
             final Buffer payload) {
-        super(framerManager, Protocol.UDP, payload);
+        super(framerManager, header, Protocol.UDP, payload);
         assert parent != null;
         assert headers != null;
         assert payload != null;
         this.parentFrame = parent;
         this.headers = headers;
     }
-
 
     // TODO: move all of this stuff into the packet itself
     public int getSourcePort() {

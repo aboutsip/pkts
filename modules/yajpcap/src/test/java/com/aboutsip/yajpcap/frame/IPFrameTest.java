@@ -43,7 +43,7 @@ public class IPFrameTest extends YajTestBase {
 
     @Test
     public void testParsePacket() throws Exception {
-        final Layer1Framer pcapFramer = new PcapFramer(this.defaultByteOrder, this.framerManager);
+        final Layer1Framer pcapFramer = new PcapFramer(this.defaultPcapHeader, this.framerManager);
         final Layer1Frame pcapFrame = pcapFramer.frame((Frame) null, this.pcapStream);
 
         final EthernetFramer ethFramer = new EthernetFramer(this.framerManager);

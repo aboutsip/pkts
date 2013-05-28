@@ -61,7 +61,7 @@ public class EthernetFramer implements Layer2Framer {
         final Buffer data = buffer.slice(buffer.capacity());
 
         // return new EthernetFrame(this.framerManager, parent, destMacAddress, srcMacAddress, etherType, data);
-        return new EthernetFrame(this.framerManager, parent, headers, data);
+        return new EthernetFrame(this.framerManager, parent.getPcapGlobalHeader(), parent, headers, data);
     }
 
     public static EthernetFrame.EtherType getEtherType(final byte b1, final byte b2) throws UnknownEtherType {

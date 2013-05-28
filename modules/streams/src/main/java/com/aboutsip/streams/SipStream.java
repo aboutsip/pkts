@@ -1,5 +1,7 @@
 package com.aboutsip.streams;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Iterator;
 
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
@@ -70,6 +72,33 @@ public interface SipStream extends Stream<SipMessage> {
      * @return the current {@link CallState}.
      */
     CallState getCallState();
+
+    /**
+     * Indicates whether the INVITE handshake was completed. I.e., did we see
+     * the ACK to the final response to the INVITE. Note, this does not mean
+     * that the call was successfully setup, after all, the INVITE setup can be
+     * error out for various reasons.
+     * 
+     * @return
+     */
+    boolean handshakeComplete();
+
+    /**
+     * Indicates whether there were retransmissions detected. If it was the
+     * INVITE that was re-transmitted, or some other request is not conveyed
+     * through this method. It just indicates that there were retransmissions in
+     * this flow.
+     * 
+     * @return
+     */
+    boolean reTranmitsDetected();
+
+    /**
+     * Save this {@link SipStream} to the specified file.
+     * 
+     * @param filename
+     */
+    void save(String filename) throws FileNotFoundException, IOException;
 
     /**
      * Even though SIP can be used for so much more than just establishing

@@ -58,7 +58,6 @@ public class SimpleCallStateMachineTest extends StreamsTestBase {
         assertThat(fsm.getPostDialDelay(), is(3104809L));
         assertThat(fsm.getDuration(), is(16108868L));
 
-
         final List<SipMessage> messages = loadMessages(resource);
         messages.set(1, null); // remove the 100 Trying
         fsm = driveTraffic(messages);
@@ -69,7 +68,9 @@ public class SimpleCallStateMachineTest extends StreamsTestBase {
         messages.set(2, null); // remove the 180 Ringing
         fsm = driveTraffic(messages);
         assertStates(fsm, INITIAL, IN_CALL, COMPLETED);
-        assertThat(fsm.getPostDialDelay(), is(4106017L)); //  because we base the PDD on the 200 OK now
+        assertThat(fsm.getPostDialDelay(), is(4106017L)); // because we base the
+                                                          // PDD on the 200 OK
+                                                          // now
         assertThat(fsm.getDuration(), is(16108868L));
     }
 
@@ -87,6 +88,7 @@ public class SimpleCallStateMachineTest extends StreamsTestBase {
         // verified through wireshark
         assertThat(fsm.getPostDialDelay(), is(2104843L));
         assertThat(fsm.getDuration(), is(-1L));
+        assertThat(fsm.isHandshakeCompleted(), is(true));
     }
 
     /**
@@ -102,15 +104,18 @@ public class SimpleCallStateMachineTest extends StreamsTestBase {
         messages.set(1, null); // remove the 100 Trying
         SimpleCallStateMachine fsm = driveTraffic(messages);
         assertStates(fsm, RINGING, IN_CALL, COMPLETED);
+        assertThat(fsm.isHandshakeCompleted(), is(true));
 
         messages.set(2, null); // remove the 180
         messages.set(3, null); // remove the 200 as well
         fsm = driveTraffic(messages);
         assertStates(fsm, IN_CALL, COMPLETED);
+        assertThat(fsm.isHandshakeCompleted(), is(false));
 
         messages.set(4, null); // remove the ACK
         fsm = driveTraffic(messages);
         assertStates(fsm, COMPLETED);
+        assertThat(fsm.isHandshakeCompleted(), is(false));
 
         messages.set(5, null); // remove the BYE
         fsm = driveTraffic(messages);

@@ -46,7 +46,7 @@ public class UDPFramer implements Layer4Framer {
         // and the rest is just user data (payload of the udp packet)
         final Buffer headers = buffer.readBytes(8);
         final Buffer data = buffer.slice();
-        return new UDPFrame(this.framerManager, parent, headers, data);
+        return new UDPFrame(this.framerManager, parent.getPcapGlobalHeader(), parent, headers, data);
     }
 
     @Override
