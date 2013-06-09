@@ -416,13 +416,25 @@ public abstract class SipMessageImpl implements SipMessage {
      */
     @Override
     public CallIdHeader getCallIDHeader() throws SipParseException {
-        final SipHeader header = getHeader(CallIdHeader.NAME);
+        SipHeader header = getHeader(CallIdHeader.NAME);
         if (header instanceof CallIdHeader) {
             return (CallIdHeader) header;
         }
+        boolean compactForm = false;
+
+        if (header == null) {
+            header = getHeader(CallIdHeader.COMPACT_NAME);
+            if (header != null) {
+                compactForm = true;
+            }
+        }
+
+        if (header == null) {
+            throw new SipParseException(0, "The Call-ID header is missing. Bad SIP message!");
+        }
 
         final Buffer buffer = header.getValue();
-        final CallIdHeader callId = CallIdHeaderImpl.frame(buffer);
+        final CallIdHeader callId = CallIdHeaderImpl.frame(compactForm, buffer);
         final List<SipHeader> headers = this.parsedHeaders.get(callId.getName());
         headers.set(0, callId);
         return callId;

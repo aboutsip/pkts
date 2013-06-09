@@ -66,6 +66,9 @@ public class SipStreamHandler {
             final SipFrame sipFrame = (SipFrame) frame.getFrame(Protocol.SIP);
             final SipMessage msg = sipFrame.parse();
             final StreamId id = getStreamId(msg);
+            if (id == null) {
+                return;
+            }
             this.stats.count(msg);
             if (msg.isInfo() || msg.isOptions() || msg.isMessage()) {
                 return;

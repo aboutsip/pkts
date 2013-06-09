@@ -11,6 +11,7 @@ import com.aboutsip.yajpcap.frame.Frame;
 import com.aboutsip.yajpcap.frame.SipFrame;
 import com.aboutsip.yajpcap.packet.PacketParseException;
 import com.aboutsip.yajpcap.packet.sip.SipMessage;
+import com.aboutsip.yajpcap.packet.sip.SipParseException;
 import com.aboutsip.yajpcap.protocol.Protocol;
 
 /**
@@ -35,6 +36,8 @@ public final class SipCallIdFilter extends SipFilter {
                 final SipMessage msg = sipFrame.parse();
                 return msg.getCallIDHeader().getValue().equals(this.callId);
             }
+        } catch (final SipParseException e) {
+            throw new FilterException("Unable to process the frame due to SipParseException", e);
         } catch (final IOException e) {
             throw new FilterException("Unable to process the frame due to IOException", e);
         } catch (final PacketParseException e) {

@@ -8,6 +8,7 @@ import java.nio.ByteOrder;
 import com.aboutsip.buffer.Buffer;
 import com.aboutsip.buffer.Buffers;
 import com.aboutsip.yajpcap.filters.Filter;
+import com.aboutsip.yajpcap.filters.FilterException;
 import com.aboutsip.yajpcap.filters.FilterFactory;
 import com.aboutsip.yajpcap.filters.FilterParseException;
 import com.aboutsip.yajpcap.frame.Frame;
@@ -69,12 +70,19 @@ public class Pcap {
 
         Frame frame = null;
         while ((frame = framer.frame(null, this.buffer)) != null) {
-            final long time = frame.getArrivalTime();
-            this.framerManager.tick(time);
-            if (this.filter == null) {
-                callback.nextFrame(frame);
-            } else if (this.filter != null && this.filter.accept(frame)) {
-                callback.nextFrame(frame);
+            try {
+                final long time = frame.getArrivalTime();
+                this.framerManager.tick(time);
+                if (this.filter == null) {
+                    callback.nextFrame(frame);
+                } else if (this.filter != null && this.filter.accept(frame)) {
+                    callback.nextFrame(frame);
+                }
+            } catch (final FilterException e) {
+                // TODO: use the callback instead to signal
+                // exceptions
+                System.err
+                        .println("WARN: the filter complained about the last frame. Msg (if any) - " + e.getMessage());
             }
         }
     }

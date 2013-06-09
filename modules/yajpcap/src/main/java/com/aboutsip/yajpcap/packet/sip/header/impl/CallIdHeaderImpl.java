@@ -17,6 +17,10 @@ public final class CallIdHeaderImpl extends SipHeaderImpl implements CallIdHeade
         super(CallIdHeader.NAME, value);
     }
 
+    public CallIdHeaderImpl(final boolean compactForm, final Buffer value) {
+        super(compactForm ? CallIdHeader.COMPACT_NAME : CallIdHeader.NAME, value);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -27,6 +31,17 @@ public final class CallIdHeaderImpl extends SipHeaderImpl implements CallIdHeade
 
     public static CallIdHeader frame(final Buffer buffer) throws SipParseException {
         return new CallIdHeaderImpl(buffer);
+    }
+
+    /**
+     * 
+     * @param compactForm
+     * @param buffer
+     * @return
+     * @throws SipParseException
+     */
+    public static CallIdHeader frame(final boolean compactForm, final Buffer buffer) throws SipParseException {
+        return new CallIdHeaderImpl(compactForm, buffer);
     }
 
     @Override
