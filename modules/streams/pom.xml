@@ -3,26 +3,26 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.aboutsip</groupId>
-    <artifactId>root-pom</artifactId>
-    <version>0.9.1-SNAPSHOT</version>
+    <groupId>io.pkts</groupId>
+    <artifactId>pkts-parent</artifactId>
+    <version>0.9.2-SNAPSHOT</version>
   </parent>
 
-  <name>Yajpcap Streams</name>
-  <groupId>com.aboutsip</groupId>
-  <artifactId>aboutsip-streams</artifactId>
+  <name>Pkts Streams</name>
+  <groupId>io.pkts</groupId>
+  <artifactId>pkts-streams</artifactId>
   <packaging>jar</packaging>
   <dependencies>
 
     <!-- Compile Dependencies -->
     <dependency>
-      <groupId>com.aboutsip</groupId>
-      <artifactId>yajpcap</artifactId>
+      <groupId>io.pkts</groupId>
+      <artifactId>core</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>com.aboutsip</groupId>
-      <artifactId>aboutsip-sdp</artifactId>
+      <groupId>io.pkts</groupId>
+      <artifactId>pkts-sdp</artifactId>
     </dependency>
 
    <dependency> 

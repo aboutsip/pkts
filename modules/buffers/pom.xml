@@ -3,14 +3,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.aboutsip</groupId>
-    <artifactId>root-pom</artifactId>
-    <version>0.9.1-SNAPSHOT</version>
+    <groupId>io.pkts</groupId>
+    <artifactId>pkts-parent</artifactId>
+    <version>0.9.2-SNAPSHOT</version>
   </parent>
 
-  <name>Yet Another Java Buffer Lib</name>
-  <groupId>com.aboutsip</groupId>
-  <artifactId>aboutsip-buffers</artifactId>
+  <name>Pkts Buffer Lib</name>
+  <groupId>io.pkts</groupId>
+  <artifactId>pkts-buffers</artifactId>
   <packaging>jar</packaging>
 
   <dependencies>
