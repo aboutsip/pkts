@@ -2,11 +2,44 @@
 <project>
 
   <modelVersion>4.0.0</modelVersion>
+  <prerequisites>
+     <maven>3.0.4</maven>
+  </prerequisites>
+
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
+
+
   <name>Pkts IO</name>
   <groupId>io.pkts</groupId>
   <artifactId>pkts-parent</artifactId>
   <version>0.9.2-SNAPSHOT</version>
   <packaging>pom</packaging>
+  <description>PKTS IO - A pure java based library for manipulating pcaps</description>
+  <licenses>
+     <license>
+       <name>The Apache Software License, Version 2.0</name>
+       <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+       <distribution>repo</distribution>
+     </license>
+   </licenses>
+
+   <developers>
+      <developer>
+         <name>Jonas Borjesson</name>
+         <email>jonas@jonasborjesson.com</email>
+         <timezone>-8</timezone>
+      </developer>
+   </developers>
+
+  <scm>
+    <connection>scm:git:git@github.com:aboutsip/pkts.git</connection>
+    <developerConnection>scm:git:git@github.com:aboutsip/pkts.git</developerConnection>
+    <url>git@github.com:aboutsip/pkts.git</url>
+  </scm>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
