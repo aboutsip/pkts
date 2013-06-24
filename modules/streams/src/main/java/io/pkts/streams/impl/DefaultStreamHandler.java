@@ -27,7 +27,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * A default {@link StreamHandler} that will try and figure out if the
  * {@link Frame}s it received belongs to a particular {@link Stream} and if so,
@@ -173,7 +172,6 @@ public final class DefaultStreamHandler implements StreamHandler {
 
         return null;
     }
-
 
     @Override
     public Map<StreamId, ? extends Stream> getStreams() {

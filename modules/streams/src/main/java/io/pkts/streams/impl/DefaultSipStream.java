@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 
-
 /**
  * The {@link DefaultSipStream} implements a complete SIP state machine in order
  * to figure out what SIP messages belongs to a particular SIP dialog etc.
@@ -81,6 +80,16 @@ public final class DefaultSipStream implements SipStream {
     @Override
     public void save(final String filename) {
         throw new RuntimeException("sorry, not implemeneted yet");
+    }
+
+    @Override
+    public long getTimeOfFirstPacket() {
+        return -1;
+    }
+
+    @Override
+    public long getTimeOfLastPacket() {
+        return -1;
     }
 
 }

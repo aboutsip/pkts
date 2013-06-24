@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 
-
 /**
  * The {@link BasicSipStream} only does some very basic analysis of the SIP
  * messages in order to determine which dialog the message belongs to. It is
@@ -132,5 +131,15 @@ public class BasicSipStream implements SipStream {
                 out.close();
             }
         }
+    }
+
+    @Override
+    public long getTimeOfFirstPacket() {
+        return this.fsm.getTimeOfFirstMessage();
+    }
+
+    @Override
+    public long getTimeOfLastPacket() {
+        return this.fsm.getTimeOfLastMessage();
     }
 }

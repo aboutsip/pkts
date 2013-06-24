@@ -8,7 +8,6 @@ import static io.pkts.streams.SipStream.CallState.COMPLETED;
 import static io.pkts.streams.SipStream.CallState.FAILED;
 import static io.pkts.streams.SipStream.CallState.REDIRECT;
 import static io.pkts.streams.SipStream.CallState.REJECTED;
-
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.SipRequest;
@@ -26,7 +25,6 @@ import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * A "state machine" for SIP but really mainly for SIP VoIP calls. The reason
@@ -104,6 +102,34 @@ public final class SimpleCallStateMachine {
         this.currentState = CallState.START;
         this.callTransitions = new ArrayList<CallState>();
         this.messages = new TreeSet<SipMessage>(new SipMessageComparator());
+    }
+
+    /**
+     * The time of the very first message.
+     * 
+     * @return the arrival time of the first message seen so far or -1 (negative
+     *         one) in case we haven't seen any messages yet.
+     */
+    public long getTimeOfFirstMessage() {
+        if (this.messages.isEmpty()) {
+            return -1;
+        }
+
+        return this.messages.first().getArrivalTime();
+    }
+
+    /**
+     * Get the time of the very last message that we have seen so far.
+     * 
+     * @return the arrival time of the last message seen so far or -1 (negative
+     *         one) in case we haven't seen any messages yet.
+     */
+    public long getTimeOfLastMessage() {
+        if (this.messages.isEmpty()) {
+            return -1;
+        }
+
+        return this.messages.last().getArrivalTime();
     }
 
     public boolean isHandshakeCompleted() {
