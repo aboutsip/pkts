@@ -18,7 +18,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
@@ -517,8 +516,8 @@ public final class SimpleCallStateMachine {
      * 
      * @return
      */
-    public Iterator<SipMessage> getMessages() {
-        return this.messages.iterator();
+    public Iterable<SipMessage> getMessages() {
+        return this.messages;
     }
 
     /**

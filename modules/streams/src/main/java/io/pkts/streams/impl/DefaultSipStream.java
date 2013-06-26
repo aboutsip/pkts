@@ -10,7 +10,6 @@ import io.pkts.streams.StreamId;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Iterator;
 
 /**
  * The {@link DefaultSipStream} implements a complete SIP state machine in order
@@ -36,7 +35,7 @@ public final class DefaultSipStream implements SipStream {
     }
 
     @Override
-    public Iterator<SipMessage> getPackets() {
+    public Iterable<SipMessage> getPackets() {
         // TODO Auto-generated method stub
         return null;
     }
