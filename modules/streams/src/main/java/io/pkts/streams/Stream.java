@@ -9,8 +9,6 @@ import io.pkts.packet.Packet;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Iterator;
-
 
 /**
  * A {@link Stream} represents a set of {@link Packet}s that belong together.
@@ -26,7 +24,7 @@ public interface Stream<T extends Packet> {
      * 
      * @return
      */
-    Iterator<T> getPackets();
+    Iterable<T> getPackets();
 
     /**
      * Get the duration in microseconds of the stream. Note, see comment on
@@ -42,6 +40,30 @@ public interface Stream<T extends Packet> {
      *         all? Only one packet?), then -1 (negative one) will be returned.
      */
     long getDuration();
+
+    /**
+     * Get the arrival time of the very first packet in this stream.
+     * 
+     * Note, see comment on {@link Packet#getArrivalTime()} regarding the
+     * microsecond precision.
+     * 
+     * @return the arrival time of the first packet (in microseconds), -1
+     *         (negative one) in case this {@link Stream} doesn't contain any
+     *         packets.
+     */
+    long getTimeOfFirstPacket();
+
+    /**
+     * Get the arrival time of the last packet in this stream.
+     * 
+     * Note, see comment on {@link Packet#getArrivalTime()} regarding the
+     * microsecond precision.
+     * 
+     * @return the arrival time of the last packet (in microseconds), -1
+     *         (negative one) in case this {@link Stream} doesn't contain any
+     *         packets.
+     */
+    long getTimeOfLastPacket();
 
     /**
      * Get the unique {@link StreamId} for this particular {@link Stream}.

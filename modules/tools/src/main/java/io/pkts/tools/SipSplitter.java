@@ -10,23 +10,21 @@ import io.pkts.packet.sip.SipParseException;
 import io.pkts.streams.FragmentListener;
 import io.pkts.streams.SipStatistics;
 import io.pkts.streams.SipStream;
+import io.pkts.streams.SipStream.CallState;
 import io.pkts.streams.Stream;
 import io.pkts.streams.StreamHandler;
 import io.pkts.streams.StreamId;
 import io.pkts.streams.StreamListener;
-import io.pkts.streams.SipStream.CallState;
 import io.pkts.streams.impl.DefaultStreamHandler;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 
 /**
  * Simple class that takes one or more pcaps and separates out all SIP dialogs
@@ -77,19 +75,12 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
 
     public void saveAll(final Pcap pcap, final String directory) throws Exception {
         /*
-        final String dir = (directory == null) || directory.isEmpty() ? "." : directory;
-        for (final SipStream stream : this.streams) {
-            final StreamId id = stream.getStreamIdentifier();
-            final PcapOutputStream out = pcap.createOutputStream(new FileOutputStream(dir + "/" + id + ".pcap"));
-            try {
-                stream.write(out);
-            } catch (final IOException e) {
-                e.printStackTrace();
-            } finally {
-                out.flush();
-                out.close();
-            }
-        }
+         * final String dir = (directory == null) || directory.isEmpty() ? "." :
+         * directory; for (final SipStream stream : this.streams) { final
+         * StreamId id = stream.getStreamIdentifier(); final PcapOutputStream
+         * out = pcap.createOutputStream(new FileOutputStream(dir + "/" + id +
+         * ".pcap")); try { stream.write(out); } catch (final IOException e) {
+         * e.printStackTrace(); } finally { out.flush(); out.close(); } }
          */
     }
 
@@ -102,7 +93,6 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
         final String filename = "/home/jonas/development/private/aboutsip/modules/yajpcap/src/test/resources/com/aboutsip/yajpcap/sipp.pcap";
         // final String filename = "/home/jonas/development/private/aboutsip/big_pcaps/openser-udp-5060_01871_20121112132549.pcap";
 
-
         final long start = System.currentTimeMillis();
 
         final InputStream is = new FileInputStream(filename);
@@ -112,7 +102,6 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
         streamHandler.addStreamListener(splitter);
         pcap.loop(streamHandler);
         pcap.close();
-
 
         final long stop = System.currentTimeMillis();
         System.out.println("Processing time(s): " + (stop - start) / 1000.0);
@@ -215,9 +204,7 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
         checkPDD(stream);
         checkDuration(stream);
 
-        final Iterator<SipMessage> it = stream.getPackets();
-        while (it.hasNext()) {
-            final SipMessage msg = it.next();
+        for (final SipMessage msg : stream.getPackets()) {
             try {
                 if (msg.isInvite()) {
                     ++this.calls;

@@ -14,8 +14,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Iterator;
-
 
 /**
  * The {@link BasicSipStream} only does some very basic analysis of the SIP
@@ -66,7 +64,7 @@ public class BasicSipStream implements SipStream {
      * {@inheritDoc}
      */
     @Override
-    public Iterator<SipMessage> getPackets() {
+    public Iterable<SipMessage> getPackets() {
         return this.fsm.getMessages();
     }
 
@@ -96,9 +94,8 @@ public class BasicSipStream implements SipStream {
 
     @Override
     public void write(final OutputStream out) throws IOException {
-        final Iterator<SipMessage> it = this.fsm.getMessages();
-        while (it.hasNext()) {
-            it.next().write(out);
+        for (final SipMessage msg : this.fsm.getMessages()) {
+            msg.write(out);
         }
     }
 
@@ -132,5 +129,15 @@ public class BasicSipStream implements SipStream {
                 out.close();
             }
         }
+    }
+
+    @Override
+    public long getTimeOfFirstPacket() {
+        return this.fsm.getTimeOfFirstMessage();
+    }
+
+    @Override
+    public long getTimeOfLastPacket() {
+        return this.fsm.getTimeOfLastMessage();
     }
 }

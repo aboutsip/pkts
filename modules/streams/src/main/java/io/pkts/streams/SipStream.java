@@ -5,8 +5,6 @@ import io.pkts.packet.sip.SipParseException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Iterator;
-
 
 /**
  * Represents a stream of related SIP messages.
@@ -21,7 +19,7 @@ public interface SipStream extends Stream<SipMessage> {
      * {@inheritDoc}
      */
     @Override
-    Iterator<SipMessage> getPackets();
+    Iterable<SipMessage> getPackets();
 
     /**
      * Post Dial Delay (PDD) is defined as the time it takes between the INVITE
