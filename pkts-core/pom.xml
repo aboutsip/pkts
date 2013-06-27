@@ -9,7 +9,7 @@
 
   <name>Core Pkts</name>
   <groupId>io.pkts</groupId>
-  <artifactId>core</artifactId>
+  <artifactId>pkts-core</artifactId>
   <packaging>jar</packaging>
   <dependencies>
 

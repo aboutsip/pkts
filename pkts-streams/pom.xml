@@ -16,7 +16,7 @@
     <!-- Compile Dependencies -->
     <dependency>
       <groupId>io.pkts</groupId>
-      <artifactId>core</artifactId>
+      <artifactId>pkts-core</artifactId>
     </dependency>
 
     <dependency>

@@ -45,11 +45,11 @@
   </properties>
 
   <modules>
-    <module>buffers</module>
-    <module>sdp</module>
-    <module>core</module>
-    <module>streams</module>
-    <module>tools</module>
+    <module>pkts-buffers</module>
+    <module>pkts-sdp</module>
+    <module>pkts-core</module>
+    <module>pkts-streams</module>
+    <module>pkts-tools</module>
   </modules>
 
   <dependencyManagement>
@@ -73,7 +73,7 @@
 
     <dependency>
       <groupId>io.pkts</groupId>
-      <artifactId>core</artifactId>
+      <artifactId>pkts-core</artifactId>
       <version>${project.version}</version>
       <type>jar</type>
       <scope>compile</scope>
