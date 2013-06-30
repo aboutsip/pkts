@@ -49,6 +49,7 @@
     <module>pkts-sdp</module>
     <module>pkts-core</module>
     <module>pkts-streams</module>
+    <module>pkts-examples</module>
     <module>pkts-tools</module>
   </modules>
 

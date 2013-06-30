@@ -115,7 +115,7 @@ public final class DefaultStreamHandler implements StreamHandler {
 
             // TODO: could actually be more.
             final Type parameterArgType = parameterArgTypes[0];
-            final Class parameterArgClass = (Class) parameterArgType;
+            final Class<?> parameterArgClass = (Class<?>) parameterArgType;
             if (parameterArgClass.equals(SipMessage.class)) {
                 if (this.sipStreamHandler == null) {
                     this.sipStreamHandler = new SipStreamHandler(this.framerManager);

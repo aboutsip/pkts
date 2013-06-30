@@ -11,11 +11,13 @@ import io.pkts.frame.PcapGlobalHeader;
 import io.pkts.framer.FramerManager;
 import io.pkts.framer.PcapFramer;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
-
 
 /**
  * 
@@ -82,8 +84,8 @@ public class Pcap {
             } catch (final FilterException e) {
                 // TODO: use the callback instead to signal
                 // exceptions
-                System.err
-                        .println("WARN: the filter complained about the last frame. Msg (if any) - " + e.getMessage());
+                System.err.println("WARN: the filter complained about the last frame. Msg (if any) - " +
+                        e.getMessage());
             }
         }
     }
@@ -115,6 +117,31 @@ public class Pcap {
         final Buffer stream = Buffers.wrap(is);
         final PcapGlobalHeader header = PcapGlobalHeader.parse(stream);
         return new Pcap(header, stream);
+    }
+
+    /**
+     * 
+     * @param file
+     *            the pcap file
+     * @return a new {@link Pcap}
+     * @throws FileNotFoundException
+     *             in case the file doesn't exist.
+     * @throws IOException
+     */
+    public static Pcap openStream(final File file) throws FileNotFoundException, IOException {
+        final InputStream is = new FileInputStream(file);
+        return openStream(is);
+    }
+
+    /**
+     * 
+     * @param file
+     * @return
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public static Pcap openStream(final String file) throws FileNotFoundException, IOException {
+        return openStream(new File(file));
     }
 
     public void close() {
