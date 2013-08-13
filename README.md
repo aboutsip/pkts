@@ -88,15 +88,15 @@ Most Java IDE:s are capable of importing Maven based projects, allowing for a sm
 
 ## Start coding!
 
-So, you have succerssfully loaded all the code so what is the next steps. Well, check out the readme files under each sub-project to get a description of what that module is supposed to do and how to get started with the project. If you want to contribute to any project, please read the section about contribution, specifially, please checkout the section about coding principals and the style guide.
+So, you have succerssfully loaded all the code so what is the next steps. Well, check out the readme files under each sub-project to get a description of what that module is supposed to do and how to get started with the project. If you want to contribute to any project, please read the section about contribution, specifially, please checkout the section about coding principles and the style guide.
 
 If you have ideas of your own, please file a ticket so when you do submit a pull request, we know what the intent of this feature is, this also gives us a way of communicating about features.
 
 If you just want to get your hands dirty then feel free to check out the open issues. If there is anything you would like to start tackling, just assign the task to yourself and get cranking. 
 
-## Code Principals
+## Code Principles
 
-At aboutsip, we try to follow these general principals and by adhering to these simple guidelines, we feel that our code is readable, easy to follow and is testable (even though we can always do better so please give us constructive feedback):
+At aboutsip, we try to follow these general principles and by adhering to these simple guidelines, we feel that our code is readable, easy to follow and is testable (even though we can always do better so please give us constructive feedback):
 * Write code so others can read and understand it.
 * Write testable code.
 * Unit tests everything, but no need to strive for 100%. Try to hit the 85% mark.
