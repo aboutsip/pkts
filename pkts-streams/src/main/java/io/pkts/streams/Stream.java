@@ -9,6 +9,7 @@ import io.pkts.packet.Packet;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collection;
 
 /**
  * A {@link Stream} represents a set of {@link Packet}s that belong together.
@@ -24,7 +25,7 @@ public interface Stream<T extends Packet> {
      * 
      * @return
      */
-    Iterable<T> getPackets();
+    Collection<T> getPackets();
 
     /**
      * Get the duration in microseconds of the stream. Note, see comment on

@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collection;
 
 /**
  * The {@link BasicSipStream} only does some very basic analysis of the SIP
@@ -52,6 +53,7 @@ public class BasicSipStream implements SipStream {
         this.fsm = new SimpleCallStateMachine(this.streamIdentifier.asString());
     }
 
+    @Override
     public void addMessage(final SipMessage message) throws SipParseException {
         this.fsm.onEvent(message);
     }
@@ -64,7 +66,7 @@ public class BasicSipStream implements SipStream {
      * {@inheritDoc}
      */
     @Override
-    public Iterable<SipMessage> getPackets() {
+    public Collection<SipMessage> getPackets() {
         return this.fsm.getMessages();
     }
 
@@ -132,6 +134,12 @@ public class BasicSipStream implements SipStream {
     }
 
     @Override
+    public void save(final OutputStream out) throws IOException {
+        this.globalHeader.write(out);
+        this.write(out);
+    }
+
+    @Override
     public long getTimeOfFirstPacket() {
         return this.fsm.getTimeOfFirstMessage();
     }
@@ -140,4 +148,10 @@ public class BasicSipStream implements SipStream {
     public long getTimeOfLastPacket() {
         return this.fsm.getTimeOfLastMessage();
     }
+
+    @Override
+    public SipStream createEmptyClone() {
+        return new BasicSipStream(this.globalHeader, this.streamIdentifier);
+    }
+
 }

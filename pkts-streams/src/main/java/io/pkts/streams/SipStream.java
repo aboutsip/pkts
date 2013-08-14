@@ -1,10 +1,13 @@
 package io.pkts.streams;
 
+import io.pkts.frame.PcapGlobalHeader;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipParseException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Collection;
 
 /**
  * Represents a stream of related SIP messages.
@@ -19,7 +22,7 @@ public interface SipStream extends Stream<SipMessage> {
      * {@inheritDoc}
      */
     @Override
-    Iterable<SipMessage> getPackets();
+    Collection<SipMessage> getPackets();
 
     /**
      * Post Dial Delay (PDD) is defined as the time it takes between the INVITE
@@ -98,6 +101,52 @@ public interface SipStream extends Stream<SipMessage> {
      * @param filename
      */
     void save(String filename) throws FileNotFoundException, IOException;
+
+    /**
+     * Save this {@link SipStream} to the specified {@link OutputStream}. The
+     * difference between this method and {@link #write(OutputStream)} is that
+     * the latter assumes that the pcap headers etc already have been written to
+     * the stream. However, this method will write this {@link SipStream} as a
+     * standalone pcap.
+     * 
+     * @param out
+     * @throws IOException
+     */
+    void save(OutputStream out) throws IOException;
+
+    /**
+     * Create an empty clone of this {@link SipStream}. What this means is that
+     * you get a {@link SipStream} with the same {@link StreamId} and underlying
+     * {@link PcapGlobalHeader} (which you really do not need to know) but
+     * otherwise it is empty. I.e., it doesn't contain any {@link SipMessage}s.
+     * 
+     * Use this method when you e.g. have a {@link SipStream} that you want to
+     * split in two. A typical scenario is if you have a {@link SipStream} that
+     * went through a SIP Proxy but you want to split this stream in one "left"
+     * side and one "right" side. You do so by figuring out which message
+     * belongs to each side and then create two empty clones and then drive the
+     * traffic from each side through the new {@link SipStream}s. This will then
+     * give you two separate {@link SipStream} but that still will have the
+     * stats available.
+     * 
+     * @return
+     */
+    SipStream createEmptyClone();
+
+    /**
+     * Add a {@link SipMessage} to this {@link SipStream}. By doing so you will
+     * force the {@link SipStream} to move its internal state machine along
+     * since it just "received" a new {@link SipMessage}.
+     * 
+     * @param message
+     * @throws IllegalArgumentException
+     *             in case the message you are trying to add does not have the
+     *             same {@link StreamId}.
+     * @throws SipParseException
+     *             in case something goes wrong while parsing the
+     *             {@link SipMessage}
+     */
+    void addMessage(SipMessage message) throws IllegalArgumentException, SipParseException;
 
     /**
      * Even though SIP can be used for so much more than just establishing

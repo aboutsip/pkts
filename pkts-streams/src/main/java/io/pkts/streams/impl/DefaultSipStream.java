@@ -10,6 +10,7 @@ import io.pkts.streams.StreamId;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collection;
 
 /**
  * The {@link DefaultSipStream} implements a complete SIP state machine in order
@@ -35,7 +36,7 @@ public final class DefaultSipStream implements SipStream {
     }
 
     @Override
-    public Iterable<SipMessage> getPackets() {
+    public Collection<SipMessage> getPackets() {
         // TODO Auto-generated method stub
         return null;
     }
@@ -89,6 +90,23 @@ public final class DefaultSipStream implements SipStream {
     @Override
     public long getTimeOfLastPacket() {
         return -1;
+    }
+
+    @Override
+    public void save(final OutputStream out) throws IOException {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public SipStream createEmptyClone() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void addMessage(final SipMessage message) throws IllegalArgumentException, SipParseException {
+        // TODO Auto-generated method stub
+
     }
 
 }
