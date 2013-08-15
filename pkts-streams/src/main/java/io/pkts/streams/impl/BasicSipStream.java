@@ -14,7 +14,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * The {@link BasicSipStream} only does some very basic analysis of the SIP
@@ -66,7 +66,7 @@ public class BasicSipStream implements SipStream {
      * {@inheritDoc}
      */
     @Override
-    public Collection<SipMessage> getPackets() {
+    public List<SipMessage> getPackets() {
         return this.fsm.getMessages();
     }
 

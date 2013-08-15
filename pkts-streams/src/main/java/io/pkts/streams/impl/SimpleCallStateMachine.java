@@ -16,7 +16,6 @@ import io.pkts.streams.SipStream.CallState;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -517,8 +516,8 @@ public final class SimpleCallStateMachine {
      * 
      * @return
      */
-    public Collection<SipMessage> getMessages() {
-        return this.messages;
+    public List<SipMessage> getMessages() {
+        return new ArrayList<SipMessage>(this.messages);
     }
 
     /**
