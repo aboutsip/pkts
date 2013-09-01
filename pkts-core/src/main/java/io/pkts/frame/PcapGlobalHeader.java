@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
 
-
 /**
  * 
  * @author jonas@jonasborjesson.com
@@ -102,7 +101,7 @@ public final class PcapGlobalHeader {
 
     public PcapGlobalHeader(final ByteOrder byteOrder, final byte[] body) {
         assert byteOrder != null;
-        assert (body != null) && (body.length == 20);
+        assert body != null && body.length == 20;
         this.byteOrder = byteOrder;
         this.body = body;
     }
@@ -169,20 +168,20 @@ public final class PcapGlobalHeader {
 
     public static final int getUnsignedShort(final int offset, final byte[] buffer, final ByteOrder byteOrder) {
         if (byteOrder == ByteOrder.BIG_ENDIAN) {
-            return ((buffer[offset + 0] & 0xff) << 8) | (buffer[offset + 1] & 0xff);
+            return (buffer[offset + 0] & 0xff) << 8 | buffer[offset + 1] & 0xff;
         }
 
-        return ((buffer[offset + 1] & 0xff) << 8) | (buffer[offset + 0] & 0xff);
+        return (buffer[offset + 1] & 0xff) << 8 | buffer[offset + 0] & 0xff;
     }
 
     public static final long getUnsignedInt(final int offset, final byte[] buffer, final ByteOrder byteOrder) {
         if (byteOrder == ByteOrder.BIG_ENDIAN) {
-            return ((buffer[offset + 0] & 0xff) << 24) | ((buffer[offset + 1] & 0xff) << 16)
-                    | ((buffer[offset + 2] & 0xff) << 8) | (buffer[offset + 3] & 0xff);
+            return (buffer[offset + 0] & 0xff) << 24 | (buffer[offset + 1] & 0xff) << 16
+                    | (buffer[offset + 2] & 0xff) << 8 | buffer[offset + 3] & 0xff;
         }
 
-        return ((buffer[offset + 3] & 0xff) << 24) | ((buffer[offset + 2] & 0xff) << 16)
-                | ((buffer[offset + 1] & 0xff) << 8) | (buffer[offset + 0] & 0xff);
+        return (buffer[offset + 3] & 0xff) << 24 | (buffer[offset + 2] & 0xff) << 16
+                | (buffer[offset + 1] & 0xff) << 8 | buffer[offset + 0] & 0xff;
     }
 
     public static final int getInt(final int offset, final byte[] buffer, final ByteOrder byteOrder) {
@@ -195,11 +194,11 @@ public final class PcapGlobalHeader {
         final byte[] header = h.getArray();
 
         ByteOrder byteOrder = null;
-        if ((header[0] == MAGIC_BIG_ENDIAN[0]) && (header[1] == MAGIC_BIG_ENDIAN[1])
-                && (header[2] == MAGIC_BIG_ENDIAN[2]) && (header[3] == MAGIC_BIG_ENDIAN[3])) {
+        if (header[0] == MAGIC_BIG_ENDIAN[0] && header[1] == MAGIC_BIG_ENDIAN[1]
+                && header[2] == MAGIC_BIG_ENDIAN[2] && header[3] == MAGIC_BIG_ENDIAN[3]) {
             byteOrder = ByteOrder.BIG_ENDIAN;
-        } else if ((header[0] == MAGIC_LITTLE_ENDIAN[0]) && (header[1] == MAGIC_LITTLE_ENDIAN[1])
-                && (header[2] == MAGIC_LITTLE_ENDIAN[2]) && (header[3] == MAGIC_LITTLE_ENDIAN[3])) {
+        } else if (header[0] == MAGIC_LITTLE_ENDIAN[0] && header[1] == MAGIC_LITTLE_ENDIAN[1]
+                && header[2] == MAGIC_LITTLE_ENDIAN[2] && header[3] == MAGIC_LITTLE_ENDIAN[3]) {
             byteOrder = ByteOrder.LITTLE_ENDIAN;
         } else {
             throw new IllegalArgumentException("Unknown header type");
@@ -237,7 +236,7 @@ public final class PcapGlobalHeader {
     }
 
     public static long unsignedInt(final byte a, final byte b, final byte c, final byte d) {
-        return ((a & 0xff) << 24) | ((b & 0xff) << 16) | ((c & 0xff) << 8) | (d & 0xff);
+        return (a & 0xff) << 24 | (b & 0xff) << 16 | (c & 0xff) << 8 | d & 0xff;
     }
 
 }

@@ -7,18 +7,17 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import io.pkts.YajTestBase;
-import io.pkts.frame.Frame;
-import io.pkts.frame.Layer1Frame;
-import io.pkts.frame.SDPFrame;
-import io.pkts.frame.UDPFrame;
+import io.pkts.PktsTestBase;
 import io.pkts.framer.EthernetFramer;
+import io.pkts.packet.MACPacket;
+import io.pkts.packet.PCapPacket;
+import io.pkts.packet.Packet;
+import io.pkts.packet.UDPPacket;
 import io.pkts.protocol.Protocol;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 
 /**
  * This class contains a set of test cases that relate to the the common
@@ -26,22 +25,20 @@ import org.junit.Test;
  * 
  * @author jonas@jonasborjesson.com
  */
-public final class CommonFrameTest extends YajTestBase {
+public final class CommonFrameTest extends PktsTestBase {
 
     /**
      * A default frame, which contains a full capture of Ethernet II -> IPv4 ->
      * UDP -> SIP -> SDP
      */
-    private Frame defaultFrame;
+    private MACPacket defaultFrame;
 
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
-
-        final Layer1Frame parent = mock(Layer1Frame.class);
-        final EthernetFramer framer = new EthernetFramer(this.framerManager);
-        this.defaultFrame = framer.frame(parent, this.ethernetFrameBuffer);
+        final EthernetFramer framer = new EthernetFramer();
+        this.defaultFrame = framer.frame(mock(PCapPacket.class), this.ethernetFrameBuffer);
     }
 
     /**
@@ -91,12 +88,12 @@ public final class CommonFrameTest extends YajTestBase {
         // testing the actual SDP, just do a very basic test
         // so that the data within the sdp frame actually
         // seems to be an SDP
-        final SDPFrame f = (SDPFrame) this.defaultFrame.getFrame(Protocol.SDP);
+        final Packet f = this.defaultFrame.getPacket(Protocol.SDP);
         assertThat(f.getProtocol(), is(Protocol.SDP));
-        final String sdp = f.getRawSDP().toString();
+        final String sdp = f.toString();
         assertTrue(sdp.contains("m=audio 6001 RTP/AVP 0"));
 
-        final UDPFrame udpFrame = (UDPFrame) this.defaultFrame.getFrame(Protocol.UDP);
+        final UDPPacket udpFrame = (UDPPacket) this.defaultFrame.getPacket(Protocol.UDP);
         assertThat(udpFrame.getSourcePort(), is(5060));
     }
 

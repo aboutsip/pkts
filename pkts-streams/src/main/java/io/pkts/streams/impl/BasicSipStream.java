@@ -5,7 +5,7 @@ package io.pkts.streams.impl;
 
 import io.pkts.PcapOutputStream;
 import io.pkts.frame.PcapGlobalHeader;
-import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.sip.SipPacket;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.streams.SipStream;
 import io.pkts.streams.StreamId;
@@ -54,7 +54,7 @@ public class BasicSipStream implements SipStream {
     }
 
     @Override
-    public void addMessage(final SipMessage message) throws SipParseException {
+    public void addMessage(final SipPacket message) throws SipParseException {
         this.fsm.onEvent(message);
     }
 
@@ -66,7 +66,7 @@ public class BasicSipStream implements SipStream {
      * {@inheritDoc}
      */
     @Override
-    public List<SipMessage> getPackets() {
+    public List<SipPacket> getPackets() {
         return this.fsm.getMessages();
     }
 
@@ -96,7 +96,7 @@ public class BasicSipStream implements SipStream {
 
     @Override
     public void write(final OutputStream out) throws IOException {
-        for (final SipMessage msg : this.fsm.getMessages()) {
+        for (final SipPacket msg : this.fsm.getMessages()) {
             msg.write(out);
         }
     }

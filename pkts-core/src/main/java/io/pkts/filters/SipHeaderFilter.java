@@ -5,15 +5,13 @@ package io.pkts.filters;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
-import io.pkts.frame.Frame;
-import io.pkts.frame.SipFrame;
+import io.pkts.packet.Packet;
 import io.pkts.packet.PacketParseException;
-import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.sip.SipPacket;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
-
 
 /**
  * @author jonas@jonasborjesson.com
@@ -31,11 +29,10 @@ public class SipHeaderFilter extends SipFilter {
      * {@inheritDoc}
      */
     @Override
-    public boolean accept(final Frame frame) throws FilterException {
+    public boolean accept(final Packet packet) throws FilterException {
         try {
-            if (super.accept(frame)) {
-                final SipFrame sipFrame = (SipFrame) frame.getFrame(Protocol.SIP);
-                final SipMessage msg = sipFrame.parse();
+            if (super.accept(packet)) {
+                final SipPacket msg = (SipPacket) packet.getPacket(Protocol.SIP);
                 final SipHeader header = msg.getHeader(this.name);
                 if (header == null) {
                     return false;

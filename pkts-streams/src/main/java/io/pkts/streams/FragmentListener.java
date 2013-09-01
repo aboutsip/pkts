@@ -3,7 +3,6 @@
  */
 package io.pkts.streams;
 
-import io.pkts.frame.IPFrame;
 import io.pkts.packet.IPPacket;
 
 /**
@@ -73,6 +72,6 @@ public interface FragmentListener {
      *         listener received, the application must then be prepared to
      *         receive fragmented frames.
      */
-    IPFrame handleFragment(IPFrame ipFrame);
+    IPPacket handleFragment(IPPacket ipPacket);
 
 }

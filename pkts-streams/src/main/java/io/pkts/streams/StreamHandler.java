@@ -5,7 +5,7 @@ package io.pkts.streams;
 
 import io.pkts.FrameHandler;
 import io.pkts.packet.Packet;
-import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.sip.SipPacket;
 
 import java.util.Map;
 
@@ -40,7 +40,7 @@ public interface StreamHandler extends FrameHandler {
     void setFragmentListener(FragmentListener listener);
 
     /**
-     * If there is a registered {@link StreamListener} for {@link SipMessage}s
+     * If there is a registered {@link StreamListener} for {@link SipPacket}s
      * then this {@link StreamHandler} will start processing SIP messages for
      * which you can get all the statistics for through this method.
      * 

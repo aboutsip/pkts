@@ -4,25 +4,22 @@
 package io.pkts.framer;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.frame.Layer3Frame;
-import io.pkts.frame.UDPFrame;
+import io.pkts.packet.IPPacket;
+import io.pkts.packet.UDPPacket;
+import io.pkts.packet.impl.UdpPacketImpl;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
 
-
 /**
  * @author jonas@jonasborjesson.com
  */
-public class UDPFramer implements Layer4Framer {
-
-    private final FramerManager framerManager;
+public class UDPFramer implements Framer<IPPacket> {
 
     /**
      * 
      */
-    public UDPFramer(final FramerManager framerManager) {
-        this.framerManager = framerManager;
+    public UDPFramer() {
     }
 
     /**
@@ -37,7 +34,7 @@ public class UDPFramer implements Layer4Framer {
      * {@inheritDoc}
      */
     @Override
-    public UDPFrame frame(final Layer3Frame parent, final Buffer buffer) throws IOException {
+    public UDPPacket frame(final IPPacket parent, final Buffer buffer) throws IOException {
         if (parent == null) {
             throw new IllegalArgumentException("The parent frame cannot be null");
         }
@@ -46,8 +43,11 @@ public class UDPFramer implements Layer4Framer {
         // read the 8 bytes containing all the header fields
         // and the rest is just user data (payload of the udp packet)
         final Buffer headers = buffer.readBytes(8);
-        final Buffer data = buffer.slice();
-        return new UDPFrame(this.framerManager, parent.getPcapGlobalHeader(), parent, headers, data);
+        final Buffer payload = buffer.slice();
+        if (payload.isEmpty()) {
+            return new UdpPacketImpl(parent, headers, null);
+        }
+        return new UdpPacketImpl(parent, headers, payload);
     }
 
     @Override

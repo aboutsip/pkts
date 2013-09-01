@@ -4,26 +4,23 @@
 package io.pkts.framer;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.frame.Layer4Frame;
-import io.pkts.frame.Layer7Frame;
-import io.pkts.frame.RtpFrame;
+import io.pkts.packet.TransportPacket;
+import io.pkts.packet.rtp.RtpPacket;
+import io.pkts.packet.rtp.impl.RtpPacketImpl;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
 
-
 /**
  * @author jonas@jonasborjesson.com
  */
-public final class RTPFramer implements Layer7Framer {
-
-    private final FramerManager framerManager;
+public final class RTPFramer implements Framer<TransportPacket> {
 
     /**
      * 
      */
-    public RTPFramer(final FramerManager framerManager) {
-        this.framerManager = framerManager;
+    public RTPFramer() {
+        // left empty intentionally
     }
 
     @Override
@@ -67,7 +64,7 @@ public final class RTPFramer implements Layer7Framer {
     }
 
     @Override
-    public Layer7Frame frame(final Layer4Frame parent, final Buffer buffer) throws IOException {
+    public RtpPacket frame(final TransportPacket parent, final Buffer buffer) throws IOException {
         if (parent == null) {
             throw new IllegalArgumentException("The parent frame cannot be null");
         }
@@ -91,7 +88,6 @@ public final class RTPFramer implements Layer7Framer {
         }
 
         final Buffer payload = buffer.slice();
-        return new RtpFrame(this.framerManager, parent.getPcapGlobalHeader(), parent, headers, payload);
+        return new RtpPacketImpl(parent, headers, payload);
     }
-
 }

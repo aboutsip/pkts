@@ -7,13 +7,13 @@ import io.pkts.packet.impl.ApplicationPacket;
 
 import java.io.IOException;
 
-
 /**
  * @author jonas@jonasborjesson.com
  */
 public interface RtpPacket extends ApplicationPacket {
 
-    int getVersion() throws IOException;
+    @Override
+    int getVersion();
 
     boolean hasPadding() throws IOException;
 

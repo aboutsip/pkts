@@ -4,23 +4,20 @@
 package io.pkts.framer;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.frame.IPv4Frame;
-import io.pkts.frame.Layer2Frame;
+import io.pkts.packet.IPPacket;
+import io.pkts.packet.MACPacket;
+import io.pkts.packet.impl.IPPacketImpl;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
-
 
 /**
  * @author jonas@jonasborjesson.com
  * 
  */
-public class IPv4Framer implements Layer3Framer {
+public class IPv4Framer implements Framer<MACPacket> {
 
-    private final FramerManager framerManager;
-
-    public IPv4Framer(final FramerManager framerManager) {
-        this.framerManager = framerManager;
+    public IPv4Framer() {
     }
 
     /**
@@ -35,18 +32,10 @@ public class IPv4Framer implements Layer3Framer {
      * {@inheritDoc}
      */
     @Override
-    public IPv4Frame frame(final Layer2Frame parent, final Buffer payload) throws IOException {
+    public IPPacket frame(final MACPacket parent, final Buffer payload) throws IOException {
 
         if (parent == null) {
             throw new IllegalArgumentException("The parent frame cannot be null");
-        }
-
-        Layer2Frame parentFrame = null;
-        try {
-            parentFrame = parent;
-        } catch (final ClassCastException e) {
-            throw new IllegalArgumentException("The parent frame must be of type "
-                    + Layer2Frame.class.getCanonicalName());
         }
 
         // the ipv4 headers are always 20 bytes unless
@@ -93,18 +82,6 @@ public class IPv4Framer implements Layer3Framer {
         // byte 17 - 20
         // final int destIp = headers.readInt();
 
-        // System.out.println(version);
-        // System.out.println(length);
-        // System.out.println(dscp);
-        // System.out.println(ecn);
-        // System.out.println(totalLength);
-        // System.out.println(id);
-        // System.out.println(ttl);
-        // System.out.println(protocol);
-        // System.out.println(checkSum);
-        // System.out.println(sourceIp);
-        // System.out.println(destIp);
-
         // if the length is greater than 5, then the frame
         // contains extra options so read those as well
         int options = 0;
@@ -115,9 +92,7 @@ public class IPv4Framer implements Layer3Framer {
         }
 
         final Buffer data = payload.slice();
-
-        return new IPv4Frame(this.framerManager, parentFrame.getPcapGlobalHeader(), parentFrame, length, headers,
-                options, data);
+        return new IPPacketImpl(parent, headers, options, data);
     }
 
     @Override

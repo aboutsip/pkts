@@ -5,7 +5,7 @@ package io.pkts.examples.core;
 
 import io.pkts.FrameHandler;
 import io.pkts.Pcap;
-import io.pkts.frame.Frame;
+import io.pkts.packet.Packet;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
@@ -30,23 +30,23 @@ public class CoreExample001 {
         // Step 2 - Once you have obtained an instance, you want to start 
         //          looping over the content of the pcap. Do this by calling
         //          the loop function and supply a FrameHandler, which is a
-        //          simple interface with only a single method - nextFrame
+        //          simple interface with only a single method - nextPacket
         pcap.loop(new FrameHandler() {
             @Override
-            public void nextFrame(final Frame frame) throws IOException {
+            public void nextFrame(final Packet frame) throws IOException {
 
-                // Step 3 - For every new frame the FrameHandler will be 
-                //          called and you can examine this frame in a few
+                // Step 3 - For every new packet the FrameHandler will be 
+                //          called and you can examine this packet in a few
                 //          different ways. You can e.g. check whether the
-                //          frame has a particular protocol, such as UDP.
+                //          packet contains a particular protocol, such as UDP.
                 if (frame.hasProtocol(Protocol.UDP)) {
 
-                    // Step 4 - Now that we know that the raw frame contains
-                    //          a UDP packet we get ask to get the UDP frame
+                    // Step 4 - Now that we know that the packet contains
+                    //          a UDP packet we get ask to get the UDP packet
                     //          and once we have it we can just get its
                     //          payload and print it, which is what we are
                     //          doing below.
-                    System.out.println(frame.getFrame(Protocol.UDP).getPayload());
+                    System.out.println(frame.getPacket(Protocol.UDP).getPayload());
                 }
             }
         });

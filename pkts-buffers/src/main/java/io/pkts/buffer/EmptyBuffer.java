@@ -292,7 +292,7 @@ public class EmptyBuffer implements Buffer {
 
     @Override
     public int indexOf(final int maxBytes, final byte... bytes) throws IOException, ByteNotFoundException,
-    IllegalArgumentException {
+            IllegalArgumentException {
         return -1;
     }
 
@@ -318,7 +318,7 @@ public class EmptyBuffer implements Buffer {
 
     @Override
     public void write(final String s, final String charset) throws IndexOutOfBoundsException,
-    WriteNotSupportedException, UnsupportedEncodingException {
+            WriteNotSupportedException, UnsupportedEncodingException {
         throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
     }
 
@@ -331,7 +331,6 @@ public class EmptyBuffer implements Buffer {
     public void writeAsString(final int value) throws IndexOutOfBoundsException, WriteNotSupportedException {
         throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
     }
-
 
     @Override
     public int getWriterIndex() {
@@ -378,6 +377,11 @@ public class EmptyBuffer implements Buffer {
     @Override
     public int parseToInt(final int radix) {
         throw new NumberFormatException("This buffer is empty and therefore cannot be parsed as an integer");
+    }
+
+    @Override
+    public void setUnsignedInt(final int index, final long value) throws IndexOutOfBoundsException {
+        throw new IndexOutOfBoundsException("This buffer is empty");
     }
 
 }

@@ -5,22 +5,19 @@ package io.pkts.frame;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import io.pkts.YajTestBase;
+import io.pkts.PktsTestBase;
 import io.pkts.buffer.Buffer;
-import io.pkts.frame.Frame;
-import io.pkts.frame.PcapFrame;
 import io.pkts.framer.PcapFramer;
 import io.pkts.packet.PCapPacket;
 
 import org.junit.Before;
 import org.junit.Test;
 
-
 /**
  * @author jonas@jonasborjesson.com
  * 
  */
-public class PcapFrameTest extends YajTestBase {
+public class PcapFrameTest extends PktsTestBase {
 
     private PcapFramer framer;
 
@@ -46,10 +43,9 @@ public class PcapFrameTest extends YajTestBase {
     public void testParsePacket() throws Exception {
         // remember, this is the first packet in the pcap and it has already
         // been framed by the test base class
-        final PCapPacket p = this.defaultPcapFrame.parse();
-        assertThat(p.getTotalLength(), is(547L));
-        assertThat(p.getCapturedLength(), is(547L));
-        assertThat(p.getArrivalTime(), is(1340495109792454L));
+        assertThat(this.defaultPcapPacket.getTotalLength(), is(547L));
+        assertThat(this.defaultPcapPacket.getCapturedLength(), is(547L));
+        assertThat(this.defaultPcapPacket.getArrivalTime(), is(1340495109792454L));
 
         // all times have been copied from wireshark so we know they are good
         verifyNextPacket(this.pcapStream, 348, 1340495109792862L);
@@ -70,8 +66,7 @@ public class PcapFrameTest extends YajTestBase {
 
     private void verifyNextPacket(final Buffer in, final int expectedLength, final long expectedArrivalTime)
             throws Exception {
-        final PcapFrame frame = this.framer.frame(null, in);
-        final PCapPacket p = frame.parse();
+        final PCapPacket p = this.framer.frame(null, in);
         assertThat(p.getTotalLength(), is((long) expectedLength));
         assertThat(p.getCapturedLength(), is((long) expectedLength));
         assertThat(p.getArrivalTime(), is(expectedArrivalTime));

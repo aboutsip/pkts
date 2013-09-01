@@ -47,6 +47,7 @@
   <modules>
     <module>pkts-buffers</module>
     <module>pkts-sdp</module>
+    <module>pkts-sip</module>
     <module>pkts-core</module>
     <module>pkts-streams</module>
     <module>pkts-examples</module>
@@ -67,6 +68,14 @@
     <dependency>
       <groupId>io.pkts</groupId>
       <artifactId>pkts-sdp</artifactId>
+      <version>${project.version}</version>
+      <type>jar</type>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.pkts</groupId>
+      <artifactId>pkts-sip</artifactId>
       <version>${project.version}</version>
       <type>jar</type>
       <scope>compile</scope>

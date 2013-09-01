@@ -3,7 +3,7 @@
  */
 package io.pkts.streams.impl;
 
-import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.sip.SipPacket;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.streams.SipStream;
 import io.pkts.streams.StreamId;
@@ -36,7 +36,7 @@ public final class DefaultSipStream implements SipStream {
     }
 
     @Override
-    public List<SipMessage> getPackets() {
+    public List<SipPacket> getPackets() {
         // TODO Auto-generated method stub
         return null;
     }
@@ -104,7 +104,7 @@ public final class DefaultSipStream implements SipStream {
     }
 
     @Override
-    public void addMessage(final SipMessage message) throws IllegalArgumentException, SipParseException {
+    public void addMessage(final SipPacket message) throws IllegalArgumentException, SipParseException {
         // TODO Auto-generated method stub
 
     }

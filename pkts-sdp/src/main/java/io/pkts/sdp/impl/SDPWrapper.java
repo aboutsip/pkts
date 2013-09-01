@@ -3,10 +3,13 @@
  */
 package io.pkts.sdp.impl;
 
+import io.pkts.buffer.Buffer;
+import io.pkts.buffer.Buffers;
 import io.pkts.sdp.RTPInfo;
 import io.pkts.sdp.SDP;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 
@@ -16,7 +19,6 @@ import javax.sdp.MediaDescription;
 import javax.sdp.SdpException;
 import javax.sdp.SdpParseException;
 import javax.sdp.SessionDescription;
-
 
 /**
  * Initial implementation that wraps a {@link SessionDescription} object from
@@ -36,7 +38,7 @@ public class SDPWrapper implements SDP {
     }
 
     @Override
-    public Iterable<RTPInfo> getRTPInfo() {
+    public Collection<RTPInfo> getRTPInfo() {
         final List<RTPInfo> list = new ArrayList<RTPInfo>();
         try {
             final Connection c = this.sdp.getConnection();
@@ -76,6 +78,16 @@ public class SDPWrapper implements SDP {
             return new RTPInfoImpl(connection, md);
         }
         return null;
+    }
+
+    @Override
+    public Buffer toBuffer() {
+        return Buffers.wrap(this.sdp.toString());
+    }
+
+    @Override
+    public String toString() {
+        return this.sdp.toString();
     }
 
 }

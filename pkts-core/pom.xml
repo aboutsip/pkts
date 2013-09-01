@@ -21,6 +21,11 @@
 
     <dependency>
       <groupId>io.pkts</groupId>
+      <artifactId>pkts-sip</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.pkts</groupId>
       <artifactId>pkts-sdp</artifactId>
     </dependency>
 

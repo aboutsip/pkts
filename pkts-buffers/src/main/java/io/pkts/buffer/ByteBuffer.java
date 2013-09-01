@@ -350,13 +350,13 @@ public final class ByteBuffer extends AbstractBuffer {
 
     @Override
     public void write(final String s) throws IndexOutOfBoundsException, WriteNotSupportedException,
-    UnsupportedEncodingException {
+            UnsupportedEncodingException {
         write(s, "UTF-8");
     }
 
     @Override
     public void write(final String s, final String charset) throws IndexOutOfBoundsException,
-    WriteNotSupportedException, UnsupportedEncodingException {
+            WriteNotSupportedException, UnsupportedEncodingException {
         final byte[] bytes = s.getBytes(charset);
         if (!checkWritableBytesSafe(bytes.length)) {
             throw new IndexOutOfBoundsException("Unable to write the entire String to this buffer. Nothing was written");
@@ -369,11 +369,23 @@ public final class ByteBuffer extends AbstractBuffer {
     @Override
     public void setInt(final int index, final int value) throws IndexOutOfBoundsException {
         checkIndex(index);
-        checkIndex(index + 1);
+        checkIndex(index + 3);
         this.buffer[this.lowerBoundary + index + 0] = (byte) (value >>> 24);
         this.buffer[this.lowerBoundary + index + 1] = (byte) (value >>> 16);
         this.buffer[this.lowerBoundary + index + 2] = (byte) (value >>> 8);
         this.buffer[this.lowerBoundary + index + 3] = (byte) value;
+    }
+
+    @Override
+    public void setUnsignedInt(final int index, final long value) throws IndexOutOfBoundsException {
+        // setInt(index, (int) value);
+        checkIndex(index);
+        checkIndex(index + 3);
+        this.buffer[this.lowerBoundary + index + 0] = (byte) (value >>> 0);
+        this.buffer[this.lowerBoundary + index + 1] = (byte) (value >>> 8);
+        this.buffer[this.lowerBoundary + index + 2] = (byte) (value >>> 16);
+        this.buffer[this.lowerBoundary + index + 3] = (byte) (value >>> 24);
+
     }
 
     @Override

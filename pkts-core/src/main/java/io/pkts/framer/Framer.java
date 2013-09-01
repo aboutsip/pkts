@@ -4,18 +4,17 @@
 package io.pkts.framer;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.frame.Frame;
+import io.pkts.packet.Packet;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
-
 
 /**
  * Simple interface for framers.
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface Framer<T extends Frame> {
+public interface Framer<T extends Packet> {
 
     /**
      * 
@@ -24,7 +23,8 @@ public interface Framer<T extends Frame> {
     Protocol getProtocol();
 
     /**
-     * Ask the framer to frame the buffer into a frame.
+     * Ask the framer to frame the buffer into a packet. Note that the
+     * {@link Packet} has not been parsed, just framed.
      * 
      * @param parent
      *            the parent frame or null if the frame doesn't have one.
@@ -36,7 +36,7 @@ public interface Framer<T extends Frame> {
      *             in case something goes wrong when reading data from the
      *             buffer
      */
-    Frame frame(T parent, Buffer buffer) throws IOException;
+    T frame(T parent, Buffer buffer) throws IOException;
 
     /**
      * Check whether the supplied data could be framed into a frame of this

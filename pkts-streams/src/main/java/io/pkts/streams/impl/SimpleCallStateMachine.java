@@ -8,10 +8,10 @@ import static io.pkts.streams.SipStream.CallState.COMPLETED;
 import static io.pkts.streams.SipStream.CallState.FAILED;
 import static io.pkts.streams.SipStream.CallState.REDIRECT;
 import static io.pkts.streams.SipStream.CallState.REJECTED;
-import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.sip.SipPacket;
 import io.pkts.packet.sip.SipParseException;
-import io.pkts.packet.sip.SipRequest;
-import io.pkts.packet.sip.SipResponse;
+import io.pkts.packet.sip.SipRequestPacket;
+import io.pkts.packet.sip.SipResponsePacket;
 import io.pkts.streams.SipStream.CallState;
 
 import java.io.Serializable;
@@ -46,7 +46,7 @@ public final class SimpleCallStateMachine {
     /**
      * 
      */
-    private NavigableSet<SipMessage> messages;
+    private NavigableSet<SipPacket> messages;
 
     /**
      * A list of all our transitions.
@@ -65,18 +65,18 @@ public final class SimpleCallStateMachine {
      * The 18x ringing response, if we received one. Only the first will be
      * recorded.
      */
-    private SipResponse ringingResponse;
+    private SipResponsePacket ringingResponse;
 
     /**
      * If this call is successfully established, this will be the the first 2xx
      * that we received.
      */
-    private SipResponse successResponse;
+    private SipResponsePacket successResponse;
 
     /**
      * The first BYE request we received (if any)
      */
-    private SipRequest byeRequest;
+    private SipRequestPacket byeRequest;
 
     /**
      * flag telling us whether we received the ACK on the final response to the
@@ -100,7 +100,7 @@ public final class SimpleCallStateMachine {
     private void init() {
         this.currentState = CallState.START;
         this.callTransitions = new ArrayList<CallState>();
-        this.messages = new TreeSet<SipMessage>(new SipMessageComparator());
+        this.messages = new TreeSet<SipPacket>(new SipMessageComparator());
     }
 
     /**
@@ -141,21 +141,21 @@ public final class SimpleCallStateMachine {
 
     /**
      * At some point we may want to have a generic event but for now this will
-     * only be {@link SipMessage}s.
+     * only be {@link SipPacket}s.
      * 
-     * Note, if the {@link SipMessage} arrived earlier than the oldest element
+     * Note, if the {@link SipPacket} arrived earlier than the oldest element
      * that this {@link SimpleCallStateMachine} has seen before then this new
-     * {@link SipMessage} will be inserted in the time sequence and then all the
+     * {@link SipPacket} will be inserted in the time sequence and then all the
      * events will be "re-played".
      * 
      * @param msg
      */
-    public void onEvent(final SipMessage msg) throws SipParseException {
+    public void onEvent(final SipPacket msg) throws SipParseException {
         if (msg == null) {
             return;
         }
 
-        final SipMessage previousMsg = this.messages.isEmpty() ? null : this.messages.last();
+        final SipPacket previousMsg = this.messages.isEmpty() ? null : this.messages.last();
         this.messages.add(msg);
 
         if (previousMsg != null && msg.getArrivalTime() < previousMsg.getArrivalTime()) {
@@ -170,7 +170,7 @@ public final class SimpleCallStateMachine {
         }
     }
 
-    private void handleStateChange(final SipMessage msg) throws SipParseException {
+    private void handleStateChange(final SipPacket msg) throws SipParseException {
         switch (this.currentState) {
         case START:
             initializeState(msg);
@@ -204,7 +204,7 @@ public final class SimpleCallStateMachine {
         }
     }
 
-    private void handleInCancelledState(final SipMessage msg) throws SipParseException {
+    private void handleInCancelledState(final SipPacket msg) throws SipParseException {
         if (msg.isRequest() && msg.isAck()) {
             this.handshakeIsComplete = true;
         }
@@ -218,7 +218,7 @@ public final class SimpleCallStateMachine {
      * @param msg
      * @throws SipParseException
      */
-    private void handleInCancellingState(final SipMessage msg) throws SipParseException {
+    private void handleInCancellingState(final SipPacket msg) throws SipParseException {
 
         // we don't move over to cancelled state even if
         // we receive a 200 OK to the cancel request.
@@ -231,7 +231,7 @@ public final class SimpleCallStateMachine {
         if (msg.isRequest()) {
 
         } else {
-            final SipResponse response = msg.toResponse();
+            final SipResponsePacket response = msg.toResponse();
             if (response.isInvite()) {
                 if (response.getStatus() == 487) {
                     transition(CallState.CANCELLED, msg);
@@ -247,7 +247,7 @@ public final class SimpleCallStateMachine {
 
     }
 
-    private void handleInErrorState(final SipMessage msg) throws SipParseException {
+    private void handleInErrorState(final SipPacket msg) throws SipParseException {
         // we could be validating here I guess but for now let's
         // just fall through. Note, we are in a terminal state
         // so we'll just pass in the current state again since we
@@ -264,7 +264,7 @@ public final class SimpleCallStateMachine {
      * @param msg
      * @throws SipParseException
      */
-    private void handleInCompletedState(final SipMessage msg) throws SipParseException {
+    private void handleInCompletedState(final SipPacket msg) throws SipParseException {
         if (msg.isRequest()) {
             // TODO:
         } else {
@@ -282,7 +282,7 @@ public final class SimpleCallStateMachine {
      * @param msg
      * @throws SipParseException
      */
-    private void handleInConfirmedState(final SipMessage msg) throws SipParseException {
+    private void handleInConfirmedState(final SipPacket msg) throws SipParseException {
         if (msg.isRequest()) {
             if (msg.isBye()) {
                 if (this.byeRequest == null) {
@@ -294,7 +294,7 @@ public final class SimpleCallStateMachine {
                 transition(CallState.IN_CALL, msg);
             }
         } else {
-            final SipResponse response = (SipResponse) msg;
+            final SipResponsePacket response = (SipResponsePacket) msg;
             if (response.isSuccess()) {
                 // probably re-transmits.
                 // need to check it better
@@ -327,7 +327,7 @@ public final class SimpleCallStateMachine {
      * 
      * @param msg
      */
-    private void handleInProvisionalState(final SipMessage msg) throws SipParseException {
+    private void handleInProvisionalState(final SipPacket msg) throws SipParseException {
 
         if (msg.isRequest() && msg.isCancel()) {
             transition(CallState.CANCELLING, msg);
@@ -342,7 +342,7 @@ public final class SimpleCallStateMachine {
         }
 
         final boolean isInvite = msg.isInvite();
-        final SipResponse response = (SipResponse) msg;
+        final SipResponsePacket response = (SipResponsePacket) msg;
         if (response.is100Trying()) {
             transition(CallState.TRYING, msg);
         } else if (response.isRinging()) {
@@ -397,7 +397,7 @@ public final class SimpleCallStateMachine {
      * @param msg
      * @throws SipParseException
      */
-    private void initializeState(final SipMessage msg) throws SipParseException {
+    private void initializeState(final SipPacket msg) throws SipParseException {
         if (msg.isRequest()) {
             if (msg.isInvite() && msg.isInitial()) {
                 transition(CallState.INITIAL, msg);
@@ -411,7 +411,7 @@ public final class SimpleCallStateMachine {
             }
 
         } else {
-            final SipResponse response = (SipResponse) msg;
+            final SipResponsePacket response = (SipResponsePacket) msg;
             if (response.isInvite()) {
                 if (response.is100Trying()) {
                     transition(CallState.TRYING, msg);
@@ -432,7 +432,7 @@ public final class SimpleCallStateMachine {
      * @param nextState
      * @param msg
      */
-    private void transition(final CallState nextState, final SipMessage msg) {
+    private void transition(final CallState nextState, final SipPacket msg) {
         final CallState previousState = this.currentState;
         this.currentState = nextState;
         if (previousState != nextState) {
@@ -465,19 +465,19 @@ public final class SimpleCallStateMachine {
         if (logger.isInfoEnabled()) {
             logger.info("Out-of-sequence event detected. Redriving all traffic.");
         }
-        final NavigableSet<SipMessage> oldMessages = this.messages;
+        final NavigableSet<SipPacket> oldMessages = this.messages;
         init();
         while (!oldMessages.isEmpty()) {
-            final SipMessage msg = oldMessages.pollFirst();
+            final SipPacket msg = oldMessages.pollFirst();
             onEvent(msg);
         }
     }
 
     /**
-     * Simple comparator of {@link SipMessage}s that is just comparing time
+     * Simple comparator of {@link SipPacket}s that is just comparing time
      * stamps.
      */
-    private static class SipMessageComparator implements Comparator<SipMessage>, Serializable {
+    private static class SipMessageComparator implements Comparator<SipPacket>, Serializable {
 
         /**
          * Because it is serializable. And the reason it is is because if you
@@ -487,7 +487,7 @@ public final class SimpleCallStateMachine {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public int compare(final SipMessage o1, final SipMessage o2) {
+        public int compare(final SipPacket o1, final SipPacket o2) {
             final long t1 = o1.getArrivalTime();
             final long t2 = o2.getArrivalTime();
             if (t1 == t2) {
@@ -516,8 +516,8 @@ public final class SimpleCallStateMachine {
      * 
      * @return
      */
-    public List<SipMessage> getMessages() {
-        return new ArrayList<SipMessage>(this.messages);
+    public List<SipPacket> getMessages() {
+        return new ArrayList<SipPacket>(this.messages);
     }
 
     /**

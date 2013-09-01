@@ -4,12 +4,11 @@
 package io.pkts.streams.impl;
 
 import io.pkts.frame.Frame;
-import io.pkts.frame.IPFrame;
-import io.pkts.frame.IPv4Frame;
 import io.pkts.framer.FramerManager;
+import io.pkts.packet.IPPacket;
 import io.pkts.packet.Packet;
 import io.pkts.packet.PacketParseException;
-import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.sip.SipPacket;
 import io.pkts.protocol.Protocol;
 import io.pkts.streams.FragmentListener;
 import io.pkts.streams.SipStatistics;
@@ -69,13 +68,13 @@ public final class DefaultStreamHandler implements StreamHandler {
      * {@inheritDoc}
      */
     @Override
-    public void nextFrame(Frame frame) {
+    public void nextFrame(Packet frame) {
 
         try {
             if (frame.hasProtocol(Protocol.IPv4)) {
-                final IPv4Frame ipv4Frame = (IPv4Frame) frame.getFrame(Protocol.IPv4);
-                if (ipv4Frame.isFragmented()) {
-                    frame = handleFragmentation(ipv4Frame);
+                final IPPacket ip = (IPPacket) frame.getPacket(Protocol.IPv4);
+                if (ip.isFragmented()) {
+                    frame = handleFragmentation(ip);
                     if (frame == null) {
                         return;
                     }
@@ -116,11 +115,11 @@ public final class DefaultStreamHandler implements StreamHandler {
             // TODO: could actually be more.
             final Type parameterArgType = parameterArgTypes[0];
             final Class<?> parameterArgClass = (Class<?>) parameterArgType;
-            if (parameterArgClass.equals(SipMessage.class)) {
+            if (parameterArgClass.equals(SipPacket.class)) {
                 if (this.sipStreamHandler == null) {
                     this.sipStreamHandler = new SipStreamHandler(this.framerManager);
                 }
-                this.sipStreamHandler.addListener((StreamListener<SipMessage>) listener);
+                this.sipStreamHandler.addListener((StreamListener<SipPacket>) listener);
             }
 
         } catch (final ArrayIndexOutOfBoundsException e) {
@@ -141,15 +140,15 @@ public final class DefaultStreamHandler implements StreamHandler {
      * technically can throw exceptions and stuff so we just want to catch all
      * and log and move on.
      * 
-     * @param frame
+     * @param ipPacket
      * @return
      */
-    private Frame handleFragmentation(final IPFrame frame) {
+    private IPPacket handleFragmentation(final IPPacket ipPacket) {
         if (this.fragmentListener == null) {
             return null;
         }
         try {
-            return this.fragmentListener.handleFragment(frame);
+            return this.fragmentListener.handleFragment(ipPacket);
         } catch (final Throwable t) {
             logger.warn("Exception thrown by FragmentListener when processing the IP frame", t);
         }

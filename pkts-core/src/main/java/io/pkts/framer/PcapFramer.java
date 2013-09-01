@@ -4,21 +4,20 @@
 package io.pkts.framer;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.frame.Frame;
-import io.pkts.frame.PcapFrame;
 import io.pkts.frame.PcapGlobalHeader;
 import io.pkts.frame.PcapRecordHeader;
+import io.pkts.packet.PCapPacket;
+import io.pkts.packet.impl.PCapPacketImpl;
 import io.pkts.protocol.Protocol;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.nio.ByteOrder;
 
-
 /**
  * @author jonas@jonasborjesson.com
  */
-public final class PcapFramer implements Layer1Framer {
+public final class PcapFramer implements Framer<PCapPacket> {
 
     private final PcapGlobalHeader globalHeader;
     private final FramerManager framerManager;
@@ -45,7 +44,10 @@ public final class PcapFramer implements Layer1Framer {
      * {@inheritDoc}
      */
     @Override
-    public PcapFrame frame(final Frame parent, final Buffer buffer) throws IOException {
+    public PCapPacket frame(final PCapPacket parent, final Buffer buffer) throws IOException {
+
+        // note that for the PcapPacket the parent will always be null
+        // so we are simply ignoring it.
 
         Buffer record = null;
         try {
@@ -60,8 +62,8 @@ public final class PcapFramer implements Layer1Framer {
         final int length = (int) header.getCapturedLength();
         final Buffer payload = buffer.readBytes(length);
 
-        final FramerManager framerManager = FramerManager.getInstance();
-        return new PcapFrame(framerManager, this.globalHeader, header, payload);
+        return new PCapPacketImpl(header, payload);
+        // return new PcapFrame(framerManager, this.globalHeader, header, payload);
     }
 
     /**
@@ -74,7 +76,10 @@ public final class PcapFramer implements Layer1Framer {
      *         stream
      * @throws IOException
      */
-    public PcapFrame frame(final ByteOrder byteOrder, final BufferedInputStream in) throws IOException {
+    public PCapPacket frame(final ByteOrder byteOrder, final BufferedInputStream in) throws IOException {
+        if (true) {
+            throw new RuntimeException("is anyone actually using this one???");
+        }
         // not enough bytes in the stream
         final int l = in.available();
         if (l == -1) {

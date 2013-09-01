@@ -1,7 +1,7 @@
 package io.pkts.streams;
 
 import io.pkts.frame.PcapGlobalHeader;
-import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.sip.SipPacket;
 import io.pkts.packet.sip.SipParseException;
 
 import java.io.FileNotFoundException;
@@ -14,15 +14,15 @@ import java.util.List;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface SipStream extends Stream<SipMessage> {
+public interface SipStream extends Stream<SipPacket> {
 
     /**
-     * Get all the {@link SipMessage}s that belongs to this {@link Stream}.
+     * Get all the {@link SipPacket}s that belongs to this {@link Stream}.
      * 
      * {@inheritDoc}
      */
     @Override
-    List<SipMessage> getPackets();
+    List<SipPacket> getPackets();
 
     /**
      * Post Dial Delay (PDD) is defined as the time it takes between the INVITE
@@ -40,7 +40,7 @@ public interface SipStream extends Stream<SipMessage> {
     long getPostDialDelay() throws SipParseException;
 
     /**
-     * Get the identifier used for grouping the {@link SipMessage}s together.
+     * Get the identifier used for grouping the {@link SipPacket}s together.
      * Currently, this is the same as the call-id.
      * 
      * Note, perhaps this should be a dialog id instead since ideally that is
@@ -118,7 +118,7 @@ public interface SipStream extends Stream<SipMessage> {
      * Create an empty clone of this {@link SipStream}. What this means is that
      * you get a {@link SipStream} with the same {@link StreamId} and underlying
      * {@link PcapGlobalHeader} (which you really do not need to know) but
-     * otherwise it is empty. I.e., it doesn't contain any {@link SipMessage}s.
+     * otherwise it is empty. I.e., it doesn't contain any {@link SipPacket}s.
      * 
      * Use this method when you e.g. have a {@link SipStream} that you want to
      * split in two. A typical scenario is if you have a {@link SipStream} that
@@ -134,9 +134,9 @@ public interface SipStream extends Stream<SipMessage> {
     SipStream createEmptyClone();
 
     /**
-     * Add a {@link SipMessage} to this {@link SipStream}. By doing so you will
+     * Add a {@link SipPacket} to this {@link SipStream}. By doing so you will
      * force the {@link SipStream} to move its internal state machine along
-     * since it just "received" a new {@link SipMessage}.
+     * since it just "received" a new {@link SipPacket}.
      * 
      * @param message
      * @throws IllegalArgumentException
@@ -144,9 +144,9 @@ public interface SipStream extends Stream<SipMessage> {
      *             same {@link StreamId}.
      * @throws SipParseException
      *             in case something goes wrong while parsing the
-     *             {@link SipMessage}
+     *             {@link SipPacket}
      */
-    void addMessage(SipMessage message) throws IllegalArgumentException, SipParseException;
+    void addMessage(SipPacket message) throws IllegalArgumentException, SipParseException;
 
     /**
      * Even though SIP can be used for so much more than just establishing

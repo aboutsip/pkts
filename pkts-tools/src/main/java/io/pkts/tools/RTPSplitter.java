@@ -3,12 +3,10 @@ package io.pkts.tools;
 import io.pkts.FrameHandler;
 import io.pkts.Pcap;
 import io.pkts.PcapOutputStream;
-import io.pkts.frame.Frame;
-import io.pkts.frame.RtpFrame;
-import io.pkts.frame.SipFrame;
+import io.pkts.packet.Packet;
 import io.pkts.packet.PacketParseException;
 import io.pkts.packet.rtp.RtpPacket;
-import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.sip.SipPacket;
 import io.pkts.protocol.Protocol;
 
 import java.io.BufferedOutputStream;
@@ -21,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class RTPSplitter {
 
     /**
@@ -30,11 +27,8 @@ public class RTPSplitter {
      */
     public static void main(final String[] args) throws Exception {
         /*
-        if (args.length < 1) {
-            System.err.println("ERROR: missing pcap");
-            System.err.println("Usage: rtptools <pcap-file>");
-            System.exit(1);
-        }
+         * if (args.length < 1) { System.err.println("ERROR: missing pcap");
+         * System.err.println("Usage: rtptools <pcap-file>"); System.exit(1); }
          */
 
         final String filename = "/home/jonas/development/private/aboutsip/countdown.pcap";
@@ -57,12 +51,12 @@ public class RTPSplitter {
         private final Map<String, SipFlow> sipFlows = new HashMap<String, SipFlow>();
 
         @Override
-        public void nextFrame(final Frame frame) {
+        public void nextFrame(final Packet frame) {
             try {
                 if (frame.hasProtocol(Protocol.SIP)) {
-                    processSipFrame((SipFrame) frame.getFrame(Protocol.SIP));
+                    processSipFrame((SipPacket) frame.getPacket(Protocol.SIP));
                 } else if (frame.hasProtocol(Protocol.RTP)) {
-                    processRtpFrame((RtpFrame) frame.getFrame(Protocol.RTP));
+                    processRtpFrame((RtpPacket) frame.getPacket(Protocol.RTP));
                 }
             } catch (final IOException e) {
                 // TODO Auto-generated catch block
@@ -76,8 +70,8 @@ public class RTPSplitter {
         public void saveSipFlows(final Pcap pcap, final String prefix) throws IOException {
             int count = 0;
             for (final SipFlow stream : this.sipFlows.values()) {
-                final PcapOutputStream out = pcap.createOutputStream((new BufferedOutputStream(new FileOutputStream(
-                        prefix + "_" + count + ".pcap"))));
+                final PcapOutputStream out = pcap.createOutputStream(new BufferedOutputStream(new FileOutputStream(
+                        prefix + "_" + count + ".pcap")));
                 stream.saveStream(out);
                 ++count;
             }
@@ -86,26 +80,24 @@ public class RTPSplitter {
         public void saveAllRtpStreams(final Pcap pcap, final String prefix) throws IOException {
             int count = 0;
             for (final RtpStream stream : this.streams.values()) {
-                final PcapOutputStream out = pcap.createOutputStream((new BufferedOutputStream(new FileOutputStream(
-                        prefix + "_" + count + ".pcap"))));
+                final PcapOutputStream out = pcap.createOutputStream(new BufferedOutputStream(new FileOutputStream(
+                        prefix + "_" + count + ".pcap")));
                 stream.saveStream(out);
                 ++count;
             }
         }
 
-        private void processSipFrame(final SipFrame sipFrame) throws PacketParseException {
-            final SipMessage msg = sipFrame.parse();
+        private void processSipFrame(final SipPacket msg) throws PacketParseException {
             final String callId = msg.getCallIDHeader().getValue().toString();
             SipFlow flow = this.sipFlows.get(callId);
             if (flow == null) {
                 flow = new SipFlow();
                 this.sipFlows.put(callId, flow);
             }
-            flow.addPacket(sipFrame);
+            flow.addPacket(msg);
         }
 
-        private void processRtpFrame(final RtpFrame rtpFrame) throws PacketParseException {
-            final RtpPacket rtp = rtpFrame.parse();
+        private void processRtpFrame(final RtpPacket rtp) throws PacketParseException {
             System.out.println(rtp);
             final String key = rtp.getSourceIP() + rtp.getSourcePort();
             RtpStream stream = this.streams.get(key);
@@ -114,24 +106,24 @@ public class RTPSplitter {
                 this.streams.put(key, stream);
             }
 
-            stream.addPacket(rtpFrame);
+            stream.addPacket(rtp);
         }
     }
 
     private static class SipFlow {
-        private final List<SipFrame> stream = new ArrayList<SipFrame>();
+        private final List<SipPacket> stream = new ArrayList<SipPacket>();
 
         public SipFlow() {
             // left empty intentionally
         }
 
-        public void addPacket(final SipFrame frame) {
-            this.stream.add(frame);
+        public void addPacket(final SipPacket pkt) {
+            this.stream.add(pkt);
         }
 
         public void saveStream(final PcapOutputStream out) throws IOException {
-            for (final SipFrame frame : this.stream) {
-                out.write(frame);
+            for (final SipPacket pkt : this.stream) {
+                out.write(pkt);
             }
             out.flush();
             out.close();
@@ -141,19 +133,19 @@ public class RTPSplitter {
 
     private static class RtpStream {
 
-        private final List<RtpFrame> stream = new ArrayList<RtpFrame>();
+        private final List<RtpPacket> stream = new ArrayList<RtpPacket>();
 
         public RtpStream() {
             // left empty intentionally
         }
 
-        public void addPacket(final RtpFrame frame) {
+        public void addPacket(final RtpPacket frame) {
             this.stream.add(frame);
         }
 
         public void saveStream(final PcapOutputStream out) throws IOException {
-            for (final RtpFrame frame : this.stream) {
-                out.write(frame);
+            for (final RtpPacket rtp : this.stream) {
+                out.write(rtp);
             }
             out.flush();
             out.close();

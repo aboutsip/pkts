@@ -7,7 +7,6 @@ import io.pkts.buffer.Buffer;
 import io.pkts.protocol.IllegalProtocolException;
 import io.pkts.protocol.Protocol;
 
-
 /**
  * 
  * @author jonas@jonasborjesson.com
@@ -61,5 +60,24 @@ public interface TransportPacketFactory {
      */
     TransportPacket create(Protocol protocol, byte[] srcAddress, int srcPort, byte[] destAddress, int destPort,
             Buffer payload) throws IllegalArgumentException, IllegalProtocolException;
+
+    /**
+     * Create a {@link UDPPacket} with the specified payload and with the
+     * following default values:
+     * <ul>
+     * <li>MAC Src Address: 00:00:00:00:00:00</li>
+     * <li>MAC Dst Address: 00:00:00:00:00:00</li>
+     * <li>IP Src Address: 127.0.0.1</li>
+     * <li>IP Dst Address: 127.0.0.1</li>
+     * <li>UDP Src Port: 0</li>
+     * <li>UDP Dst Port: 0</li>
+     * </ul>
+     * 
+     * @param payload
+     * @return
+     * @throws IllegalArgumentException
+     * @throws IllegalProtocolException
+     */
+    UDPPacket createUDP(Buffer payload) throws IllegalArgumentException, IllegalProtocolException;
 
 }

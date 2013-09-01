@@ -4,13 +4,12 @@
 package io.pkts.framer;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.frame.Layer1Frame;
-import io.pkts.frame.Layer2Frame;
-import io.pkts.frame.SllFrame;
+import io.pkts.packet.MACPacket;
+import io.pkts.packet.PCapPacket;
+import io.pkts.packet.impl.MACPacketImpl;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
-
 
 /**
  * SLL is the linux cooked-mode capture.
@@ -22,9 +21,7 @@ import java.io.IOException;
  * 
  * @author jonas@jonasborjesson.com
  */
-public class SllFramer implements Layer2Framer {
-
-    private final FramerManager framerManager;
+public class SllFramer implements Framer<PCapPacket> {
 
     /**
      * See pcap/sll.h for the meaning of these values
@@ -53,8 +50,7 @@ public class SllFramer implements Layer2Framer {
     /**
      * 
      */
-    public SllFramer(final FramerManager framerManager) {
-        this.framerManager = framerManager;
+    public SllFramer() {
     }
 
     /**
@@ -69,14 +65,14 @@ public class SllFramer implements Layer2Framer {
      * {@inheritDoc}
      */
     @Override
-    public Layer2Frame frame(final Layer1Frame parent, final Buffer buffer) throws IOException {
+    public MACPacket frame(final PCapPacket parent, final Buffer buffer) throws IOException {
         if (parent == null) {
             throw new IllegalArgumentException("The parent frame cannot be null");
         }
 
         final Buffer headers = buffer.readBytes(16);
         final Buffer payload = buffer.slice(buffer.capacity());
-        return new SllFrame(this.framerManager, parent.getPcapGlobalHeader(), parent, headers, payload);
+        return new MACPacketImpl(Protocol.SLL, parent, headers, payload);
     }
 
     /**

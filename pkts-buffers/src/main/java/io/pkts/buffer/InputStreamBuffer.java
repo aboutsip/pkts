@@ -37,7 +37,8 @@ public final class InputStreamBuffer extends AbstractBuffer {
 
     /**
      * 
-     * @param initialCapacity the initial size of the internal byte array
+     * @param initialCapacity
+     *            the initial size of the internal byte array
      * @param is
      */
     public InputStreamBuffer(final int initialCapacity, final InputStream is) {
@@ -48,7 +49,6 @@ public final class InputStreamBuffer extends AbstractBuffer {
         this.storage = new ArrayList<java.nio.ByteBuffer>();
         this.storage.add(java.nio.ByteBuffer.allocate(this.localCapacity));
     }
-
 
     /**
      * {@inheritDoc}
@@ -137,7 +137,8 @@ public final class InputStreamBuffer extends AbstractBuffer {
      * internal buffer. This method is blocking in case we don't have enough
      * bytes to read
      * 
-     * @param length the amount of bytes we wishes to read
+     * @param length
+     *            the amount of bytes we wishes to read
      * @return the actual number of bytes read.
      * @throws IOException
      */
@@ -223,9 +224,11 @@ public final class InputStreamBuffer extends AbstractBuffer {
      * Method for reading bytes off the stream and store it in the local
      * "storage"
      * 
-     * @param length the length we wish to read
+     * @param length
+     *            the length we wish to read
      * @return the actual amount of bytes we read
-     * @throws IOException in case anything goes wrong while reading
+     * @throws IOException
+     *             in case anything goes wrong while reading
      */
     private int readFromStream(final int length) throws IOException {
         int total = 0;
@@ -321,7 +324,8 @@ public final class InputStreamBuffer extends AbstractBuffer {
      * enough bytes off of the stream, then we will eventually throw an
      * {@link IndexOutOfBoundsException}
      * 
-     * @param index the actual index to check. I.e., this is the actual index in
+     * @param index
+     *            the actual index to check. I.e., this is the actual index in
      *            our byte array, irrespective of what the lowerBoundary is set
      *            to.
      * @throws IndexOutOfBoundsException
@@ -487,7 +491,6 @@ public final class InputStreamBuffer extends AbstractBuffer {
         return Arrays.hashCode(getArray());
     }
 
-
     @Override
     public String toString() {
         // perhaps not the most efficient way? but it works
@@ -534,6 +537,12 @@ public final class InputStreamBuffer extends AbstractBuffer {
     @Override
     public void writeAsString(final int value) throws IndexOutOfBoundsException, WriteNotSupportedException {
         throw new WriteNotSupportedException("Cannot write to an InputStreamBuffer");
+    }
+
+    @Override
+    public void setUnsignedInt(final int index, final long value) throws IndexOutOfBoundsException {
+        // TODO Auto-generated method stub
+
     }
 
 }

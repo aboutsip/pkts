@@ -8,10 +8,6 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-import io.pkts.buffer.Buffer;
-import io.pkts.buffer.Buffers;
-import io.pkts.buffer.ByteBuffer;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,13 +15,11 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
-
 /**
  * @author jonas@jonasborjesson.com
  * 
  */
 public class ByteBufferTest extends AbstractBufferTest {
-
 
     /**
      * @throws java.lang.Exception
@@ -135,7 +129,7 @@ public class ByteBufferTest extends AbstractBufferTest {
     }
 
     private void assertParseAsInt(final String number, final int expectedNumber) throws NumberFormatException,
-    IOException {
+            IOException {
         final Buffer buffer = createBuffer(number);
         assertThat(buffer.parseToInt(), is(expectedNumber));
     }
@@ -151,7 +145,6 @@ public class ByteBufferTest extends AbstractBufferTest {
         final Buffer buffer = Buffers.wrap(allocateByteArray(100));
         final Buffer clone = buffer.clone();
         assertBuffers(buffer, clone);
-
 
         // now, change something in the clone and make sure that
         // it does NOT affect the original buffer
@@ -328,7 +321,7 @@ public class ByteBufferTest extends AbstractBufferTest {
         assertThat(b1.getByte(0), is((byte) 10));
         assertThat(buffer.getByte(10), is((byte) 10));
 
-        b1.setByte(0, (byte)0xFF);
+        b1.setByte(0, (byte) 0xFF);
         assertThat(b1.getByte(0), is((byte) 0xFF));
         assertThat(buffer.getByte(10), is((byte) 0xFF));
     }
@@ -405,7 +398,6 @@ public class ByteBufferTest extends AbstractBufferTest {
         copy.write("fup");
         assertThat(copy.toString(), is("hello ab tjo 5060 fup"));
     }
-
 
     /**
      * Test the getBytes method where the destination is always smaller than the

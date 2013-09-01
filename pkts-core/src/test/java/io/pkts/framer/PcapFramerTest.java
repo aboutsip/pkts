@@ -6,11 +6,9 @@ package io.pkts.framer;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-
-import io.pkts.YajTestBase;
+import io.pkts.PktsTestBase;
 import io.pkts.buffer.Buffer;
-import io.pkts.frame.PcapFrame;
-import io.pkts.framer.PcapFramer;
+import io.pkts.packet.PCapPacket;
 
 import java.io.IOException;
 
@@ -18,11 +16,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-
 /**
  * @author jonas@jonasborjesson.com
  */
-public class PcapFramerTest extends YajTestBase {
+public class PcapFramerTest extends PktsTestBase {
 
     private PcapFramer framer;
 
@@ -56,7 +53,7 @@ public class PcapFramerTest extends YajTestBase {
         verifyNextFrame(this.pcapStream, 348);
 
         // there are a total of 30 frames in this pcap.
-        PcapFrame frame = null;
+        PCapPacket frame = null;
         for (int i = 6; i < 30; ++i) {
             frame = this.framer.frame(null, this.pcapStream);
             assertNotNull(frame);
@@ -69,13 +66,13 @@ public class PcapFramerTest extends YajTestBase {
         // another one shouldn't work. Hence, we should be getting
         // back a null frame, indicating that the fun is over
         frame = this.framer.frame(null, this.pcapStream);
-        assertThat(frame, is((PcapFrame) null));
+        assertThat(frame, is((PCapPacket) null));
 
     }
 
     private void verifyNextFrame(final Buffer in, final int expectedLength)
             throws IOException {
-        final PcapFrame frame = this.framer.frame(null, in);
+        final PCapPacket frame = this.framer.frame(null, in);
         final Buffer payload = frame.getPayload();
         assertThat(expectedLength, is(payload.capacity()));
     }

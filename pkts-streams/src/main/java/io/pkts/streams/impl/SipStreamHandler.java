@@ -3,15 +3,15 @@
  */
 package io.pkts.streams.impl;
 
-import io.pkts.frame.Frame;
-import io.pkts.frame.SipFrame;
+import io.pkts.frame.PcapGlobalHeader;
 import io.pkts.framer.Framer;
 import io.pkts.framer.FramerManager;
+import io.pkts.packet.Packet;
 import io.pkts.packet.PacketParseException;
-import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.sip.SipPacket;
 import io.pkts.packet.sip.SipParseException;
-import io.pkts.packet.sip.SipRequest;
-import io.pkts.packet.sip.SipResponse;
+import io.pkts.packet.sip.SipRequestPacket;
+import io.pkts.packet.sip.SipResponsePacket;
 import io.pkts.protocol.Protocol;
 import io.pkts.sdp.RTPInfo;
 import io.pkts.sdp.SDP;
@@ -27,7 +27,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * @author jonas@jonasborjesson.com
  */
@@ -38,7 +37,7 @@ public class SipStreamHandler {
     private final Map<StreamId, BasicSipStream> sipStreams = new HashMap<StreamId, BasicSipStream>();
     private final Map<StreamId, BasicSipStream> terminatedStreams = new HashMap<StreamId, BasicSipStream>();
 
-    private StreamListener<SipMessage> sipListener;
+    private StreamListener<SipPacket> sipListener;
 
     /**
      * We use the framer manager to update hints when it comes to what protocols
@@ -58,14 +57,13 @@ public class SipStreamHandler {
         this.framerManager = framerManager;
     }
 
-    private StreamId getStreamId(final SipMessage msg) throws SipParseException {
+    private StreamId getStreamId(final SipPacket msg) throws SipParseException {
         return new BufferStreamId(msg.getCallIDHeader().getValue());
     }
 
-    public void processFrame(final Frame frame) throws PacketParseException {
+    public void processFrame(final Packet frame) throws PacketParseException {
         try {
-            final SipFrame sipFrame = (SipFrame) frame.getFrame(Protocol.SIP);
-            final SipMessage msg = sipFrame.parse();
+            final SipPacket msg = (SipPacket) frame.getPacket(Protocol.SIP);
             final StreamId id = getStreamId(msg);
             if (id == null) {
                 return;
@@ -80,7 +78,8 @@ public class SipStreamHandler {
                 stream = this.terminatedStreams.get(id);
             }
             if (stream == null) {
-                stream = new BasicSipStream(frame.getPcapGlobalHeader(), id);
+                // TODO: need to fix this.
+                stream = new BasicSipStream(PcapGlobalHeader.createDefaultHeader(), id);
                 stream.addMessage(msg);
                 this.sipListener.startStream(stream, msg);
                 this.sipStreams.put(id, stream);
@@ -101,13 +100,13 @@ public class SipStreamHandler {
     }
 
     /**
-     * Check whether a {@link SipMessage} has a message body and if it is SDP
+     * Check whether a {@link SipPacket} has a message body and if it is SDP
      * then figure out what ports etc we can expect to see RTP on (if that is
      * what is being advertised) and tell the {@link FramerManager} about this.
      * 
      * @param msg
      */
-    private void checkMessageForContent(final SipMessage msg) {
+    private void checkMessageForContent(final SipPacket msg) {
         if (!msg.hasContent()) {
             return;
         }
@@ -129,7 +128,7 @@ public class SipStreamHandler {
 
     }
 
-    public void addListener(final StreamListener<SipMessage> listener) {
+    public void addListener(final StreamListener<SipPacket> listener) {
         this.sipListener = listener;
     }
 
@@ -161,7 +160,7 @@ public class SipStreamHandler {
             // left empty intentionally
         }
 
-        public void count(final SipMessage msg) throws SipParseException {
+        public void count(final SipPacket msg) throws SipParseException {
             ++this.total;
             if (msg.isRequest()) {
                 countRequest(msg.toRequest());
@@ -170,7 +169,7 @@ public class SipStreamHandler {
             }
         }
 
-        private void countRequest(final SipRequest request) throws SipParseException {
+        private void countRequest(final SipRequestPacket request) throws SipParseException {
             if (request.isInvite()) {
                 ++this.inviteRequests;
             } else if (request.isAck()) {
@@ -188,7 +187,7 @@ public class SipStreamHandler {
             }
         }
 
-        private void countResponse(final SipResponse response) throws SipParseException {
+        private void countResponse(final SipResponsePacket response) throws SipParseException {
             ++this.responses[response.getStatus() - 100];
         }
 

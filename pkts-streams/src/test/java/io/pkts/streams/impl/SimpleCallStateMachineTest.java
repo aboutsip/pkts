@@ -13,7 +13,7 @@ import static io.pkts.streams.SipStream.CallState.TRYING;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.sip.SipPacket;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.streams.StreamsTestBase;
 import io.pkts.streams.SipStream.CallState;
@@ -60,7 +60,7 @@ public class SimpleCallStateMachineTest extends StreamsTestBase {
         assertThat(fsm.getPostDialDelay(), is(3104809L));
         assertThat(fsm.getDuration(), is(16108868L));
 
-        final List<SipMessage> messages = loadMessages(resource);
+        final List<SipPacket> messages = loadMessages(resource);
         messages.set(1, null); // remove the 100 Trying
         fsm = driveTraffic(messages);
         assertStates(fsm, INITIAL, RINGING, IN_CALL, COMPLETED);
@@ -101,7 +101,7 @@ public class SimpleCallStateMachineTest extends StreamsTestBase {
      */
     @Test
     public void testMissingTraffic() throws Exception {
-        final List<SipMessage> messages = loadMessages("simple_invite_scenario.pcap");
+        final List<SipPacket> messages = loadMessages("simple_invite_scenario.pcap");
         messages.set(0, null); // remove the INVITE
         messages.set(1, null); // remove the 100 Trying
         SimpleCallStateMachine fsm = driveTraffic(messages);
@@ -133,8 +133,8 @@ public class SimpleCallStateMachineTest extends StreamsTestBase {
      */
     @Test
     public void testEarlierTrafficAppears() throws Exception {
-        final List<SipMessage> messagesFirst = loadMessages("simple_invite_scenario.pcap");
-        final List<SipMessage> messagesSecond = loadMessages("simple_invite_scenario.pcap");
+        final List<SipPacket> messagesFirst = loadMessages("simple_invite_scenario.pcap");
+        final List<SipPacket> messagesSecond = loadMessages("simple_invite_scenario.pcap");
 
         // scenario one, the INVITE didn't make it in the pcap
         // that we first push through the system but shows up in the second...
@@ -153,7 +153,7 @@ public class SimpleCallStateMachineTest extends StreamsTestBase {
      * @param messages
      * @param toRemove
      */
-    private void wipeOutMessages(final List<SipMessage> messages, final int... toRemove) {
+    private void wipeOutMessages(final List<SipPacket> messages, final int... toRemove) {
         for (final int i : toRemove) {
             messages.set(i, null);
         }
@@ -202,8 +202,8 @@ public class SimpleCallStateMachineTest extends StreamsTestBase {
      * @throws Exception
      *             boom!
      */
-    private void driveTraffic(final SimpleCallStateMachine fsm, final List<SipMessage> messages) throws Exception {
-        for (final SipMessage msg : messages) {
+    private void driveTraffic(final SimpleCallStateMachine fsm, final List<SipPacket> messages) throws Exception {
+        for (final SipPacket msg : messages) {
             if (msg != null) {
                 fsm.onEvent(msg);
             }
@@ -215,11 +215,11 @@ public class SimpleCallStateMachineTest extends StreamsTestBase {
      * the traffic through it.
      * 
      * @param messages
-     *            the {@link SipMessage}s to push through the state machine
+     *            the {@link SipPacket}s to push through the state machine
      * @return the newly created state machine
      * @throws Exception
      */
-    private SimpleCallStateMachine driveTraffic(final List<SipMessage> messages) throws Exception {
+    private SimpleCallStateMachine driveTraffic(final List<SipPacket> messages) throws Exception {
         final String callId = getCallId(messages);
         final SimpleCallStateMachine fsm = new SimpleCallStateMachine(callId);
         driveTraffic(fsm, messages);
@@ -227,7 +227,7 @@ public class SimpleCallStateMachineTest extends StreamsTestBase {
     }
 
     /**
-     * Load {@link SipMessage}s from the specified resource (has to be a pcap
+     * Load {@link SipPacket}s from the specified resource (has to be a pcap
      * file) and then create a new {@link SimpleCallStateMachine} and push that
      * traffic through it.
      * 
@@ -236,19 +236,19 @@ public class SimpleCallStateMachineTest extends StreamsTestBase {
      * @throws Exception
      */
     private SimpleCallStateMachine driveTraffic(final String resource) throws Exception {
-        final List<SipMessage> messages = loadMessages(resource);
+        final List<SipPacket> messages = loadMessages(resource);
         return driveTraffic(messages);
     }
 
     /**
-     * Helper method for finding a call id from the list of {@link SipMessage}s.
+     * Helper method for finding a call id from the list of {@link SipPacket}s.
      * 
      * @param messages
      * @return
      * @throws SipParseException
      */
-    private String getCallId(final List<SipMessage> messages) throws SipParseException {
-        for (final SipMessage msg : messages) {
+    private String getCallId(final List<SipPacket> messages) throws SipParseException {
+        for (final SipPacket msg : messages) {
             if (msg != null) {
                 return msg.getCallIDHeader().getValue().toString();
             }

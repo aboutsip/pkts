@@ -4,17 +4,19 @@
 package io.pkts.packet.rtp.impl;
 
 import io.pkts.buffer.Buffer;
+import io.pkts.packet.Packet;
 import io.pkts.packet.TransportPacket;
+import io.pkts.packet.impl.AbstractPacket;
 import io.pkts.packet.rtp.RtpPacket;
+import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-
 /**
  * @author jonas@jonasborjesson.com
  */
-public final class RtpPacketImpl implements RtpPacket {
+public final class RtpPacketImpl extends AbstractPacket implements RtpPacket {
 
     private final TransportPacket parent;
 
@@ -32,17 +34,21 @@ public final class RtpPacketImpl implements RtpPacket {
      * 
      */
     public RtpPacketImpl(final TransportPacket parent, final Buffer headers, final Buffer payload) {
+        super(Protocol.RTP, parent, payload);
         this.parent = parent;
         this.headers = headers;
         this.payload = payload;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public int getVersion() throws IOException {
-        return (this.headers.getByte(0) & 0xC0) >> 6;
+    public int getVersion() {
+        try {
+            return (this.headers.getByte(0) & 0xC0) >> 6;
+        } catch (final IndexOutOfBoundsException e) {
+            throw new RuntimeException("Unable to parse out the RTP version, not enough data", e);
+        } catch (final IOException e) {
+            throw new RuntimeException("Unable to parse out the RTP version, IOException when trying.", e);
+        }
     }
 
     /**
@@ -252,12 +258,12 @@ public final class RtpPacketImpl implements RtpPacket {
     }
 
     @Override
-    public void write(final OutputStream out) throws IOException {
+    public void write(final OutputStream out, final Buffer payload) throws IOException {
         throw new RuntimeException("Sorry, not implemented just yet.");
     }
 
     @Override
-    public int getTotalLength() {
+    public long getTotalLength() {
         return this.parent.getTotalLength();
     }
 
@@ -289,6 +295,76 @@ public final class RtpPacketImpl implements RtpPacket {
     @Override
     public RtpPacket clone() {
         throw new RuntimeException("Sorry, not implemented just yet");
+    }
+
+    @Override
+    public void setSourcePort(final int port) {
+        this.parent.setSourcePort(port);
+    }
+
+    @Override
+    public void setDestinationPort(final int port) {
+        this.parent.setDestinationPort(port);
+    }
+
+    @Override
+    public int getTotalIPLength() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public int getHeaderLength() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public int getIdentification() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public boolean isFragmented() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isReservedFlagSet() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isDontFragmentSet() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isMoreFragmentsSet() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public short getFragmentOffset() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public long getCapturedLength() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public Packet getNextPacket() throws IOException {
+        // no more packets for RTP
+        return null;
     }
 
 }

@@ -7,14 +7,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import io.pkts.RawData;
-import io.pkts.YajTestBase;
+import io.pkts.PktsTestBase;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
-import io.pkts.frame.Frame;
-import io.pkts.frame.Layer1Frame;
 import io.pkts.framer.SllFramer;
+import io.pkts.packet.PCapPacket;
 import io.pkts.packet.Packet;
 import io.pkts.packet.rtp.RtpPacket;
 import io.pkts.protocol.Protocol;
@@ -28,11 +26,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * @author jonas@jonasborjesson.com
  */
-public class RTPFrameTest extends YajTestBase {
+public class RTPFrameTest extends PktsTestBase {
 
     /**
      * {@inheritDoc}
@@ -59,17 +56,12 @@ public class RTPFrameTest extends YajTestBase {
      */
     @Test
     public void testFrameRTP() throws Exception {
-        final Layer1Frame parent = mock(Layer1Frame.class);
-        final Packet packet = mock(Packet.class);
-        when(parent.parse()).thenReturn(packet);
-
-        final SllFramer framer = new SllFramer(this.framerManager);
+        final SllFramer framer = new SllFramer();
         final Buffer buffer = Buffers.wrap(RawData.rtp);
-        final Frame frame = framer.frame(parent, buffer);
+        final Packet frame = framer.frame(mock(PCapPacket.class), buffer);
 
-        final Frame rtpFrame = frame.getFrame(Protocol.RTP);
-        assertThat(rtpFrame, not((Frame) null));
-        final RtpPacket rtp = (RtpPacket) rtpFrame.parse();
+        final RtpPacket rtp = (RtpPacket) frame.getPacket(Protocol.RTP);
+        assertThat(rtp, not((RtpPacket) null));
         assertThat(rtp.getVersion(), is(2));
         assertThat(rtp.hasExtensions(), is(false));
         assertThat(rtp.hasPadding(), is(false));
@@ -102,12 +94,12 @@ public class RTPFrameTest extends YajTestBase {
     private static byte[] generateSineWavefreq(final int frequencyOfSignal, final int seconds) {
         // total samples = (duration in second) * (samples per second)
         final byte[] sin = new byte[seconds * sampleRate];
-        final double samplingInterval = (sampleRate / frequencyOfSignal);
-        System.out.println("Sampling Frequency  : "+sampleRate);
-        System.out.println("Frequency of Signal : "+frequencyOfSignal);
-        System.out.println("Sampling Interval   : "+samplingInterval);
+        final double samplingInterval = sampleRate / frequencyOfSignal;
+        System.out.println("Sampling Frequency  : " + sampleRate);
+        System.out.println("Frequency of Signal : " + frequencyOfSignal);
+        System.out.println("Sampling Interval   : " + samplingInterval);
         for (int i = 0; i < sin.length; i++) {
-            final double angle = (2.0 * Math.PI * i) / samplingInterval;
+            final double angle = 2.0 * Math.PI * i / samplingInterval;
             sin[i] = (byte) (Math.sin(angle) * 127);
             //System.out.println("" + sin[i]);
         }
@@ -115,7 +107,7 @@ public class RTPFrameTest extends YajTestBase {
     }
 
     private static void play(final SourceDataLine line, final byte[] array) {
-        final int length = (sampleRate * array.length) / 1000;
+        final int length = sampleRate * array.length / 1000;
         line.write(array, 0, array.length);
     }
 

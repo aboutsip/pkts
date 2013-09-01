@@ -268,8 +268,8 @@ public interface Buffer extends Cloneable {
      * 
      * @param index
      * @return the byte at the specified index
-     * @throws IndexOutOfBoundsException in case the index is greater than the
-     *             capacity of this buffer
+     * @throws IndexOutOfBoundsException
+     *             in case the index is greater than the capacity of this buffer
      */
     byte getByte(int index) throws IndexOutOfBoundsException, IOException;
 
@@ -277,7 +277,8 @@ public interface Buffer extends Cloneable {
      * Read the next byte, which will also increase the readerIndex by one.
      * 
      * @return the next byte
-     * @throws IndexOutOfBoundsException in case there is nothing left to read
+     * @throws IndexOutOfBoundsException
+     *             in case there is nothing left to read
      */
     byte readByte() throws IndexOutOfBoundsException, IOException;
 
@@ -296,8 +297,8 @@ public interface Buffer extends Cloneable {
      * 4
      * 
      * @return a long representing the unsigned int
-     * @throws IndexOutOfBoundsException in case there is not 4 bytes left to
-     *             read
+     * @throws IndexOutOfBoundsException
+     *             in case there is not 4 bytes left to read
      */
     long readUnsignedInt() throws IndexOutOfBoundsException;
 
@@ -305,8 +306,8 @@ public interface Buffer extends Cloneable {
      * Read an int and will increase the reader index of this buffer by 4
      * 
      * @return the int value
-     * @throws IndexOutOfBoundsException in case there is not 4 bytes left to
-     *             read
+     * @throws IndexOutOfBoundsException
+     *             in case there is not 4 bytes left to read
      */
     int readInt() throws IndexOutOfBoundsException;
 
@@ -316,17 +317,18 @@ public interface Buffer extends Cloneable {
      * 
      * @param index
      * @return
-     * @throws IndexOutOfBoundsException in case there is not 4 bytes left to
-     *             read
+     * @throws IndexOutOfBoundsException
+     *             in case there is not 4 bytes left to read
      */
     int getInt(int index) throws IndexOutOfBoundsException;
 
     void setInt(int index, int value) throws IndexOutOfBoundsException;
 
+    void setUnsignedInt(int index, long value) throws IndexOutOfBoundsException;
+
     short getShort(int index) throws IndexOutOfBoundsException;
 
     int readUnsignedShort() throws IndexOutOfBoundsException;
-
 
     int getUnsignedShort(int index) throws IndexOutOfBoundsException;
 
@@ -381,8 +383,10 @@ public interface Buffer extends Cloneable {
     /**
      * Set the byte at given index to a new value
      * 
-     * @param index the index
-     * @param value the value
+     * @param index
+     *            the index
+     * @param value
+     *            the value
      * @throws IndexOutOfBoundsException
      */
     void setByte(int index, byte value) throws IndexOutOfBoundsException;
@@ -481,7 +485,7 @@ public interface Buffer extends Cloneable {
      *             in case the specified charset is not supported
      */
     void write(final String s, String charset) throws IndexOutOfBoundsException, WriteNotSupportedException,
-    UnsupportedEncodingException;
+            UnsupportedEncodingException;
 
     /**
      * Check whether to buffers are considered to be equal.

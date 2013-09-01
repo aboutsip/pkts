@@ -4,11 +4,11 @@
 package io.pkts.frame;
 
 import io.pkts.buffer.Buffer;
+import io.pkts.buffer.Buffers;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
-
 
 /**
  * @author jonas@jonasborjesson.com
@@ -16,7 +16,7 @@ import java.nio.ByteOrder;
  */
 public final class PcapRecordHeader {
 
-    private ByteOrder byteOrder;
+    private final ByteOrder byteOrder;
 
     private final Buffer body;
 
@@ -27,8 +27,55 @@ public final class PcapRecordHeader {
         assert body != null;
         assert body.capacity() == 16;
 
+        this.byteOrder = byteOrder;
         this.body = body;
     }
+
+    /**
+     * Create a default record header, which you must alter later on to match
+     * whatever it is you are writing into the pcap stream.
+     * 
+     * @param timestamp
+     *            the timestamp in milliseconds since epoch. This is the
+     *            timestamp of when the packet "arrived"
+     * 
+     * @return
+     */
+    public static PcapRecordHeader createDefaultHeader(final long timestamp) {
+        final byte[] body = new byte[16];
+
+        // time stamp seconds
+        // body[0] = (byte) 0x00;
+        // body[1] = (byte) 0x00;
+        // body[2] = (byte) 0x00;
+        // body[3] = (byte) 0x00;
+
+        // Time stamp microseconds
+        // body[4] = (byte) 0x00;
+        // body[5] = (byte) 0x00;
+        // body[6] = (byte) 0x00;
+        // body[7] = (byte) 0x00;
+
+        // The total length of the data
+        // body[8] = (byte) 0x00;
+        // body[9] = (byte) 0x00;
+        // body[10] = (byte) 0x00;
+        // body[11] = (byte) 0x00;
+
+        // The length of the data captures within this frame
+        // body[12] = (byte) 0x00;
+        // body[13] = (byte) 0x00;
+        // body[14] = (byte) 0x00;
+        // body[15] = (byte) 0x00;
+
+        final Buffer buffer = Buffers.wrap(body);
+        buffer.setUnsignedInt(0, timestamp / 1000L);
+
+        buffer.setUnsignedInt(4, timestamp % 1000L * 1000L);
+        return new PcapRecordHeader(ByteOrder.LITTLE_ENDIAN, buffer);
+    }
+
+    // private static void setUnsignedInt(int index, )
 
     public long getTimeStampSeconds() {
         return PcapGlobalHeader.getUnsignedInt(0, this.body.getArray(), this.byteOrder);
@@ -49,6 +96,10 @@ public final class PcapRecordHeader {
         return PcapGlobalHeader.getUnsignedInt(8, this.body.getArray(), this.byteOrder);
     }
 
+    public void setTotalLength(final long length) {
+        this.body.setUnsignedInt(8, length);
+    }
+
     /**
      * Get the actual length of what is contained in this frame.
      * 
@@ -56,6 +107,10 @@ public final class PcapRecordHeader {
      */
     public long getCapturedLength() {
         return PcapGlobalHeader.getUnsignedInt(12, this.body.getArray(), this.byteOrder);
+    }
+
+    public void setCapturedLength(final long length) {
+        this.body.setUnsignedInt(12, length);
     }
 
     public void write(final OutputStream out) throws IOException {

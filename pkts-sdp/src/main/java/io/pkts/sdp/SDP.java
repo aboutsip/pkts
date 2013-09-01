@@ -3,6 +3,9 @@
  */
 package io.pkts.sdp;
 
+import io.pkts.buffer.Buffer;
+
+import java.util.Collection;
 
 /**
  * Represents a Session Description Protocol as defined by RFC 2327.
@@ -24,6 +27,21 @@ public interface SDP {
      * 
      * @return
      */
-    Iterable<RTPInfo> getRTPInfo();
+    Collection<RTPInfo> getRTPInfo();
+
+    /**
+     * Get the raw buffer representing this SDP.
+     * 
+     * @return
+     */
+    Buffer toBuffer();
+
+    /**
+     * Same as {@link #toBuffer()}.{@link #toString()}
+     * 
+     * @return
+     */
+    @Override
+    String toString();
 
 }

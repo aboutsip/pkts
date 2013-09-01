@@ -5,21 +5,15 @@ package io.pkts.packet.impl;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
-import io.pkts.packet.IPPacket;
-import io.pkts.packet.IPPacketImpl;
+import io.pkts.frame.PcapRecordHeader;
 import io.pkts.packet.MACPacket;
-import io.pkts.packet.MACPacketImpl;
-import io.pkts.packet.Packet;
+import io.pkts.packet.PCapPacket;
 import io.pkts.packet.PacketFactory;
 import io.pkts.packet.TransportPacket;
 import io.pkts.packet.TransportPacketFactory;
-import io.pkts.packet.TransportPacketImpl;
+import io.pkts.packet.UDPPacket;
 import io.pkts.protocol.IllegalProtocolException;
 import io.pkts.protocol.Protocol;
-
-import java.io.IOException;
-import java.io.OutputStream;
-
 
 /**
  * @author jonas@jonasborjesson.com
@@ -51,7 +45,12 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
      * probably want to
      */
     private final byte[] udp = new byte[] {
-            (byte) 0x13, (byte) 0xe2, (byte) 0x13, (byte) 0xc4, (byte) 0x01, (byte) 0xd9, (byte) 0xff, (byte) 0xec };
+            (byte) 0x13, (byte) 0xe2, (byte) 0x13, (byte) 0xc4, (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0xec };
+
+    /**
+     * The total size of an empty UDP packet.
+     */
+    private final int udpLength = this.ehternetII.length + this.ipv4.length + this.udp.length;
 
     /**
      * A reference to the main {@link PacketFactory}
@@ -73,75 +72,52 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
             final String destAddress, final int destPort,
             final Buffer payload) throws IllegalArgumentException, IllegalProtocolException {
 
-        final byte[] ethernet = new byte[this.ehternetII.length];
-        System.arraycopy(this.ehternetII, 0, ethernet, 0, this.ehternetII.length);
-        final long ts = System.currentTimeMillis() * 1000;
-        final Packet pkt = new SimplePacket(ts);
-        final MACPacket mac = MACPacketImpl.create(pkt, Buffers.wrap(ethernet));
+        final TransportPacket pkt = createUdpInternal(payload);
+        pkt.setDestinationIP(destAddress);
+        pkt.setSourceIP(srcAddress);
+        pkt.setDestinationPort(destPort);
+        pkt.setSourcePort(srcPort);
+        pkt.reCalculateChecksum();
+        return pkt;
+    }
 
-        final byte[] rawIpv4 = new byte[this.ipv4.length];
-        System.arraycopy(this.ipv4, 0, rawIpv4, 0, this.ipv4.length);
-        final Buffer ipHeaders = Buffers.wrap(rawIpv4);
-        final IPPacket ipPacket = new IPPacketImpl(mac, ipHeaders, 0);
-        ipPacket.setSourceIP(srcAddress);
-        ipPacket.setDestinationIP(destAddress);
+    private UDPPacket createUdpInternal(final Buffer payload) {
+        final int payloadSize = payload != null ? payload.getReadableBytes() : 0;
+        final Buffer ethernet = Buffers.wrapAndClone(this.ehternetII);
+        final Buffer ipv4 = Buffers.wrapAndClone(this.ipv4);
 
-        return new TransportPacketImpl(ipPacket, true, srcPort, destPort);
+        final long ts = System.currentTimeMillis();
+        final PcapRecordHeader pcapRecordHeader = PcapRecordHeader.createDefaultHeader(ts);
+        pcapRecordHeader.setCapturedLength(this.udpLength + payloadSize);
+        pcapRecordHeader.setTotalLength(this.udpLength + payloadSize);
+
+        final PCapPacket pkt = new PCapPacketImpl(pcapRecordHeader, null);
+        final MACPacket mac = MACPacketImpl.create(pkt, ethernet);
+
+        final IPPacketImpl ipPacket = new IPPacketImpl(mac, ipv4, 0, null);
+        ipPacket.setTotalLength(ipv4.getReadableBytes());
+
+        final UdpPacketImpl udp = new UdpPacketImpl(ipPacket, Buffers.wrap(new byte[8]), payload);
+        udp.setLength(8 + payloadSize);
+        return udp;
     }
 
     @Override
     public TransportPacket create(final Protocol protocol, final byte[] srcAddress, final int srcPort,
             final byte[] destAddress, final int destPort, final Buffer payload) throws IllegalArgumentException,
             IllegalProtocolException {
-
-        final byte[] ethernet = new byte[this.ehternetII.length];
-        System.arraycopy(this.ehternetII, 0, ethernet, 0, this.ehternetII.length);
-        final long ts = System.currentTimeMillis() * 1000;
-        final Packet pkt = new SimplePacket(ts);
-        final MACPacket mac = MACPacketImpl.create(pkt, Buffers.wrap(ethernet));
-
-        final byte[] rawIpv4 = new byte[this.ipv4.length];
-        System.arraycopy(this.ipv4, 0, rawIpv4, 0, this.ipv4.length);
-        final Buffer ipHeaders = Buffers.wrap(rawIpv4);
-        final IPPacket ipPacket = new IPPacketImpl(mac, ipHeaders, 0);
-        try {
-            ipPacket.setSourceIP(srcAddress[0], srcAddress[1], srcAddress[2], srcAddress[3]);
-            ipPacket.setDestinationIP(destAddress[0], destAddress[1], destAddress[2], destAddress[3]);
-        } catch (final IndexOutOfBoundsException e) {
-            throw new IllegalArgumentException("Not enough bytes for setting an IPv4 address");
-        }
-
-        return new TransportPacketImpl(ipPacket, true, srcPort, destPort);
+        final TransportPacket pkt = createUdpInternal(payload);
+        pkt.setSourceIP(srcAddress[0], srcAddress[1], srcAddress[2], srcAddress[3]);
+        pkt.setDestinationIP(destAddress[0], destAddress[1], destAddress[2], destAddress[3]);
+        pkt.setDestinationPort(destPort);
+        pkt.setSourcePort(srcPort);
+        pkt.reCalculateChecksum();
+        return pkt;
     }
 
-    private static class SimplePacket implements Packet {
-        private final long arrivalTime;
-
-        public SimplePacket(final long arrivalTime) {
-            this.arrivalTime = arrivalTime;
-        }
-
-        @Override
-        public long getArrivalTime() {
-            return this.arrivalTime;
-        }
-
-        @Override
-        public void verify() {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void write(final OutputStream out) throws IOException {
-            throw new RuntimeException("Sorry, not implemented");
-        }
-
-        @Override
-        public SimplePacket clone() {
-            return new SimplePacket(this.arrivalTime);
-        }
-
+    @Override
+    public UDPPacket createUDP(final Buffer payload) throws IllegalArgumentException, IllegalProtocolException {
+        return createUdpInternal(payload);
     }
 
 }

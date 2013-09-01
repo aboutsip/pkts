@@ -4,7 +4,7 @@
 package io.pkts.examples.streams;
 
 import io.pkts.Pcap;
-import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.sip.SipPacket;
 import io.pkts.streams.SipStream;
 import io.pkts.streams.Stream;
 import io.pkts.streams.StreamHandler;
@@ -51,22 +51,22 @@ public final class StreamsExample001 {
         // Step 3 - In this simple example we will just supply a very basic
         //          StreamListener for SipMessages only. All we will do is
         //          print to std out when a new event occurs for a stream.
-        streamHandler.addStreamListener(new StreamListener<SipMessage>() {
+        streamHandler.addStreamListener(new StreamListener<SipPacket>() {
 
             @Override
-            public void startStream(final Stream<SipMessage> stream, final SipMessage packet) {
+            public void startStream(final Stream<SipPacket> stream, final SipPacket packet) {
                 System.out.println("New SIP stream detected. Stream id: " + stream.getStreamIdentifier());
                 System.out.println("SipMessage was: " + packet.getInitialLine());
             }
 
             @Override
-            public void packetReceived(final Stream<SipMessage> stream, final SipMessage packet) {
+            public void packetReceived(final Stream<SipPacket> stream, final SipPacket packet) {
                 System.out.println("Received a new SIP message for stream: " + stream.getStreamIdentifier());
                 System.out.println("SipMessage was: " + packet.getInitialLine());
             }
 
             @Override
-            public void endStream(final Stream<SipMessage> stream) {
+            public void endStream(final Stream<SipPacket> stream) {
                 System.out.println("The stream ended. Stream id: " + stream.getStreamIdentifier());
             }
         });

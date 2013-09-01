@@ -3,7 +3,6 @@
  */
 package io.pkts.packet;
 
-
 /**
  * @author jonas@jonasborjesson.com
  */
@@ -26,5 +25,8 @@ public interface PCapPacket extends Packet {
      * @return the length in bytes
      */
     long getCapturedLength();
+
+    @Override
+    PCapPacket clone();
 
 }

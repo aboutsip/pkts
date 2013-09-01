@@ -6,10 +6,10 @@ import io.pkts.filters.Filter;
 import io.pkts.filters.FilterException;
 import io.pkts.filters.FilterFactory;
 import io.pkts.filters.FilterParseException;
-import io.pkts.frame.Frame;
 import io.pkts.frame.PcapGlobalHeader;
 import io.pkts.framer.FramerManager;
 import io.pkts.framer.PcapFramer;
+import io.pkts.packet.Packet;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -71,15 +71,15 @@ public class Pcap {
         final ByteOrder byteOrder = this.header.getByteOrder();
         final PcapFramer framer = new PcapFramer(this.header, this.framerManager);
 
-        Frame frame = null;
-        while ((frame = framer.frame(null, this.buffer)) != null) {
+        Packet packet = null;
+        while ((packet = framer.frame(null, this.buffer)) != null) {
             try {
-                final long time = frame.getArrivalTime();
+                final long time = packet.getArrivalTime();
                 this.framerManager.tick(time);
                 if (this.filter == null) {
-                    callback.nextFrame(frame);
-                } else if (this.filter != null && this.filter.accept(frame)) {
-                    callback.nextFrame(frame);
+                    callback.nextFrame(packet);
+                } else if (this.filter != null && this.filter.accept(packet)) {
+                    callback.nextFrame(packet);
                 }
             } catch (final FilterException e) {
                 // TODO: use the callback instead to signal

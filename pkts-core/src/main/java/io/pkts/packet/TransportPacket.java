@@ -13,7 +13,11 @@ public interface TransportPacket extends IPPacket, Cloneable {
 
     int getSourcePort();
 
+    void setSourcePort(int port);
+
     int getDestinationPort();
+
+    void setDestinationPort(int port);
 
     @Override
     TransportPacket clone();

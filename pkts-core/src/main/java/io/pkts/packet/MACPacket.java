@@ -10,7 +10,7 @@ package io.pkts.packet;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface MACPacket extends Packet, Cloneable {
+public interface MACPacket extends PCapPacket, Cloneable {
 
     String getSourceMacAddress();
 
@@ -28,6 +28,7 @@ public interface MACPacket extends Packet, Cloneable {
 
     void setDestinationMacAddress(String macAddress) throws IllegalArgumentException;
 
+    @Override
     MACPacket clone();
 
 }

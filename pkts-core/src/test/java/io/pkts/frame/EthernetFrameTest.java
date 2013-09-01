@@ -5,24 +5,21 @@ package io.pkts.frame;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import io.pkts.YajTestBase;
-import io.pkts.frame.EthernetFrame;
-import io.pkts.frame.Layer1Frame;
+import io.pkts.PktsTestBase;
 import io.pkts.framer.EthernetFramer;
-import io.pkts.framer.Layer1Framer;
 import io.pkts.framer.PcapFramer;
 import io.pkts.packet.MACPacket;
+import io.pkts.packet.PCapPacket;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-
 /**
  * @author jonas
  * 
  */
-public class EthernetFrameTest extends YajTestBase {
+public class EthernetFrameTest extends PktsTestBase {
 
     /**
      * @throws java.lang.Exception
@@ -50,13 +47,11 @@ public class EthernetFrameTest extends YajTestBase {
      */
     @Test
     public void testParsePacket() throws Exception {
-        final Layer1Framer pcapFramer = new PcapFramer(this.defaultPcapHeader, this.framerManager);
-        final Layer1Frame pcapFrame = pcapFramer.frame(null, this.pcapStream);
+        final PcapFramer pcapFramer = new PcapFramer(this.defaultPcapHeader, this.framerManager);
+        final PCapPacket pcap = pcapFramer.frame(null, this.pcapStream);
 
-        final EthernetFramer framer = new EthernetFramer(this.framerManager);
-        final EthernetFrame frame = framer.frame(pcapFrame, pcapFrame.getPayload());
-
-        final MACPacket packet = frame.parse();
+        final EthernetFramer framer = new EthernetFramer();
+        final MACPacket packet = framer.frame(pcap, pcap.getPayload());
         assertThat(packet.getSourceMacAddress(), is("00:00:00:00:00:00"));
         assertThat(packet.getDestinationMacAddress(), is("00:00:00:00:00:00"));
         assertThat(packet.getArrivalTime(), is(1340495109792862L));

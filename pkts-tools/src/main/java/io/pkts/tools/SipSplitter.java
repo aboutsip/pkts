@@ -4,8 +4,8 @@
 package io.pkts.tools;
 
 import io.pkts.Pcap;
-import io.pkts.frame.IPFrame;
-import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.IPPacket;
+import io.pkts.packet.sip.SipPacket;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.streams.FragmentListener;
 import io.pkts.streams.SipStatistics;
@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  * 
  * @author jonas@jonasborjesson.com
  */
-public final class SipSplitter implements StreamListener<SipMessage>, FragmentListener {
+public final class SipSplitter implements StreamListener<SipPacket>, FragmentListener {
 
     private final Map<StreamId, SipStream> streams = new HashMap<StreamId, SipStream>(20000);
 
@@ -141,7 +141,7 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
     }
 
     @Override
-    public void startStream(final Stream<SipMessage> stream, final SipMessage message) {
+    public void startStream(final Stream<SipPacket> stream, final SipPacket message) {
         try {
             if (message.isInfo() || message.isMessage() || message.isOptions()) {
                 System.out.println("Strange...");
@@ -154,7 +154,7 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
     }
 
     @Override
-    public void packetReceived(final Stream<SipMessage> stream, final SipMessage packet) {
+    public void packetReceived(final Stream<SipPacket> stream, final SipPacket packet) {
         // TODO Auto-generated method stub
     }
 
@@ -204,7 +204,7 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
         checkPDD(stream);
         checkDuration(stream);
 
-        for (final SipMessage msg : stream.getPackets()) {
+        for (final SipPacket msg : stream.getPackets()) {
             try {
                 if (msg.isInvite()) {
                     ++this.calls;
@@ -217,7 +217,7 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
     }
 
     @Override
-    public void endStream(final Stream<SipMessage> stream) {
+    public void endStream(final Stream<SipPacket> stream) {
         ++this.endCount;
         try {
             count((SipStream) stream);
@@ -228,7 +228,7 @@ public final class SipSplitter implements StreamListener<SipMessage>, FragmentLi
     }
 
     @Override
-    public IPFrame handleFragment(final IPFrame ipFrame) {
+    public IPPacket handleFragment(final IPPacket ipPacket) {
         ++this.fragmented;
         return null;
     }

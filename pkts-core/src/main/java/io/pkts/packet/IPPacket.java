@@ -11,7 +11,7 @@ package io.pkts.packet;
  * model. However, until it becomes an issue this little "issue" is going to be
  * ignored and for now the Network Layer is equal to the Internet Layer.
  * 
- * The current version of YAJPcap is focused on IP anyway so...
+ * The current version of pkts.io is focused on IP anyway so...
  * 
  * @author jonas@jonasborjesson.com
  */
@@ -97,7 +97,7 @@ public interface IPPacket extends MACPacket, Cloneable {
      * 
      * @return
      */
-    int getTotalLength();
+    int getTotalIPLength();
 
     /**
      * The checksum of the IP-packet. The checksum in an IP-packet is a 16 bit
@@ -122,4 +122,122 @@ public interface IPPacket extends MACPacket, Cloneable {
 
     @Override
     IPPacket clone();
+
+    /**
+     * The IP version (4 or 6)
+     * 
+     * @return
+     */
+    int getVersion();
+
+    /**
+     * Get the length of the IP headers (in bytes)
+     * 
+     * @return
+     */
+    int getHeaderLength();
+
+    /**
+     * Note, this should be treated as a unsigned short.
+     * 
+     * This field is an identification field and is primarily used for uniquely
+     * identifying fragments of an original IP datagram. Some experimental work
+     * has suggested using the ID field for other purposes, such as for adding
+     * packet-tracing information to help trace datagrams with spoofed source
+     * addresses
+     * 
+     * (source http://en.wikipedia.org/wiki/IPv4)
+     * 
+     * @return
+     */
+    int getIdentification();
+
+    /**
+     * 
+     * @return
+     */
+    boolean isFragmented();
+
+    /**
+     * The Reserved flag is part of the three-bit flag field and those flags
+     * are: (in order, from high order to low order):
+     * 
+     * <pre>
+     * bit 0: Reserved; must be zero.
+     * bit 1: Don't Fragment (DF)
+     * bit 2: More Fragments (MF)
+     * </pre>
+     * 
+     * (source http://en.wikipedia.org/wiki/IPv4)
+     * 
+     * @return should always return false
+     */
+    boolean isReservedFlagSet();
+
+    /**
+     * The DF flag is part of the three-bit flag field and those flags are: (in
+     * order, from high order to low order):
+     * 
+     * <pre>
+     * bit 0: Reserved; must be zero.
+     * bit 1: Don't Fragment (DF)
+     * bit 2: More Fragments (MF)
+     * </pre>
+     * 
+     * If the DF flag is set, and fragmentation is required to route the packet,
+     * then the packet is dropped. This can be used when sending packets to a
+     * host that does not have sufficient resources to handle fragmentation. It
+     * can also be used for Path MTU Discovery, either automatically by the host
+     * IP software, or manually using diagnostic tools such as ping or
+     * traceroute. For unfragmented packets, the MF flag is cleared. For
+     * fragmented packets, all fragments except the last have the MF flag set.
+     * The last fragment has a non-zero Fragment Offset field, differentiating
+     * it from an unfragmented packet.
+     * 
+     * (source http://en.wikipedia.org/wiki/IPv4)
+     * 
+     * @return
+     */
+    boolean isDontFragmentSet();
+
+    /**
+     * The MF flag is part of the three-bit flag field and those flags are: (in
+     * order, from high order to low order):
+     * 
+     * <pre>
+     * bit 0: Reserved; must be zero.
+     * bit 1: Don't Fragment (DF)
+     * bit 2: More Fragments (MF)
+     * </pre>
+     * 
+     * If the DF flag is set, and fragmentation is required to route the packet,
+     * then the packet is dropped. This can be used when sending packets to a
+     * host that does not have sufficient resources to handle fragmentation. It
+     * can also be used for Path MTU Discovery, either automatically by the host
+     * IP software, or manually using diagnostic tools such as ping or
+     * traceroute. For unfragmented packets, the MF flag is cleared. For
+     * fragmented packets, all fragments except the last have the MF flag set.
+     * The last fragment has a non-zero Fragment Offset field, differentiating
+     * it from an unfragmented packet.
+     * 
+     * (source http://en.wikipedia.org/wiki/IPv4)
+     * 
+     * @return
+     */
+    boolean isMoreFragmentsSet();
+
+    /**
+     * The fragment offset field, measured in units of eight-byte blocks, is 13
+     * bits long and specifies the offset of a particular fragment relative to
+     * the beginning of the original unfragmented IP datagram. The first
+     * fragment has an offset of zero. This allows a maximum offset of (213 – 1)
+     * × 8 = 65,528 bytes, which would exceed the maximum IP packet length of
+     * 65,535 bytes with the header length included (65,528 + 20 = 65,548
+     * bytes).
+     * 
+     * (source http://en.wikipedia.org/wiki/IPv4)
+     * 
+     * @return
+     */
+    short getFragmentOffset();
 }

@@ -4,6 +4,7 @@
 package io.pkts.filters;
 
 import io.pkts.frame.Frame;
+import io.pkts.packet.Packet;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -21,6 +22,6 @@ public interface Filter {
      *             {@link Frame}. Whatever exception the {@link Frame} will
      *             throw will be wrapped in a {@link FilterException}.
      */
-    boolean accept(Frame frame) throws FilterException;
+    boolean accept(Packet packet) throws FilterException;
 
 }

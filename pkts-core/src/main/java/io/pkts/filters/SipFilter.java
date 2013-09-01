@@ -3,11 +3,10 @@
  */
 package io.pkts.filters;
 
-import io.pkts.frame.Frame;
+import io.pkts.packet.Packet;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
-
 
 /**
  * @author jonas@jonasborjesson.com
@@ -26,12 +25,11 @@ public class SipFilter implements Filter {
      * {@inheritDoc}
      */
     @Override
-    public boolean accept(final Frame frame) throws FilterException {
+    public boolean accept(final Packet packet) throws FilterException {
         try {
-            return frame.hasProtocol(Protocol.SIP);
+            return packet.hasProtocol(Protocol.SIP);
         } catch (final IOException e) {
             throw new FilterException("Unable to process the frame due to IOException", e);
         }
     }
-
 }

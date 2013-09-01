@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-
 /**
  * FramerFactory
  * 
@@ -84,7 +83,7 @@ public final class FramerManager {
      * @return
      */
     public void registerFramer(final Protocol p, final Framer framer) throws IllegalArgumentException {
-        if ((p == null) || (framer == null)) {
+        if (p == null || framer == null) {
             throw new IllegalArgumentException("The protocol or framer cannot be null");
         }
         this.framers.put(p, framer);
@@ -109,14 +108,6 @@ public final class FramerManager {
      * protocols we currently can handle
      */
     public void registerDefaultFramers() {
-        registerFramer(Protocol.SIP, new SIPFramer(this));
-        registerFramer(Protocol.SDP, new SDPFramer(this));
-        registerFramer(Protocol.SLL, new SllFramer(this));
-        registerFramer(Protocol.ETHERNET_II, new EthernetFramer(this));
-        registerFramer(Protocol.IPv4, new IPv4Framer(this));
-        registerFramer(Protocol.UDP, new UDPFramer(this));
-        registerFramer(Protocol.TCP, new TCPFramer(this));
-        registerFramer(Protocol.RTP, new RTPFramer(this));
     }
 
     /**
@@ -174,7 +165,8 @@ public final class FramerManager {
     /**
      * Try and find a framer for the data
      * 
-     * @param data the data we are trying to find a framer for
+     * @param data
+     *            the data we are trying to find a framer for
      * @return
      */
     public Framer<?> getFramer(final Buffer data) throws IOException {

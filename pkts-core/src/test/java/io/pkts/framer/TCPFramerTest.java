@@ -6,27 +6,23 @@ package io.pkts.framer;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import io.pkts.FragmentedTCPData;
 import io.pkts.RawData;
-import io.pkts.YajTestBase;
+import io.pkts.PktsTestBase;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
-import io.pkts.frame.IPFrame;
-import io.pkts.frame.TCPFrame;
-import io.pkts.framer.TCPFramer;
 import io.pkts.packet.IPPacket;
+import io.pkts.packet.TCPPacket;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-
 /**
  * @author jonas@jonasborjesson.com
  * 
  */
-public class TCPFramerTest extends YajTestBase {
+public class TCPFramerTest extends PktsTestBase {
     private TCPFramer framer;
 
     /**
@@ -36,7 +32,7 @@ public class TCPFramerTest extends YajTestBase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        this.framer = new TCPFramer(this.framerManager);
+        this.framer = new TCPFramer();
     }
 
     /**
@@ -107,14 +103,14 @@ public class TCPFramerTest extends YajTestBase {
         assertThat(getFrame(FragmentedTCPData.segmentThree).isCWR(), is(false));
     }
 
-    private TCPFrame getFrame(final byte[] data) throws Exception {
-        final IPFrame ipFrame = mock(IPFrame.class);
-        final IPPacket ip = mock(IPPacket.class);
-        when(ipFrame.parse()).thenReturn(ip);
+    private TCPPacket getFrame(final byte[] data) throws Exception {
+        // final IPPacket ipFrame = mock(IPFrame.class);
+        // final IPPacket ip = mock(IPPacket.class);
+        // when(ipFrame.parse()).thenReturn(ip);
 
         final Buffer buf = Buffers.wrap(data);
         final Buffer tcp = buf.slice(34, buf.capacity());
-        return (TCPFrame) this.framer.frame(ipFrame, tcp);
+        return this.framer.frame(mock(IPPacket.class), tcp);
     }
 
     /**
@@ -124,22 +120,18 @@ public class TCPFramerTest extends YajTestBase {
      */
     @Test
     public void testTcpSynPacket() throws Exception {
-        final TCPFrame frame = getFrame(RawData.tcpSyn);
-        assertThat(frame.getSourcePort(), is(59409));
-        assertThat(frame.getDestinationPort(), is(5060));
-        assertThat(frame.getHeaderLength(), is(40));
+        final TCPPacket tcp = getFrame(RawData.tcpSyn);
+        assertThat(tcp.getSourcePort(), is(59409));
+        assertThat(tcp.getDestinationPort(), is(5060));
+        assertThat(tcp.getHeaderLength(), is(40));
     }
 
     @Test
     public void testTcpFramer() throws Exception {
-        final IPFrame ipFrame = mock(IPFrame.class);
-        final IPPacket ip = mock(IPPacket.class);
-        when(ipFrame.parse()).thenReturn(ip);
-
-        final TCPFrame frame = (TCPFrame) this.framer.frame(ipFrame, this.tcpFrameBuffer);
-        assertThat(frame.getSourcePort(), is(5060));
-        assertThat(frame.getDestinationPort(), is(59409));
-        assertThat(frame.getHeaderLength(), is(32));
+        final TCPPacket tcp = this.framer.frame(mock(IPPacket.class), this.tcpFrameBuffer);
+        assertThat(tcp.getSourcePort(), is(5060));
+        assertThat(tcp.getDestinationPort(), is(59409));
+        assertThat(tcp.getHeaderLength(), is(32));
     }
 
 }

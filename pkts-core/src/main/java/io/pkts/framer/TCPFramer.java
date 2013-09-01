@@ -4,27 +4,23 @@
 package io.pkts.framer;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.frame.Layer3Frame;
-import io.pkts.frame.Layer4Frame;
-import io.pkts.frame.TCPFrame;
+import io.pkts.packet.IPPacket;
+import io.pkts.packet.TCPPacket;
+import io.pkts.packet.impl.TcpPacketImpl;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
-
 
 /**
  * @author jonas@jonasborjesson.com
  * 
  */
-public final class TCPFramer implements Layer4Framer {
-
-    private final FramerManager framerManager;
+public final class TCPFramer implements Framer<IPPacket> {
 
     /**
      * 
      */
-    public TCPFramer(final FramerManager framerManager) {
-        this.framerManager = framerManager;
+    public TCPFramer() {
     }
 
     /**
@@ -39,7 +35,7 @@ public final class TCPFramer implements Layer4Framer {
      * {@inheritDoc}
      */
     @Override
-    public Layer4Frame frame(final Layer3Frame parent, final Buffer buffer) throws IOException {
+    public TCPPacket frame(final IPPacket parent, final Buffer buffer) throws IOException {
         if (parent == null) {
             throw new IllegalArgumentException("The parent frame cannot be null");
         }
@@ -66,8 +62,7 @@ public final class TCPFramer implements Layer4Framer {
         if (buffer.hasReadableBytes()) {
             payload = buffer.slice();
         }
-
-        return new TCPFrame(this.framerManager, parent.getPcapGlobalHeader(), parent, headers, options, payload);
+        return new TcpPacketImpl(parent, headers, options, payload);
     }
 
     /**

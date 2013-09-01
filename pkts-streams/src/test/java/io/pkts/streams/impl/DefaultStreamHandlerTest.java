@@ -8,7 +8,7 @@ import static org.junit.Assert.assertThat;
 
 import io.pkts.Pcap;
 import io.pkts.packet.Packet;
-import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.sip.SipPacket;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.streams.SipStream;
 import io.pkts.streams.Stream;
@@ -77,7 +77,7 @@ public class DefaultStreamHandlerTest extends StreamsTestBase {
      *            the expected duration
      * @throws SipParseException
      */
-    private void assertStream(final Stream<SipMessage> stream, final long pdd, final long duration)
+    private void assertStream(final Stream<SipPacket> stream, final long pdd, final long duration)
             throws SipParseException {
         final SipStream sipStream = (SipStream) stream;
         assertThat(sipStream.getPostDialDelay(), is(pdd));
@@ -123,28 +123,28 @@ public class DefaultStreamHandlerTest extends StreamsTestBase {
      * and packet events we receive.
      * 
      */
-    public static class StreamCounter implements StreamListener<SipMessage> {
+    public static class StreamCounter implements StreamListener<SipPacket> {
 
-        public List<Stream<SipMessage>> streams = new ArrayList<Stream<SipMessage>>();
+        public List<Stream<SipPacket>> streams = new ArrayList<Stream<SipPacket>>();
 
         public int startCount;
         public int packetCount;
         public int endCount;
 
         @Override
-        public void startStream(final Stream<SipMessage> stream, final SipMessage packet) {
+        public void startStream(final Stream<SipPacket> stream, final SipPacket packet) {
             this.streams.add(stream);
             ++this.startCount;
             ++this.packetCount;
         }
 
         @Override
-        public void packetReceived(final Stream<SipMessage> stream, final SipMessage packet) {
+        public void packetReceived(final Stream<SipPacket> stream, final SipPacket packet) {
             ++this.packetCount;
         }
 
         @Override
-        public void endStream(final Stream<SipMessage> stream) {
+        public void endStream(final Stream<SipPacket> stream) {
             ++this.endCount;
         }
 

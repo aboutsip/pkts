@@ -3,18 +3,16 @@
  */
 package io.pkts.framer;
 
-import io.pkts.YajTestBase;
-import io.pkts.framer.EthernetFramer;
+import io.pkts.PktsTestBase;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-
 /**
  * @author jonas@jonasborjesson.com
  */
-public class EthernetFramerTest extends YajTestBase {
+public class EthernetFramerTest extends PktsTestBase {
 
     private EthernetFramer framer;
 
@@ -25,7 +23,7 @@ public class EthernetFramerTest extends YajTestBase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        this.framer = new EthernetFramer(this.framerManager);
+        this.framer = new EthernetFramer();
     }
 
     /**
@@ -36,7 +34,6 @@ public class EthernetFramerTest extends YajTestBase {
     public void tearDown() throws Exception {
         super.tearDown();
     }
-
 
     @Test(expected = IllegalArgumentException.class)
     public void testEthernetFramerNoParent() throws Exception {

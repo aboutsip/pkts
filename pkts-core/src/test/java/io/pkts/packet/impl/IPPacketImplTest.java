@@ -6,7 +6,7 @@ package io.pkts.packet.impl;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.pkts.YajTestBase;
+import io.pkts.PktsTestBase;
 import io.pkts.packet.IPPacket;
 
 import java.util.List;
@@ -19,7 +19,7 @@ import org.junit.Test;
 /**
  * @author jonas@jonasborjesson.com
  */
-public class IPPacketImplTest extends YajTestBase {
+public class IPPacketImplTest extends PktsTestBase {
 
     /**
      * {@inheritDoc}

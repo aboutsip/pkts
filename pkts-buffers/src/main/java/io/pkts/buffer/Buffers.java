@@ -102,6 +102,50 @@ public final class Buffers {
     }
 
     /**
+     * Same as {@link #wrap(byte[])} but we will clone the byte array first.
+     * 
+     * @param buffer
+     * @return
+     */
+    public static Buffer wrapAndClone(final byte[] buffer) {
+        if (buffer == null || buffer.length == 0) {
+            throw new IllegalArgumentException("the buffer cannot be null or empty");
+        }
+
+        final byte[] b = new byte[buffer.length];
+        System.arraycopy(buffer, 0, b, 0, buffer.length);
+        return new ByteBuffer(b);
+    }
+
+    /**
+     * Combine two buffers into one. The resulting buffer will share the
+     * underlying byte storage so changing the value in one will affect the
+     * other. However, the original two buffers will still have their own reader
+     * and writer index.
+     * 
+     * @param one
+     * @param two
+     * @return
+     */
+    public static Buffer wrap(final Buffer one, final Buffer two) {
+        // TODO: create an actual composite buffer. 
+        final int size1 = one != null ? one.getReadableBytes() : 0;
+        final int size2 = two != null ? two.getReadableBytes() : 0;
+        if (size1 == 0 && size2 > 0) {
+            return two.slice();
+        } else if (size2 == 0 && size1 > 0) {
+            return one.slice();
+        } else if (size2 == 0 && size1 == 0) {
+            return Buffers.EMPTY_BUFFER;
+        }
+
+        final Buffer composite = Buffers.createBuffer(size1 + size2);
+        one.getBytes(composite);
+        two.getBytes(composite);
+        return composite;
+    }
+
+    /**
      * Wrap the supplied byte array specifying the allowed range of visible
      * bytes.
      * 

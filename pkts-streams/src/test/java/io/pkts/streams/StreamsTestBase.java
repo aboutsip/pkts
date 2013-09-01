@@ -7,8 +7,8 @@ import io.pkts.FrameHandler;
 import io.pkts.Pcap;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
-import io.pkts.frame.Frame;
-import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.Packet;
+import io.pkts.packet.sip.SipPacket;
 import io.pkts.protocol.Protocol;
 
 import java.io.InputStream;
@@ -21,7 +21,6 @@ import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-
 
 /**
  * @author jonas@jonasborjesson.com
@@ -64,16 +63,16 @@ public class StreamsTestBase {
      * @return
      * @throws Exception
      */
-    protected List<SipMessage> loadMessages(final String resource) throws Exception {
+    protected List<SipPacket> loadMessages(final String resource) throws Exception {
         final InputStream stream = StreamsTestBase.class.getResourceAsStream(resource);
         final Pcap pcap = Pcap.openStream(stream);
-        final List<SipMessage> messages = new ArrayList<SipMessage>();
+        final List<SipPacket> messages = new ArrayList<SipPacket>();
         pcap.loop(new FrameHandler() {
             @Override
-            public void nextFrame(final Frame frame) {
+            public void nextFrame(final Packet pkt) {
                 try {
-                    if (frame.hasProtocol(Protocol.SIP)) {
-                        final SipMessage msg = (SipMessage) frame.getFrame(Protocol.SIP).parse();
+                    if (pkt.hasProtocol(Protocol.SIP)) {
+                        final SipPacket msg = (SipPacket) pkt.getPacket(Protocol.SIP);
                         messages.add(msg);
                     }
                 } catch (final Exception e) {
@@ -84,6 +83,5 @@ public class StreamsTestBase {
         pcap.close();
         return messages;
     }
-
 
 }

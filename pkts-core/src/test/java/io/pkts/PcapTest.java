@@ -2,10 +2,10 @@ package io.pkts;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-
-import io.pkts.FrameHandler;
-import io.pkts.Pcap;
-import io.pkts.frame.Frame;
+import static org.junit.Assert.fail;
+import io.pkts.packet.Packet;
+import io.pkts.packet.sip.SipPacket;
+import io.pkts.protocol.Protocol;
 
 import java.io.InputStream;
 
@@ -13,8 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-
-public class PcapTest extends YajTestBase {
+public class PcapTest extends PktsTestBase {
 
     @Override
     @Before
@@ -31,7 +30,7 @@ public class PcapTest extends YajTestBase {
     @Test
     public void testLoop() throws Exception {
         // there are 30 packets in this capture.
-        final InputStream stream = YajTestBase.class.getResourceAsStream("sipp.pcap");
+        final InputStream stream = PktsTestBase.class.getResourceAsStream("sipp.pcap");
         final Pcap pcap = Pcap.openStream(stream);
         final FrameHandlerImpl handler = new FrameHandlerImpl();
         pcap.loop(handler);
@@ -43,8 +42,14 @@ public class PcapTest extends YajTestBase {
         public int count;
 
         @Override
-        public void nextFrame(final Frame frame) {
-            ++this.count;
+        public void nextFrame(final Packet packet) {
+            try {
+                final SipPacket sip = (SipPacket) packet.getPacket(Protocol.SIP);
+                ++this.count;
+            } catch (final Exception e) {
+                e.printStackTrace();
+                fail("ooops");
+            }
         }
     }
 

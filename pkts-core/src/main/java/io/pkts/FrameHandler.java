@@ -1,6 +1,6 @@
 package io.pkts;
 
-import io.pkts.frame.Frame;
+import io.pkts.packet.Packet;
 
 import java.io.IOException;
 
@@ -10,6 +10,6 @@ import java.io.IOException;
  */
 public interface FrameHandler {
 
-    void nextFrame(Frame frame) throws IOException;
+    void nextFrame(Packet packet) throws IOException;
 
 }
