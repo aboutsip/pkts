@@ -35,7 +35,7 @@ public class CoreExample001 {
             @Override
             public void nextPacket(final Packet packet) throws IOException {
 
-                // Step 3 - For every new packet the FrameHandler will be 
+                // Step 3 - For every new packet the PacketHandler will be 
                 //          called and you can examine this packet in a few
                 //          different ways. You can e.g. check whether the
                 //          packet contains a particular protocol, such as UDP.
