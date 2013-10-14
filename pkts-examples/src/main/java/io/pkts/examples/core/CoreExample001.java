@@ -33,20 +33,20 @@ public class CoreExample001 {
         //          simple interface with only a single method - nextPacket
         pcap.loop(new PacketHandler() {
             @Override
-            public void nextPacket(final Packet frame) throws IOException {
+            public void nextPacket(final Packet packet) throws IOException {
 
                 // Step 3 - For every new packet the FrameHandler will be 
                 //          called and you can examine this packet in a few
                 //          different ways. You can e.g. check whether the
                 //          packet contains a particular protocol, such as UDP.
-                if (frame.hasProtocol(Protocol.UDP)) {
+                if (packet.hasProtocol(Protocol.UDP)) {
 
                     // Step 4 - Now that we know that the packet contains
                     //          a UDP packet we get ask to get the UDP packet
                     //          and once we have it we can just get its
                     //          payload and print it, which is what we are
                     //          doing below.
-                    System.out.println(frame.getPacket(Protocol.UDP).getPayload());
+                    System.out.println(packet.getPacket(Protocol.UDP).getPayload());
                 }
             }
         });
