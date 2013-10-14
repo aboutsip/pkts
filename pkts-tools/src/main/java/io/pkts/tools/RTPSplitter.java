@@ -1,6 +1,6 @@
 package io.pkts.tools;
 
-import io.pkts.FrameHandler;
+import io.pkts.PacketHandler;
 import io.pkts.Pcap;
 import io.pkts.PcapOutputStream;
 import io.pkts.packet.Packet;
@@ -44,14 +44,14 @@ public class RTPSplitter {
         handler.saveAllRtpStreams(pcap, "rtpstream_again");
     }
 
-    private static class FrameHandlerImpl implements FrameHandler {
+    private static class FrameHandlerImpl implements PacketHandler {
 
         private final Map<String, RtpStream> streams = new HashMap<String, RtpStream>();
 
         private final Map<String, SipFlow> sipFlows = new HashMap<String, SipFlow>();
 
         @Override
-        public void nextFrame(final Packet frame) {
+        public void nextPacket(final Packet frame) {
             try {
                 if (frame.hasProtocol(Protocol.SIP)) {
                     processSipFrame((SipPacket) frame.getPacket(Protocol.SIP));

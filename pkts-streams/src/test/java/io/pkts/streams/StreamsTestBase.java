@@ -3,7 +3,7 @@
  */
 package io.pkts.streams;
 
-import io.pkts.FrameHandler;
+import io.pkts.PacketHandler;
 import io.pkts.Pcap;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
@@ -67,9 +67,9 @@ public class StreamsTestBase {
         final InputStream stream = StreamsTestBase.class.getResourceAsStream(resource);
         final Pcap pcap = Pcap.openStream(stream);
         final List<SipPacket> messages = new ArrayList<SipPacket>();
-        pcap.loop(new FrameHandler() {
+        pcap.loop(new PacketHandler() {
             @Override
-            public void nextFrame(final Packet pkt) {
+            public void nextPacket(final Packet pkt) {
                 try {
                     if (pkt.hasProtocol(Protocol.SIP)) {
                         final SipPacket msg = (SipPacket) pkt.getPacket(Protocol.SIP);

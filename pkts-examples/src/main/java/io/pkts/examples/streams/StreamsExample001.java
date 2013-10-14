@@ -18,7 +18,7 @@ import java.io.IOException;
  * Simple example showing how to use streams.
  * 
  * The core pcap support provided by pkts.io is only focusing on each individual
- * packet but quite often you application may be interested in a stream of
+ * packet but quite often your application may be interested in a stream of
  * packets. A stream can mean different things for different protocols. E.g. for
  * UDP, a stream in this context could be all packets sent and received from the
  * same local and remote port-pair (which is how the stream support in pkts.io
@@ -41,7 +41,7 @@ public final class StreamsExample001 {
         // Step 1 - Open the pcap containing our traffic.
         final Pcap pcap = Pcap.openStream("my_traffic.pcap");
 
-        // Step 2 - Instead of implementing our own FrameListener we will be
+        // Step 2 - Instead of implementing our own PacketHandler we will be
         //          using a StreamHandler provided for us by the io.pkts.streams
         //          library. It has a DefaultStreamHandler (which obviously
         //          implements the FrameHandler) that will detect new streams

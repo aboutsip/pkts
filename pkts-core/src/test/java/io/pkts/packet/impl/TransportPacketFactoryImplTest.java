@@ -6,7 +6,7 @@ package io.pkts.packet.impl;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
-import io.pkts.FrameHandler;
+import io.pkts.PacketHandler;
 import io.pkts.Pcap;
 import io.pkts.PcapOutputStream;
 import io.pkts.buffer.Buffer;
@@ -97,9 +97,9 @@ public class TransportPacketFactoryImplTest {
         final InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
         final Pcap pcap = Pcap.openStream(is);
         final AtomicReference<TransportPacket> result = new AtomicReference<TransportPacket>();
-        pcap.loop(new FrameHandler() {
+        pcap.loop(new PacketHandler() {
             @Override
-            public void nextFrame(final Packet frame) throws IOException {
+            public void nextPacket(final Packet frame) throws IOException {
                 if (frame.hasProtocol(Protocol.UDP)) {
                     result.set((TransportPacket) frame.getPacket(Protocol.UDP));
                 } else if (frame.hasProtocol(Protocol.TCP)) {

@@ -3,7 +3,7 @@
  */
 package io.pkts.streams;
 
-import io.pkts.FrameHandler;
+import io.pkts.PacketHandler;
 import io.pkts.packet.Packet;
 import io.pkts.packet.sip.SipPacket;
 
@@ -11,12 +11,12 @@ import java.util.Map;
 
 
 /**
- * The {@link StreamHandler} is a higher-level {@link FrameHandler} that
+ * The {@link StreamHandler} is a higher-level {@link PacketHandler} that
  * consumes streams and calls its registered {@link StreamListener}s.
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface StreamHandler extends FrameHandler {
+public interface StreamHandler extends PacketHandler {
 
     /**
      * Add a {@link StreamListener} to this {@link StreamHandler}.

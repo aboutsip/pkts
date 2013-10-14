@@ -68,22 +68,22 @@ public final class DefaultStreamHandler implements StreamHandler {
      * {@inheritDoc}
      */
     @Override
-    public void nextFrame(Packet frame) {
+    public void nextPacket(Packet packet) {
 
         try {
-            if (frame.hasProtocol(Protocol.IPv4)) {
-                final IPPacket ip = (IPPacket) frame.getPacket(Protocol.IPv4);
+            if (packet.hasProtocol(Protocol.IPv4)) {
+                final IPPacket ip = (IPPacket) packet.getPacket(Protocol.IPv4);
                 if (ip.isFragmented()) {
-                    frame = handleFragmentation(ip);
-                    if (frame == null) {
+                    packet = handleFragmentation(ip);
+                    if (packet == null) {
                         return;
                     }
                 }
             }
 
-            if (this.sipStreamHandler != null && frame.hasProtocol(Protocol.SIP)) {
-                this.sipStreamHandler.processFrame(frame);
-            } else if (frame.hasProtocol(Protocol.RTP)) {
+            if (this.sipStreamHandler != null && packet.hasProtocol(Protocol.SIP)) {
+                this.sipStreamHandler.processFrame(packet);
+            } else if (packet.hasProtocol(Protocol.RTP)) {
                 // processRtpFrame((RtpFrame) frame.getFrame(Protocol.RTP));
             }
         } catch (final IOException e) {

@@ -141,9 +141,9 @@ public class PktsTestBase {
         final InputStream stream = PktsTestBase.class.getResourceAsStream(streamName);
         final Pcap pcap = Pcap.openStream(stream);
         final List<Packet> packets = new ArrayList<Packet>();
-        pcap.loop(new FrameHandler() {
+        pcap.loop(new PacketHandler() {
             @Override
-            public void nextFrame(final Packet packet) {
+            public void nextPacket(final Packet packet) {
                 packets.add(packet);
             }
         });
@@ -165,7 +165,7 @@ public class PktsTestBase {
      * Helper class that simply just counts the number of SIP requests.
      * 
      */
-    public static class MethodCalculator implements FrameHandler {
+    public static class MethodCalculator implements PacketHandler {
         public int total;
         public int invite;
         public int bye;
@@ -173,7 +173,7 @@ public class PktsTestBase {
         public int cancel;
 
         @Override
-        public void nextFrame(final Packet packet) {
+        public void nextPacket(final Packet packet) {
             try {
                 final SipPacket msg = (SipPacket) packet.getPacket(Protocol.SIP);
                 ++this.total;
@@ -202,7 +202,7 @@ public class PktsTestBase {
      * Helper class that will write either {@link Frame}s or {@link Packet} to
      * the output stream. It will ONLY write INVITE and BYE messages.
      */
-    public static class TestWriteStreamHandler implements FrameHandler {
+    public static class TestWriteStreamHandler implements PacketHandler {
 
         private final PcapOutputStream out;
 
@@ -216,7 +216,7 @@ public class PktsTestBase {
         }
 
         @Override
-        public void nextFrame(final Packet packet) {
+        public void nextPacket(final Packet packet) {
             try {
                 // only write out INVITE and BYE requests
                 final SipPacket msg = (SipPacket) packet.getPacket(Protocol.SIP);

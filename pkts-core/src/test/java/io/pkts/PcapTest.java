@@ -38,11 +38,11 @@ public class PcapTest extends PktsTestBase {
         assertThat(handler.count, is(30));
     }
 
-    private static class FrameHandlerImpl implements FrameHandler {
+    private static class FrameHandlerImpl implements PacketHandler {
         public int count;
 
         @Override
-        public void nextFrame(final Packet packet) {
+        public void nextPacket(final Packet packet) {
             try {
                 final SipPacket sip = (SipPacket) packet.getPacket(Protocol.SIP);
                 ++this.count;

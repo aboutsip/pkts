@@ -3,7 +3,7 @@
  */
 package io.pkts.examples.core;
 
-import io.pkts.FrameHandler;
+import io.pkts.PacketHandler;
 import io.pkts.Pcap;
 import io.pkts.packet.Packet;
 import io.pkts.protocol.Protocol;
@@ -29,11 +29,11 @@ public class CoreExample001 {
 
         // Step 2 - Once you have obtained an instance, you want to start 
         //          looping over the content of the pcap. Do this by calling
-        //          the loop function and supply a FrameHandler, which is a
+        //          the loop function and supply a PacketHandler, which is a
         //          simple interface with only a single method - nextPacket
-        pcap.loop(new FrameHandler() {
+        pcap.loop(new PacketHandler() {
             @Override
-            public void nextFrame(final Packet frame) throws IOException {
+            public void nextPacket(final Packet frame) throws IOException {
 
                 // Step 3 - For every new packet the FrameHandler will be 
                 //          called and you can examine this packet in a few

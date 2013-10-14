@@ -48,7 +48,7 @@ public class Pcap {
 
     /**
      * It is possible to specify a filter so that only packets that matches the
-     * filter will be passed onto the registered {@link FrameHandler}.
+     * filter will be passed onto the registered {@link PacketHandler}.
      * 
      * E.g., to only accept packets of type sip with the Call-ID of "123" you
      * could pass in the following filter:
@@ -67,7 +67,7 @@ public class Pcap {
         }
     }
 
-    public void loop(final FrameHandler callback) throws IOException {
+    public void loop(final PacketHandler callback) throws IOException {
         final ByteOrder byteOrder = this.header.getByteOrder();
         final PcapFramer framer = new PcapFramer(this.header, this.framerManager);
 
@@ -77,9 +77,9 @@ public class Pcap {
                 final long time = packet.getArrivalTime();
                 this.framerManager.tick(time);
                 if (this.filter == null) {
-                    callback.nextFrame(packet);
+                    callback.nextPacket(packet);
                 } else if (this.filter != null && this.filter.accept(packet)) {
-                    callback.nextFrame(packet);
+                    callback.nextPacket(packet);
                 }
             } catch (final FilterException e) {
                 // TODO: use the callback instead to signal

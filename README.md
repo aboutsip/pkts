@@ -6,14 +6,14 @@ Example, load a pcap from file and print the content of each UDP packet to stand
 
 ```java
 final Pcap pcap = Pcap.openStream("my_traffic.pcap");
-pcap.loop(new FrameHandler() {
-  @Override
-  public void nextFrame(final Frame frame) throws IOException {
 
-    if (frame.hasProtocol(Protocol.UDP)) {
-       System.out.println(frame.getFrame(Protocol.UDP).getPayload());
+pcap.loop(new PacketHandler() {
+    @Override
+    public void nextPacket(final Packet frame) throws IOException {
+        if (frame.hasProtocol(Protocol.UDP)) {
+            System.out.println(frame.getPacket(Protocol.UDP).getPayload());
+        }
     }
-  }
 });
 ```
 [View gist](https://gist.github.com/aboutsip/5896046), which also contains comments.
@@ -24,28 +24,30 @@ Example, load a pcap from file and consume all SIP Streams.
 
 ```java
 final Pcap pcap = Pcap.openStream("my_traffic.pcap");
+
 final StreamHandler streamHandler = new DefaultStreamHandler();
-streamHandler.addStreamListener(new StreamListener<SipMessage>() {
- 
-  @Override
-  public void startStream(final Stream<SipMessage> stream, final SipMessage packet) {
-    System.out.println("New SIP stream detected. Stream id: " + stream.getStreamIdentifier());
-    System.out.println("SipMessage was: " + packet.getInitialLine());
-  }
- 
-  @Override
-  public void packetReceived(final Stream<SipMessage> stream, final SipMessage packet) {
-    System.out.println("Received a new SIP message for stream: " + stream.getStreamIdentifier());
-    System.out.println("SipMessage was: " + packet.getInitialLine());
-  }
- 
-  @Override
-  public void endStream(final Stream<SipMessage> stream) {
-    System.out.println("The stream ended. Stream id: " + stream.getStreamIdentifier());
-  }
+
+streamHandler.addStreamListener(new StreamListener<SipPacket>() {
+    @Override
+    public void startStream(final Stream<SipPacket> stream, final SipPacket packet) {
+        System.out.println("New SIP stream detected. Stream id: " + stream.getStreamIdentifier());
+        System.out.println("SipMessage was: " + packet.getInitialLine());
+    }
+
+    @Override
+    public void packetReceived(final Stream<SipPacket> stream, final SipPacket packet) {
+        System.out.println("Received a new SIP message for stream: " + stream.getStreamIdentifier());
+        System.out.println("SipMessage was: " + packet.getInitialLine());
+    }
+
+    @Override
+    public void endStream(final Stream<SipPacket> stream) {
+        System.out.println("The stream ended. Stream id: " + stream.getStreamIdentifier());
+    }
 });
- 
+
 pcap.loop(streamHandler);
+	
 ```
 [View gist](https://gist.github.com/aboutsip/5896237), which also contains comments.
 
@@ -56,7 +58,7 @@ pkts.io is available through Maven Central so just include the following Maven a
       <dependency>
           <groupId>io.pkts</groupId>
           <artifactId>pkts-core</artifactId>
-          <version>0.9.5</version>
+          <version>0.9.7</version>
           <type>jar</type>
       </dependency>
 
@@ -65,7 +67,7 @@ Or if you want to use the stream support, then just include the following:
       <dependency>
           <groupId>io.pkts</groupId>
           <artifactId>pkts-streams</artifactId>
-          <version>0.9.5</version>
+          <version>0.9.7</version>
           <type>jar</type>
       </dependency>
 
