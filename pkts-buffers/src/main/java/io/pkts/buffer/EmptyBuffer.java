@@ -41,6 +41,11 @@ public class EmptyBuffer implements Buffer {
         throw new IndexOutOfBoundsException("Not enough readable bytes");
     }
 
+    @Override
+    public Buffer readUntilDoubleCRLF() throws IOException {
+        throw new IndexOutOfBoundsException("Not enough readable bytes");
+    }
+
     /**
      * {@inheritDoc}
      */

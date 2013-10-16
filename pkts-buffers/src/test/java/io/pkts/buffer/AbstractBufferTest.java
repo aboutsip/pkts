@@ -4,9 +4,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-import io.pkts.buffer.Buffer;
-import io.pkts.buffer.ByteNotFoundException;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,6 +73,45 @@ public abstract class AbstractBufferTest {
         return array;
     }
 
+    /**
+     * Make sure that we can read the double-crlf sequence correctly.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testReadUntilDoubleCRLF() throws Exception {
+        Buffer buffer = createBuffer("hello\r\n\r\nworld");
+        Buffer hello = buffer.readUntilDoubleCRLF();
+        assertThat(hello.toString(), is("hello"));
+        assertThat(buffer.toString(), is("world"));
+
+        // note that the first sequence is missing the last '\n'
+        buffer = createBuffer("hello\r\n\rworld\r\n\r\n");
+        hello = buffer.readUntilDoubleCRLF();
+        assertThat(hello.toString(), is("hello\r\n\rworld"));
+        assertThat(buffer.toString(), is(""));
+
+        // if we only have double crlf we will end up with two empty buffers...
+        buffer = createBuffer("\r\n\r\n");
+        final Buffer empty = buffer.readUntilDoubleCRLF();
+        assertThat(empty.isEmpty(), is(true));
+        // isEmpty for stream backed buffers will never ever return anything but false for isEmpty()
+        // however, has readable bytes do accomplish what we want for this test.
+        assertThat(buffer.hasReadableBytes(), is(false));
+
+        // of course, if there are two double-crlf sequences we should still
+        // only read the first one... and reading the next double-crlf should
+        // yield two buffers both with the word "world" in it...
+        buffer = createBuffer("hello\r\n\r\nworld\r\n\r\nworld");
+        hello = buffer.readUntilDoubleCRLF();
+        assertThat(hello.toString(), is("hello"));
+        assertThat(buffer.toString(), is("world\r\n\r\nworld"));
+        final Buffer world = buffer.readUntilDoubleCRLF();
+        assertThat(world.toString(), is("world"));
+        assertThat(buffer.toString(), is("world"));
+
+    }
+
     @Test
     public void testIndexOf() throws Exception {
         final Buffer buffer = createBuffer("hello world ena goa grejor".getBytes());
@@ -143,7 +179,7 @@ public abstract class AbstractBufferTest {
         // slice things up and make sure that our readUntil works on slices as well
         final Buffer slice = buffer.slice(buffer.getReaderIndex() + 5);
         assertThat(slice.toString(), is("what "));
-        buf = slice.readUntil((byte)'a');
+        buf = slice.readUntil((byte) 'a');
         assertThat(buf.toString(), is("wh"));
         assertThat(slice.toString(), is("t "));
 

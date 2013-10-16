@@ -64,6 +64,20 @@ public interface Buffer extends Cloneable {
     Buffer readLine() throws IOException;
 
     /**
+     * Read until we find a double CRLF. The double CRLF will NOT be part of the
+     * returned buffer but they will be consumed.
+     * 
+     * If we cannot find a double CRLF then null will be returned and the passed
+     * in buffer will be reset to the same reader index as when it was passed
+     * in.
+     * 
+     * @return the resulting buffer containing everything up until (but not
+     *         inclusive) the double-crlf or null if no double-crlf was not
+     *         found.
+     */
+    Buffer readUntilDoubleCRLF() throws IOException;
+
+    /**
      * Returns the number of available bytes for reading without blocking. If
      * this returns less than what you want, there may still be more bytes
      * available depending on the underlying implementation. E.g., a Buffer

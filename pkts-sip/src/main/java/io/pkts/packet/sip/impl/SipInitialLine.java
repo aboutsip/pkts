@@ -103,6 +103,14 @@ public abstract class SipInitialLine extends SipParser {
         }
     }
 
+    public SipRequestLine toRequestLine() {
+        throw new ClassCastException("Cannot cast object to " + SipRequestLine.class);
+    }
+
+    public SipResponseLine toResponseLine() {
+        throw new ClassCastException("Cannot cast object to " + SipResponseLine.class);
+    }
+
     public boolean isResponseLine() {
         return false;
     }

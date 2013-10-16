@@ -6,11 +6,13 @@ package io.pkts.buffer;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-
 /**
  * @author jonas@jonasborjesson.com
  */
 public abstract class AbstractBuffer implements Buffer {
+
+    private static final byte LF = '\n';
+    private static final byte CR = '\r';
 
     /**
      * From where we will continue reading
@@ -109,6 +111,9 @@ public abstract class AbstractBuffer implements Buffer {
 
     @Override
     public Buffer slice() {
+        if (!hasReadableBytes()) {
+            return Buffers.EMPTY_BUFFER;
+        }
         return this.slice(getReaderIndex(), getWriterIndex() - this.lowerBoundary);
     }
 
@@ -142,7 +147,7 @@ public abstract class AbstractBuffer implements Buffer {
      */
     @Override
     public Buffer readUntil(final int maxBytes, final byte... bytes) throws IOException, ByteNotFoundException,
-    IllegalArgumentException {
+            IllegalArgumentException {
         final int index = indexOf(maxBytes, bytes);
         if (index == -1) {
             throw new ByteNotFoundException(bytes);
@@ -172,7 +177,7 @@ public abstract class AbstractBuffer implements Buffer {
      */
     @Override
     public int indexOf(final int maxBytes, final byte... bytes) throws IOException, ByteNotFoundException,
-    IllegalArgumentException {
+            IllegalArgumentException {
         if (bytes.length == 0) {
             throw new IllegalArgumentException("No bytes specified. Not sure what you want me to look for");
         }
@@ -209,9 +214,6 @@ public abstract class AbstractBuffer implements Buffer {
      */
     @Override
     public Buffer readLine() throws IOException {
-        final byte LF = '\n';
-        final byte CR = '\r';
-
         final int start = this.readerIndex;
         boolean foundCR = false;
         while (hasReadableBytes()) {
@@ -238,12 +240,35 @@ public abstract class AbstractBuffer implements Buffer {
         return slice(start, this.readerIndex);
     }
 
+    @Override
+    public Buffer readUntilDoubleCRLF() throws IOException {
+        final int start = this.readerIndex;
+        int found = 0;
+        while (found < 4 && hasReadableBytes()) {
+            final byte b = readByte();
+            if ((found == 0 || found == 2) && b == CR) {
+                ++found;
+            } else if ((found == 1 || found == 3) && b == LF) {
+                ++found;
+            } else {
+                found = 0;
+            }
+        }
+        if (found == 4) {
+            return slice(start, this.readerIndex - 4);
+        } else {
+            this.readerIndex = start;
+            return null;
+        }
+    }
+
     /**
      * Convenience method for checking if we have enough readable bytes
      * 
-     * @param length the length the user wishes to read
-     * @throws IndexOutOfBoundsException in case we don't have the bytes
-     *             available
+     * @param length
+     *            the length the user wishes to read
+     * @throws IndexOutOfBoundsException
+     *             in case we don't have the bytes available
      */
     protected void checkReadableBytes(final int length) throws IndexOutOfBoundsException {
         if (!checkReadableBytesSafe(length)) {
@@ -254,7 +279,8 @@ public abstract class AbstractBuffer implements Buffer {
     /**
      * Convenience method for checking if we have enough readable bytes
      * 
-     * @param length the length the user wishes to read
+     * @param length
+     *            the length the user wishes to read
      * @return true if we have enough bytes available for read
      */
     protected boolean checkReadableBytesSafe(final int length) {
@@ -321,13 +347,13 @@ public abstract class AbstractBuffer implements Buffer {
 
     @Override
     public void write(final String s) throws IndexOutOfBoundsException, WriteNotSupportedException,
-    UnsupportedEncodingException {
+            UnsupportedEncodingException {
         throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
     }
 
     @Override
     public void write(final String s, final String charset) throws IndexOutOfBoundsException,
-    WriteNotSupportedException, UnsupportedEncodingException {
+            WriteNotSupportedException, UnsupportedEncodingException {
         throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
     }
 

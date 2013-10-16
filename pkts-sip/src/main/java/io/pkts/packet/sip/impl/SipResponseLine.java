@@ -38,6 +38,11 @@ public final class SipResponseLine extends SipInitialLine {
         return true;
     }
 
+    @Override
+    public SipResponseLine toResponseLine() {
+        return this;
+    }
+
     public int getStatusCode() {
         return this.statusCode;
     }

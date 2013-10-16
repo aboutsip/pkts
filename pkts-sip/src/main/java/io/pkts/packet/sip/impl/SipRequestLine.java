@@ -11,7 +11,6 @@ import io.pkts.packet.sip.address.impl.SipURIImpl;
 
 import java.io.IOException;
 
-
 /**
  * Class representing a sip request line
  * 
@@ -42,6 +41,11 @@ public final class SipRequestLine extends SipInitialLine {
     @Override
     public boolean isRequestLine() {
         return true;
+    }
+
+    @Override
+    public SipRequestLine toRequestLine() {
+        return this;
     }
 
     public Buffer getMethod() {
