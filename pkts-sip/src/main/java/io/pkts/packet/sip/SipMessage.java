@@ -62,6 +62,28 @@ public interface SipMessage extends Cloneable {
     SipResponse toResponse() throws ClassCastException;
 
     /**
+     * Create a new response based on this {@link SipRequest}. If this
+     * {@link SipMessage} is not a {@link SipRequest} then a
+     * {@link ClassCastException} will be thrown. Only the mandatory headers
+     * from the {@link SipRequest} are copied. Those mandatory headers are:
+     * <ul>
+     * <li>{@link ToHeader}</li>
+     * <li>{@link FromHeader}</li>
+     * <li>{@link CallIdHeader}.</li>
+     * <li>{@link CSeqHeader}</li>
+     * <li>{@link MaxForwardsHeader}</li>
+     * </ul>
+     * 
+     * @param statusCode
+     * @param request
+     * @return
+     * @throws SipParseException
+     *             in case anything goes wrong when parsing out headers from the
+     *             {@link SipRequest}
+     */
+    SipResponse createResponse(int responseCode) throws SipParseException, ClassCastException;
+
+    /**
      * Check whether this sip message is a response or not
      * 
      * @return

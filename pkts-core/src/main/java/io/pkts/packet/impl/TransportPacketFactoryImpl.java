@@ -81,12 +81,11 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
         return pkt;
     }
 
-    private UDPPacket createUdpInternal(final Buffer payload) {
+    private UDPPacket createUdpInternal(final long ts, final Buffer payload) {
         final int payloadSize = payload != null ? payload.getReadableBytes() : 0;
         final Buffer ethernet = Buffers.wrapAndClone(this.ehternetII);
         final Buffer ipv4 = Buffers.wrapAndClone(this.ipv4);
 
-        final long ts = System.currentTimeMillis();
         final PcapRecordHeader pcapRecordHeader = PcapRecordHeader.createDefaultHeader(ts);
         pcapRecordHeader.setCapturedLength(this.udpLength + payloadSize);
         pcapRecordHeader.setTotalLength(this.udpLength + payloadSize);
@@ -102,6 +101,11 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
         return udp;
     }
 
+    private UDPPacket createUdpInternal(final Buffer payload) {
+        final long ts = System.currentTimeMillis();
+        return createUdpInternal(ts, payload);
+    }
+
     @Override
     public TransportPacket create(final Protocol protocol, final byte[] srcAddress, final int srcPort,
             final byte[] destAddress, final int destPort, final Buffer payload) throws IllegalArgumentException,
@@ -113,6 +117,12 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
         pkt.setSourcePort(srcPort);
         pkt.reCalculateChecksum();
         return pkt;
+    }
+
+    @Override
+    public UDPPacket createUDP(final long ts, final Buffer payload) throws IllegalArgumentException,
+            IllegalProtocolException {
+        return createUdpInternal(ts, payload);
     }
 
     @Override

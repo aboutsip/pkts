@@ -676,6 +676,11 @@ public abstract class SipMessageImpl implements SipMessage {
     }
 
     @Override
+    public SipResponse createResponse(final int responseCode) throws SipParseException, ClassCastException {
+        throw new ClassCastException("Unable to cast this SipMessage into a SipRequest");
+    }
+
+    @Override
     public Buffer toBuffer() {
         final Buffer buffer = Buffers.createBuffer(2048);
         getInitialLine().getBytes(buffer);

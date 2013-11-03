@@ -78,6 +78,14 @@ public interface TransportPacketFactory {
      * @throws IllegalArgumentException
      * @throws IllegalProtocolException
      */
+    UDPPacket createUDP(long ts, Buffer payload) throws IllegalArgumentException, IllegalProtocolException;
+
+    /**
+     * @param payload
+     * @return
+     * @throws IllegalArgumentException
+     * @throws IllegalProtocolException
+     */
     UDPPacket createUDP(Buffer payload) throws IllegalArgumentException, IllegalProtocolException;
 
 }
