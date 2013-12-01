@@ -14,6 +14,8 @@ import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
 
+import java.util.List;
+
 /**
  * Packet representing a SIP message.
  * 
@@ -165,7 +167,7 @@ public interface SipPacket extends ApplicationPacket {
     /**
      * Get the top-most {@link ViaHeader} if present. If this is a request that
      * has been sent then there should always be a {@link ViaHeader} present.
-     * However, you just created a {@link SipPacket} youself then this method
+     * However, you just created a {@link SipPacket} yourself then this method
      * may return null so please check for it.
      * 
      * @return the top-most {@link ViaHeader} or null if there are no
@@ -173,6 +175,15 @@ public interface SipPacket extends ApplicationPacket {
      * @throws SipParseException
      */
     ViaHeader getViaHeader() throws SipParseException;
+
+    /**
+     * Get all the Via-headers in this {@link SipMessage}. If this is a request
+     * that just was created then this may return an empty list.
+     * 
+     * @return
+     * @throws SipParseException
+     */
+    List<ViaHeader> getViaHeaders() throws SipParseException;
 
     /**
      * 
@@ -199,6 +210,16 @@ public interface SipPacket extends ApplicationPacket {
      * @throws SipParseException
      */
     RouteHeader getRouteHeader() throws SipParseException;
+
+    /**
+     * Get all the Route-headers in this {@link SipMessage}. If there are no
+     * {@link RouteHeader}s in this {@link SipMessage} then an empty list will
+     * be returned.
+     * 
+     * @return
+     * @throws SipParseException
+     */
+    List<RouteHeader> getRouteHeaders() throws SipParseException;
 
     /**
      * Get the {@link ContactHeader}

@@ -231,6 +231,16 @@ public interface SipMessage extends Cloneable {
     RouteHeader getRouteHeader() throws SipParseException;
 
     /**
+     * Get all the Route-headers in this {@link SipMessage}. If there are no
+     * {@link RouteHeader}s in this {@link SipMessage} then an empty list will
+     * be returned.
+     * 
+     * @return
+     * @throws SipParseException
+     */
+    List<RouteHeader> getRouteHeaders() throws SipParseException;
+
+    /**
      * Get the {@link ContactHeader}
      * 
      * @return

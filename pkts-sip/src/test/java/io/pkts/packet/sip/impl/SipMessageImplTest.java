@@ -3,8 +3,8 @@ package io.pkts.packet.sip.impl;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
-import io.pkts.RawData;
 import io.pkts.PktsTestBase;
+import io.pkts.RawData;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipRequest;
@@ -15,6 +15,8 @@ import io.pkts.packet.sip.header.RecordRouteHeader;
 import io.pkts.packet.sip.header.RouteHeader;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ViaHeader;
+
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -45,6 +47,86 @@ public class SipMessageImplTest extends PktsTestBase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    /**
+     * Make sure we can extract out all Route-headers as expected.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testGetRouteHeadersOneRoute() throws Exception {
+        SipMessage msg = parseMessage(RawData.sipInviteOneRouteHeader);
+        final RouteHeader route = msg.getRouteHeader();
+        assertRouteHeader(route, "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
+
+        msg = parseMessage(RawData.sipInviteOneRouteHeader);
+        final List<RouteHeader> routes = msg.getRouteHeaders();
+        assertThat(routes.size(), is(1));
+        assertRouteHeader(routes.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
+    }
+
+    /**
+     * Make sure we can extract two route headers.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testGetRouteHeadersTwoRoutes() throws Exception {
+        SipMessage msg = parseMessage(RawData.sipInviteTwoRouteHeaders);
+
+        final RouteHeader route = msg.getRouteHeader();
+        assertRouteHeader(route, "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
+
+        List<RouteHeader> routes = msg.getRouteHeaders();
+        assertThat(routes.size(), is(2));
+        assertRouteHeader(routes.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
+        assertRouteHeader(routes.get(1), "two", "aboutsip.com", "<sip:two@aboutsip.com;transport=tcp>");
+
+        // also make sure that we get the same result after we have asked for all routes up front
+        msg = parseMessage(RawData.sipInviteTwoRouteHeaders);
+        routes = msg.getRouteHeaders();
+        assertThat(routes.size(), is(2));
+        assertRouteHeader(routes.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
+        assertRouteHeader(routes.get(1), "two", "aboutsip.com", "<sip:two@aboutsip.com;transport=tcp>");
+    }
+
+    /**
+     * Make sure we can extract three route headers and where the 3rd header is
+     * NOT directly following the other two headers.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testGetRouteHeadersThreeRoutes() throws Exception {
+        SipMessage msg = parseMessage(RawData.sipInviteThreeRouteHeaders);
+
+        final RouteHeader route = msg.getRouteHeader();
+        assertRouteHeader(route, "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
+
+        List<RouteHeader> routes = msg.getRouteHeaders();
+        assertThat(routes.size(), is(3));
+        assertRouteHeader(routes.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
+        assertRouteHeader(routes.get(1), "two", "aboutsip.com", "<sip:two@aboutsip.com;transport=tcp>");
+        assertRouteHeader(routes.get(2), "three", "aboutsip.com", "<sip:three@aboutsip.com;transport=tcp>");
+
+        // also make sure that we get the same result after we have asked for all routes up front
+        msg = parseMessage(RawData.sipInviteThreeRouteHeaders);
+        routes = msg.getRouteHeaders();
+        assertThat(routes.size(), is(3));
+        assertRouteHeader(routes.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
+        assertRouteHeader(routes.get(1), "two", "aboutsip.com", "<sip:two@aboutsip.com;transport=tcp>");
+        assertRouteHeader(routes.get(2), "three", "aboutsip.com", "<sip:three@aboutsip.com;transport=tcp>");
+    }
+
+    private void assertRouteHeader(final RouteHeader route, final String user, final String host,
+            final String headerValue) {
+        assertThat(((SipURI) route.getAddress().getURI()).getHost().toString(), is(host));
+        assertThat(((SipURI) route.getAddress().getURI()).getUser().toString(), is(user));
+        assertThat(route.getValue().toString(), is(headerValue));
+        assertThat(route.getValue().toString(), is(headerValue));
+        assertThat(route.toString(), is(RouteHeader.NAME + ": " + headerValue));
+
     }
 
     /**

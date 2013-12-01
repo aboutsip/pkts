@@ -352,6 +352,25 @@ public abstract class SipMessageImpl implements SipMessage {
         return vias;
     }
 
+    @Override
+    public List<RouteHeader> getRouteHeaders() throws SipParseException {
+        frameAllHeaders();
+        final List<SipHeader> headers = this.parsedHeaders.get(RouteHeader.NAME);
+        final List<RouteHeader> routes = new ArrayList<RouteHeader>(headers.size());
+        for (int i = 0; i < headers.size(); ++i) {
+            final SipHeader header = headers.get(i);
+            if (header instanceof RouteHeader) {
+                routes.add((RouteHeader) header);
+            } else {
+                final Buffer buffer = header.getValue();
+                final RouteHeader route = RouteHeaderImpl.frame(buffer);
+                headers.set(i, route);
+                routes.add(route);
+            }
+        }
+        return routes;
+    }
+
     /**
      * {@inheritDoc}
      */

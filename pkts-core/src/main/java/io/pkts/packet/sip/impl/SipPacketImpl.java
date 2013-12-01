@@ -30,6 +30,7 @@ import io.pkts.sdp.SDP;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -441,6 +442,16 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
     /*
      * (non-Javadoc)
      * 
+     * @see io.pkts.packet.sip.SipPacket#getViaHeaders()
+     */
+    @Override
+    public List<ViaHeader> getViaHeaders() throws SipParseException {
+        return this.msg.getViaHeaders();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see io.pkts.packet.sip.SipPacket#getMaxForwards()
      */
     @Override
@@ -466,6 +477,16 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
     @Override
     public RouteHeader getRouteHeader() throws SipParseException {
         return this.msg.getRouteHeader();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see io.pkts.packet.sip.SipPacket#getRouteHeaders()
+     */
+    @Override
+    public List<RouteHeader> getRouteHeaders() throws SipParseException {
+        return this.msg.getRouteHeaders();
     }
 
     /*
