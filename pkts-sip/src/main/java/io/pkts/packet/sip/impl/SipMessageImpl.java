@@ -36,6 +36,7 @@ import io.pkts.sdp.SdpParseException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -337,6 +338,9 @@ public abstract class SipMessageImpl implements SipMessage {
     public List<ViaHeader> getViaHeaders() throws SipParseException {
         frameAllHeaders();
         final List<SipHeader> headers = this.parsedHeaders.get(ViaHeader.NAME);
+        if (headers == null || headers.isEmpty()) {
+            return Collections.emptyList();
+        }
         final List<ViaHeader> vias = new ArrayList<ViaHeader>(headers.size());
         for (int i = 0; i < headers.size(); ++i) {
             final SipHeader header = headers.get(i);
@@ -356,6 +360,9 @@ public abstract class SipMessageImpl implements SipMessage {
     public List<RouteHeader> getRouteHeaders() throws SipParseException {
         frameAllHeaders();
         final List<SipHeader> headers = this.parsedHeaders.get(RouteHeader.NAME);
+        if (headers == null || headers.isEmpty()) {
+            return Collections.emptyList();
+        }
         final List<RouteHeader> routes = new ArrayList<RouteHeader>(headers.size());
         for (int i = 0; i < headers.size(); ++i) {
             final SipHeader header = headers.get(i);

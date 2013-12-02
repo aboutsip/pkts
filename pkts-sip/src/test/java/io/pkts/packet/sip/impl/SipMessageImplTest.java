@@ -50,6 +50,19 @@ public class SipMessageImplTest extends PktsTestBase {
     }
 
     /**
+     * If there are no route headers present, we should return an empty list.
+     * Make sure we do!
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testGetRouteHeadersNoRoute() throws Exception {
+        final SipMessage msg = parseMessage(RawData.sipInvite);
+        assertThat(msg.getRouteHeader(), is((RouteHeader) null));
+        assertThat(msg.getRouteHeaders().size(), is(0));
+    }
+
+    /**
      * Make sure we can extract out all Route-headers as expected.
      * 
      * @throws Exception
