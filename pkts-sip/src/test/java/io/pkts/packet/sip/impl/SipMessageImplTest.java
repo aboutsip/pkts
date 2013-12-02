@@ -137,9 +137,7 @@ public class SipMessageImplTest extends PktsTestBase {
         assertThat(((SipURI) route.getAddress().getURI()).getHost().toString(), is(host));
         assertThat(((SipURI) route.getAddress().getURI()).getUser().toString(), is(user));
         assertThat(route.getValue().toString(), is(headerValue));
-        assertThat(route.getValue().toString(), is(headerValue));
         assertThat(route.toString(), is(RouteHeader.NAME + ": " + headerValue));
-
     }
 
     /**
@@ -161,6 +159,29 @@ public class SipMessageImplTest extends PktsTestBase {
         assertThat(uri.isSipURI(), is(true));
         final SipURI sipUri = (SipURI) uri;
         assertThat(sipUri.getHost().toString(), is("aboutsip.com"));
+    }
+
+    /**
+     * Make sure that we can parse multiple Record-Route headers.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testGetRecordRouteHeadersThreeRRs() throws Exception {
+        final SipMessage msg = parseMessage(RawData.sipInviteThreeRecordRoutes);
+        final List<RecordRouteHeader> headers = msg.getRecordRouteHeaders();
+        assertThat(headers.size(), is(3));
+        assertRecordRouteHeader(headers.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
+        assertRecordRouteHeader(headers.get(1), "two", "aboutsip.com", "<sip:two@aboutsip.com;transport=tcp>");
+        assertRecordRouteHeader(headers.get(2), "three", "aboutsip.com", "<sip:three@aboutsip.com;transport=tcp>");
+    }
+
+    private void assertRecordRouteHeader(final RecordRouteHeader route, final String user, final String host,
+            final String headerValue) {
+        assertThat(((SipURI) route.getAddress().getURI()).getHost().toString(), is(host));
+        assertThat(((SipURI) route.getAddress().getURI()).getUser().toString(), is(user));
+        assertThat(route.getValue().toString(), is(headerValue));
+        assertThat(route.toString(), is(RecordRouteHeader.NAME + ": " + headerValue));
     }
 
     @Test

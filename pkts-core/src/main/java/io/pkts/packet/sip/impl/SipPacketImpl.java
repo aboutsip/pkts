@@ -472,6 +472,16 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
     /*
      * (non-Javadoc)
      * 
+     * @see io.pkts.packet.sip.SipPacket#getRecordRouteHeaders()
+     */
+    @Override
+    public List<RecordRouteHeader> getRecordRouteHeaders() throws SipParseException {
+        return this.msg.getRecordRouteHeaders();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see io.pkts.packet.sip.SipPacket#getRouteHeader()
      */
     @Override

@@ -203,6 +203,16 @@ public interface SipPacket extends ApplicationPacket {
     RecordRouteHeader getRecordRouteHeader() throws SipParseException;
 
     /**
+     * Get all the RecordRoute-headers in this {@link SipMessage}. If there are
+     * no {@link RecordRouteHeader}s in this {@link SipMessage} then an empty
+     * list will be returned.
+     * 
+     * @return
+     * @throws SipParseException
+     */
+    List<RecordRouteHeader> getRecordRouteHeaders() throws SipParseException;
+
+    /**
      * Get the top-most {@link RouteHeader} header if present.
      * 
      * @return the top-most {@link RouteHeader} header or null if there are no
