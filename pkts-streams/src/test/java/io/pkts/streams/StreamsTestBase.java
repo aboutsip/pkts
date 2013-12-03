@@ -68,6 +68,7 @@ public class StreamsTestBase {
         final Pcap pcap = Pcap.openStream(stream);
         final List<SipPacket> messages = new ArrayList<SipPacket>();
         pcap.loop(new PacketHandler() {
+
             @Override
             public void nextPacket(final Packet pkt) {
                 try {
@@ -76,6 +77,7 @@ public class StreamsTestBase {
                         messages.add(msg);
                     }
                 } catch (final Exception e) {
+                    e.printStackTrace();
                     throw new RuntimeException("Couldn't load the messages from the stream");
                 }
             }

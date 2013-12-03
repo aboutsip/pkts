@@ -210,7 +210,7 @@ public abstract class TransportPacketImpl extends AbstractPacket implements Tran
     @Override
     public Packet getNextPacket() throws IOException {
         final Buffer payload = getPayload();
-        if (payload == null) {
+        if (payload == null || payload.isEmpty()) {
             return null;
         }
 
@@ -218,9 +218,9 @@ public abstract class TransportPacketImpl extends AbstractPacket implements Tran
             return sipFramer.frame(this, payload);
         } else if (rtpFramer.accept(payload)) {
             return rtpFramer.frame(this, payload);
+        } else {
+            return new UnknownApplicationPacketImpl(this, payload);
         }
-
-        throw new RuntimeException("Sorry but I couldn't figure out what the body was");
     }
 
     /*

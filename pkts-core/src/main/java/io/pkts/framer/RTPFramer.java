@@ -52,7 +52,9 @@ public final class RTPFramer implements Framer<TransportPacket> {
                     return false;
                 }
             } catch (final IndexOutOfBoundsException e) {
-                e.printStackTrace();
+                // guess not...
+                // System.err.println("But still!!!");
+                // e.printStackTrace();
             }
             data.resetReaderIndex();
         }

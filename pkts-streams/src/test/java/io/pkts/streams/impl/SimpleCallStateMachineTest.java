@@ -12,19 +12,16 @@ import static io.pkts.streams.SipStream.CallState.RINGING;
 import static io.pkts.streams.SipStream.CallState.TRYING;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-
 import io.pkts.packet.sip.SipPacket;
 import io.pkts.packet.sip.SipParseException;
-import io.pkts.streams.StreamsTestBase;
 import io.pkts.streams.SipStream.CallState;
-import io.pkts.streams.impl.SimpleCallStateMachine;
+import io.pkts.streams.StreamsTestBase;
 
 import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 
 /**
  * @author jonas@jonasborjesson.com
