@@ -61,8 +61,12 @@ public final class UdpPacketImpl extends TransportPacketImpl implements UDPPacke
 
     @Override
     public final void write(final OutputStream out, final Buffer payload) throws IOException {
+        // Note: because the Buffers.wrap will copy the bytes we cannot change the length
+        // in this.headers after we have wrapped them. Simply wont work...
+        final int size = this.headers.getReadableBytes() + (payload != null ? payload.getReadableBytes() : 0);
+        this.setLength(size);
+        reCalculateChecksum();
         final Buffer pkt = Buffers.wrap(this.headers, payload);
-        this.setLength(pkt.getReadableBytes());
         this.parent.write(out, pkt);
     }
 

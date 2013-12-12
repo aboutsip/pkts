@@ -1544,6 +1544,8 @@ public class SipParser {
         final int size = headerName.getReadableBytes();
         if (size == 7) {
             return !isSubjectHeader(headerName);
+        } else if (size == 5) {
+            return !isAllowHeader(headerName);
         } else if (size == 4) {
             return !isDateHeader(headerName);
         }
@@ -1552,7 +1554,7 @@ public class SipParser {
     }
 
     /**
-     * The date header also allows for
+     * The date header also allows for comma within the value of the header.
      * 
      * @param name
      * @return
@@ -1561,6 +1563,16 @@ public class SipParser {
         try {
             return name.getByte(0) == 'D' && name.getByte(1) == 'a' &&
                     name.getByte(2) == 't' && name.getByte(3) == 'e';
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
+    private static boolean isAllowHeader(final Buffer name) {
+        try {
+            return name.getByte(0) == 'A' && name.getByte(1) == 'l' &&
+                    name.getByte(2) == 'l' && name.getByte(3) == 'o' &&
+                    name.getByte(4) == 'w';
         } catch (final IOException e) {
             return false;
         }

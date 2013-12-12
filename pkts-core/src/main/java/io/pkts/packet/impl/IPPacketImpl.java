@@ -142,19 +142,23 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
 
     @Override
     public void write(final OutputStream out, final Buffer payload) throws IOException {
+        // Note, you need to set the total length before you merge the packets since
+        // Buffers.wrap will copy the bytes.
+        final int size = this.headers.getReadableBytes() + (payload != null ? payload.getReadableBytes() : 0);
+        this.setTotalLength(size);
+        reCalculateChecksum();
         final Buffer pkt = Buffers.wrap(this.headers, payload);
-        this.setTotalLength(pkt.getReadableBytes());
         this.parent.write(out, pkt);
     }
 
     @Override
     public int getTotalIPLength() {
         // byte 3 - 4
-        return this.headers.getUnsignedShort(3);
+        return this.headers.getUnsignedShort(2);
     }
 
     public void setTotalLength(final int length) {
-        this.headers.setUnsignedShort(3, length);
+        this.headers.setUnsignedShort(2, length);
     }
 
     /**

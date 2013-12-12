@@ -670,11 +670,25 @@ public class SipParserTest {
      * @throws Exception
      */
     @Test
-    public void testDate() throws Exception {
+    public void testParseDateHeader() throws Exception {
         assertHeader("Date: Sun, 01 Dec 2013 18:33:36 GMT", "Date", "Sun, 01 Dec 2013 18:33:36 GMT");
 
         // note that these are assertHeadersSSSSSSSSS
         assertHeaders("Date: Sun, 01 Dec 2013 18:33:36 GMT", "Date", "Sun, 01 Dec 2013 18:33:36 GMT");
+    }
+
+    /**
+     * The Allow header allows for comma within its value so make sure we don't
+     * parse it as multiple headers.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testParseAllowHeader() throws Exception {
+        assertHeader("Allow: BYE, INVITE, ACK", "Allow", "BYE, INVITE, ACK");
+
+        // note that these are assertHeadersSSSSSSSSS
+        assertHeaders("Allow: BYE, INVITE, ACK", "Allow", "BYE, INVITE, ACK");
     }
 
     /**
