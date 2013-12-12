@@ -7,7 +7,6 @@ import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.CallIdHeader;
 
-
 /**
  * @author jonas@jonasborjesson.com
  * 
@@ -52,6 +51,45 @@ public final class CallIdHeaderImpl extends SipHeaderImpl implements CallIdHeade
         } catch (final SipParseException e) {
             throw new RuntimeException("Unable to clone the CallId-header", e);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        final Buffer value = getValue();
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (value == null ? 0 : value.hashCode());
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CallIdHeaderImpl other = (CallIdHeaderImpl) obj;
+        final Buffer value = getValue();
+        final Buffer otherValue = other.getValue();
+        if (value == null) {
+            if (otherValue != null) {
+                return false;
+            }
+        } else if (!value.equals(otherValue)) {
+            return false;
+        }
+        return true;
     }
 
 }

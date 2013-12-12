@@ -1541,11 +1541,29 @@ public class SipParser {
      * @return
      */
     private static boolean isHeaderAllowingMultipleValues(final Buffer headerName) {
-        if (headerName.getReadableBytes() == 7) {
+        final int size = headerName.getReadableBytes();
+        if (size == 7) {
             return !isSubjectHeader(headerName);
+        } else if (size == 4) {
+            return !isDateHeader(headerName);
         }
 
         return true;
+    }
+
+    /**
+     * The date header also allows for
+     * 
+     * @param name
+     * @return
+     */
+    private static boolean isDateHeader(final Buffer name) {
+        try {
+            return name.getByte(0) == 'D' && name.getByte(1) == 'a' &&
+                    name.getByte(2) == 't' && name.getByte(3) == 'e';
+        } catch (final IOException e) {
+            return false;
+        }
     }
 
     private static boolean isSubjectHeader(final Buffer name) {

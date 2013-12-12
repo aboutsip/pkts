@@ -79,7 +79,17 @@ public class SipStreamHandler {
             }
             if (stream == null) {
                 // TODO: need to fix this.
-                stream = new BasicSipStream(PcapGlobalHeader.createDefaultHeader(), id);
+                PcapGlobalHeader header = null;
+                if (frame.hasProtocol(Protocol.SLL)) {
+                    header = PcapGlobalHeader.createDefaultHeader(Protocol.SLL);
+                } else if (frame.hasProtocol(Protocol.ETHERNET_II)) {
+                    header = PcapGlobalHeader.createDefaultHeader(Protocol.ETHERNET_II);
+                } else {
+                    throw new PacketParseException(0, "Unable to create the PcapGlobalHeader because the "
+                            + "link type isn't recognized. Currently only Ethernet II "
+                            + "and Linux SLL (linux cooked capture) are implemented");
+                }
+                stream = new BasicSipStream(header, id);
                 stream.addMessage(msg);
                 this.sipListener.startStream(stream, msg);
                 this.sipStreams.put(id, stream);

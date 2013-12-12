@@ -664,6 +664,20 @@ public class SipParserTest {
     }
 
     /**
+     * Date is a header that also allows for comma so make sure we don't parse
+     * this as two headers.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testDate() throws Exception {
+        assertHeader("Date: Sun, 01 Dec 2013 18:33:36 GMT", "Date", "Sun, 01 Dec 2013 18:33:36 GMT");
+
+        // note that these are assertHeadersSSSSSSSSS
+        assertHeaders("Date: Sun, 01 Dec 2013 18:33:36 GMT", "Date", "Sun, 01 Dec 2013 18:33:36 GMT");
+    }
+
+    /**
      * Test so that we actually can handle folded lines correctly...
      * 
      * @throws Exception
@@ -684,6 +698,31 @@ public class SipParserTest {
         final SipHeader header = SipParser.nextHeader(buffer);
         assertThat(header.getName().toString(), is(name));
         assertThat(header.getValue().toString(), is(value));
+    }
+
+    /**
+     * Assert that we parse out all the headers as expected.
+     * 
+     * @param rawHeader
+     *            complete raw headers.
+     * @param name
+     *            the expected name of the header we are looking for.
+     * @param value
+     *            the expected values.
+     * @throws Exception
+     */
+    private void assertHeaders(final String rawHeader, final String name, final String... value) throws Exception {
+        // remember, these headers are being framed and are therefore in a sip
+        // message and as such, there will always be CRLF at the end, which is
+        // why we pad them here
+        final Buffer buffer = Buffers.wrap(rawHeader + "\r\n");
+        final List<SipHeader> headers = SipParser.nextHeaders(buffer);
+        assertThat(headers.size(), is(value.length));
+        for (int i = 0; i < headers.size(); ++i) {
+            final SipHeader header = headers.get(i);
+            assertThat(header.getName().toString(), is(name));
+            assertThat(header.getValue().toString(), is(value[i]));
+        }
     }
 
     /**

@@ -381,7 +381,7 @@ public final class ByteBuffer extends AbstractBuffer {
         // setInt(index, (int) value);
         checkIndex(index);
         checkIndex(index + 3);
-        this.buffer[this.lowerBoundary + index + 0] = (byte) (value >>> 0);
+        this.buffer[this.lowerBoundary + index + 0] = (byte) value;
         this.buffer[this.lowerBoundary + index + 1] = (byte) (value >>> 8);
         this.buffer[this.lowerBoundary + index + 2] = (byte) (value >>> 16);
         this.buffer[this.lowerBoundary + index + 3] = (byte) (value >>> 24);

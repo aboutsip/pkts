@@ -1,6 +1,7 @@
 package io.pkts.frame;
 
 import io.pkts.buffer.Buffer;
+import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -62,6 +63,10 @@ public final class PcapGlobalHeader {
      * @return
      */
     public static PcapGlobalHeader createDefaultHeader() {
+        return createDefaultHeader(Protocol.ETHERNET_II);
+    }
+
+    public static PcapGlobalHeader createDefaultHeader(final Protocol protocol) {
         final byte[] body = new byte[20];
 
         // major version number
@@ -90,13 +95,25 @@ public final class PcapGlobalHeader {
         body[14] = (byte) 0x00;
         body[15] = (byte) 0x00;
 
-        // data link type - zero is ethernet
-        body[16] = (byte) 0x01;
-        body[17] = (byte) 0x00;
-        body[18] = (byte) 0x00;
-        body[19] = (byte) 0x00;
+        // data link type - default is ethernet
+        // See http://www.tcpdump.org/linktypes.html for a complete list
+        if (protocol == null || protocol == Protocol.ETHERNET_II) {
+            body[16] = (byte) 0x01;
+            body[17] = (byte) 0x00;
+            body[18] = (byte) 0x00;
+            body[19] = (byte) 0x00;
+        } else if (protocol == null || protocol == Protocol.SLL) {
+            body[16] = (byte) 0x71;
+            body[17] = (byte) 0x00;
+            body[18] = (byte) 0x00;
+            body[19] = (byte) 0x00;
+        } else {
+            throw new IllegalArgumentException("Unknown protocol \"" + protocol
+                    + "\". Not sure how to construct the global header. You probably need to add some code yourself");
+        }
 
         return new PcapGlobalHeader(ByteOrder.LITTLE_ENDIAN, body);
+
     }
 
     public PcapGlobalHeader(final ByteOrder byteOrder, final byte[] body) {
