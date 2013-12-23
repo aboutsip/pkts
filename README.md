@@ -58,7 +58,7 @@ pkts.io is available through Maven Central so just include the following Maven a
       <dependency>
           <groupId>io.pkts</groupId>
           <artifactId>pkts-core</artifactId>
-          <version>0.9.7</version>
+          <version>0.9.8</version>
           <type>jar</type>
       </dependency>
 
@@ -67,7 +67,7 @@ Or if you want to use the stream support, then just include the following:
       <dependency>
           <groupId>io.pkts</groupId>
           <artifactId>pkts-streams</artifactId>
-          <version>0.9.7</version>
+          <version>0.9.8</version>
           <type>jar</type>
       </dependency>
 
