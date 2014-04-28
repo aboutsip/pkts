@@ -7,8 +7,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
-import io.pkts.RawData;
 import io.pkts.PktsTestBase;
+import io.pkts.RawData;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.framer.SllFramer;
@@ -17,13 +17,8 @@ import io.pkts.packet.Packet;
 import io.pkts.packet.rtp.RtpPacket;
 import io.pkts.protocol.Protocol;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.SourceDataLine;
-
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -70,45 +65,17 @@ public class RTPFrameTest extends PktsTestBase {
         assertThat(rtp.getTimestamp(), is(8396320L));
     }
 
-    @Ignore
+    /**
+     * Test frame an RTCP packet.
+     * 
+     * @throws Exception
+     */
     @Test
-    public void testPlaySinusWave() throws Exception {
-
-        final AudioFormat af = new AudioFormat(sampleRate, 16, 1, true, true);
-        try {
-            final SourceDataLine line = AudioSystem.getSourceDataLine(af);
-            line.open(af);
-            line.start();
-            //play Frequency = 200 Hz for 1 seconds
-            play(line, generateSineWavefreq(440, 10));
-            line.drain();
-            line.close();
-        } catch (final Exception e) {
-            e.printStackTrace();
-        }
+    public void testFrameRTCP() throws Exception {
+        final SllFramer framer = new SllFramer();
+        final Buffer buffer = Buffers.wrap(RawData.rtcpSenderReportFullFrame);
+        final Packet frame = framer.frame(mock(PCapPacket.class), buffer);
+        final RtpPacket rtp = (RtpPacket) frame.getPacket(Protocol.RTP);
 
     }
-
-    private static int sampleRate = 8000;
-
-    private static byte[] generateSineWavefreq(final int frequencyOfSignal, final int seconds) {
-        // total samples = (duration in second) * (samples per second)
-        final byte[] sin = new byte[seconds * sampleRate];
-        final double samplingInterval = sampleRate / frequencyOfSignal;
-        System.out.println("Sampling Frequency  : " + sampleRate);
-        System.out.println("Frequency of Signal : " + frequencyOfSignal);
-        System.out.println("Sampling Interval   : " + samplingInterval);
-        for (int i = 0; i < sin.length; i++) {
-            final double angle = 2.0 * Math.PI * i / samplingInterval;
-            sin[i] = (byte) (Math.sin(angle) * 127);
-            //System.out.println("" + sin[i]);
-        }
-        return sin;
-    }
-
-    private static void play(final SourceDataLine line, final byte[] array) {
-        final int length = sampleRate * array.length / 1000;
-        line.write(array, 0, array.length);
-    }
-
 }

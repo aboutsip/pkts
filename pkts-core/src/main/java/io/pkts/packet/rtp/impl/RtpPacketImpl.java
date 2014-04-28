@@ -152,11 +152,29 @@ public final class RtpPacketImpl extends AbstractPacket implements RtpPacket {
     }
 
     /**
+     * 
+     * {@inheritDoc}
+     */
+    @Override
+    public int getRawSourceIp() {
+        return this.parent.getRawSourceIp();
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
     public String getSourceIP() {
         return this.parent.getSourceIP();
+    }
+
+    /**
+     * 
+     * {@inheritDoc}
+     */
+    @Override
+    public int getRawDestinationIp() {
+        return this.parent.getRawDestinationIp();
     }
 
     /**
@@ -228,7 +246,7 @@ public final class RtpPacketImpl extends AbstractPacket implements RtpPacket {
      */
     @Override
     public void setDestinationIP(final String destinationIP) {
-        this.parent.setSourceIP(destinationIP);
+        this.parent.setDestinationIP(destinationIP);
     }
 
     @Override
@@ -321,38 +339,32 @@ public final class RtpPacketImpl extends AbstractPacket implements RtpPacket {
 
     @Override
     public int getIdentification() {
-        // TODO Auto-generated method stub
-        return 0;
+        return this.parent.getIdentification();
     }
 
     @Override
     public boolean isFragmented() {
-        // TODO Auto-generated method stub
-        return false;
+        return this.parent.isFragmented();
     }
 
     @Override
     public boolean isReservedFlagSet() {
-        // TODO Auto-generated method stub
-        return false;
+        return this.parent.isReservedFlagSet();
     }
 
     @Override
     public boolean isDontFragmentSet() {
-        // TODO Auto-generated method stub
-        return false;
+        return this.parent.isDontFragmentSet();
     }
 
     @Override
     public boolean isMoreFragmentsSet() {
-        // TODO Auto-generated method stub
-        return false;
+        return this.parent.isMoreFragmentsSet();
     }
 
     @Override
     public short getFragmentOffset() {
-        // TODO Auto-generated method stub
-        return 0;
+        return this.parent.getFragmentOffset();
     }
 
     @Override

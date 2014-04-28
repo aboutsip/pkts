@@ -5,9 +5,9 @@ package io.pkts.streams.impl;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-
 import io.pkts.Pcap;
 import io.pkts.packet.Packet;
+import io.pkts.packet.rtp.RtpPacket;
 import io.pkts.packet.sip.SipPacket;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.streams.SipStream;
@@ -15,14 +15,12 @@ import io.pkts.streams.Stream;
 import io.pkts.streams.StreamHandler;
 import io.pkts.streams.StreamListener;
 import io.pkts.streams.StreamsTestBase;
-import io.pkts.streams.impl.DefaultStreamHandler;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-
 
 /**
  * @author jonas@jonasborjesson.com
@@ -37,6 +35,35 @@ public class DefaultStreamHandlerTest extends StreamsTestBase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
+    }
+
+    @Test
+    public void testRtpStream() throws Exception {
+        final Pcap pcap = Pcap.openStream(StreamsTestBase.class.getResourceAsStream("sip_rtp.pcap"));
+        final StreamHandler streamHandler = new DefaultStreamHandler();
+        final RtpCounter streamCounter = new RtpCounter();
+        streamHandler.addStreamListener(streamCounter);
+        pcap.loop(streamHandler);
+        pcap.close();
+        assertThat(streamCounter.startCount, is(3));
+        assertThat(streamCounter.packetCount, is(2466));
+        assertThat(streamCounter.endCount, is(0)); // because we do not detect end events
+    }
+
+    /**
+     * Simple test so that we do not blow up on RTP and RTCP when we scan for SIP traffic (which we
+     * did for a while)
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testSipStreamContainingRTPandRTCP() throws Exception {
+        final Pcap pcap = Pcap.openStream(StreamsTestBase.class.getResourceAsStream("sip_rtp.pcap"));
+        final StreamHandler streamHandler = new DefaultStreamHandler();
+        final StreamCounter streamCounter = new StreamCounter();
+        streamHandler.addStreamListener(streamCounter);
+        pcap.loop(streamHandler);
+        pcap.close();
     }
 
     /**
@@ -116,6 +143,38 @@ public class DefaultStreamHandlerTest extends StreamsTestBase {
 
             }
         });
+    }
+
+    /**
+     * Basic {@link StreamListener} that just counts the number of start, stop and packet events we
+     * receive.
+     * 
+     */
+    public static class RtpCounter implements StreamListener<RtpPacket> {
+
+        public List<Stream<RtpPacket>> streams = new ArrayList<Stream<RtpPacket>>();
+
+        public int startCount;
+        public int packetCount;
+        public int endCount;
+
+        @Override
+        public void startStream(final Stream<RtpPacket> stream, final RtpPacket packet) {
+            System.out.println("Start Stream: " + stream.getStreamIdentifier());
+            this.streams.add(stream);
+            ++this.startCount;
+            ++this.packetCount;
+        }
+
+        @Override
+        public void packetReceived(final Stream<RtpPacket> stream, final RtpPacket packet) {
+            ++this.packetCount;
+        }
+
+        @Override
+        public void endStream(final Stream<RtpPacket> stream) {
+            ++this.endCount;
+        }
     }
 
     /**

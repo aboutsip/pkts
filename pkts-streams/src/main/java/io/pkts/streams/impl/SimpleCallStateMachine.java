@@ -14,10 +14,8 @@ import io.pkts.packet.sip.SipRequestPacket;
 import io.pkts.packet.sip.SipResponsePacket;
 import io.pkts.streams.SipStream.CallState;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
@@ -100,7 +98,7 @@ public final class SimpleCallStateMachine {
     private void init() {
         this.currentState = CallState.START;
         this.callTransitions = new ArrayList<CallState>();
-        this.messages = new TreeSet<SipPacket>(new SipMessageComparator());
+        this.messages = new TreeSet<SipPacket>(new PacketComparator());
     }
 
     /**
@@ -172,35 +170,35 @@ public final class SimpleCallStateMachine {
 
     private void handleStateChange(final SipPacket msg) throws SipParseException {
         switch (this.currentState) {
-        case START:
-            initializeState(msg);
-            break;
-        case INITIAL:
-        case TRYING:
-        case RINGING:
-            handleInProvisionalState(msg);
-            break;
-        case IN_CALL:
-            handleInConfirmedState(msg);
-            break;
-        case COMPLETED:
-            handleInCompletedState(msg);
-            break;
-        case REDIRECT:
-        case REJECTED:
-        case FAILED:
-            handleInErrorState(msg);
-            break;
-        case CANCELLING:
-            handleInCancellingState(msg);
-            break;
-        case CANCELLED:
-            handleInCancelledState(msg);
-            break;
-        case UNKNOWN:
-            break;
-        default:
-            throw new RuntimeException("Unknown state, should be impossible. State is: " + this.currentState);
+            case START:
+                initializeState(msg);
+                break;
+            case INITIAL:
+            case TRYING:
+            case RINGING:
+                handleInProvisionalState(msg);
+                break;
+            case IN_CALL:
+                handleInConfirmedState(msg);
+                break;
+            case COMPLETED:
+                handleInCompletedState(msg);
+                break;
+            case REDIRECT:
+            case REJECTED:
+            case FAILED:
+                handleInErrorState(msg);
+                break;
+            case CANCELLING:
+                handleInCancellingState(msg);
+                break;
+            case CANCELLED:
+                handleInCancelledState(msg);
+                break;
+            case UNKNOWN:
+                break;
+            default:
+                throw new RuntimeException("Unknown state, should be impossible. State is: " + this.currentState);
         }
     }
 
@@ -470,33 +468,6 @@ public final class SimpleCallStateMachine {
         while (!oldMessages.isEmpty()) {
             final SipPacket msg = oldMessages.pollFirst();
             onEvent(msg);
-        }
-    }
-
-    /**
-     * Simple comparator of {@link SipPacket}s that is just comparing time
-     * stamps.
-     */
-    private static class SipMessageComparator implements Comparator<SipPacket>, Serializable {
-
-        /**
-         * Because it is serializable. And the reason it is is because if you
-         * put elements in a treemap or whatever then it cannot serialize itself
-         * unless the comparator is also serializable...
-         */
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public int compare(final SipPacket o1, final SipPacket o2) {
-            final long t1 = o1.getArrivalTime();
-            final long t2 = o2.getArrivalTime();
-            if (t1 == t2) {
-                return 0;
-            }
-            if (t1 < t2) {
-                return -1;
-            }
-            return 1;
         }
     }
 

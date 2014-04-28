@@ -8,11 +8,9 @@ import io.pkts.framer.FramerManager;
  */
 public enum Protocol {
     ICMP("icmp", Layer.LAYER_3), IGMP("igmp", Layer.LAYER_3), TLS("tcp", Layer.LAYER_7), TCP("tcp", Layer.LAYER_4), UDP(
-            "udp", Layer.LAYER_4), SCTP(
-            "sctp", Layer.LAYER_4), SIP("sip", Layer.LAYER_7), SDP("sdp", Layer.LAYER_7), ETHERNET_II("eth",
-            Layer.LAYER_2), SLL("sll", Layer.LAYER_2), IPv4("ip", Layer.LAYER_3), PCAP("pcap", Layer.LAYER_1), RTP(
-            "rtp", Layer.LAYER_7), UNKNOWN("unknown", null);
-
+            "udp", Layer.LAYER_4), SCTP("sctp", Layer.LAYER_4), SIP("sip", Layer.LAYER_7), SDP("sdp", Layer.LAYER_7), ETHERNET_II(
+            "eth", Layer.LAYER_2), SLL("sll", Layer.LAYER_2), IPv4("ip", Layer.LAYER_3), PCAP("pcap", Layer.LAYER_1), RTP(
+            "rtp", Layer.LAYER_7), RTCP("rtcp", Layer.LAYER_7), UNKNOWN("unknown", null);
     private final String name;
 
     private final Layer layer;
@@ -63,18 +61,18 @@ public enum Protocol {
      */
     public static Protocol valueOf(final byte code) {
         switch (code) {
-        case (byte) 0x01:
-            return ICMP;
-        case (byte) 0x02:
-            return IGMP;
-        case (byte) 0x06:
-            return TCP;
-        case (byte) 0x11:
-            return UDP;
-        case (byte) 0x84:
-            return SCTP;
-        default:
-            return null;
+            case (byte) 0x01:
+                return ICMP;
+            case (byte) 0x02:
+                return IGMP;
+            case (byte) 0x06:
+                return TCP;
+            case (byte) 0x11:
+                return UDP;
+            case (byte) 0x84:
+                return SCTP;
+            default:
+                return null;
         }
     }
 
