@@ -119,3 +119,7 @@ In general, the aboutsip code base is following regular java style convention bu
 * Use final everywhere! (once again, you can have Eclipse fix this for you).
 * Use this everywhere! (Eclipse will fix it for you)
 
+## License
+
+pkts.io and all projects under aboutsip.com are released under the terms of the [MIT license](http://en.wikipedia.org/wiki/MIT_License)
+
