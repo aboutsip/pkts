@@ -83,6 +83,15 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
         return this.parent.getDestinationPort();
     }
 
+    /**
+     * 
+     * {@inheritDoc}
+     */
+    @Override
+    public int getRawSourceIp() {
+        return this.parent.getRawSourceIp();
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -121,6 +130,15 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
     @Override
     public void setSourceIP(final String sourceIp) {
         this.parent.setSourceIP(sourceIp);
+    }
+
+    /**
+     * 
+     * {@inheritDoc}
+     */
+    @Override
+    public int getRawDestinationIp() {
+        return this.parent.getRawDestinationIp();
     }
 
     /*

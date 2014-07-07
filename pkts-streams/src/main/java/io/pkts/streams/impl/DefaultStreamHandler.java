@@ -8,6 +8,7 @@ import io.pkts.framer.FramerManager;
 import io.pkts.packet.IPPacket;
 import io.pkts.packet.Packet;
 import io.pkts.packet.PacketParseException;
+import io.pkts.packet.rtp.RtpPacket;
 import io.pkts.packet.sip.SipPacket;
 import io.pkts.protocol.Protocol;
 import io.pkts.streams.FragmentListener;
@@ -52,6 +53,11 @@ public final class DefaultStreamHandler implements StreamHandler {
     private SipStreamHandler sipStreamHandler;
 
     /**
+     * The handler that deals with RTP streams.
+     */
+    private RtpStreamHandler rtpStreamHandler;
+
+    /**
      * If any IP fragments are detected, then we will consule this listener.
      */
     private FragmentListener fragmentListener;
@@ -83,8 +89,8 @@ public final class DefaultStreamHandler implements StreamHandler {
 
             if (this.sipStreamHandler != null && packet.hasProtocol(Protocol.SIP)) {
                 this.sipStreamHandler.processFrame(packet);
-            } else if (packet.hasProtocol(Protocol.RTP)) {
-                // processRtpFrame((RtpFrame) frame.getFrame(Protocol.RTP));
+            } else if (this.rtpStreamHandler != null && packet.hasProtocol(Protocol.RTP)) {
+                this.rtpStreamHandler.processFrame(packet);
             }
         } catch (final IOException e) {
             // TODO Auto-generated catch block
@@ -120,6 +126,11 @@ public final class DefaultStreamHandler implements StreamHandler {
                     this.sipStreamHandler = new SipStreamHandler(this.framerManager);
                 }
                 this.sipStreamHandler.addListener((StreamListener<SipPacket>) listener);
+            } else if (parameterArgClass.equals(RtpPacket.class)) {
+                if (this.rtpStreamHandler == null) {
+                    this.rtpStreamHandler = new RtpStreamHandler(this.framerManager);
+                }
+                this.rtpStreamHandler.addListener((StreamListener<RtpPacket>) listener);
             }
 
         } catch (final ArrayIndexOutOfBoundsException e) {

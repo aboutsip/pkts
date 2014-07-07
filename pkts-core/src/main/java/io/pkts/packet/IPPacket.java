@@ -17,6 +17,21 @@ package io.pkts.packet;
  */
 public interface IPPacket extends MACPacket, Cloneable {
 
+    /**
+     * Get the raw source ip.
+     * 
+     * Note, these are the raw bits and should be treated as such. If you really want to print it,
+     * then you should treat it as unsigned
+     * 
+     * @return
+     */
+    int getRawSourceIp();
+
+    /**
+     * Convenience method for returning the source IP in a more human readable form.
+     * 
+     * @return
+     */
     String getSourceIP();
 
     /**
@@ -53,6 +68,21 @@ public interface IPPacket extends MACPacket, Cloneable {
      */
     void setSourceIP(String sourceIp);
 
+    /**
+     * Get the raw destination ip.
+     * 
+     * Note, these are the raw bits and should be treated as such. If you really want to print it,
+     * then you should treat it as unsigned
+     * 
+     * @return
+     */
+    int getRawDestinationIp();
+
+    /**
+     * Convenience method for returning the destination IP in a more human readable form.
+     * 
+     * @return
+     */
     String getDestinationIP();
 
     /**

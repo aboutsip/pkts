@@ -92,9 +92,27 @@ public abstract class TransportPacketImpl extends AbstractPacket implements Tran
         return this.parent.getArrivalTime();
     }
 
+    /**
+     * 
+     * {@inheritDoc}
+     */
+    @Override
+    public int getRawSourceIp() {
+        return this.parent.getRawSourceIp();
+    }
+
     @Override
     public final String getSourceIP() {
         return this.parent.getSourceIP();
+    }
+
+    /**
+     * 
+     * {@inheritDoc}
+     */
+    @Override
+    public int getRawDestinationIp() {
+        return this.parent.getRawDestinationIp();
     }
 
     @Override

@@ -102,7 +102,7 @@ public class PktsTestBase {
 
     @Before
     public void setUp() throws Exception {
-        this.framerManager = FramerManager.getInstance();
+        // this.framerManager = FramerManager.getInstance();
         final InputStream stream = PktsTestBase.class.getResourceAsStream("sipp.pcap");
 
         this.pcapStream = Buffers.wrap(stream);

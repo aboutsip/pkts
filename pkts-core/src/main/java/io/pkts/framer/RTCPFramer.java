@@ -5,8 +5,7 @@ package io.pkts.framer;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.TransportPacket;
-import io.pkts.packet.rtp.RtpPacket;
-import io.pkts.packet.rtp.impl.RtpPacketImpl;
+import io.pkts.packet.rtcp.RtcpPacket;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
@@ -14,18 +13,18 @@ import java.io.IOException;
 /**
  * @author jonas@jonasborjesson.com
  */
-public final class RTPFramer implements Framer<TransportPacket> {
+public final class RTCPFramer implements Framer<TransportPacket> {
 
     /**
      * 
      */
-    public RTPFramer() {
+    public RTCPFramer() {
         // left empty intentionally
     }
 
     @Override
     public Protocol getProtocol() {
-        return Protocol.RTP;
+        return Protocol.RTCP;
     }
 
     /**
@@ -82,30 +81,11 @@ public final class RTPFramer implements Framer<TransportPacket> {
     }
 
     @Override
-    public RtpPacket frame(final TransportPacket parent, final Buffer buffer) throws IOException {
+    public RtcpPacket frame(final TransportPacket parent, final Buffer buffer) throws IOException {
         if (parent == null) {
             throw new IllegalArgumentException("The parent frame cannot be null");
         }
 
-        // An RTP packet has a least 12 bytes but can contain more depending on
-        // extensions, padding etc. Figure that out.
-        final Buffer headers = buffer.readBytes(12);
-        final Byte b = headers.getByte(0);
-        final boolean hasPadding = (b & 0x20) == 0x020;
-        final boolean hasExtension = (b & 0x10) == 0x010;
-        final int csrcCount = b & 0x0F;
-
-        if (hasExtension) {
-            final short extensionHeaders = buffer.readShort();
-            final int length = buffer.readUnsignedShort();
-            final Buffer extensionData = buffer.readBytes(length);
-        }
-
-        if (hasPadding || hasExtension || csrcCount > 0) {
-            // throw new RuntimeException("TODO - have not implemented the case of handling padding, extensions etc");
-        }
-
-        final Buffer payload = buffer.slice();
-        return new RtpPacketImpl(parent, headers, payload);
+        return null;
     }
 }

@@ -16,6 +16,7 @@ import io.pkts.protocol.Protocol;
 import io.pkts.sdp.RTPInfo;
 import io.pkts.sdp.SDP;
 import io.pkts.streams.SipStatistics;
+import io.pkts.streams.SipStream;
 import io.pkts.streams.Stream;
 import io.pkts.streams.StreamId;
 import io.pkts.streams.StreamListener;
@@ -91,21 +92,39 @@ public class SipStreamHandler {
                 }
                 stream = new BasicSipStream(header, id);
                 stream.addMessage(msg);
-                this.sipListener.startStream(stream, msg);
+                notifyStartStream(stream, msg);
                 this.sipStreams.put(id, stream);
             } else {
                 final boolean wasAlreadyTerminated = stream.isTerminated();
                 stream.addMessage(msg);
-                this.sipListener.packetReceived(stream, msg);
+                notifyPacketReceived(stream, msg);
                 if (!wasAlreadyTerminated && stream.isTerminated()) {
                     this.sipStreams.remove(id);
                     this.terminatedStreams.put(id, stream);
-                    this.sipListener.endStream(stream);
+                    notifyEndStream(stream);
                 }
             }
         } catch (final IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        }
+    }
+
+    private void notifyStartStream(final SipStream stream, final SipPacket pkt) {
+        if (this.sipListener != null) {
+            this.sipListener.startStream(stream, pkt);
+        }
+    }
+
+    private void notifyPacketReceived(final SipStream stream, final SipPacket pkt) {
+        if (this.sipListener != null) {
+            this.sipListener.packetReceived(stream, pkt);
+        }
+    }
+
+    private void notifyEndStream(final SipStream stream) {
+        if (this.sipListener != null) {
+            this.sipListener.endStream(stream);
         }
     }
 
