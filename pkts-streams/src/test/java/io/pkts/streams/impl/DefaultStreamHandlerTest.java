@@ -45,8 +45,8 @@ public class DefaultStreamHandlerTest extends StreamsTestBase {
         streamHandler.addStreamListener(streamCounter);
         pcap.loop(streamHandler);
         pcap.close();
-        assertThat(streamCounter.startCount, is(3));
-        assertThat(streamCounter.packetCount, is(2466));
+        assertThat(streamCounter.startCount, is(1));
+        assertThat(streamCounter.packetCount, is(501));
         assertThat(streamCounter.endCount, is(0)); // because we do not detect end events
     }
 
