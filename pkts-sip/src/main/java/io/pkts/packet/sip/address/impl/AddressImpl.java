@@ -3,6 +3,7 @@
  */
 package io.pkts.packet.sip.address.impl;
 
+import static io.pkts.packet.sip.impl.PreConditions.ifNull;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.buffer.ByteNotFoundException;
@@ -54,14 +55,14 @@ public final class AddressImpl implements Address {
      */
     private AddressImpl(final Buffer displayName, final Buffer uri, final boolean enclosedDisplayName,
             final boolean angleBrackets) {
-        this.displayName = displayName == null ? Buffers.EMPTY_BUFFER : displayName;
+        this.displayName = ifNull(displayName, Buffers.EMPTY_BUFFER);
         this.uriBuffer = uri;
         this.enclosedDisplayName = enclosedDisplayName;
         this.angleBrackets = angleBrackets;
     }
 
-    protected AddressImpl(final Buffer displayName, final URI uri) {
-        this.displayName = displayName == null ? Buffers.EMPTY_BUFFER : displayName;
+    public AddressImpl(final Buffer displayName, final URI uri) {
+        this.displayName = ifNull(displayName, Buffers.EMPTY_BUFFER);
         this.uri = uri;
         this.uriBuffer = null;
 
@@ -117,7 +118,7 @@ public final class AddressImpl implements Address {
      * @throws IOException
      */
     public static final Address parse(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-            IOException {
+    IOException {
         SipParser.consumeWS(buffer);
         boolean doubleQuote = false;
         if (buffer.peekByte() == SipParser.DQUOT) {

@@ -49,6 +49,10 @@ public class SipParser {
      */
     public static final int MAX_LOOK_AHEAD = 1024;
 
+    public static final Buffer TRANSPORT = Buffers.wrap("transport");
+
+    public static final Buffer TRANSPORT_EQ = Buffers.wrap("transport=");
+
     public static final Buffer SIP2_0 = Buffers.wrap("SIP/2.0");
 
     public static final Buffer SIP2_0_SLASH = Buffers.wrap("SIP/2.0/");
@@ -187,7 +191,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static List<Buffer[]> consumeGenericParams(final Buffer buffer) throws IndexOutOfBoundsException,
-            IOException {
+    IOException {
         final List<Buffer[]> params = new ArrayList<Buffer[]>();
         while (buffer.hasReadableBytes() && buffer.peekByte() == SEMI) {
             buffer.readByte(); // consume the SEMI
@@ -366,7 +370,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeSLASH(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-            IOException {
+    IOException {
         return consumeSeparator(buffer, SLASH);
     }
 
@@ -434,7 +438,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeSTAR(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-            IOException {
+    IOException {
         return consumeSeparator(buffer, STAR);
     }
 
@@ -498,7 +502,7 @@ public class SipParser {
         return consumeSeparator(buffer, RAQUOT);
     }
 
-/**
+    /**
      * Consume left angle quote (LAQUOT), which according to RFC3261 section
      * 25.1 Basic Rules is:
      * 
@@ -525,7 +529,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeCOMMA(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-            IOException {
+    IOException {
         return consumeSeparator(buffer, COMMA);
     }
 
@@ -541,7 +545,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeSEMI(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-            IOException {
+    IOException {
         return consumeSeparator(buffer, SEMI);
     }
 
@@ -557,7 +561,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeCOLON(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-            IOException {
+    IOException {
         return consumeSeparator(buffer, COLON);
     }
 
@@ -573,7 +577,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeLDQUOT(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-            IOException {
+    IOException {
         buffer.markReaderIndex();
         int consumed = consumeSWS(buffer);
         if (isNext(buffer, DQUOT)) {
@@ -598,7 +602,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeRDQUOT(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-            IOException {
+    IOException {
         buffer.markReaderIndex();
         int consumed = 0;
         if (isNext(buffer, DQUOT)) {
@@ -612,7 +616,7 @@ public class SipParser {
         return consumed;
     }
 
-/**
+    /**
      * Helper function for checking stuff as described below. It is all the same pattern so...
      * (from rfc 3261 section 25.1)
      * 
@@ -639,7 +643,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     private static int consumeSeparator(final Buffer buffer, final byte b) throws IndexOutOfBoundsException,
-            IOException {
+    IOException {
         buffer.markReaderIndex();
         int consumed = consumeSWS(buffer);
         if (isNext(buffer, b)) {
@@ -667,7 +671,7 @@ public class SipParser {
      *             in case there is no token
      */
     public static Buffer expectToken(final Buffer buffer) throws IndexOutOfBoundsException, IOException,
-            SipParseException {
+    SipParseException {
         final Buffer token = consumeToken(buffer);
         if (token == null) {
             throw new SipParseException(buffer.getReaderIndex(), "Expected TOKEN");
@@ -785,11 +789,11 @@ public class SipParser {
      *             in case we cannot successfully frame the addr-spec.
      */
     public static Buffer consumeAddressSpec(final Buffer buffer) throws IndexOutOfBoundsException, IOException,
-            SipParseException {
+    SipParseException {
         buffer.markReaderIndex();
         int count = 0;
         int state = 0; // zero is to look for colon, everything else is to find
-                       // the end
+        // the end
         boolean done = false;
 
         while (buffer.hasReadableBytes() && !done) {
@@ -1101,7 +1105,7 @@ public class SipParser {
             result[1] = buffer.readBytes(indexOfLastColon - 1);
             buffer.readByte(); // consume ':'
             result[2] = buffer.readBytes(indexOfSemi - indexOfLastColon - 1); // consume
-                                                                              // port
+            // port
             if (result[2] == null || ((Buffer) result[2]).isEmpty()) {
                 throw new SipParseException(readerIndexOfLastColon + 1, "Expected port after colon");
             }
@@ -1603,31 +1607,31 @@ public class SipParser {
         while (buffer.hasReadableBytes() && !done) {
             final byte b = buffer.readByte();
             switch (b) {
-            case DOUBLE_QOUTE:
-                insideQuotedString = !insideQuotedString;
-                break;
-            case LF:
-                foundLF = true;
-                stop = buffer.getReaderIndex() - 1;
-                break;
-            case CR:
-                foundCR = true;
-                stop = buffer.getReaderIndex() - 1;
-                break;
-            case COMMA:
-                // if we find a comma then we may have found the end of this
-                // header value depending whether or not the header we are
-                // framing actually allows multiple values on a single line
-                if (!insideQuotedString && isHeaderAllowingMultipleValues(headerName)) {
+                case DOUBLE_QOUTE:
+                    insideQuotedString = !insideQuotedString;
+                    break;
+                case LF:
+                    foundLF = true;
                     stop = buffer.getReaderIndex() - 1;
-                    buffer.setReaderIndex(stop);
-                    consumeCOMMA(buffer);
-                    foundComma = true;
+                    break;
+                case CR:
                     foundCR = true;
-                }
-                break;
-            default:
-                break;
+                    stop = buffer.getReaderIndex() - 1;
+                    break;
+                case COMMA:
+                    // if we find a comma then we may have found the end of this
+                    // header value depending whether or not the header we are
+                    // framing actually allows multiple values on a single line
+                    if (!insideQuotedString && isHeaderAllowingMultipleValues(headerName)) {
+                        stop = buffer.getReaderIndex() - 1;
+                        buffer.setReaderIndex(stop);
+                        consumeCOMMA(buffer);
+                        foundComma = true;
+                        foundCR = true;
+                    }
+                    break;
+                default:
+                    break;
             }
 
             if (foundCR || foundLF) {

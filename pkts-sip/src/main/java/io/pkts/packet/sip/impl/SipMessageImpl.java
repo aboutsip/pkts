@@ -75,12 +75,6 @@ public abstract class SipMessageImpl implements SipMessage {
     private final Buffer headers;
 
     /**
-     * Stupid, just to fix it quickly and since a sliced buffer is kind of cheap
-     * perhaps it is ok for now
-     */
-    private Buffer headersCopy;
-
-    /**
      * The payload, which may be null
      */
     private final Buffer payload;
@@ -109,9 +103,6 @@ public abstract class SipMessageImpl implements SipMessage {
     public SipMessageImpl(final Buffer rawInitialBuffer, final Buffer headers, final Buffer payload) {
         this.rawInitialLine = rawInitialBuffer;
         this.headers = headers;
-        if (headers != null) {
-            this.headersCopy = headers.slice();
-        }
         this.payload = payload;
     }
 
@@ -128,9 +119,6 @@ public abstract class SipMessageImpl implements SipMessage {
         this.initialLine = initialLine;
         this.rawInitialLine = null;
         this.headers = headers;
-        if (headers != null) {
-            this.headersCopy = headers.slice();
-        }
         this.payload = payload;
     }
 

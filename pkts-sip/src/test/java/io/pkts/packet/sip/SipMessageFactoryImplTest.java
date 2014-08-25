@@ -5,15 +5,14 @@ package io.pkts.packet.sip;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import io.pkts.RawData;
 import io.pkts.PktsTestBase;
+import io.pkts.RawData;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.header.HeaderFactory;
 import io.pkts.packet.sip.header.MaxForwardsHeader;
 import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.packet.sip.header.impl.HeaderFactoryImpl;
-import io.pkts.packet.sip.impl.SipMessageFactoryImpl;
 
 import org.junit.After;
 import org.junit.Before;
@@ -24,8 +23,6 @@ import org.junit.Test;
  * 
  */
 public class SipMessageFactoryImplTest extends PktsTestBase {
-
-    private final SipMessageFactory factory = new SipMessageFactoryImpl();
 
     private final HeaderFactory headerFactory = new HeaderFactoryImpl();
 
@@ -49,7 +46,7 @@ public class SipMessageFactoryImplTest extends PktsTestBase {
     @Test
     public void testCreateResponseBasedOnRequest() throws Exception {
         final SipRequest req = (SipRequest) parseMessage(RawData.sipInvite);
-        final SipResponse resp = this.factory.createResponse(200, req);
+        final SipResponse resp = req.createResponse(200);
         assertThat(resp.getStatus(), is(200));
         assertThat(resp.getFromHeader().getValue().toString(), is("sipp <sip:sipp@127.0.1.1:5060>;tag=16732SIPpTag001"));
         assertThat(resp.getToHeader().getValue().toString(), is("sut <sip:service@127.0.0.1:5090>"));
@@ -64,7 +61,7 @@ public class SipMessageFactoryImplTest extends PktsTestBase {
     @Test
     public void testCreateRequestBasedOnOtherRequest() throws Exception {
         final SipRequest original = (SipRequest) parseMessage(RawData.sipInvite);
-        final SipRequest request = this.factory.createRequest(original);
+        final SipRequest request = original.clone();
         final ViaHeader topMostVia = request.getViaHeader();
         assertThat(topMostVia.getBranch().toString(), is("z9hG4bK-16732-1-0"));
 
