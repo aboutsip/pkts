@@ -57,13 +57,11 @@ public interface Parameters extends SipHeader {
      * @param value
      *            the value of the parameter or null if you just want to set a
      *            flag parameter
-     * @return the previous value or null if there were none associated with
-     *         this parameter name
      * @throws SipParseException
      *             in case anything goes wrong when setting the parameter.
      * @throws IllegalArgumentException
      *             in case the name is null or empty.
      */
-    Buffer setParameter(Buffer name, Buffer value) throws SipParseException, IllegalArgumentException;
+    void setParameter(Buffer name, Buffer value) throws SipParseException, IllegalArgumentException;
 
 }

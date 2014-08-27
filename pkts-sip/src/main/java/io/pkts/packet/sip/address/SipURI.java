@@ -97,7 +97,16 @@ public interface SipURI extends URI {
      * @throws SipParseException in case anything goes wrong when setting the parameter.
      * @throws IllegalArgumentException in case the name is null or empty.
      */
-    Buffer setParameter(Buffer name, Buffer value) throws SipParseException, IllegalArgumentException;
+    void setParameter(Buffer name, Buffer value) throws SipParseException, IllegalArgumentException;
+
+    /**
+     * 
+     * @param name
+     * @param value
+     * @throws SipParseException
+     * @throws IllegalArgumentException
+     */
+    void setParameter(String name, String value) throws SipParseException, IllegalArgumentException;
 
 
     /**

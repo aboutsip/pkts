@@ -101,9 +101,16 @@ public class SipURIBuilder {
         return this;
     }
 
-    public Buffer setParameter(final Buffer name, final Buffer value) throws SipParseException,
+    public SipURIBuilder setParameter(final Buffer name, final Buffer value) throws SipParseException,
     IllegalArgumentException {
-        return this.paramSupport.setParameter(name, value);
+        this.paramSupport.setParameter(name, value);
+        return this;
+    }
+
+    public SipURIBuilder setParameter(final String name, final String value) throws SipParseException,
+    IllegalArgumentException {
+        this.paramSupport.setParameter(name, value);
+        return this;
     }
 
     /**

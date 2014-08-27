@@ -36,9 +36,9 @@ public abstract class ParametersImpl extends SipHeaderImpl implements Parameters
     }
 
     @Override
-    public Buffer setParameter(final Buffer name, final Buffer value) throws SipParseException,
+    public void setParameter(final Buffer name, final Buffer value) throws SipParseException,
     IllegalArgumentException {
-        return this.support.setParameter(name, value);
+        this.support.setParameter(name, value);
     }
 
     /**

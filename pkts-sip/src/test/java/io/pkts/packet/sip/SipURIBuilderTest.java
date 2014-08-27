@@ -15,33 +15,42 @@ import org.junit.Test;
  */
 public class SipURIBuilderTest {
 
+    private final String host = "example.com";
+
     @Test
     public void testBasicBuild() throws Exception {
-        final String host = "example.com";
-        SipURI sipURI = SipURIBuilder.with().host(host).build();
-        assertThat(sipURI.getHost().toString(), is(host));
+        SipURI sipURI = SipURIBuilder.with().host(this.host).build();
+        assertThat(sipURI.getHost().toString(), is(this.host));
         assertThat(sipURI.getUser().isEmpty(), is(true));
         assertThat(sipURI.toBuffer().toString(), is("sip:example.com"));
 
-        sipURI = SipURIBuilder.with().port(5098).user("nisse").host(host).build();
+        sipURI = SipURIBuilder.with().port(5098).user("nisse").host(this.host).build();
         assertThat(sipURI.getUser().toString(), is("nisse"));
         assertThat(sipURI.getPort(), is(5098));
         assertThat(sipURI.toBuffer().toString(), is("sip:nisse@example.com:5098"));
 
-        // if we specify 5060 for sip uri then we won't include the port
-        sipURI = SipURIBuilder.with().port(5060).user("nisse").useUDP().host(host).build();
+        sipURI = SipURIBuilder.with().port(5060).user("nisse").useUDP().host(this.host).build();
         assertThat(sipURI.toBuffer().toString(), is("sip:nisse@example.com:5060;transport=udp"));
 
         sipURI.setPort(-1);
         assertThat(sipURI.toBuffer().toString(), is("sip:nisse@example.com;transport=udp"));
+    }
 
-        // final SipURI sipURI = this.factory.createSipURI(Buffers.wrap("alice"),
-        // Buffers.wrap("example.com"));
-        // assertThat(sipURI.getUser().toString(), is("alice"));
-        // assertThat(sipURI.getHost().toString(), is("example.com"));
-        // assertThat(sipURI.getPort(), is(-1));
-        // sipURI.setPort(5080);
-        // assertThat(sipURI.getPort(), is(5080));
+    @Test
+    public void testSips() throws Exception {
+        final SipURI sipURI = SipURIBuilder.with().secure().host(this.host).build();
+        assertThat(sipURI.toBuffer().toString(), is("sips:example.com"));
+    }
+
+    @Test
+    public void testMessingWithParameters() throws Exception {
+        final SipURI sipURI = SipURIBuilder.with().host(this.host).setParameter("hello", "world").build();
+        assertThat(sipURI.toBuffer().toString(), is("sip:example.com;hello=world"));
+        sipURI.setParameter("hello", "world2");
+        sipURI.setParameter("foo", "boo");
+        sipURI.setParameter("lr", null);
+        assertThat(sipURI.toBuffer().toString(), is("sip:example.com;hello=world2;foo=boo;lr"));
+
     }
 
 }

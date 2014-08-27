@@ -22,7 +22,7 @@ public class ParametersSupportTest {
         final ParametersSupport support = new ParametersSupport(null);
         assertThat(support.getParameter("hello"), is((Buffer) null));
         assertThat(support.toBuffer().isEmpty(), is(true));
-        assertThat(support.setParameter("hello", "world"), is((Buffer) null));
+        support.setParameter("hello", "world");
 
         // we will always write a ';' before the first parameter because
         // the primary usage of the params support is to be transfered
@@ -31,13 +31,40 @@ public class ParametersSupportTest {
         // would have expected no semi-colon in the beginning of the line
         assertThat(support.toBuffer().toString(), is(";hello=world"));
 
-        assertThat(support.setParameter("hello", "world2").toString(), is("world"));
+        support.setParameter("hello", "world2");
         assertThat(support.toBuffer().toString(), is(";hello=world2"));
         assertThat(support.toBuffer().toString(), is(";hello=world2"));
         assertThat(support.getParameter("hello").toString(), is("world2"));
 
-        assertThat(support.setParameter("foo", "boo"), is((Buffer) null));
+        support.setParameter("foo", "boo");
         assertThat(support.toBuffer().toString(), is(";hello=world2;foo=boo"));
+    }
+
+    @Test
+    public void testTransferValue() {
+        ParametersSupport support = new ParametersSupport(null);
+        support.setParameter("hello", "again");
+        assertTransferValue(support, ";hello=again");
+
+        support.setParameter("hello", "again");
+        assertTransferValue(support, ";hello=again");
+
+        support.setParameter("a", "");
+        support.setParameter("apa", "monkey");
+        assertTransferValue(support, ";hello=again;a;apa=monkey");
+
+        support = new ParametersSupport(wrap(";a;b=c;d"));
+        assertTransferValue(support, ";a;b=c;d");
+        support.setParameter("a", "");
+        assertTransferValue(support, ";a;b=c;d");
+        support.setParameter("a", "word");
+        assertTransferValue(support, ";a=word;b=c;d");
+    }
+
+    private void assertTransferValue(final ParametersSupport support, final String expected) {
+        final Buffer dst = Buffers.createBuffer(100);
+        support.transferValue(dst);
+        assertThat(dst.toString(), is(expected));
     }
 
     /**
@@ -61,12 +88,12 @@ public class ParametersSupportTest {
 
         support = new ParametersSupport(Buffers.wrap(";transport=tcp;lr;foo=boo;hello=world"));
         assertThat(support.toBuffer().toString(), is(";transport=tcp;lr;foo=boo;hello=world"));
-        assertThat(support.setParameter("transport", "udp").toString(), is("tcp"));
-        assertThat(support.setParameter("hello", "world3").toString(), is("world"));
+        support.setParameter("transport", "udp");
+        support.setParameter("hello", "world3");
         assertThat(support.toBuffer().toString(), is(";transport=udp;lr;foo=boo;hello=world3"));
 
         assertThat(support.getParameter("foo").toString(), is("boo"));
-        assertThat(support.setParameter("nils", "karlsson-pyssling"), is((Buffer) null));
+        support.setParameter("nils", "karlsson-pyssling");
         assertThat(support.toBuffer().toString(), is(";transport=udp;lr;foo=boo;hello=world3;nils=karlsson-pyssling"));
     }
 

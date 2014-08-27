@@ -112,21 +112,18 @@ public final class ParametersSupport {
         return getParameter(Buffers.wrap(name));
     }
 
-    public Buffer setParameter(final String name, final String value) throws SipParseException,
+    public void setParameter(final String name, final String value) throws SipParseException,
     IllegalArgumentException {
-        return setParameter(wrap(name), value == null ? Buffers.EMPTY_BUFFER : wrap(value));
+        setParameter(wrap(name), value == null ? Buffers.EMPTY_BUFFER : wrap(value));
     }
 
-    public Buffer setParameter(final Buffer name, final Buffer value) throws SipParseException,
+    public void setParameter(final Buffer name, final Buffer value) throws SipParseException,
     IllegalArgumentException {
-        final Buffer previousValue = getParameter(name);
+        getParameter(name);
         ensureParamsMap();
         this.paramMap.put(name, ifNull(value, Buffers.EMPTY_BUFFER));
         this.isDirty = true;
         this.originalParams = null;
-
-        // no need to slice because the getParamer has already done so
-        return previousValue;
     }
 
     public Buffer toBuffer() {
@@ -166,10 +163,13 @@ public final class ParametersSupport {
     }
 
     public void transferValue(final Buffer dst) {
+        if (this.isDirty) {
+            ensureParams();
+        }
         if (this.originalParams != null) {
             this.originalParams.getBytes(0, dst);
-        } else if (this.isDirty) {
-            ensureParams();
+        } else {
+            this.params.getBytes(0, dst);
         }
     }
 

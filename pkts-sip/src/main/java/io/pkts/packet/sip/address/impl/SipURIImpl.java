@@ -294,9 +294,17 @@ public class SipURIImpl extends URIImpl implements SipURI {
     }
 
     @Override
-    public Buffer setParameter(final Buffer name, final Buffer value) throws SipParseException,
+    public void setParameter(final Buffer name, final Buffer value) throws SipParseException,
     IllegalArgumentException {
-        return this.paramsSupport.setParameter(name, value);
+        this.isDirty = true;
+        this.paramsSupport.setParameter(name, value);
+    }
+
+    @Override
+    public void setParameter(final String name, final String value) throws SipParseException,
+    IllegalArgumentException {
+        this.isDirty = true;
+        this.paramsSupport.setParameter(name, value);
     }
 
 }

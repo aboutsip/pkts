@@ -123,18 +123,14 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
     }
 
     @Override
-    public Buffer setParameter(final Buffer name, final Buffer value) throws SipParseException,
-            IllegalArgumentException {
+    public void setParameter(final Buffer name, final Buffer value) throws SipParseException,
+    IllegalArgumentException {
         final int index = findParameter(name);
-        Buffer previousValue = null;
         if (index == -1) {
             this.params.add(new Buffer[] { name, value });
         } else {
-            previousValue = this.params.get(index)[1];
             this.params.get(index)[1] = value;
         }
-
-        return previousValue;
     }
 
     /**
