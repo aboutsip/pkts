@@ -46,6 +46,24 @@ public final class RTPInfoImpl implements RTPInfo {
         }
     }
 
+    public byte[] getRawAddress() {
+        final String address = getAddress();
+        final String[] parts = address.split("\\.");
+        if (parts.length == 4) {
+            try {
+                final byte[] raw = new byte[4];
+                raw[0] = (byte) Integer.parseInt(parts[0]);
+                raw[1] = (byte) Integer.parseInt(parts[1]);
+                raw[2] = (byte) Integer.parseInt(parts[2]);
+                raw[3] = (byte) Integer.parseInt(parts[3]);
+                return raw;
+            } catch (final NumberFormatException e) {
+                throw new IllegalArgumentException("Address is not a raw IPv4 address");
+            }
+        }
+        throw new IllegalArgumentException("Address is not a raw IPv4 address");
+    }
+
     @Override
     public int getMediaPort() {
         try {

@@ -7,6 +7,7 @@ import io.pkts.PcapOutputStream;
 import io.pkts.frame.PcapGlobalHeader;
 import io.pkts.packet.sip.SipPacket;
 import io.pkts.packet.sip.SipParseException;
+import io.pkts.sdp.SDP;
 import io.pkts.streams.SipStream;
 import io.pkts.streams.StreamId;
 
@@ -152,6 +153,34 @@ public class BasicSipStream implements SipStream {
     @Override
     public SipStream createEmptyClone() {
         return new BasicSipStream(this.globalHeader, this.streamIdentifier);
+    }
+
+    @Override
+    public SDP getInviteSDP() throws SipParseException {
+        for (final SipPacket msg : this.fsm.getMessages()) {
+            if (msg.isRequest() && msg.isInvite()) {
+                return getSDPorNull(msg);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public SDP get200OkSDP() throws SipParseException {
+        for (final SipPacket msg : this.fsm.getMessages()) {
+            if (msg.isResponse() && msg.isInvite() && msg.toResponse().isSuccess()) {
+                return getSDPorNull(msg);
+            }
+        }
+        return null;
+    }
+
+    private SDP getSDPorNull(final SipPacket msg) throws SipParseException {
+        final Object content = msg.getContent();
+        if (content instanceof SDP) {
+            return (SDP) content;
+        }
+        return null;
     }
 
 }
