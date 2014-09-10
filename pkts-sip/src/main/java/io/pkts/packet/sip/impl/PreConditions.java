@@ -23,6 +23,13 @@ public final class PreConditions {
         return reference;
     }
 
+    public static <T> T assertNotNull(final T reference) throws SipParseException {
+        if (reference == null) {
+            throw new SipParseException("Value cannot be null");
+        }
+        return reference;
+    }
+
     /**
      * Check if a string is empty, which includes null check.
      * 

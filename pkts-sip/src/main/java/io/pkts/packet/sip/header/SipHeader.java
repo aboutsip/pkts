@@ -5,6 +5,7 @@ package io.pkts.packet.sip.header;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.impl.SipParser;
 
 
 /**
@@ -39,5 +40,20 @@ public interface SipHeader extends Cloneable {
     void getBytes(Buffer dst);
 
     SipHeader clone();
+
+    /**
+     * Create a new {@link SipHeader} based on the buffer. Each {@link SipHeader} will override this
+     * factory method to parse the header into a more specialized header.
+     * 
+     * Note, the header returned really is a {@link SipHeader} and is NOT e.g. a {@link ToHeader}.
+     * If you really need to parse it as a {@link ToHeader} you should use the
+     * 
+     * @param header the raw header
+     * @return a new {@link SipHeader}.
+     * @throws SipParseException in case the header is not a correct formatted header.
+     */
+    static SipHeader create(final Buffer header) throws SipParseException {
+        return SipParser.nextHeader(header);
+    }
 
 }

@@ -48,6 +48,29 @@ public class SipInitialLineTest {
     }
 
     /**
+     * Make sure that we can create a new {@link SipRequestLine} based on an already existing
+     * {@link SipURI}.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testCreateRequestLine() throws Exception {
+        final SipURI uri = SipURI.with().user("alice").host("example.com").build();
+        final SipRequestLine line = new SipRequestLine(Buffers.wrap("INVITE"), uri);
+        assertThat(line.isRequestLine(), is(true));
+        assertThat(line.isResponseLine(), is(false));
+        assertThat(line.toString(), is("INVITE sip:alice@example.com SIP/2.0"));
+        final Buffer buf = Buffers.createBuffer(200);
+        line.getBytes(buf);
+        assertThat(buf.toString(), is("INVITE sip:alice@example.com SIP/2.0"));
+
+        // may seem stupid but I have had issues in the past when I screwed
+        // up building up the internal byte buffer so subsequent calls to toString()
+        // actually failed...
+        assertThat(line.toString(), is("INVITE sip:alice@example.com SIP/2.0"));
+    }
+
+    /**
      * Test so that we correctly can parse a request line
      */
     @Test

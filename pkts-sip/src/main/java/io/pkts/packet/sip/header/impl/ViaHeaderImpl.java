@@ -63,7 +63,7 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
     /**
      * Constructor mainly used by the {@link #frame(Buffer)} method.
      */
-    protected ViaHeaderImpl(final Buffer original, final Buffer transport, final Buffer host, final Buffer port,
+    public ViaHeaderImpl(final Buffer original, final Buffer transport, final Buffer host, final Buffer port,
             final List<Buffer[]> params) {
         this.original = original;
         this.transport = transport;
@@ -84,7 +84,7 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
      * @param port
      * @param branch
      */
-    protected ViaHeaderImpl(final Buffer transport, final Buffer host, final int port, final Buffer branch) {
+    public ViaHeaderImpl(final Buffer transport, final Buffer host, final int port, final Buffer branch) {
         assert port > 0;
         this.original = null;
         this.transport = transport;
@@ -273,43 +273,22 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
 
     @Override
     public boolean isUDP() {
-        try {
-            final Buffer t = this.transport;
-            return t.capacity() == 3 && t.getByte(0) == 'U' && t.getByte(1) == 'D' && t.getByte(2) == 'P';
-        } catch (final IOException e) {
-            throw new RuntimeException("Got IOException when examining the transport. Should not be possible", e);
-        }
+        return SipParser.isUDP(this.transport);
     }
 
     @Override
     public boolean isTCP() {
-        try {
-            final Buffer t = this.transport;
-            return t.capacity() == 3 && t.getByte(0) == 'T' && t.getByte(1) == 'C' && t.getByte(2) == 'P';
-        } catch (final IOException e) {
-            throw new RuntimeException("Got IOException when examining the transport. Should not be possible", e);
-        }
+        return SipParser.isTCP(this.transport);
     }
 
     @Override
     public boolean isTLS() {
-        try {
-            final Buffer t = this.transport;
-            return t.capacity() == 3 && t.getByte(0) == 'T' && t.getByte(1) == 'L' && t.getByte(2) == 'S';
-        } catch (final IOException e) {
-            throw new RuntimeException("Got IOException when examining the transport. Should not be possible", e);
-        }
+        return SipParser.isTLS(this.transport);
     }
 
     @Override
     public boolean isSCTP() {
-        try {
-            final Buffer t = this.transport;
-            return t.capacity() == 4 && t.getByte(0) == 'S' && t.getByte(1) == 'C' && t.getByte(2) == 'T'
-                    && t.getByte(3) == 'P';
-        } catch (final IOException e) {
-            throw new RuntimeException("Got IOException when examining the transport. Should not be possible", e);
-        }
+        return SipParser.isSCTP(this.transport);
     }
 
     /**

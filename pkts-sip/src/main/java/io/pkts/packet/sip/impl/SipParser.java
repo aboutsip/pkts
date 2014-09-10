@@ -167,6 +167,54 @@ public class SipParser {
         return null;
     }
 
+
+    /**
+     * Check whether the buffer is exactly three bytes long and has the bytes "UDP" in it.
+     * 
+     * @param t
+     * @return
+     */
+    public static boolean isUDP(final Buffer t) {
+        try {
+            return t.capacity() == 3 && t.getByte(0) == 'U' && t.getByte(1) == 'D' && t.getByte(2) == 'P';
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
+    public static boolean isTCP(final Buffer t) {
+        try {
+            return t.capacity() == 3 && t.getByte(0) == 'T' && t.getByte(1) == 'C' && t.getByte(2) == 'P';
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
+    public static boolean isTLS(final Buffer t) {
+        try {
+            return t.capacity() == 3 && t.getByte(0) == 'T' && t.getByte(1) == 'L' && t.getByte(2) == 'S';
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
+    public static boolean isWS(final Buffer t) {
+        try {
+            return t.capacity() == 2 && t.getByte(0) == 'W' && t.getByte(1) == 'S';
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
+    public static boolean isSCTP(final Buffer t) {
+        try {
+            return t.capacity() == 4 && t.getByte(0) == 'S' && t.getByte(1) == 'C' && t.getByte(2) == 'T'
+                    && t.getByte(3) == 'P';
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
     /**
      * Consumes all generic-params it can find. If there are no generic params
      * to be consumed it will return an empty list. The list of generic-params

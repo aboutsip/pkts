@@ -350,13 +350,13 @@ public final class ByteBuffer extends AbstractBuffer {
 
     @Override
     public void write(final String s) throws IndexOutOfBoundsException, WriteNotSupportedException,
-            UnsupportedEncodingException {
+    UnsupportedEncodingException {
         write(s, "UTF-8");
     }
 
     @Override
     public void write(final String s, final String charset) throws IndexOutOfBoundsException,
-            WriteNotSupportedException, UnsupportedEncodingException {
+    WriteNotSupportedException, UnsupportedEncodingException {
         final byte[] bytes = s.getBytes(charset);
         if (!checkWritableBytesSafe(bytes.length)) {
             throw new IndexOutOfBoundsException("Unable to write the entire String to this buffer. Nothing was written");
@@ -402,7 +402,34 @@ public final class ByteBuffer extends AbstractBuffer {
     }
 
     @Override
+    public void write(final long value) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        if (!checkWritableBytesSafe(8)) {
+            throw new IndexOutOfBoundsException("Unable to write the entire String to this buffer. Nothing was written");
+        }
+        final int index = this.lowerBoundary + this.writerIndex;
+        this.buffer[index + 0] = (byte) (value >>> 56);
+        this.buffer[index + 1] = (byte) (value >>> 48);
+        this.buffer[index + 2] = (byte) (value >>> 40);
+        this.buffer[index + 3] = (byte) (value >>> 32);
+        this.buffer[index + 4] = (byte) (value >>> 24);
+        this.buffer[index + 5] = (byte) (value >>> 16);
+        this.buffer[index + 6] = (byte) (value >>> 8);
+        this.buffer[index + 7] = (byte) value;
+        this.writerIndex += 8;
+    }
+
+    @Override
     public void writeAsString(final int value) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        final int size = value < 0 ? Buffers.stringSize(-value) + 1 : Buffers.stringSize(value);
+        if (!checkWritableBytesSafe(size)) {
+            throw new IndexOutOfBoundsException();
+        }
+        Buffers.getBytes(value, this.lowerBoundary + this.writerIndex + size, this.buffer);
+        this.writerIndex += size;
+    }
+
+    @Override
+    public void writeAsString(final long value) throws IndexOutOfBoundsException, WriteNotSupportedException {
         final int size = value < 0 ? Buffers.stringSize(-value) + 1 : Buffers.stringSize(value);
         if (!checkWritableBytesSafe(size)) {
             throw new IndexOutOfBoundsException();

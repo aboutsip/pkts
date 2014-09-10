@@ -6,6 +6,7 @@ package io.pkts.packet.sip.header;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.header.impl.FromHeaderImpl;
 
 
 /**
@@ -73,6 +74,11 @@ public interface FromHeader extends SipHeader, HeaderAddress, Parameters {
      */
     Buffer getTag() throws SipParseException;
 
+    @Override
     FromHeader clone();
+
+    static FromHeader create(final Buffer header) throws SipParseException {
+        return FromHeaderImpl.frame(header);
+    }
 
 }

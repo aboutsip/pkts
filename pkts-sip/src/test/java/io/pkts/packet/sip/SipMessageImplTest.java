@@ -9,7 +9,6 @@ import static org.junit.Assert.assertThat;
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
 import io.pkts.buffer.Buffer;
-import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.header.HeaderFactory;
 import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.packet.sip.header.impl.HeaderFactoryImpl;
@@ -187,8 +186,12 @@ public class SipMessageImplTest extends PktsTestBase {
 
     private void assertTopMostVia(final SipMessage msg, final String host, final int port, final String transport)
             throws Exception {
-        final ViaHeader via = this.headerFactory.createViaHeader(Buffers.wrap(host), port, Buffers.wrap(transport),
-                null);
+
+        final ViaHeader via = ViaHeader.with().host(host).port(port).transport(transport).build();
+
+        // final ViaHeader via = this.headerFactory.createViaHeader(Buffers.wrap(host), port,
+        // Buffers.wrap(transport),
+        // null);
         msg.addHeaderFirst(via);
         final ViaHeader topMostVia = msg.getViaHeader();
         assertThat(topMostVia.getBranch(), not((Buffer) null));

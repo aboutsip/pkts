@@ -35,6 +35,15 @@ public final class SipRequestLine extends SipInitialLine {
         this.requestUriBuffer = requestUri;
     }
 
+    public SipRequestLine(final Buffer method, final URI requestUri) {
+        super();
+        assert method != null;
+        assert requestUri != null;
+        this.method = method;
+        this.requestUriBuffer = null;
+        this.requestURI = requestUri;
+    }
+
     /**
      * {@inheritDoc}
      */

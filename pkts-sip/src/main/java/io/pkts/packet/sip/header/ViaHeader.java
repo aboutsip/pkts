@@ -3,8 +3,14 @@
  */
 package io.pkts.packet.sip.header;
 
+import static io.pkts.packet.sip.impl.PreConditions.assertArgument;
+import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
+import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.header.impl.ViaHeaderImpl;
+import io.pkts.packet.sip.impl.SipParser;
 
 /**
  * Source rfc 3261 section 8.1.1.7
@@ -150,5 +156,112 @@ public interface ViaHeader extends Parameters, SipHeader {
      * @return
      */
     boolean isSCTP();
+
+    /**
+     * Factory method for obtaining a {@link ViaHeaderBuilder}.
+     * 
+     * @return
+     */
+    static ViaHeaderBuilder with() {
+        return new ViaHeaderBuilder();
+    }
+
+    public static class ViaHeaderBuilder {
+
+        private static final Buffer udp = Buffers.wrap("UDP");
+        private static final Buffer tcp = Buffers.wrap("TCP");
+        private static final Buffer tls = Buffers.wrap("TLS");
+        private static final Buffer sctp = Buffers.wrap("SCTP");
+        private static final Buffer ws = Buffers.wrap("WS");
+
+        private int port = -1;
+        private Buffer host;
+        private Buffer branch;
+        private Buffer transport;
+
+        public ViaHeaderBuilder port(final int port) {
+            assertArgument(port > 0, "Port must be greater than zer");
+            this.port = port;
+            return this;
+        }
+
+        /**
+         * Set the transport. Normally, you should really use the {@link #useUDP()} methods rather
+         * than this.
+         * 
+         * @param transport
+         * @return
+         * @throws SipParseException in case the transport is not any of UDP, TCP, TLS, SCTP or WS.
+         */
+        public ViaHeaderBuilder transport(final Buffer transport) throws SipParseException {
+            assertNotNull(transport);
+            if (SipParser.isUDP(transport) || SipParser.isTCP(transport) || SipParser.isTLS(transport)
+                    || SipParser.isWS(transport) || SipParser.isSCTP(transport)) {
+                this.transport = transport.clone();
+                return this;
+            }
+
+            throw new SipParseException(0, "Illegal transport");
+        }
+
+        public ViaHeaderBuilder transport(final String transport) throws SipParseException {
+            return transport(Buffers.wrap(assertNotEmpty(transport, "Transport cannot be null or the empty string")));
+        }
+
+        public ViaHeaderBuilder host(final Buffer host) {
+            this.host = assertNotEmpty(host, "Host cannot be empty or null");
+            return this;
+        }
+
+        public ViaHeaderBuilder host(final String host) {
+            assertNotEmpty(host, "Host cannot be empty or null");
+            this.host = Buffers.wrap(host);
+            return this;
+        }
+
+        public ViaHeaderBuilder branch(final Buffer branch) {
+            this.branch = assertNotEmpty(branch, "Branch cannot be empty or null.");
+            return this;
+        }
+
+        public ViaHeaderBuilder branch(final String branch) {
+            assertNotEmpty(branch, "Branch cannot be empty or null.");
+            this.branch = Buffers.wrap(branch);
+            return this;
+        }
+
+        public ViaHeaderBuilder useUDP() {
+            this.transport = udp.clone();
+            return this;
+        }
+
+        public ViaHeaderBuilder useSCTP() {
+            this.transport = sctp.clone();
+            return this;
+        }
+
+        public ViaHeaderBuilder useTCP() {
+            this.transport = tcp.clone();
+            return this;
+        }
+
+        public ViaHeaderBuilder useTLS() {
+            this.transport = tls.clone();
+            return this;
+        }
+
+        public ViaHeaderBuilder useWS() {
+            this.transport = ws.clone();
+            return this;
+        }
+
+        public ViaHeader build() throws SipParseException {
+            if (host == null) {
+                throw new SipParseException("Missing host, cannot create ViaHeader");
+            }
+            return new ViaHeaderImpl(transport, host, port, branch);
+        }
+
+    }
 
 }

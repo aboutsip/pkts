@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThat;
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
 import io.pkts.buffer.Buffer;
-import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.header.HeaderFactory;
 import io.pkts.packet.sip.header.MaxForwardsHeader;
 import io.pkts.packet.sip.header.ViaHeader;
@@ -65,8 +64,7 @@ public class SipMessageFactoryImplTest extends PktsTestBase {
         final ViaHeader topMostVia = request.getViaHeader();
         assertThat(topMostVia.getBranch().toString(), is("z9hG4bK-16732-1-0"));
 
-        final ViaHeader via = this.headerFactory.createViaHeader(Buffers.wrap("127.0.0.1"), 9898, Buffers.wrap("UDP"),
-                null);
+        final ViaHeader via = ViaHeader.with().host("127.0.0.1").port(9898).useUDP().build();
         request.addHeaderFirst(via);
         System.err.println(request.toString());
     }
