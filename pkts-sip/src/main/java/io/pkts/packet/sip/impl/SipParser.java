@@ -136,6 +136,17 @@ public class SipParser {
      */
     public static final byte DQUOT = '"';
 
+    public static final Buffer UDP = Buffers.wrap("udp");
+
+    public static final Buffer TCP = Buffers.wrap("tcp");
+
+    public static final Buffer TLS = Buffers.wrap("tls");
+
+    public static final Buffer SCTP = Buffers.wrap("sctp");
+
+    public static final Buffer WS = Buffers.wrap("ws");
+
+
     // ----------------------------------------------------------------------
     // ----------------------------------------------------------------------
     // -------- Expect methods expects something to be true and if not ------

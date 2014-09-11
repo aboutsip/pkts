@@ -3,6 +3,7 @@
  */
 package io.pkts.packet.sip.address;
 
+import static io.pkts.packet.sip.impl.PreConditions.assertArgument;
 import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
 import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 import static io.pkts.packet.sip.impl.PreConditions.ifNull;
@@ -61,6 +62,7 @@ public interface Address {
         // a gazzilion other crap just to make that use case happen.
         private Buffer user;
         private Buffer host;
+        private int port = -1;
 
         private AddressBuilder() {
             // left empty intentionally
@@ -79,6 +81,19 @@ public interface Address {
          */
         public AddressBuilder user(final Buffer user) {
             this.user = user;
+            return this;
+        }
+
+        /**
+         * Use this port for the {@link SipURI} that will be part of this {@link Address}. See
+         * {@link #host(Buffer)} for more information.
+         * 
+         * @param port
+         * @return
+         */
+        public AddressBuilder port(final int port) {
+            assertArgument(port > 0 || port == -1, "Port must be greater than zero or negative one (use default)");
+            this.port = port;
             return this;
         }
 
@@ -121,9 +136,14 @@ public interface Address {
             if (this.host != null && this.uri != null) {
                 throw new SipParseException("Both host and URI was specified. Not sure which to pick");
             }
+
+            if (this.host == null && this.uri == null) {
+                throw new SipParseException("You must specify either a full address or a host");
+            }
+
             URI uriToUse = this.uri;
             if (this.host != null) {
-                uriToUse = SipURI.with().user(user).host(host).build();
+                uriToUse = SipURI.with().user(user).host(host).port(port).build();
             }
             return new AddressImpl(this.displayName, uriToUse);
         }

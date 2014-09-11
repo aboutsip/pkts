@@ -38,7 +38,7 @@ public class HeaderFactoryTest {
     @Test
     public void testCreateViaHeader() {
         final String branch = "asdf-asdf-asdf";
-        final ViaHeader via = ViaHeader.with().host("127.0.0.1").port(5088).useTCP().branch(branch).build();
+        final ViaHeader via = ViaHeader.with().host("127.0.0.1").port(5088).transportTCP().branch(branch).build();
         assertThat(via.getHost().toString(), is("127.0.0.1"));
         assertThat(via.getPort(), is(5088));
         assertThat(via.getBranch().toString(), is(branch));

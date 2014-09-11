@@ -64,7 +64,7 @@ public class SipMessageFactoryImplTest extends PktsTestBase {
         final ViaHeader topMostVia = request.getViaHeader();
         assertThat(topMostVia.getBranch().toString(), is("z9hG4bK-16732-1-0"));
 
-        final ViaHeader via = ViaHeader.with().host("127.0.0.1").port(9898).useUDP().build();
+        final ViaHeader via = ViaHeader.with().host("127.0.0.1").port(9898).transportUDP().build();
         request.addHeaderFirst(via);
         System.err.println(request.toString());
     }

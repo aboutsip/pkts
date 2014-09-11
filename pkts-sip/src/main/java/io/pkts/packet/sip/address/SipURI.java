@@ -124,20 +124,11 @@ public interface SipURI extends URI {
      */
     Buffer toBuffer();
 
-    public static SipURIBuilder with() {
-        return new SipURIBuilder();
+    public static Builder with() {
+        return new Builder();
     }
 
-    static class SipURIBuilder {
-
-        // TODO: should really create a immutable buffer
-        // so we can be sure that it is safe to share thes
-        // which it isn't know.
-        private static final Buffer udp = Buffers.wrap("udp");
-        private static final Buffer tcp = Buffers.wrap("tcp");
-        private static final Buffer tls = Buffers.wrap("tls");
-        private static final Buffer sctp = Buffers.wrap("sctp");
-        private static final Buffer ws = Buffers.wrap("ws");
+    static class Builder {
 
         private Buffer user;
         private Buffer host;
@@ -145,7 +136,7 @@ public interface SipURI extends URI {
         private boolean isSecure;
         private final ParametersSupport paramSupport = new ParametersSupport(null);
 
-        private SipURIBuilder() {
+        private Builder() {
             // let empty intentionally
         }
 
@@ -154,7 +145,7 @@ public interface SipURI extends URI {
          * @param user
          * @return
          */
-        public SipURIBuilder user(final Buffer user) {
+        public Builder user(final Buffer user) {
             if (user != null) {
                 this.user = user.slice();
             } else {
@@ -168,7 +159,7 @@ public interface SipURI extends URI {
          * @param user
          * @return
          */
-        public SipURIBuilder user(final String user) {
+        public Builder user(final String user) {
             if (checkIfNotEmpty(user)) {
                 this.user = Buffers.wrap(user);
             }
@@ -181,25 +172,25 @@ public interface SipURI extends URI {
          * @param host
          * @return
          */
-        public SipURIBuilder host(final Buffer host) throws SipParseException {
+        public Builder host(final Buffer host) throws SipParseException {
             assertNotNull(host, "Host cannot be null");
             this.host = host.slice();
             return this;
         }
 
-        public SipURIBuilder host(final String host) throws SipParseException {
+        public Builder host(final String host) throws SipParseException {
             assertNotEmpty(host, "Host cannot be null or the empty string");
             this.host = Buffers.wrap(host);
             return this;
         }
 
-        public SipURIBuilder parameter(final Buffer name, final Buffer value) throws SipParseException,
+        public Builder parameter(final Buffer name, final Buffer value) throws SipParseException,
         IllegalArgumentException {
             this.paramSupport.setParameter(name, value);
             return this;
         }
 
-        public SipURIBuilder parameter(final String name, final String value) throws SipParseException,
+        public Builder parameter(final String name, final String value) throws SipParseException,
         IllegalArgumentException {
             this.paramSupport.setParameter(name, value);
             return this;
@@ -211,7 +202,7 @@ public interface SipURI extends URI {
          * 
          * @return
          */
-        public SipURIBuilder secure() {
+        public Builder secure() {
             this.isSecure = true;
             return this;
         }
@@ -222,7 +213,7 @@ public interface SipURI extends URI {
          * 
          * @return
          */
-        public SipURIBuilder secure(final boolean secure) {
+        public Builder secure(final boolean secure) {
             this.isSecure = secure;
             return this;
         }
@@ -235,7 +226,7 @@ public interface SipURI extends URI {
          * @param port
          * @return
          */
-        public SipURIBuilder port(final int port) throws SipParseException {
+        public Builder port(final int port) throws SipParseException {
             assertArgument(port > 0 || port == -1, "Port must be greater than zero or negative one (use default)");
             this.port = port;
             return this;
@@ -246,8 +237,8 @@ public interface SipURI extends URI {
          * 
          * @return
          */
-        public SipURIBuilder useUDP() {
-            this.paramSupport.setParameter(SipParser.TRANSPORT, udp);
+        public Builder useUDP() {
+            this.paramSupport.setParameter(SipParser.TRANSPORT, SipParser.UDP);
             return this;
         }
 
@@ -256,8 +247,8 @@ public interface SipURI extends URI {
          * 
          * @return
          */
-        public SipURIBuilder useTCP() {
-            this.paramSupport.setParameter(SipParser.TRANSPORT, tcp);
+        public Builder useTCP() {
+            this.paramSupport.setParameter(SipParser.TRANSPORT, SipParser.TCP);
             return this;
         }
 
@@ -266,8 +257,8 @@ public interface SipURI extends URI {
          * 
          * @return
          */
-        public SipURIBuilder useTLS() {
-            this.paramSupport.setParameter(SipParser.TRANSPORT, tls);
+        public Builder useTLS() {
+            this.paramSupport.setParameter(SipParser.TRANSPORT, SipParser.TLS);
             return this;
         }
 
@@ -276,8 +267,8 @@ public interface SipURI extends URI {
          * 
          * @return
          */
-        public SipURIBuilder useSCTP() {
-            this.paramSupport.setParameter(SipParser.TRANSPORT, sctp);
+        public Builder useSCTP() {
+            this.paramSupport.setParameter(SipParser.TRANSPORT, SipParser.SCTP);
             return this;
         }
 
@@ -286,8 +277,8 @@ public interface SipURI extends URI {
          * 
          * @return
          */
-        public SipURIBuilder useWS() {
-            this.paramSupport.setParameter(SipParser.TRANSPORT, ws);
+        public Builder useWS() {
+            this.paramSupport.setParameter(SipParser.TRANSPORT, SipParser.WS);
             return this;
         }
 

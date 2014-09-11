@@ -14,7 +14,7 @@ import io.pkts.packet.sip.header.RecordRouteHeader;
 /**
  * @author jonas@jonasborjesson.com
  */
-public class ContactHeaderImpl extends AddressParametersHeader implements ContactHeader {
+public class ContactHeaderImpl extends AddressParametersHeaderImpl implements ContactHeader {
 
     /**
      * @param name
@@ -34,7 +34,7 @@ public class ContactHeaderImpl extends AddressParametersHeader implements Contac
      *             in case anything goes wrong while parsing.
      */
     public static ContactHeader frame(final Buffer buffer) throws SipParseException {
-        final Object[] result = AddressParametersHeader.frameAddressParameters(buffer);
+        final Object[] result = AddressParametersHeaderImpl.frameAddressParameters(buffer);
         return new ContactHeaderImpl((Address) result[0], (Buffer) result[1]);
     }
 

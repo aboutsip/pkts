@@ -8,8 +8,8 @@ import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.Address;
 import io.pkts.packet.sip.address.impl.AddressImpl;
+import io.pkts.packet.sip.header.AddressParametersHeader;
 import io.pkts.packet.sip.header.FromHeader;
-import io.pkts.packet.sip.header.HeaderAddress;
 import io.pkts.packet.sip.header.Parameters;
 import io.pkts.packet.sip.header.ToHeader;
 
@@ -17,13 +17,15 @@ import java.io.IOException;
 
 
 /**
- * A base class for all headers that implmenets both the {@link Address} and
- * {@link Parameters} interfaces, such as the {@link ToHeader} and
- * {@link FromHeader}.
+ * A base class for all headers that implmenets both the {@link Address} and {@link Parameters}
+ * interfaces, such as the {@link ToHeader} and {@link FromHeader}. However, users must be able to
+ * create to create other {@link AddressParametersHeader}s that are unknown to this implementation
+ * so they can either extend this base class or simply just create a new
+ * {@link AddressParametersHeader} by using the {@link Builder}.
  * 
  * @author jonas@jonasborjesson.com
  */
-public abstract class AddressParametersHeader extends ParametersImpl implements HeaderAddress {
+public class AddressParametersHeaderImpl extends ParametersImpl implements AddressParametersHeader {
 
     public static final Buffer TAG = Buffers.wrap("tag");
 
@@ -33,7 +35,7 @@ public abstract class AddressParametersHeader extends ParametersImpl implements 
      * @param name
      * @param params
      */
-    public AddressParametersHeader(final Buffer name, final Address address, final Buffer params) {
+    public AddressParametersHeaderImpl(final Buffer name, final Address address, final Buffer params) {
         super(name, params);
         this.address = address;
     }
@@ -59,7 +61,7 @@ public abstract class AddressParametersHeader extends ParametersImpl implements 
     }
 
     /**
-     * Frame the value as a {@link AddressParametersHeader}. This method assumes
+     * Frame the value as a {@link AddressParametersHeaderImpl}. This method assumes
      * that you have already parsed out the actual header name, e.g. "To: ".
      * Also, this method assumes that a message framer (or similar) has framed
      * the buffer that is being passed in to us to only contain this header and

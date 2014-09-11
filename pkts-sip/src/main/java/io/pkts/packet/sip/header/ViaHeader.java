@@ -186,8 +186,8 @@ public interface ViaHeader extends Parameters, SipHeader {
         }
 
         /**
-         * Set the transport. Normally, you should really use the {@link #useUDP()} methods rather
-         * than this.
+         * Set the transport. Normally, you should really use the {@link #transportUDP()} methods
+         * rather than this.
          * 
          * @param transport
          * @return
@@ -230,27 +230,27 @@ public interface ViaHeader extends Parameters, SipHeader {
             return this;
         }
 
-        public ViaHeaderBuilder useUDP() {
+        public ViaHeaderBuilder transportUDP() {
             this.transport = udp.clone();
             return this;
         }
 
-        public ViaHeaderBuilder useSCTP() {
+        public ViaHeaderBuilder transportSCTP() {
             this.transport = sctp.clone();
             return this;
         }
 
-        public ViaHeaderBuilder useTCP() {
+        public ViaHeaderBuilder transportTCP() {
             this.transport = tcp.clone();
             return this;
         }
 
-        public ViaHeaderBuilder useTLS() {
+        public ViaHeaderBuilder transportTLS() {
             this.transport = tls.clone();
             return this;
         }
 
-        public ViaHeaderBuilder useWS() {
+        public ViaHeaderBuilder transportWS() {
             this.transport = ws.clone();
             return this;
         }

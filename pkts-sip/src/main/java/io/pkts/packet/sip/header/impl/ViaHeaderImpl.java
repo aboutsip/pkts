@@ -85,7 +85,7 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
      * @param branch
      */
     public ViaHeaderImpl(final Buffer transport, final Buffer host, final int port, final Buffer branch) {
-        assert port > 0;
+        assert port >= -1;
         this.original = null;
         this.transport = transport;
         this.port = port;

@@ -6,6 +6,7 @@ package io.pkts.packet.sip.header;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.address.Address;
 import io.pkts.packet.sip.header.impl.FromHeaderImpl;
 
 
@@ -61,7 +62,7 @@ import io.pkts.packet.sip.header.impl.FromHeaderImpl;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface FromHeader extends SipHeader, HeaderAddress, Parameters {
+public interface FromHeader extends AddressParametersHeader {
 
     Buffer NAME = Buffers.wrap("From");
 
@@ -79,6 +80,28 @@ public interface FromHeader extends SipHeader, HeaderAddress, Parameters {
 
     static FromHeader create(final Buffer header) throws SipParseException {
         return FromHeaderImpl.frame(header);
+    }
+
+    static Builder with() {
+        return new Builder();
+    }
+
+    static Builder with(final Address address) throws SipParseException {
+        final Builder builder = new Builder();
+        builder.address(address);
+        return builder;
+    }
+
+    static class Builder extends AddressParametersHeader.Builder<FromHeader> {
+
+        private Builder() {
+            super(NAME);
+        }
+
+        @Override
+        public FromHeader internalBuild(final Address address, final Buffer params) throws SipParseException {
+            return new FromHeaderImpl(address, params);
+        }
     }
 
 }

@@ -12,7 +12,7 @@ import io.pkts.packet.sip.SipParseException;
 public class FromHeaderImplTest extends AddressParameterHeadersTestBase {
 
     @Override
-    public AddressParametersHeader frameHeader(final Buffer buffer) throws SipParseException {
+    public AddressParametersHeaderImpl frameHeader(final Buffer buffer) throws SipParseException {
         return (FromHeaderImpl) FromHeaderImpl.frame(buffer);
     }
 

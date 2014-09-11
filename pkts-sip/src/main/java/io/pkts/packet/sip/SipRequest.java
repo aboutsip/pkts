@@ -11,14 +11,18 @@ import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.address.URI;
 import io.pkts.packet.sip.address.impl.SipURIImpl;
 import io.pkts.packet.sip.header.CSeqHeader;
+import io.pkts.packet.sip.header.CallIdHeader;
 import io.pkts.packet.sip.header.ContactHeader;
 import io.pkts.packet.sip.header.FromHeader;
+import io.pkts.packet.sip.header.MaxForwardsHeader;
 import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.packet.sip.impl.SipRequestImpl;
 import io.pkts.packet.sip.impl.SipRequestLine;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -42,17 +46,17 @@ public interface SipRequest extends SipMessage {
      * @return a {@link SipRequestBuilder}
      * @throws SipParseException in case the request uri cannot be parsed
      */
-    static SipRequestBuilder invite(final String requestURI) throws SipParseException {
+    static Builder invite(final String requestURI) throws SipParseException {
         assertNotEmpty(requestURI, "RequestURI canot be null or the empty string");
         try {
             final SipURI uri = SipURIImpl.frame(Buffers.wrap(requestURI));
-            return new SipRequestBuilder(SipRequestBuilder.INVITE, uri);
+            return new Builder(Builder.INVITE, uri);
         } catch (IndexOutOfBoundsException | IOException e) {
             throw new SipParseException(0, "Unable to parse the request-uri", e);
         }
     }
 
-    public static class SipRequestBuilder {
+    public static class Builder {
 
         private static final Buffer INVITE = Buffers.wrap("INVITE");
         private static final Buffer ACK = Buffers.wrap("ACK");
@@ -65,35 +69,73 @@ public interface SipRequest extends SipMessage {
         private FromHeader from;
         private ContactHeader contact;
         private CSeqHeader cseq;
+        private MaxForwardsHeader maxForwards;
+        private CallIdHeader callId;
+        private ViaHeader via;
+        private List<ViaHeader> vias; // after the first one, we will add Via headers to this list
 
         /**
          * 
          */
-        private SipRequestBuilder(final Buffer method, final SipURI requestURI) {
+        private Builder(final Buffer method, final SipURI requestURI) {
             this.requestURI = requestURI;
             this.method = method;
         }
 
-        public SipRequestBuilder to(final ToHeader to) {
+        public Builder to(final ToHeader to) {
             this.to = assertNotNull(to, "The To-header cannot be null");
             return this;
         }
 
-        public SipRequestBuilder from(final FromHeader from) {
+        public Builder from(final FromHeader from) {
             this.from = assertNotNull(from, "The From-header cannot be null");
             return this;
         }
 
-        public SipRequestBuilder cseq(final CSeqHeader cseq) {
+        public Builder contact(final ContactHeader contact) {
+            this.contact = assertNotNull(contact, "The Contact-header cannot be null");
+            return this;
+        }
+
+        public Builder cseq(final CSeqHeader cseq) {
             this.cseq = assertNotNull(cseq, "The CSeq-header cannot be null");
             return this;
         }
 
         /**
+         * Add a via header to this request. Multiple via headers are allowed so calling this method
+         * multiple times will result in all of those {@link ViaHeader}s being added to this
+         * request.
+         * 
+         * @param via
+         * @return
+         */
+        public Builder via(final ViaHeader via) {
+            assertNotNull(via, "The Via-header cannot be null");
+            if (this.via == null) {
+                this.via = via;
+            } else {
+                ensureViaList().add(via);
+            }
+            return this;
+        }
+
+        /**
          * Build a new {@link SipRequest}. The only mandatory value is the request-uri and the
-         * From-address. CSeq will be set to a default value and the {@link ContactHeader} can be
-         * specified later and is typically manipulated by the transport layer when the message is
-         * about to be sent, which is also true for the {@link ViaHeader}.
+         * From-address. The following headers will be generated with default values unless
+         * specified:
+         * 
+         * <ul>
+         * <li><code>To</code> will be based off of the request-uri (user and host)</li>
+         * <li><code>CSeq</code> will be set to 0 METHOD, e.g. 0 INVITE</li>
+         * <li><code>Max-Forwards</code> will be set to 70</li>
+         * <li><code>Call-ID</code> will automatically be generated</li>
+         * </ul>
+         * 
+         * NOTE: no {@link ContactHeader} will automatically be generated since it is impossible to
+         * figure out a default value that actually will work. If you are building your own SIP
+         * stack you should set the {@link ContactHeader} in the transport layer before you send it
+         * off.
          * 
          * @return
          * @throws SipParseException
@@ -105,15 +147,41 @@ public interface SipRequest extends SipMessage {
             request.setHeader(getToHeader());
             request.setHeader(from);
             request.setHeader(getCSeq());
+            request.setHeader(getCallId());
+            request.setHeader(getMaxForwards());
+            if (via != null) {
+                request.addHeader(via);
+                if (this.vias != null) {
+                    vias.forEach(via -> request.addHeader(via));
+                }
+            }
+            if (contact != null) {
+                request.setHeader(contact);
+            }
             return request;
+        }
+
+        private MaxForwardsHeader getMaxForwards() {
+            if (this.maxForwards == null) {
+                this.maxForwards = MaxForwardsHeader.create();
+            }
+            return this.maxForwards;
+        }
+
+        private CallIdHeader getCallId() {
+            if (this.callId == null) {
+                this.callId = CallIdHeader.create();
+            }
+            return this.callId;
         }
 
         private CSeqHeader getCSeq() {
             if (this.cseq == null) {
-
+                this.cseq = CSeqHeader.with().method(method).build();
             }
             return this.cseq;
         }
+
 
         /**
          * Get the To-header but if the user hasn't explicitly speficied one then base it off of the
@@ -131,6 +199,12 @@ public interface SipRequest extends SipMessage {
             return this.to;
         }
 
+        private List<ViaHeader> ensureViaList() {
+            if (vias == null) {
+                this.vias = new ArrayList<ViaHeader>(2);
+            }
+            return this.vias;
+        }
     }
 
 }

@@ -12,7 +12,7 @@ import io.pkts.packet.sip.header.ToHeader;
 /**
  * @author jonas@jonasborjesson.com
  */
-public final class ToHeaderImpl extends AddressParametersHeader implements ToHeader {
+public final class ToHeaderImpl extends AddressParametersHeaderImpl implements ToHeader {
 
     /**
      * 
@@ -46,7 +46,7 @@ public final class ToHeaderImpl extends AddressParametersHeader implements ToHea
      *             in case anything goes wrong while parsing.
      */
     public static ToHeader frame(final Buffer buffer) throws SipParseException {
-        final Object[] result = AddressParametersHeader.frameAddressParameters(buffer);
+        final Object[] result = AddressParametersHeaderImpl.frameAddressParameters(buffer);
         return new ToHeaderImpl((Address) result[0], (Buffer) result[1]);
     }
 

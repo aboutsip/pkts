@@ -4,14 +4,21 @@
 package io.pkts.packet.sip.header.impl;
 
 import io.pkts.buffer.Buffer;
+import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.CallIdHeader;
+
+import java.util.UUID;
 
 /**
  * @author jonas@jonasborjesson.com
  * 
  */
 public final class CallIdHeaderImpl extends SipHeaderImpl implements CallIdHeader {
+
+    public CallIdHeaderImpl() {
+        super(CallIdHeader.NAME, generateCallId());
+    }
 
     public CallIdHeaderImpl(final Buffer value) {
         super(CallIdHeader.NAME, value);
@@ -51,6 +58,11 @@ public final class CallIdHeaderImpl extends SipHeaderImpl implements CallIdHeade
         } catch (final SipParseException e) {
             throw new RuntimeException("Unable to clone the CallId-header", e);
         }
+    }
+
+    private static final Buffer generateCallId() {
+        // TODO: implement something else...
+        return Buffers.wrap(UUID.randomUUID().toString());
     }
 
     /**

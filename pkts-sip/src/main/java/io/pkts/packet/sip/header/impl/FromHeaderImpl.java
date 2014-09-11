@@ -13,7 +13,7 @@ import io.pkts.packet.sip.header.FromHeader;
 /**
  * @author jonas@jonasborjesson.com
  */
-public class FromHeaderImpl extends AddressParametersHeader implements FromHeader {
+public class FromHeaderImpl extends AddressParametersHeaderImpl implements FromHeader {
 
     /**
      * @param name
@@ -41,7 +41,7 @@ public class FromHeaderImpl extends AddressParametersHeader implements FromHeade
      *             in case anything goes wrong while parsing.
      */
     public static FromHeader frame(final Buffer buffer) throws SipParseException {
-        final Object[] result = AddressParametersHeader.frameAddressParameters(buffer);
+        final Object[] result = AddressParametersHeaderImpl.frameAddressParameters(buffer);
         return new FromHeaderImpl((Address) result[0], (Buffer) result[1]);
     }
 

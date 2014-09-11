@@ -13,7 +13,7 @@ import io.pkts.packet.sip.header.RouteHeader;
 /**
  * @author jonas@jonasborjesson.com
  */
-public final class RouteHeaderImpl extends AddressParametersHeader implements RouteHeader {
+public final class RouteHeaderImpl extends AddressParametersHeaderImpl implements RouteHeader {
 
     /**
      * @param name
@@ -33,7 +33,7 @@ public final class RouteHeaderImpl extends AddressParametersHeader implements Ro
      *             in case anything goes wrong while parsing.
      */
     public static RouteHeader frame(final Buffer buffer) throws SipParseException {
-        final Object[] result = AddressParametersHeader.frameAddressParameters(buffer);
+        final Object[] result = AddressParametersHeaderImpl.frameAddressParameters(buffer);
         return new RouteHeaderImpl((Address) result[0], (Buffer) result[1]);
     }
 
