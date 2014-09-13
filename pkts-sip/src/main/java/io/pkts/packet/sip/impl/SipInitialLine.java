@@ -5,7 +5,6 @@ package io.pkts.packet.sip.impl;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.ByteNotFoundException;
-import io.pkts.packet.sip.SipFramer;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipParseException;
 

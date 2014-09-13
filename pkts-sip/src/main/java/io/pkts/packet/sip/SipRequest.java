@@ -47,10 +47,23 @@ public interface SipRequest extends SipMessage {
      * @throws SipParseException in case the request uri cannot be parsed
      */
     static Builder invite(final String requestURI) throws SipParseException {
+        return request(Builder.INVITE, requestURI);
+    }
+
+    static Builder ack(final String requestURI) throws SipParseException {
+        return request(Builder.ACK, requestURI);
+    }
+
+    static Builder ack(final SipURI requestURI) throws SipParseException {
+        assertNotNull(requestURI, "RequestURI canot be null or the empty string");
+        return new Builder(Builder.ACK, requestURI);
+    }
+
+    static Builder request(final Buffer method, final String requestURI) throws SipParseException {
         assertNotEmpty(requestURI, "RequestURI canot be null or the empty string");
         try {
             final SipURI uri = SipURIImpl.frame(Buffers.wrap(requestURI));
-            return new Builder(Builder.INVITE, uri);
+            return new Builder(method, uri);
         } catch (IndexOutOfBoundsException | IOException e) {
             throw new SipParseException(0, "Unable to parse the request-uri", e);
         }
@@ -89,6 +102,11 @@ public interface SipRequest extends SipMessage {
 
         public Builder from(final FromHeader from) {
             this.from = assertNotNull(from, "The From-header cannot be null");
+            return this;
+        }
+
+        public Builder callId(final CallIdHeader callId) {
+            this.callId = assertNotNull(callId, "The Call-ID header cannot be null");
             return this;
         }
 

@@ -23,6 +23,14 @@ public interface SipResponse extends SipMessage {
     boolean isProvisional();
 
     /**
+     * Convenience method for checking whether this response is a final response, i.e. any response
+     * >= 200.
+     * 
+     * @return
+     */
+    boolean isFinal();
+
+    /**
      * Convenience method for checking whether this is a 2xx response or not.
      * 
      * @return

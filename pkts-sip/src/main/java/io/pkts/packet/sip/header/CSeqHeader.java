@@ -49,8 +49,13 @@ public interface CSeqHeader extends SipHeader {
             return this;
         }
 
-        public CSeqHeaderBuilder method(final Buffer buffer) throws SipParseException {
-            this.method = assertNotEmpty(buffer, "Method cannot be null or empty");
+        public CSeqHeaderBuilder method(final Buffer method) throws SipParseException {
+            this.method = assertNotEmpty(method, "Method cannot be null or empty");
+            return this;
+        }
+
+        public CSeqHeaderBuilder method(final String method) throws SipParseException {
+            this.method = Buffers.wrap(assertNotEmpty(method, "Method cannot be null or empty"));
             return this;
         }
 

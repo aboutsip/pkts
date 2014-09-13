@@ -5,9 +5,9 @@ package io.pkts.framer;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.TransportPacket;
-import io.pkts.packet.sip.SipFramer;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipPacket;
+import io.pkts.packet.sip.impl.SipParser;
 import io.pkts.packet.sip.impl.SipRequestPacketImpl;
 import io.pkts.packet.sip.impl.SipResponsePacketImpl;
 import io.pkts.protocol.Protocol;
@@ -44,7 +44,7 @@ public final class SIPFramer implements Framer<TransportPacket> {
             throw new IllegalArgumentException("The parent frame cannot be null");
         }
 
-        final SipMessage sip = SipFramer.frame(buffer);
+        final SipMessage sip = SipParser.frame(buffer);
         if (sip.isRequest()) {
             return new SipRequestPacketImpl(parent, sip.toRequest());
         }
@@ -54,7 +54,7 @@ public final class SIPFramer implements Framer<TransportPacket> {
 
     @Override
     public boolean accept(final Buffer data) throws IOException {
-        return SipFramer.couldBeSipMessage(data);
+        return SipParser.couldBeSipMessage(data);
     }
 
 }

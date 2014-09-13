@@ -7,8 +7,6 @@ import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.SipResponse;
 import io.pkts.packet.sip.header.CSeqHeader;
-import io.pkts.packet.sip.header.SipHeader;
-import io.pkts.packet.sip.header.impl.CSeqHeaderImpl;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -39,11 +37,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      */
     @Override
     public Buffer getMethod() throws SipParseException {
-        if (this.cseq == null) {
-            final SipHeader header = getHeader(CSEQ_HEADER);
-            this.cseq = CSeqHeaderImpl.parseValue(header.getValue());
-        }
-        return this.cseq.getMethod();
+        return getCSeqHeader().getMethod();
     }
 
     /**
@@ -60,6 +54,14 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
     @Override
     public boolean isProvisional() {
         return getStatus() / 100 == 1;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isFinal() {
+        return getStatus() >= 200;
     }
 
     /**

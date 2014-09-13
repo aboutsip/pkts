@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
 import io.pkts.buffer.Buffer;
+import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.HeaderFactory;
 import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.packet.sip.header.impl.HeaderFactoryImpl;
@@ -164,6 +165,14 @@ public class SipMessageImplTest extends PktsTestBase {
         for (final String formatedVia : formatedVias) {
             assertThat(msgDump.contains(formatedVia), is(true));
         }
+    }
+
+    @Test
+    public void testCSeqHeader() throws Exception {
+        final SipRequest request = (SipRequest) parseMessage(RawData.sipInvite);
+        final CSeqHeader cseq = request.getCSeqHeader();
+        assertThat(cseq.getSeqNumber(), is(1L));
+        assertThat(cseq.getMethod().toString(), is("INVITE"));
     }
 
     /**
