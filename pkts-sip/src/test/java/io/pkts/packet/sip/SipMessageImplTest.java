@@ -196,11 +196,8 @@ public class SipMessageImplTest extends PktsTestBase {
     private void assertTopMostVia(final SipMessage msg, final String host, final int port, final String transport)
             throws Exception {
 
-        final ViaHeader via = ViaHeader.with().host(host).port(port).transport(transport).build();
-
-        // final ViaHeader via = this.headerFactory.createViaHeader(Buffers.wrap(host), port,
-        // Buffers.wrap(transport),
-        // null);
+        final ViaHeader via =
+                ViaHeader.with().host(host).port(port).branch(ViaHeader.generateBranch()).transport(transport).build();
         msg.addHeaderFirst(via);
         final ViaHeader topMostVia = msg.getViaHeader();
         assertThat(topMostVia.getBranch(), not((Buffer) null));

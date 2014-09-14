@@ -3,6 +3,7 @@
  */
 package io.pkts.packet.sip.header.impl;
 
+import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
@@ -14,7 +15,7 @@ import io.pkts.packet.sip.impl.SipParser;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
  * Not extending the {@link ParametersImpl} because the way we parse the
@@ -91,14 +92,11 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
         this.port = port;
         this.host = host;
         this.rawPort = null;
-        this.indexOfBranch = 0;
         this.params = new ArrayList<Buffer[]>();
-        this.params.add(new Buffer[] { BRANCH, branch != null ? branch : generateBranch() });
-    }
-
-    private Buffer generateBranch() {
-        // TODO: implement something else...
-        return Buffers.wrap("z9hG4bK-" + UUID.randomUUID().toString());
+        if (branch != null) {
+            this.indexOfBranch = 0;
+            this.params.add(new Buffer[] {BRANCH, branch});
+        }
     }
 
     /**
@@ -133,6 +131,13 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
         }
     }
 
+    @Override
+    public void setParameter(final Buffer name, final Supplier<Buffer> value) throws SipParseException,
+    IllegalArgumentException {
+        assertNotNull(value);
+        setParameter(name, value.get());
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -156,11 +161,9 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
      */
     @Override
     public Buffer getValue() {
-        // TODO: we can use the original in case the value hasn't changed.
-        // However, if it has, then we can re-build one through the getBytes
-        // stuff
-        // and store it for future reference.
-        return this.original;
+        final Buffer buffer = Buffers.createBuffer(1024);
+        transferValue(buffer);
+        return buffer;
     }
 
     @Override
@@ -272,6 +275,19 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
     }
 
     @Override
+    public void setBranch(final Buffer branch) {
+        if (this.indexOfBranch == -1) {
+            this.indexOfBranch = findParameter(BRANCH);
+        }
+        if (this.indexOfBranch == -1) {
+            this.indexOfBranch = this.params.size();
+            this.params.add(new Buffer[] {BRANCH, branch});
+        } else {
+            this.params.get(this.indexOfBranch)[1] = branch;
+        }
+    }
+
+    @Override
     public boolean isUDP() {
         return SipParser.isUDP(this.transport);
     }
@@ -369,6 +385,8 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
 
     @Override
     public ViaHeader clone() {
+        // TODO: probably inefficient and could also be plain wrong in that
+        // we may not generate a large enough buffer (probably less likely though).
         final Buffer buffer = Buffers.createBuffer(1024);
         transferValue(buffer);
         try {
@@ -377,5 +395,6 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
             throw new RuntimeException("Unable to clone the Via-header", e);
         }
     }
+
 
 }

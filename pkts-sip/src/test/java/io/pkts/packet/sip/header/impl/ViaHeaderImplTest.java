@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.header.ViaHeader;
-import io.pkts.packet.sip.header.impl.ViaHeaderImpl;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +31,25 @@ public class ViaHeaderImplTest {
         assertVia("SIP/2.0/UDP aboutsip.com:9;branch=45;foo=boo;rport", "UDP", "aboutsip.com", 9, "45");
     }
 
+    /**
+     * Even though an invalid Via-header from a SIP perspective, we still allow for no Via-header so
+     * make sure that works.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testNoViaBranchParameter() throws Exception {
+        ViaHeader via = ViaHeaderImpl.frame(Buffers.wrap("SIP/2.0/UDP aboutsip.com;hello=45"));
+        assertThat(via.getBranch(), is((Buffer) null));
+
+        via.setBranch(Buffers.wrap("hello"));
+        assertThat(via.getBranch().toString(), is("hello"));
+
+        // make sure the same is achieved when using builders
+        via = ViaHeader.with().host("aboutsip.com").transportTLS().build();
+        assertThat(via.getBranch(), is((Buffer) null));
+    }
+
     @Test
     public void testSetReceived() throws Exception {
         assertViaReceived("SIP/2.0/UDP aboutsip.com;branch=45", "192.168.0.100");
@@ -44,6 +62,16 @@ public class ViaHeaderImplTest {
         assertViaRport("SIP/2.0/UDP aboutsip.com;branch=45", 890);
         assertViaRport("SIP/2.0/UDP aboutsip.com;received;branch=45", 9998);
         assertViaRport("SIP/2.0/TCP aboutsip.com;received=10.36.10.10;branch=45", 9997);
+    }
+
+    @Test
+    public void testSetBranch() throws Exception {
+        final ViaHeader via = ViaHeaderImpl.frame(Buffers.wrap("SIP/2.0/TCP aboutsip.com;branch=asdf;hello=world"));
+        assertThat(via.getBranch().toString(), is("asdf"));
+        via.setBranch(Buffers.wrap("hello-world"));
+        assertThat(via.getBranch().toString(), is("hello-world"));
+        assertThat(via.toString(), is("Via: SIP/2.0/TCP aboutsip.com;branch=hello-world;hello=world"));
+        assertThat(via.getValue().toString(), is("SIP/2.0/TCP aboutsip.com;branch=hello-world;hello=world"));
     }
 
     @Test

@@ -9,6 +9,8 @@ import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.Address;
 import io.pkts.packet.sip.header.impl.FromHeaderImpl;
 
+import java.util.Random;
+
 
 /**
  * Source: RFC 3261 section 8.1.1.3
@@ -80,6 +82,18 @@ public interface FromHeader extends AddressParametersHeader {
 
     static FromHeader create(final Buffer header) throws SipParseException {
         return FromHeaderImpl.frame(header);
+    }
+
+    /**
+     * Generate a new tag that can be used as a tag parameter for the {@link FromHeader}. A
+     * tag-parameter only has to be unique within the same Call-ID space so therefore it doesn't
+     * have to be cryptographically strong etc.
+     * 
+     * @return
+     */
+    static Buffer generateTag() {
+        // TODO: fix this and move it to a better place.
+        return Buffers.wrap(Integer.toHexString(new Random().nextInt()));
     }
 
     static Builder with() {

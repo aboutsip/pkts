@@ -75,13 +75,13 @@ public class SipRequestTest extends PktsTestBase {
 
     @Test
     public void testCreateInviteWithViaHeaders() throws Exception {
-        final ViaHeader via = ViaHeader.with().host("127.0.0.1").port(9898).transportUDP().build();
+        final ViaHeader via =
+                ViaHeader.with().host("127.0.0.1").port(9898).transportUDP().branch(ViaHeader.generateBranch()).build();
         SipRequest invite = SipRequest.invite("sip:alice@example.com").from(this.from).via(via).build();
 
         // since there is only one via header, getting the "top-most" via header should
         // be the same as getting the first via off of the list.
         assertThat(invite.getViaHeaders().size(), is(1));
-        System.out.println(invite.getViaHeaders().get(0));
         assertThat(
                 invite.getViaHeaders().get(0).toString()
                 .startsWith("Via: SIP/2.0/UDP 127.0.0.1:9898;branch=z9hG4bK"), is(true));
@@ -89,7 +89,8 @@ public class SipRequestTest extends PktsTestBase {
                 is(true));
 
         // two via headers
-        final ViaHeader via2 = ViaHeader.with().host("192.168.0.100").transportTCP().build();
+        final ViaHeader via2 =
+                ViaHeader.with().host("192.168.0.100").transportTCP().branch(ViaHeader.generateBranch()).build();
         invite = SipRequest.invite("sip:alice@example.com").from(this.from).via(via).via(via2).build();
         assertThat(invite.getViaHeaders().size(), is(2));
 

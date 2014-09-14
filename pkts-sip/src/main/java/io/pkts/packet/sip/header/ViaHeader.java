@@ -12,6 +12,9 @@ import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.impl.ViaHeaderImpl;
 import io.pkts.packet.sip.impl.SipParser;
 
+import java.util.UUID;
+import java.util.function.Supplier;
+
 /**
  * Source rfc 3261 section 8.1.1.7
  * 
@@ -127,6 +130,8 @@ public interface ViaHeader extends Parameters, SipHeader {
      */
     Buffer getBranch();
 
+    void setBranch(Buffer branch);
+
     int getTTL();
 
     /**
@@ -156,6 +161,19 @@ public interface ViaHeader extends Parameters, SipHeader {
      * @return
      */
     boolean isSCTP();
+
+    @Override
+    ViaHeader clone();
+
+    /**
+     * Generate a cryptographic
+     * 
+     * @return
+     */
+    static Buffer generateBranch() {
+        // TODO: change to something else.
+        return Buffers.wrap("z9hG4bK-" + UUID.randomUUID().toString());
+    }
 
     /**
      * Factory method for obtaining a {@link ViaHeaderBuilder}.
@@ -227,6 +245,12 @@ public interface ViaHeader extends Parameters, SipHeader {
         public ViaHeaderBuilder branch(final String branch) {
             assertNotEmpty(branch, "Branch cannot be empty or null.");
             this.branch = Buffers.wrap(branch);
+            return this;
+        }
+
+        public ViaHeaderBuilder branch(final Supplier<Buffer> branch) {
+            assertNotNull(branch);
+            this.branch = branch.get();
             return this;
         }
 

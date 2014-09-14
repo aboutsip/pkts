@@ -3,9 +3,12 @@
  */
 package io.pkts.packet.sip.header.impl;
 
+import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.Parameters;
+
+import java.util.function.Supplier;
 
 
 /**
@@ -39,6 +42,13 @@ public abstract class ParametersImpl extends SipHeaderImpl implements Parameters
     public void setParameter(final Buffer name, final Buffer value) throws SipParseException,
     IllegalArgumentException {
         this.support.setParameter(name, value);
+    }
+
+    @Override
+    public void setParameter(final Buffer name, final Supplier<Buffer> value) throws SipParseException,
+    IllegalArgumentException {
+        assertNotNull(value);
+        this.support.setParameter(name, value.get());
     }
 
     /**

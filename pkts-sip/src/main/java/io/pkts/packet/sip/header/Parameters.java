@@ -6,6 +6,8 @@ package io.pkts.packet.sip.header;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.SipParseException;
 
+import java.util.function.Supplier;
+
 
 /**
  * @author jonas@jonasborjesson.com
@@ -63,5 +65,7 @@ public interface Parameters extends SipHeader {
      *             in case the name is null or empty.
      */
     void setParameter(Buffer name, Buffer value) throws SipParseException, IllegalArgumentException;
+
+    void setParameter(Buffer name, Supplier<Buffer> value) throws SipParseException, IllegalArgumentException;
 
 }
