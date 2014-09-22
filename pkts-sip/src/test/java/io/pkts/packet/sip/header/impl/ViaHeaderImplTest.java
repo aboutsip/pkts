@@ -39,7 +39,7 @@ public class ViaHeaderImplTest {
      */
     @Test
     public void testNoViaBranchParameter() throws Exception {
-        ViaHeader via = ViaHeaderImpl.frame(Buffers.wrap("SIP/2.0/UDP aboutsip.com;hello=45"));
+        ViaHeader via = ViaHeader.frame(Buffers.wrap("SIP/2.0/UDP aboutsip.com;hello=45"));
         assertThat(via.getBranch(), is((Buffer) null));
 
         via.setBranch(Buffers.wrap("hello"));
@@ -66,7 +66,7 @@ public class ViaHeaderImplTest {
 
     @Test
     public void testSetBranch() throws Exception {
-        final ViaHeader via = ViaHeaderImpl.frame(Buffers.wrap("SIP/2.0/TCP aboutsip.com;branch=asdf;hello=world"));
+        final ViaHeader via = ViaHeader.frame(Buffers.wrap("SIP/2.0/TCP aboutsip.com;branch=asdf;hello=world"));
         assertThat(via.getBranch().toString(), is("asdf"));
         via.setBranch(Buffers.wrap("hello-world"));
         assertThat(via.getBranch().toString(), is("hello-world"));
@@ -76,7 +76,7 @@ public class ViaHeaderImplTest {
 
     @Test
     public void testSetParam() throws Exception {
-        final ViaHeader via = ViaHeaderImpl.frame(Buffers.wrap("SIP/2.0/TCP aboutsip.com;branch=3;hello=world"));
+        final ViaHeader via = ViaHeader.frame(Buffers.wrap("SIP/2.0/TCP aboutsip.com;branch=3;hello=world"));
         assertThat(via.getParameter("hello").toString(), is("world"));
         via.setParameter(Buffers.wrap("hello"), Buffers.wrap("fup"));
         assertThat(via.getParameter("hello").toString(), is("fup"));
@@ -94,7 +94,7 @@ public class ViaHeaderImplTest {
     }
 
     private void assertViaRport(final String toParse, final int port) throws Exception {
-        final ViaHeader via = ViaHeaderImpl.frame(Buffers.wrap(toParse));
+        final ViaHeader via = ViaHeader.frame(Buffers.wrap(toParse));
         via.setRPort(port);
         assertThat(via.getRPort(), is(port));
         assertThat(via.toString().contains("rport=" + Buffers.wrap(port).toString()), is(true));
@@ -102,7 +102,7 @@ public class ViaHeaderImplTest {
 
     private void assertViaReceived(final String toParse, final String received) throws Exception {
         final Buffer buffer = Buffers.wrap(received);
-        final ViaHeader via = ViaHeaderImpl.frame(Buffers.wrap(toParse));
+        final ViaHeader via = ViaHeader.frame(Buffers.wrap(toParse));
         via.setReceived(buffer);
         assertThat(via.getReceived().toString(), is(received.toString()));
         assertThat(via.toString().contains("received=" + buffer.toString()), is(true));
@@ -111,7 +111,7 @@ public class ViaHeaderImplTest {
 
     private void assertVia(final String toParse, final String expectedTransport, final String expectedHost,
             final int expectedPort, final String expectedBranch) throws Exception {
-        final ViaHeader via = ViaHeaderImpl.frame(Buffers.wrap(toParse));
+        final ViaHeader via = ViaHeader.frame(Buffers.wrap(toParse));
         assertTransport(via, expectedTransport);
         assertThat(via.getBranch().toString(), is(expectedBranch));
         assertThat(via.getPort(), is(expectedPort));

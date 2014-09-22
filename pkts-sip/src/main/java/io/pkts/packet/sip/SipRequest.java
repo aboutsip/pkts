@@ -9,12 +9,12 @@ import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.address.URI;
-import io.pkts.packet.sip.address.impl.SipURIImpl;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.CallIdHeader;
 import io.pkts.packet.sip.header.ContactHeader;
 import io.pkts.packet.sip.header.FromHeader;
 import io.pkts.packet.sip.header.MaxForwardsHeader;
+import io.pkts.packet.sip.header.RouteHeader;
 import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.packet.sip.impl.SipRequestImpl;
@@ -35,6 +35,16 @@ public interface SipRequest extends SipMessage {
      * @return
      */
     URI getRequestUri() throws SipParseException;
+
+    /**
+     * Pop the top-most route header.
+     * 
+     * This is a convenience method for calling {@link SipMessage#popHeader(Buffer)}.
+     * 
+     * @return the top-most {@link RouteHeader} or null if this {@link SipRequest} contained no
+     *         {@link RouteHeader}s.
+     */
+    RouteHeader popRouteHeader();
 
     @Override
     SipRequest clone();
@@ -62,7 +72,7 @@ public interface SipRequest extends SipMessage {
     static Builder request(final Buffer method, final String requestURI) throws SipParseException {
         assertNotEmpty(requestURI, "RequestURI canot be null or the empty string");
         try {
-            final SipURI uri = SipURIImpl.frame(Buffers.wrap(requestURI));
+            final SipURI uri = SipURI.frame(Buffers.wrap(requestURI));
             return new Builder(method, uri);
         } catch (IndexOutOfBoundsException | IOException e) {
             throw new SipParseException(0, "Unable to parse the request-uri", e);

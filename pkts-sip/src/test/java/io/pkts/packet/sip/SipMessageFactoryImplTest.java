@@ -8,10 +8,8 @@ import static org.junit.Assert.assertThat;
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
 import io.pkts.buffer.Buffer;
-import io.pkts.packet.sip.header.HeaderFactory;
 import io.pkts.packet.sip.header.MaxForwardsHeader;
 import io.pkts.packet.sip.header.ViaHeader;
-import io.pkts.packet.sip.header.impl.HeaderFactoryImpl;
 
 import org.junit.After;
 import org.junit.Before;
@@ -22,8 +20,6 @@ import org.junit.Test;
  * 
  */
 public class SipMessageFactoryImplTest extends PktsTestBase {
-
-    private final HeaderFactory headerFactory = new HeaderFactoryImpl();
 
     /**
      * @throws java.lang.Exception

@@ -11,6 +11,9 @@ import io.pkts.packet.sip.header.impl.ParametersSupport;
 import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -202,6 +205,103 @@ public class SipURIImpl extends URIImpl implements SipURI {
         }
     }
 
+    @Override
+    public Buffer getTransport() throws SipParseException {
+        return getParameter(SipParser.TRANSPORT);
+    }
+
+    /**
+     * Comparing two {@link SipURI}s aren't trivial and the full set of rules are described in
+     * RFC3261 section 19.1.4
+     * 
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        try {
+            final SipURIImpl o = (SipURIImpl) other;
+
+            // a SIP and SIPS URI are NEVER equal
+            if (this.isSecure ^ o.isSecure()) {
+                return false;
+            }
+
+            // Bullet 6 - For two URIs to be equal, the user, password, host, and port
+            // components must match. Note that the user-info part (user + password) are
+            // actually case sensitive. The rest isn't though.
+            //
+            // TODO: must handle escaped characters
+            if (!this.getUser().equals(o.getUser())) {
+                return false;
+            }
+
+            if (!this.getHost().equalsIgnoreCase(o.getHost())) {
+                return false;
+            }
+
+            if (this.getPort() != o.getPort()) {
+                return false;
+            }
+
+            if (this.paramsSupport != null ^ o.paramsSupport != null) {
+                return false;
+            }
+
+            final Set<Map.Entry<Buffer, Buffer>> entries = this.paramsSupport.getAllParameters();
+            if (entries != null) {
+                final Iterator<Map.Entry<Buffer, Buffer>> it = entries.iterator();
+                while (it.hasNext()) {
+                    final Map.Entry<Buffer, Buffer> entry = it.next();
+                    final Buffer key = entry.getKey();
+                    final Buffer value = entry.getValue();
+                    final Buffer bValue = o.getParameter(key);
+                    if (o.paramsSupport.hasParameter(key)) {
+                        if (value == null ^ bValue == null) {
+                            return false;
+                        }
+                        if (!value.equalsIgnoreCase(bValue)) {
+                            return false;
+                        }
+                    }
+                };
+            }
+
+            // the specification doesn't call out transport but their examples do
+            if (getTransport() == null ^ o.getTransport() == null) {
+                return false;
+            }
+
+
+        } catch (ClassCastException | NullPointerException e) {
+            return false;
+        }
+
+        // we made it!
+        return true;
+    }
+
+    /**
+     * Now, the hash-code doesn't actually have to be unique for every little parameter and detail
+     * as the {@link #equals(Object)} method is checking, we just need to take enough stuff into
+     * account to have a good enough spread and then the equals-method would be used to sort out any
+     * ties.
+     * 
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1 + getPort();
+        result = prime * result + getUser().hashCode();
+        // note that the host portion is case IN-sensitive
+        result = prime * result + getHost().toString().toLowerCase().hashCode();
+        return result;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -210,78 +310,6 @@ public class SipURIImpl extends URIImpl implements SipURI {
         return toBuffer().toString();
     }
 
-    /**
-     * Frame a sip or sips-uri, which according to RFC3261 is:
-     * 
-     * <pre>
-     * SIP-URI          =  "sip:" [ userinfo ] hostport
-     *                      uri-parameters [ headers ]
-     * SIPS-URI         =  "sips:" [ userinfo ] hostport
-     *                      uri-parameters [ headers ]
-     * </pre>
-     * 
-     * Remember though that all these frame-functions will only do a basic
-     * verification that all things are ok so just because this function return
-     * without an exception doesn't mean that you actually framed a valid URI.
-     * Everything is done lazily so things may blow up later.
-     * 
-     * Also note that this function assumes that someone else has already determined the boundaries for this
-     * sip(s)-uri and as such, this function do not expect '<' etc.
-     * 
-     * @param buffer
-     * @return
-     * @throws SipParseException
-     * @throws IOException
-     * @throws IndexOutOfBoundsException
-     */
-    public static SipURI frame(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException, IOException {
-        final Buffer original = buffer.slice();
-        final boolean isSips = isSips(buffer);
-        final Buffer[] userHost = SipParser.consumeUserInfoHostPort(buffer);
-        final Buffer hostPort = userHost[1];
-        Buffer host = null;
-        Buffer port = null;
-        while (hostPort.hasReadableBytes() && host == null) {
-            final byte b = hostPort.readByte();
-            if (b == SipParser.COLON) {
-                final int index = hostPort.getReaderIndex();
-                host = hostPort.slice(0, index - 1); // skip the ':'
-                port = hostPort;
-            }
-        }
-        if (host == null) {
-            hostPort.setReaderIndex(0);
-            host = hostPort;
-        }
-
-        if (port != null) {
-            try {
-                port.parseToInt();
-            } catch (final NumberFormatException e) {
-                throw new SipParseException(0, "The SipURI had a port but it was not an integer: \"" + port.toString()
-                        + "\"");
-            }
-        }
-        return new SipURIImpl(isSips, userHost[0], host, port, buffer, original);
-    }
-
-    private static boolean isSips(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException, IOException {
-        SipParser.expect(buffer, 's');
-        SipParser.expect(buffer, 'i');
-        SipParser.expect(buffer, 'p');
-        final byte b = buffer.readByte();
-        if (b == SipParser.COLON) {
-            return false;
-        }
-
-        if (b != 's') {
-            throw new SipParseException(buffer.getReaderIndex() - 1,
-                    "Expected 's' since the only schemes accepted are \"sip\" and \"sips\"");
-        }
-
-        SipParser.expect(buffer, SipParser.COLON);
-        return true;
-    }
 
     @Override
     public Buffer getParameter(final Buffer name) throws SipParseException, IllegalArgumentException {

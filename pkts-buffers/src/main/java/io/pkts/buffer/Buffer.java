@@ -524,6 +524,8 @@ public interface Buffer extends Cloneable {
     @Override
     boolean equals(Object b);
 
+    boolean equalsIgnoreCase(Object b);
+
     @Override
     int hashCode();
 

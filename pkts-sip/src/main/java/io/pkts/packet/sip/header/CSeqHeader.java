@@ -9,6 +9,9 @@ import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.impl.CSeqHeaderImpl;
+import io.pkts.packet.sip.impl.SipParser;
+
+import java.io.IOException;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -23,6 +26,28 @@ public interface CSeqHeader extends SipHeader {
 
     @Override
     CSeqHeader clone();
+
+    /**
+     * Parse the value as a cseq value. This method assumes that you have already parsed out the
+     * actual header name "CSeq: "
+     * 
+     * @param value
+     * @return
+     * @throws SipParseException
+     */
+    public static CSeqHeader frame(final Buffer value) throws SipParseException {
+        try {
+            final Buffer valueCopy = value.slice();
+            final Buffer cseq = SipParser.expectDigit(value);
+            final long number = Long.parseLong(cseq.toString());
+            SipParser.consumeWS(value);
+            final Buffer method = value.readLine();
+            return new CSeqHeaderImpl(number, method, valueCopy);
+        } catch (final IOException e) {
+            throw new SipParseException(value.getReaderIndex(),
+                    "Could not read from the underlying stream while parsing method");
+        }
+    }
 
     static CSeqHeaderBuilder with() {
         return new CSeqHeaderBuilder();

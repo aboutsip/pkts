@@ -31,6 +31,24 @@ public interface ToHeader extends AddressParametersHeader {
     @Override
     ToHeader clone();
 
+    /**
+     * Frame the value as a {@link ToHeader}. This method assumes that you have already parsed out
+     * the actual header name "To: ". Also, this method assumes that a message framer (or similar)
+     * has framed the buffer that is being passed in to us to only contain this header and nothing
+     * else.
+     * 
+     * Note, as with all the frame-methods on all headers/messages/whatever, they do not do any
+     * validation that the information is actually correct. This method will simply only try and
+     * validate just enough to get the framing done.
+     * 
+     * @param value
+     * @return
+     * @throws SipParseException in case anything goes wrong while parsing.
+     */
+    public static ToHeader frame(final Buffer buffer) throws SipParseException {
+        final Object[] result = AddressParametersHeader.frame(buffer);
+        return new ToHeaderImpl((Address) result[0], (Buffer) result[1]);
+    }
 
     /**
      * Generate a new tag that can be used as a tag parameter for the {@link ToHeader}. A
@@ -42,10 +60,6 @@ public interface ToHeader extends AddressParametersHeader {
     static Buffer generateTag() {
         // TODO: fix this and move it to a better place.
         return Buffers.wrap(Integer.toHexString(new Random().nextInt()));
-    }
-
-    static ToHeader create(final Buffer header) throws SipParseException {
-        return ToHeaderImpl.frame(header);
     }
 
     static Builder with() {

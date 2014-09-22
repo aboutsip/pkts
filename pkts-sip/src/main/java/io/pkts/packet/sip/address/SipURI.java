@@ -14,17 +14,13 @@ import io.pkts.packet.sip.address.impl.SipURIImpl;
 import io.pkts.packet.sip.header.impl.ParametersSupport;
 import io.pkts.packet.sip.impl.SipParser;
 
+import java.io.IOException;
+
 /**
  * @author jonas@jonasborjesson.com
  * 
  */
 public interface SipURI extends URI {
-
-    // Once we swap over to Java 8 we can do this instead,
-    // which looks so much better...
-    // public static SipURIBuilder with() {
-    // return SipURIBuilder.with();
-    // }
 
     /**
      * Get the user portion of this URI.
@@ -67,6 +63,14 @@ public interface SipURI extends URI {
      * @return true if this indeed is a sips URI, false otherwise.
      */
     boolean isSecure();
+
+    /**
+     * Same as {@link #getParameter("transport")}
+     * 
+     * @return
+     * @throws SipParseException
+     */
+    Buffer getTransport() throws SipParseException;
 
     /**
      * Get the value of the named parameter. If the named parameter is a so-called flag parameter,
@@ -116,6 +120,15 @@ public interface SipURI extends URI {
      */
     void setParameter(String name, String value) throws SipParseException, IllegalArgumentException;
 
+    /**
+     * See rules for comparing URI's in RFC3261 section 19.1.4.
+     * 
+     * @param o
+     * @return
+     */
+    @Override
+    boolean equals(final Object o);
+
 
     /**
      * Get the entire content of the {@link SipURI} as a {@link Buffer}.
@@ -123,6 +136,61 @@ public interface SipURI extends URI {
      * @return
      */
     Buffer toBuffer();
+
+    /**
+     * Frame a sip or sips-uri, which according to RFC3261 is:
+     * 
+     * <pre>
+     * SIP-URI          =  "sip:" [ userinfo ] hostport
+     *                      uri-parameters [ headers ]
+     * SIPS-URI         =  "sips:" [ userinfo ] hostport
+     *                      uri-parameters [ headers ]
+     * </pre>
+     * 
+     * Remember though that all these frame-functions will only do a basic
+     * verification that all things are ok so just because this function return
+     * without an exception doesn't mean that you actually framed a valid URI.
+     * Everything is done lazily so things may blow up later.
+     * 
+     * Also note that this function assumes that someone else has already determined the boundaries for this
+     * sip(s)-uri and as such, this function does not expect '<' etc.
+     * 
+     * @param buffer
+     * @return
+     * @throws SipParseException
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static SipURI frame(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException, IOException {
+        final Buffer original = buffer.slice();
+        final boolean isSips = SipParser.isSips(buffer);
+        final Buffer[] userHost = SipParser.consumeUserInfoHostPort(buffer);
+        final Buffer hostPort = userHost[1];
+        Buffer host = null;
+        Buffer port = null;
+        while (hostPort.hasReadableBytes() && host == null) {
+            final byte b = hostPort.readByte();
+            if (b == SipParser.COLON) {
+                final int index = hostPort.getReaderIndex();
+                host = hostPort.slice(0, index - 1); // skip the ':'
+                port = hostPort;
+            }
+        }
+        if (host == null) {
+            hostPort.setReaderIndex(0);
+            host = hostPort;
+        }
+
+        if (port != null) {
+            try {
+                port.parseToInt();
+            } catch (final NumberFormatException e) {
+                throw new SipParseException(0, "The SipURI had a port but it was not an integer: \"" + port.toString()
+                        + "\"");
+            }
+        }
+        return new SipURIImpl(isSips, userHost[0], host, port, buffer, original);
+    }
 
     public static Builder with() {
         return new Builder();

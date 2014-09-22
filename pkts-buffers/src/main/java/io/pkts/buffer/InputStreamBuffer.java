@@ -482,6 +482,11 @@ public final class InputStreamBuffer extends AbstractBuffer {
         }
     }
 
+    @Override
+    public boolean equalsIgnoreCase(final Object other) {
+        throw new RuntimeException("Sorry, InputStreamBuffer.equalsIgnoreCase isn't implemented yet");
+    }
+
     /**
      * {@inheritDoc}
      */

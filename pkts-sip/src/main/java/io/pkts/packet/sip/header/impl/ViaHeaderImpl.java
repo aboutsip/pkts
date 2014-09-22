@@ -4,6 +4,7 @@
 package io.pkts.packet.sip.header.impl;
 
 import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
+import gov.nist.javax.sip.header.HeaderFactoryImpl;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
@@ -308,30 +309,6 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
     }
 
     /**
-     * Frame a buffer into a {@link ViaHeader}.
-     * 
-     * NOTE, this method assumes that you have already stripped off the header
-     * name "Via".
-     * 
-     * @param buffer
-     * @return
-     * @throws SipParseException
-     */
-    public static ViaHeader frame(final Buffer buffer) throws SipParseException {
-        try {
-            final Buffer original = buffer.slice();
-            final Object[] result = SipParser.consumeVia(buffer);
-            final Buffer transport = (Buffer) result[0];
-            final Buffer host = (Buffer) result[1];
-            final Buffer port = result[2] == null ? null : (Buffer) result[2];
-            final List<Buffer[]> params = (List<Buffer[]>) result[3];
-            return new ViaHeaderImpl(original, transport, host, port, params);
-        } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to frame the Via header due to IOException", e);
-        }
-    }
-
-    /**
      * For a Via-header make sure that the branch parameter is present.
      * 
      * {@inheritDoc}
@@ -390,11 +367,15 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
         final Buffer buffer = Buffers.createBuffer(1024);
         transferValue(buffer);
         try {
-            return ViaHeaderImpl.frame(buffer);
+            return ViaHeader.frame(buffer);
         } catch (final SipParseException e) {
             throw new RuntimeException("Unable to clone the Via-header", e);
         }
     }
 
+    @Override
+    public ViaHeader ensure() {
+        return this;
+    }
 
 }

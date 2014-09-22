@@ -5,8 +5,8 @@ package io.pkts.packet.sip.impl;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import io.pkts.RawData;
 import io.pkts.PktsTestBase;
+import io.pkts.RawData;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipRequest;
 import io.pkts.packet.sip.address.SipURI;

@@ -12,6 +12,8 @@ import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.impl.ViaHeaderImpl;
 import io.pkts.packet.sip.impl.SipParser;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -164,6 +166,30 @@ public interface ViaHeader extends Parameters, SipHeader {
 
     @Override
     ViaHeader clone();
+
+    /**
+     * Frame a buffer into a {@link ViaHeader}.
+     * 
+     * NOTE, this method assumes that you have already stripped off the header name "Via".
+     * 
+     * @param buffer
+     * @return
+     * @throws SipParseException
+     */
+    public static ViaHeader frame(final Buffer buffer) throws SipParseException {
+        try {
+            final Buffer original = buffer.slice();
+            final Object[] result = SipParser.consumeVia(buffer);
+            final Buffer transport = (Buffer) result[0];
+            final Buffer host = (Buffer) result[1];
+            final Buffer port = result[2] == null ? null : (Buffer) result[2];
+            final List<Buffer[]> params = (List<Buffer[]>) result[3];
+            return new ViaHeaderImpl(original, transport, host, port, params);
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to frame the Via header due to IOException", e);
+        }
+    }
+
 
     /**
      * Generate a cryptographic

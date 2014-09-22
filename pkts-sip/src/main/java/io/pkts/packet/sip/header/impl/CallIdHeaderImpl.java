@@ -36,25 +36,10 @@ public final class CallIdHeaderImpl extends SipHeaderImpl implements CallIdHeade
         return getValue();
     }
 
-    public static CallIdHeader frame(final Buffer buffer) throws SipParseException {
-        return new CallIdHeaderImpl(buffer);
-    }
-
-    /**
-     * 
-     * @param compactForm
-     * @param buffer
-     * @return
-     * @throws SipParseException
-     */
-    public static CallIdHeader frame(final boolean compactForm, final Buffer buffer) throws SipParseException {
-        return new CallIdHeaderImpl(compactForm, buffer);
-    }
-
     @Override
     public CallIdHeader clone() {
         try {
-            return CallIdHeaderImpl.frame(getValue().clone());
+            return CallIdHeader.frame(getValue().clone());
         } catch (final SipParseException e) {
             throw new RuntimeException("Unable to clone the CallId-header", e);
         }
@@ -102,6 +87,11 @@ public final class CallIdHeaderImpl extends SipHeaderImpl implements CallIdHeade
             return false;
         }
         return true;
+    }
+
+    @Override
+    public CallIdHeader ensure() {
+        return this;
     }
 
 }

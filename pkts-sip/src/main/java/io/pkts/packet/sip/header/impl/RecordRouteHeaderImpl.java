@@ -24,28 +24,20 @@ public class RecordRouteHeaderImpl extends AddressParametersHeaderImpl implement
         super(RecordRouteHeader.NAME, address, params);
     }
 
-    /**
-     * Frame the value as a {@link RecordRouteHeader}.
-     * 
-     * @param value
-     * @return
-     * @throws SipParseException
-     *             in case anything goes wrong while parsing.
-     */
-    public static RecordRouteHeader frame(final Buffer buffer) throws SipParseException {
-        final Object[] result = AddressParametersHeaderImpl.frameAddressParameters(buffer);
-        return new RecordRouteHeaderImpl((Address) result[0], (Buffer) result[1]);
-    }
-
     @Override
     public RecordRouteHeader clone() {
         final Buffer buffer = Buffers.createBuffer(1024);
         transferValue(buffer);
         try {
-            return RecordRouteHeaderImpl.frame(buffer);
+            return RecordRouteHeader.frame(buffer);
         } catch (final SipParseException e) {
             throw new RuntimeException("Unable to clone the RecordRoute-header", e);
         }
+    }
+
+    @Override
+    public RecordRouteHeader ensure() {
+        return this;
     }
 
 }

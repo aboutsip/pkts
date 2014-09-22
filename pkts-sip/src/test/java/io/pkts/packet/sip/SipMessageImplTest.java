@@ -10,9 +10,7 @@ import io.pkts.PktsTestBase;
 import io.pkts.RawData;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.header.CSeqHeader;
-import io.pkts.packet.sip.header.HeaderFactory;
 import io.pkts.packet.sip.header.ViaHeader;
-import io.pkts.packet.sip.header.impl.HeaderFactoryImpl;
 
 import java.util.List;
 
@@ -24,8 +22,6 @@ import org.junit.Test;
  * @author jonas@jonasborjesson.com
  */
 public class SipMessageImplTest extends PktsTestBase {
-
-    private final HeaderFactory headerFactory = new HeaderFactoryImpl();
 
     /**
      * Some default Via values we will be using for testing

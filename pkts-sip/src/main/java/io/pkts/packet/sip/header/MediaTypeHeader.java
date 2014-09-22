@@ -4,6 +4,8 @@
 package io.pkts.packet.sip.header;
 
 import io.pkts.buffer.Buffer;
+import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.impl.SipParser;
 
 /**
  * Interface for those headers representing a media type, such as the
@@ -11,7 +13,7 @@ import io.pkts.buffer.Buffer;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface MediaTypeHeader {
+public interface MediaTypeHeader extends SipHeader {
 
     /**
      * 
@@ -32,5 +34,30 @@ public interface MediaTypeHeader {
      * @return
      */
     boolean isSDP();
+
+
+    /**
+     * Convenience method for parsing out a media type header.
+     * 
+     * @param buffer
+     * @return
+     * @throws SipParseException
+     */
+    public static Buffer[] frame(final Buffer buffer) throws SipParseException {
+        if (buffer == null) {
+            throw new SipParseException(0, "Cannot parse a null-buffer. Cmon!");
+        }
+
+        final Buffer mType = SipParser.consumeMType(buffer);
+        if (mType == null) {
+            throw new SipParseException(buffer.getReaderIndex(), "Expected m-type but got nothing");
+        }
+        SipParser.expectSLASH(buffer);
+        final Buffer subType = SipParser.consumeMSubtype(buffer);
+        if (subType == null) {
+            throw new SipParseException(buffer.getReaderIndex(), "Expected m-subtype but got nothing");
+        }
+        return new Buffer[] {mType, subType};
+    }
 
 }

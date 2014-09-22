@@ -11,6 +11,7 @@ import io.pkts.packet.sip.SipRequest;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.address.URI;
 import io.pkts.packet.sip.header.ContentTypeHeader;
+import io.pkts.packet.sip.header.ExpiresHeader;
 import io.pkts.packet.sip.header.RecordRouteHeader;
 import io.pkts.packet.sip.header.RouteHeader;
 import io.pkts.packet.sip.header.SipHeader;
@@ -279,6 +280,40 @@ public class SipMessageImplTest extends PktsTestBase {
         assertThat(contentTypeHeader.getContentSubType(), is(Buffers.wrap("sdp")));
         assertThat(contentTypeHeader.isSDP(), is(true));
         assertThat(contentTypeHeader.getValue(), is(Buffers.wrap("application/sdp")));
+    }
+
+    /**
+     * The {@link SipMessage} interface has many convenience methods for fetching the most common
+     * headers however, we cannot add all headers to the interface and also in order to facilitate
+     * new headers in the future we are allowing to register framers using lambda expressions so
+     * that users can extend the API with their own header implementations and framing logic of
+     * those headers.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testGetSpecificHeaders() throws Exception {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("REGISTER sip:127.0.0.1 SIP/2.0\r\n");
+        sb.append("Via: SIP/2.0/UDP 10.0.1.14:5069;rport;branch=z9hG4bK662351435\r\n");
+        sb.append("From: <sip:jonas@127.0.0.1>;tag=1923738050\r\n");
+        sb.append("To: <sip:jonas@127.0.0.1>\r\n");
+        sb.append("Call-ID: 123641868\r\n");
+        sb.append("CSeq: 1 REGISTER\r\n");
+        sb.append("Contact: <sip:jonas@10.0.1.14:5069;line=6227298e2959de7>\r\n");
+        sb.append("Max-Forwards: 70\r\n");
+        sb.append("User-Agent: Linphone/3.5.2 (eXosip2/3.6.0)\r\n");
+        sb.append("Expires: 3600\r\n");
+        sb.append("Content-Length: 0\r\n");
+
+        final SipMessageImpl register = (SipMessageImpl) SipMessage.frame(sb.toString());
+        final ExpiresHeader expires = (ExpiresHeader) register.getSipHeader(ExpiresHeader.NAME);
+        assertThat(expires.getExpires(), is(3600));
+
+        // make sure we do not re-frame it, hence, we should be getting back the VERY
+        // SAME REFERENCE as the header above.
+        final ExpiresHeader expires2 = (ExpiresHeader) register.getSipHeader(ExpiresHeader.NAME);
+        assertThat(expires == expires2, is(true));
     }
 
 }

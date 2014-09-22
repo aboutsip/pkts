@@ -5,6 +5,9 @@ package io.pkts.packet.sip.header;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.address.Address;
+import io.pkts.packet.sip.header.impl.RecordRouteHeaderImpl;
 
 /**
  * 
@@ -31,10 +34,24 @@ import io.pkts.buffer.Buffers;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface RecordRouteHeader extends HeaderAddress, SipHeader, Parameters {
+public interface RecordRouteHeader extends AddressParametersHeader {
 
     Buffer NAME = Buffers.wrap("Record-Route");
 
+    @Override
     RecordRouteHeader clone();
+
+
+    /**
+     * Frame the value as a {@link RecordRouteHeader}.
+     * 
+     * @param value
+     * @return
+     * @throws SipParseException in case anything goes wrong while parsing.
+     */
+    public static RecordRouteHeader frame(final Buffer buffer) throws SipParseException {
+        final Object[] result = AddressParametersHeader.frame(buffer);
+        return new RecordRouteHeaderImpl((Address) result[0], (Buffer) result[1]);
+    }
 
 }

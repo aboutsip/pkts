@@ -26,6 +26,19 @@ public interface ContactHeader extends AddressParametersHeader {
         return builder;
     }
 
+
+    /**
+     * Frame the value as a {@link ContactHeader}.
+     * 
+     * @param value
+     * @return
+     * @throws SipParseException in case anything goes wrong while parsing.
+     */
+    public static ContactHeader frame(final Buffer buffer) throws SipParseException {
+        final Object[] result = AddressParametersHeader.frame(buffer);
+        return new ContactHeaderImpl((Address) result[0], (Buffer) result[1]);
+    }
+
     static class Builder extends AddressParametersHeader.Builder<ContactHeader> {
 
         private Builder() {

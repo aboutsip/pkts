@@ -5,6 +5,9 @@ package io.pkts.packet.sip.header;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.address.Address;
+import io.pkts.packet.sip.header.impl.RouteHeaderImpl;
 
 /**
  * Source: RFC 3261 section 20.30
@@ -26,10 +29,23 @@ import io.pkts.buffer.Buffers;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface RouteHeader extends HeaderAddress, Parameters, SipHeader {
+public interface RouteHeader extends AddressParametersHeader {
 
     Buffer NAME = Buffers.wrap("Route");
 
+    @Override
     RouteHeader clone();
+
+    /**
+     * Frame the value as a {@link RouteHeader}.
+     * 
+     * @param value
+     * @return
+     * @throws SipParseException in case anything goes wrong while parsing.
+     */
+    public static RouteHeader frame(final Buffer buffer) throws SipParseException {
+        final Object[] result = AddressParametersHeader.frame(buffer);
+        return new RouteHeaderImpl((Address) result[0], (Buffer) result[1]);
+    }
 
 }

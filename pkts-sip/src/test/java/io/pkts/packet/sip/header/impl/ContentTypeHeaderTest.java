@@ -34,29 +34,29 @@ public class ContentTypeHeaderTest {
      */
     @Test
     public void testBasicFraming() throws Exception {
-        ContentTypeHeader header = ContentTypeHeaderImpl.frame(Buffers.wrap("application/sdp"));
+        ContentTypeHeader header = ContentTypeHeader.frame(Buffers.wrap("application/sdp"));
         assertThat(header.getContentType().toString(), is("application"));
         assertThat(header.getContentSubType().toString(), is("sdp"));
         assertThat(header.getParameter("apa"), is((Buffer) null));
 
         // some space around the slash is apperently ok according to rfc
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("application   /sdp"));
+        header = ContentTypeHeader.frame(Buffers.wrap("application   /sdp"));
         assertThat(header.getContentType().toString(), is("application"));
         assertThat(header.getContentSubType().toString(), is("sdp"));
         assertThat(header.getParameter("monkey"), is((Buffer) null));
 
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("application   /   sdp"));
+        header = ContentTypeHeader.frame(Buffers.wrap("application   /   sdp"));
         assertThat(header.getContentType().toString(), is("application"));
         assertThat(header.getContentSubType().toString(), is("sdp"));
         assertThat(header.getParameter("hello"), is((Buffer) null));
 
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("application/   sdp"));
+        header = ContentTypeHeader.frame(Buffers.wrap("application/   sdp"));
         assertThat(header.getContentType().toString(), is("application"));
         assertThat(header.getContentSubType().toString(), is("sdp"));
         assertThat(header.getParameter("world"), is((Buffer) null));
 
         // some space at the end should be ok too...
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("application/   sdp     "));
+        header = ContentTypeHeader.frame(Buffers.wrap("application/   sdp     "));
         assertThat(header.getContentType().toString(), is("application"));
         assertThat(header.getContentSubType().toString(), is("sdp"));
         assertThat(header.getParameter("world"), is((Buffer) null));
@@ -70,14 +70,14 @@ public class ContentTypeHeaderTest {
      */
     @Test
     public void testGetValue() throws Exception {
-        ContentTypeHeader header = ContentTypeHeaderImpl.frame(Buffers.wrap("application/sdp"));
+        ContentTypeHeader header = ContentTypeHeader.frame(Buffers.wrap("application/sdp"));
         assertThat(header.getValue().toString(), is("application/sdp"));
 
         // spaces etc will get lost in translation and that's ok i think
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("application  /   sdp"));
+        header = ContentTypeHeader.frame(Buffers.wrap("application  /   sdp"));
         assertThat(header.getValue().toString(), is("application/sdp"));
 
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("hello/world;apa=monkey"));
+        header = ContentTypeHeader.frame(Buffers.wrap("hello/world;apa=monkey"));
         assertThat(header.getValue().toString(), is("hello/world;apa=monkey"));
     }
 
@@ -89,37 +89,37 @@ public class ContentTypeHeaderTest {
      */
     @Test
     public void testIsSDP() throws Exception {
-        ContentTypeHeader header = ContentTypeHeaderImpl.frame(Buffers.wrap("application/sdp"));
+        ContentTypeHeader header = ContentTypeHeader.frame(Buffers.wrap("application/sdp"));
         assertThat(header.isSDP(), is(true));
 
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("application/sdp   "));
+        header = ContentTypeHeader.frame(Buffers.wrap("application/sdp   "));
         assertThat(header.isSDP(), is(true));
 
         // don't think you really can have anything but lower case
         // but sometimes you need to be a little forgiving and not
         // always follow the spec to 100%
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("APPLICATION/SDP"));
+        header = ContentTypeHeader.frame(Buffers.wrap("APPLICATION/SDP"));
         assertThat(header.isSDP(), is(true));
 
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("application/SDP"));
+        header = ContentTypeHeader.frame(Buffers.wrap("application/SDP"));
         assertThat(header.isSDP(), is(true));
 
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("aPPlicaTion/SDP"));
+        header = ContentTypeHeader.frame(Buffers.wrap("aPPlicaTion/SDP"));
         assertThat(header.isSDP(), is(true));
 
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("application/apa"));
+        header = ContentTypeHeader.frame(Buffers.wrap("application/apa"));
         assertThat(header.isSDP(), is(false));
 
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("hello/apa"));
+        header = ContentTypeHeader.frame(Buffers.wrap("hello/apa"));
         assertThat(header.isSDP(), is(false));
 
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("hello/world"));
+        header = ContentTypeHeader.frame(Buffers.wrap("hello/world"));
         assertThat(header.isSDP(), is(false));
 
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("appli/sdp"));
+        header = ContentTypeHeader.frame(Buffers.wrap("appli/sdp"));
         assertThat(header.isSDP(), is(false));
 
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("bbpatcation/sdp"));
+        header = ContentTypeHeader.frame(Buffers.wrap("bbpatcation/sdp"));
         assertThat(header.isSDP(), is(false));
     }
 
@@ -131,7 +131,7 @@ public class ContentTypeHeaderTest {
     @Test
     public void testNoSubType() throws Exception {
         try {
-            ContentTypeHeaderImpl.frame(Buffers.wrap("missing"));
+            ContentTypeHeader.frame(Buffers.wrap("missing"));
             fail("Expected a SipParseException");
         } catch (final SipParseException e) {
             // make sure we correctly identify where the problem occurs.
@@ -139,7 +139,7 @@ public class ContentTypeHeaderTest {
         }
 
         try {
-            ContentTypeHeaderImpl.frame(Buffers.EMPTY_BUFFER);
+            ContentTypeHeader.frame(Buffers.EMPTY_BUFFER);
             fail("Expected a SipParseException");
         } catch (final SipParseException e) {
             // make sure we correctly identify where the problem occurs.
@@ -147,7 +147,7 @@ public class ContentTypeHeaderTest {
         }
 
         try {
-            ContentTypeHeaderImpl.frame(null);
+            ContentTypeHeader.frame(null);
             fail("Expected a SipParseException");
         } catch (final SipParseException e) {
             // make sure we correctly identify where the problem occurs.
@@ -155,7 +155,7 @@ public class ContentTypeHeaderTest {
         }
 
         try {
-            ContentTypeHeaderImpl.frame(Buffers.wrap("missing/"));
+            ContentTypeHeader.frame(Buffers.wrap("missing/"));
             fail("Expected a SipParseException");
         } catch (final SipParseException e) {
             // make sure we correctly identify where the problem occurs.
@@ -171,16 +171,16 @@ public class ContentTypeHeaderTest {
      */
     @Test
     public void testWithParams() throws Exception {
-        ContentTypeHeader header = ContentTypeHeaderImpl.frame(Buffers.wrap("application/   sdp     ;hello=world"));
+        ContentTypeHeader header = ContentTypeHeader.frame(Buffers.wrap("application/   sdp     ;hello=world"));
         assertThat(header.getContentType().toString(), is("application"));
         assertThat(header.getContentSubType().toString(), is("sdp"));
         assertThat(header.getParameter("hello").toString(), is("world"));
 
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("application/sdp;hello=world;apa=monkey"));
+        header = ContentTypeHeader.frame(Buffers.wrap("application/sdp;hello=world;apa=monkey"));
         assertThat(header.getParameter("hello").toString(), is("world"));
         assertThat(header.getParameter("apa").toString(), is("monkey"));
 
-        header = ContentTypeHeaderImpl.frame(Buffers.wrap("application/sdp;flag"));
+        header = ContentTypeHeader.frame(Buffers.wrap("application/sdp;flag"));
         assertThat(header.getParameter("flag").capacity(), is(0));
     }
 

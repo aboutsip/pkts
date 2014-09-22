@@ -13,6 +13,7 @@ import io.pkts.packet.sip.impl.SipParser;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -65,6 +66,10 @@ public final class ParametersSupport {
         }
     }
 
+    public boolean hasParameter(final Buffer name) {
+        return this.paramMap != null && this.paramMap.containsKey(name);
+    }
+
     public Buffer getParameter(final Buffer name) throws SipParseException {
         if (name == null) {
             throw new IllegalArgumentException("The name of the parameter cannot be null");
@@ -78,6 +83,30 @@ public final class ParametersSupport {
             return value.slice();
         }
 
+        return consumeUntil(name);
+    }
+
+    /**
+     * WARNING: should really only be used by internal implementations.
+     * 
+     * @return
+     */
+    public Set<Map.Entry<Buffer, Buffer>> getAllParameters() {
+        consumeUntil(null);
+        if (this.paramMap != null) {
+            return this.paramMap.entrySet();
+        }
+        return null;
+    }
+
+    /**
+     * Internal helper method that will consume all raw parameters until we find the specified name
+     * or if the name is null, then that will be the same as "consume all".
+     * 
+     * @param name
+     * @return
+     */
+    private Buffer consumeUntil(final Buffer name) {
         try {
             while (this.params.hasReadableBytes()) {
                 SipParser.consumeSEMI(this.params);
@@ -86,11 +115,10 @@ public final class ParametersSupport {
                 final Buffer value = keyValue[1] == null ? Buffers.EMPTY_BUFFER : keyValue[1];
                 this.paramMap.put(keyValue[0], value);
 
-                if (name.equals(keyValue[0])) {
+                if (name != null && name.equals(keyValue[0])) {
                     return value;
                 }
             }
-
             return null;
         } catch (final IndexOutOfBoundsException e) {
             throw new SipParseException(this.params.getReaderIndex(),
@@ -99,6 +127,7 @@ public final class ParametersSupport {
             throw new SipParseException(this.params.getReaderIndex(),
                     "Could not read from the underlying stream while parsing the value");
         }
+
     }
 
     private void ensureParamsMap() {

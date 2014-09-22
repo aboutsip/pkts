@@ -90,7 +90,7 @@ public final class AddressImpl implements Address {
     public URI getURI() throws SipParseException {
         if (this.uri == null) {
             try {
-                this.uri = URIImpl.frame(this.uriBuffer);
+                this.uri = URI.frame(this.uriBuffer);
             } catch (final IndexOutOfBoundsException e) {
                 throw new SipParseException(this.uriBuffer.getReaderIndex(),
                         "Unable to process the value due to a IndexOutOfBoundsException", e);

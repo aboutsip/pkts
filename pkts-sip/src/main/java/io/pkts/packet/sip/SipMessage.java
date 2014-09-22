@@ -1,6 +1,9 @@
 package io.pkts.packet.sip;
 
+import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
+import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 import io.pkts.buffer.Buffer;
+import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.CallIdHeader;
 import io.pkts.packet.sip.header.ContactHeader;
@@ -12,7 +15,9 @@ import io.pkts.packet.sip.header.RouteHeader;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
+import io.pkts.packet.sip.impl.SipParser;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -159,6 +164,15 @@ public interface SipMessage extends Cloneable {
     void addHeaderFirst(SipHeader header) throws SipParseException;
 
     /**
+     * Remove and return the top-most header.
+     * 
+     * @param headerName the name of the header to pop.
+     * @return the removed header or null if there was no such header.
+     * @throws SipParseException
+     */
+    SipHeader popHeader(Buffer headerNme) throws SipParseException;
+
+    /**
      * Set the specified header, which will replace the existing header of the
      * same name. If there are multiple headers of this header, then all "old"
      * ones are removed.
@@ -295,14 +309,21 @@ public interface SipMessage extends Cloneable {
     boolean isInvite() throws SipParseException;
 
     /**
-     * Convenience method for determining whether the method of this message is
-     * a BYE or not. Hence, this is NOT to the method to determine whether this
-     * is a BYE Request or not!
+     * Convenience method for determining whether the method of this message is an REGISTER or not.
+     * 
+     * @return true if the method of this message is a REGISTER, false otherwise.
+     * @throws SipParseException in case the method could not be parsed out of the underlying
+     *         buffer.
+     */
+    boolean isRegister() throws SipParseException;
+
+    /**
+     * Convenience method for determining whether the method of this message is a BYE or not. Hence,
+     * this is NOT to the method to determine whether this is a BYE Request or not!
      * 
      * @return true if the method of this message is a BYE, false otherwise.
-     * @throws SipParseException
-     *             in case the method could not be parsed out of the underlying
-     *             buffer.
+     * @throws SipParseException in case the method could not be parsed out of the underlying
+     *         buffer.
      */
     boolean isBye() throws SipParseException;
 
@@ -435,5 +456,29 @@ public interface SipMessage extends Cloneable {
      * @return
      */
     SipMessage clone();
+
+    /**
+     * Frame the supplied buffer into a {@link SipMessage}. No deep analysis of the message will be
+     * performed so there is no guarantee that this {@link SipMessage} is actually a well formed
+     * message.
+     * 
+     * @param buffer
+     * @return the framed {@link SipMessage}
+     */
+    static SipMessage frame(final Buffer buffer) throws SipParseException, IOException {
+        assertNotNull(buffer);
+        return SipParser.frame(buffer);
+    }
+
+    /**
+     * 
+     * @param buffer
+     * @return
+     * @throws IOException
+     */
+    static SipMessage frame(final String buffer) throws SipParseException, IOException {
+        assertNotEmpty(buffer, "Buffer cannot be null or the empty string");
+        return SipParser.frame(Buffers.wrap(buffer));
+    }
 
 }

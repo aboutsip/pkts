@@ -80,8 +80,17 @@ public interface FromHeader extends AddressParametersHeader {
     @Override
     FromHeader clone();
 
-    static FromHeader create(final Buffer header) throws SipParseException {
-        return FromHeaderImpl.frame(header);
+
+    /**
+     * Frame the value as a {@link FromHeader}.
+     * 
+     * @param value
+     * @return
+     * @throws SipParseException in case anything goes wrong while parsing.
+     */
+    public static FromHeader frame(final Buffer buffer) throws SipParseException {
+        final Object[] result = AddressParametersHeader.frame(buffer);
+        return new FromHeaderImpl((Address) result[0], (Buffer) result[1]);
     }
 
     /**

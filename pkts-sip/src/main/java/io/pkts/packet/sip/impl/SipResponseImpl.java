@@ -7,6 +7,8 @@ import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.SipResponse;
 import io.pkts.packet.sip.header.CSeqHeader;
+import io.pkts.packet.sip.header.SipHeader;
+import io.pkts.packet.sip.header.ViaHeader;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -136,6 +138,22 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
     @Override
     public SipResponse clone() {
         throw new RuntimeException("Sorry, not implemented right now");
+    }
+
+    @Override
+    public ViaHeader popViaHeader() throws SipParseException {
+        final SipHeader header = popHeader(ViaHeader.NAME);
+        if (header instanceof ViaHeader) {
+            return (ViaHeader) header;
+        }
+
+        if (header == null) {
+            return null;
+        }
+
+
+        final Buffer buffer = header.getValue();
+        return ViaHeader.frame(buffer);
     }
 
 }

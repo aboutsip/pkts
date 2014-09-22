@@ -3,6 +3,7 @@
  */
 package io.pkts.packet.sip.header;
 
+import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.impl.SipParser;
@@ -84,8 +85,21 @@ public interface SipHeader extends Cloneable {
      * @return a new {@link SipHeader}.
      * @throws SipParseException in case the header is not a correct formatted header.
      */
-    static SipHeader create(final Buffer header) throws SipParseException {
-        return SipParser.nextHeader(header);
+    static SipHeader frame(final Buffer value) throws SipParseException {
+        assertNotEmpty(value, "The value of the header cannot be null or the empty buffer");
+        return SipParser.nextHeader(value);
     }
+
+    /**
+     * As most things in this library are done lazily, such as framing headers, you can make sure
+     * that a particular header has indeed been parsed to the more specific header type by calling
+     * this method. If the header has yet not been parsed fully, e.g., we may have extracted out a
+     * {@link ContactHeader} but it is still in its "raw" form and therefore represented as a
+     * {@link SipHeader} as opposed to an actual {@link ContactHeader} but by calling this method
+     * you will force the library to actually fully frame it.
+     * 
+     * @return
+     */
+    SipHeader ensure();
 
 }

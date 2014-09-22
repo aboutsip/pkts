@@ -22,7 +22,7 @@ public class FromHeaderTest extends AddressParameterHeadersTestBase {
 
     @Override
     public AddressParametersHeaderImpl frameHeader(final Buffer buffer) throws SipParseException {
-        return (FromHeaderImpl) FromHeader.create(buffer);
+        return (FromHeaderImpl) FromHeader.frame(buffer);
     }
 
 

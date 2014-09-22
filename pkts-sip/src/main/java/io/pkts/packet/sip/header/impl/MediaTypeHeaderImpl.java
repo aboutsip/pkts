@@ -5,7 +5,6 @@ package io.pkts.packet.sip.header.impl;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
-import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.MediaTypeHeader;
 import io.pkts.packet.sip.impl.SipParser;
 
@@ -97,31 +96,6 @@ public abstract class MediaTypeHeaderImpl extends ParametersImpl implements Medi
     }
 
     /**
-     * Convenience method for parsing out a media type header.
-     * 
-     * @param buffer
-     * @return
-     * @throws SipParseException
-     */
-    protected static Buffer[] frameMediaType(final Buffer buffer) throws SipParseException {
-        if (buffer == null) {
-            throw new SipParseException(0, "Cannot parse a null-buffer. Cmon!");
-        }
-
-        final Buffer mType = SipParser.consumeMType(buffer);
-        if (mType == null) {
-            throw new SipParseException(buffer.getReaderIndex(), "Expected m-type but got nothing");
-        }
-        SipParser.expectSLASH(buffer);
-        final Buffer subType = SipParser.consumeMSubtype(buffer);
-        if (subType == null) {
-            throw new SipParseException(buffer.getReaderIndex(), "Expected m-subtype but got nothing");
-        }
-        return new Buffer[] {
-                mType, subType };
-    }
-
-    /**
      * 
      */
     @Override
@@ -138,6 +112,11 @@ public abstract class MediaTypeHeaderImpl extends ParametersImpl implements Medi
         }
 
         return Buffers.wrap(sb.toString());
+    }
+
+    @Override
+    public MediaTypeHeader ensure() {
+        return this;
     }
 
 }

@@ -200,13 +200,37 @@ public class ByteBufferTest extends AbstractBufferTest {
 
     @Test
     public void testEqualsBasicStuff() throws Exception {
-        final Buffer a = createBuffer("hello");
-        final Buffer b = createBuffer("hello");
-        final Buffer c = createBuffer("world");
-        assertThat(a, is(b));
-        assertThat(b, is(a));
-        assertThat(c, is(c));
-        assertThat(c, not(b));
+        assertBufferEquality("hello", "hello", true);
+        assertBufferEquality("hello", "world", false);
+        assertBufferEquality("hello ", "world", false);
+        assertBufferEquality("hello world", "world", false);
+        assertBufferEquality("Hello", "hello", false);
+        assertBufferEquality("h", "h", true);
+    }
+
+    @Test
+    public void testEqualsIgnoreCase() throws Exception {
+        assertBufferEqualityIgnoreCase("Hello", "hello", true);
+        assertBufferEqualityIgnoreCase("this is A lOng string...", "tHis iS a long string...", true);
+        assertBufferEqualityIgnoreCase("Hello", "HEllo", true);
+        assertBufferEqualityIgnoreCase("Hello", "HEllO", true);
+        assertBufferEqualityIgnoreCase("Hello", "HEllO ", false); // space at the end
+        assertBufferEqualityIgnoreCase("123 abC", "123 abc", true);
+        assertBufferEqualityIgnoreCase("123 abC !@#$", "123 ABc !@#$", true);
+    }
+
+    private void assertBufferEqualityIgnoreCase(final String a, final String b, final boolean equals) {
+        final Buffer bufA = createBuffer(a);
+        final Buffer bufB = createBuffer(b);
+        assertThat(bufA.equalsIgnoreCase(bufB), is(equals));
+        assertThat(bufB.equalsIgnoreCase(bufA), is(equals));
+    }
+
+    private void assertBufferEquality(final String a, final String b, final boolean equals) {
+        final Buffer bufA = createBuffer(a);
+        final Buffer bufB = createBuffer(b);
+        assertThat(bufA.equals(bufB), is(equals));
+        assertThat(bufB.equals(bufA), is(equals));
     }
 
     @Test

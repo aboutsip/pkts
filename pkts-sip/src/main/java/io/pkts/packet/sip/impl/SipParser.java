@@ -7,34 +7,45 @@ import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.header.CSeqHeader;
+import io.pkts.packet.sip.header.CallIdHeader;
+import io.pkts.packet.sip.header.ContactHeader;
+import io.pkts.packet.sip.header.ContentTypeHeader;
+import io.pkts.packet.sip.header.ExpiresHeader;
+import io.pkts.packet.sip.header.FromHeader;
+import io.pkts.packet.sip.header.MaxForwardsHeader;
+import io.pkts.packet.sip.header.RecordRouteHeader;
+import io.pkts.packet.sip.header.RouteHeader;
 import io.pkts.packet.sip.header.SipHeader;
+import io.pkts.packet.sip.header.ToHeader;
+import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.packet.sip.header.impl.SipHeaderImpl;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
- * Basic sip parser that contains most (all?) of the different grammar rules for
- * SIP as defined by RFC 3261. View these various methods as building blocks for
- * building up a complete SIP parser (perhaps I should rename this class?).
+ * Basic sip parser that contains most (all?) of the different grammar rules for SIP as defined by
+ * RFC 3261. View these various methods as building blocks for building up a complete SIP parser
+ * (perhaps I should rename this class?).
  * 
  * All of these functions work in the following way:
  * <ul>
- * <li><b>consumeXXXX</b> - will (in general) simply try and consume whatever it
- * is supposed to consume and the function will return true of false depending
- * on whether is was able to consume anything from the {@link Buffer}. The
- * consume-functions will (if successful) move the reader index of the
- * {@link Buffer}. If unsuccessful, the reader index will be left untouched.</li>
- * <li><b>expectXXX</b> - will (in general) expect that the next thing is
- * whatever it is supposed to expect. These functions are really the same as the
- * consumeXXXX ones but instead of returning true or false the expect-functions
- * will throw a {@link SipParseException} to indicate that things didn't turn
- * out as we were hoping for. Also, remember that the {@link SipParseException}
- * contains the error offset into the {@link Buffer} where things broke. As with
- * the consume-functions, the expect-functions will (if successful) move the
- * reader index of the {@link Buffer}</li>
+ * <li><b>consumeXXXX</b> - will (in general) simply try and consume whatever it is supposed to
+ * consume and the function will return true of false depending on whether is was able to consume
+ * anything from the {@link Buffer}. The consume-functions will (if successful) move the reader
+ * index of the {@link Buffer}. If unsuccessful, the reader index will be left untouched.</li>
+ * <li><b>expectXXX</b> - will (in general) expect that the next thing is whatever it is supposed to
+ * expect. These functions are really the same as the consumeXXXX ones but instead of returning true
+ * or false the expect-functions will throw a {@link SipParseException} to indicate that things
+ * didn't turn out as we were hoping for. Also, remember that the {@link SipParseException} contains
+ * the error offset into the {@link Buffer} where things broke. As with the consume-functions, the
+ * expect-functions will (if successful) move the reader index of the {@link Buffer}</li>
  * <li></li>
  * </ul>
  * 
@@ -147,6 +158,23 @@ public class SipParser {
 
     public static final Buffer WS = Buffers.wrap("ws");
 
+    public static final Map<Buffer, Function<SipHeader, ? extends SipHeader>> framers = new HashMap<>();
+
+    static {
+        framers.put(CallIdHeader.NAME, header -> CallIdHeader.frame(header.getValue()));
+        framers.put(CallIdHeader.COMPACT_NAME, header -> CallIdHeader.frameCompact(header.getValue()));
+        framers.put(ContactHeader.NAME, header -> ContactHeader.frame(header.getValue()));
+        framers.put(ContentTypeHeader.NAME, header -> ContentTypeHeader.frame(header.getValue()));
+        framers.put(CSeqHeader.NAME, header -> CSeqHeader.frame(header.getValue()));
+        framers.put(ExpiresHeader.NAME, header -> ExpiresHeader.frame(header.getValue()));
+        framers.put(FromHeader.NAME, header -> FromHeader.frame(header.getValue()));
+        framers.put(MaxForwardsHeader.NAME, header -> MaxForwardsHeader.frame(header.getValue()));
+        framers.put(RecordRouteHeader.NAME, header -> RecordRouteHeader.frame(header.getValue()));
+        framers.put(RouteHeader.NAME, header -> RouteHeader.frame(header.getValue()));
+        framers.put(ToHeader.NAME, header -> ToHeader.frame(header.getValue()));
+        framers.put(ViaHeader.NAME, header -> ViaHeader.frame(header.getValue()));
+    }
+
 
     // ----------------------------------------------------------------------
     // ----------------------------------------------------------------------
@@ -226,6 +254,25 @@ public class SipParser {
             return false;
         }
     }
+
+    public static boolean isSips(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException, IOException {
+        SipParser.expect(buffer, 's');
+        SipParser.expect(buffer, 'i');
+        SipParser.expect(buffer, 'p');
+        final byte b = buffer.readByte();
+        if (b == SipParser.COLON) {
+            return false;
+        }
+
+        if (b != 's') {
+            throw new SipParseException(buffer.getReaderIndex() - 1,
+                    "Expected 's' since the only schemes accepted are \"sip\" and \"sips\"");
+        }
+
+        SipParser.expect(buffer, SipParser.COLON);
+        return true;
+    }
+
 
     /**
      * Consumes all generic-params it can find. If there are no generic params

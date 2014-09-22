@@ -6,8 +6,8 @@ package io.pkts.packet.sip.impl;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.address.URI;
-import io.pkts.packet.sip.address.impl.SipURIImpl;
 
 import java.io.IOException;
 
@@ -64,7 +64,7 @@ public final class SipRequestLine extends SipInitialLine {
     public URI getRequestUri() throws SipParseException {
         if (this.requestURI == null) {
             try {
-                this.requestURI = SipURIImpl.frame(this.requestUriBuffer);
+                this.requestURI = SipURI.frame(this.requestUriBuffer);
             } catch (final IOException e) {
                 throw new SipParseException(0, "Unable to parse the request uri", e);
             }

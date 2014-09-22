@@ -399,4 +399,17 @@ public class EmptyBuffer implements Buffer {
         throw new IndexOutOfBoundsException("This buffer is empty");
     }
 
+    @Override
+    public boolean equalsIgnoreCase(final Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        try {
+            return ((Buffer) other).isEmpty();
+        } catch (NullPointerException | ClassCastException e) {
+            return false;
+        }
+    }
+
 }
