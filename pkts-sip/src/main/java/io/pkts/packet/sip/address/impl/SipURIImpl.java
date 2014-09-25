@@ -206,9 +206,38 @@ public class SipURIImpl extends URIImpl implements SipURI {
     }
 
     @Override
-    public Buffer getTransport() throws SipParseException {
+    public Buffer getTransportParam() throws SipParseException {
         return getParameter(SipParser.TRANSPORT);
     }
+
+    @Override
+    public Buffer getUserParam() throws SipParseException {
+        return getParameter(SipParser.USER);
+    }
+
+    @Override
+    public int getTTLParam() throws SipParseException {
+        final Buffer buffer = getParameter(SipParser.TTL);
+        if (buffer == null || buffer.isEmpty()) {
+            return -1;
+        }
+        try {
+            return buffer.parseToInt();
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse buffer to an int", e);
+        }
+    }
+
+    @Override
+    public Buffer getMAddrParam() throws SipParseException {
+        return getParameter(SipParser.MADDR);
+    }
+
+    @Override
+    public Buffer getMethodParam() throws SipParseException {
+        return getParameter(SipParser.METHOD);
+    }
+
 
     /**
      * Comparing two {@link SipURI}s aren't trivial and the full set of rules are described in
@@ -230,7 +259,7 @@ public class SipURIImpl extends URIImpl implements SipURI {
                 return false;
             }
 
-            // Bullet 6 - For two URIs to be equal, the user, password, host, and port
+            // For two URIs to be equal, the user, password, host, and port
             // components must match. Note that the user-info part (user + password) are
             // actually case sensitive. The rest isn't though.
             //
@@ -247,33 +276,45 @@ public class SipURIImpl extends URIImpl implements SipURI {
                 return false;
             }
 
-            if (this.paramsSupport != null ^ o.paramsSupport != null) {
-                return false;
-            }
-
-            final Set<Map.Entry<Buffer, Buffer>> entries = this.paramsSupport.getAllParameters();
-            if (entries != null) {
-                final Iterator<Map.Entry<Buffer, Buffer>> it = entries.iterator();
-                while (it.hasNext()) {
-                    final Map.Entry<Buffer, Buffer> entry = it.next();
-                    final Buffer key = entry.getKey();
-                    final Buffer value = entry.getValue();
-                    final Buffer bValue = o.getParameter(key);
-                    if (o.paramsSupport.hasParameter(key)) {
-                        if (value == null ^ bValue == null) {
-                            return false;
-                        }
-                        if (!value.equalsIgnoreCase(bValue)) {
-                            return false;
-                        }
-                    }
-                };
-            }
-
             // the specification doesn't call out transport but their examples do
-            if (getTransport() == null ^ o.getTransport() == null) {
+            if (getTransportParam() == null ^ o.getTransportParam() == null) {
                 return false;
             }
+
+            if (getUserParam() == null ^ o.getUserParam() == null) {
+                return false;
+            }
+            if (getTTLParam() != o.getTTLParam()) {
+                return false;
+            }
+            if (getMethodParam() == null ^ o.getMethodParam() == null) {
+                return false;
+            }
+            if (getMAddrParam() == null ^ o.getMAddrParam() == null) {
+                return false;
+            }
+
+            if (this.paramsSupport != null && o.paramsSupport != null) {
+                final Set<Map.Entry<Buffer, Buffer>> entries = this.paramsSupport.getAllParameters();
+                if (entries != null) {
+                    final Iterator<Map.Entry<Buffer, Buffer>> it = entries.iterator();
+                    while (it.hasNext()) {
+                        final Map.Entry<Buffer, Buffer> entry = it.next();
+                        final Buffer key = entry.getKey();
+                        final Buffer value = entry.getValue();
+                        final Buffer bValue = o.getParameter(key);
+                        if (o.paramsSupport.hasParameter(key)) {
+                            if (value == null ^ bValue == null) {
+                                return false;
+                            }
+                            if (!value.equalsIgnoreCase(bValue)) {
+                                return false;
+                            }
+                        }
+                    };
+                }
+            }
+
 
 
         } catch (ClassCastException | NullPointerException e) {

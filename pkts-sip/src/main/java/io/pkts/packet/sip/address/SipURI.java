@@ -70,7 +70,39 @@ public interface SipURI extends URI {
      * @return
      * @throws SipParseException
      */
-    Buffer getTransport() throws SipParseException;
+    Buffer getTransportParam() throws SipParseException;
+
+    /**
+     * Get the user parameter. This is the same as {@link #getParameter("user")}
+     * 
+     * @return
+     * @throws SipParseException
+     */
+    Buffer getUserParam() throws SipParseException;
+
+    /**
+     * Get the ttl parameter. This is the same as {@link #getParameter("ttl")}
+     * 
+     * @return the value of the TTL parameter or -1 (negative one) if it is not set.
+     * @throws SipParseException
+     */
+    int getTTLParam() throws SipParseException;
+
+    /**
+     * Get the maddr parameter. This is the same as {@link #getParameter("maddr")}
+     * 
+     * @return
+     * @throws SipParseException
+     */
+    Buffer getMAddrParam() throws SipParseException;
+
+    /**
+     * Get the method parameter. This is the same as {@link #getParameter("method")}
+     * 
+     * @return
+     * @throws SipParseException
+     */
+    Buffer getMethodParam() throws SipParseException;
 
     /**
      * Get the value of the named parameter. If the named parameter is a so-called flag parameter,

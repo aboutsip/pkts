@@ -61,6 +61,15 @@ public class SipParser {
      */
     public static final int MAX_LOOK_AHEAD = 1024;
 
+
+    public static final Buffer USER = Buffers.wrap("user");
+
+    public static final Buffer TTL = Buffers.wrap("ttl");
+
+    public static final Buffer MADDR = Buffers.wrap("maddr");
+
+    public static final Buffer METHOD = Buffers.wrap("method");
+
     public static final Buffer TRANSPORT = Buffers.wrap("transport");
 
     public static final Buffer TRANSPORT_EQ = Buffers.wrap("transport=");

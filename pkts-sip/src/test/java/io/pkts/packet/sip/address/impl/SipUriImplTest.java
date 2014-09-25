@@ -65,7 +65,26 @@ public class SipUriImplTest {
         assertSipUriEquality("sip:alice@example.com:1234", "sip:alice@example.com:1234", true);
         assertSipUriEquality("sip:alice@example.com:1234", "sip:alice@example.com:7893", false);
 
-        //
+        // not equal because if method is specified they have to be specified in both
+        assertSipUriEquality("sip:alice@example.com;method=REGISTER", "sip:alice@example.com", false);
+        assertSipUriEquality("sip:alice@example.com;method=REGISTER", "sip:alice@example.com;method=INVITE", false);
+
+        // verify ttl
+        assertSipUriEquality("sip:alice@example.com;ttl=123", "sip:alice@example.com", false);
+        assertSipUriEquality("sip:alice@example.com;ttl=123", "sip:alice@example.com;ttl=234", false);
+        assertSipUriEquality("sip:alice@example.com;ttl=123", "sip:alice@example.com;ttl=123", true);
+
+        // verify maddr
+        assertSipUriEquality("sip:alice@example.com;ttl=123;maddr=239.255.255.1", "sip:alice@example.com;ttl=123",
+                false);
+        assertSipUriEquality("sip:alice@example.com;ttl=123;maddr=239.255.255.1",
+                "sip:alice@example.com;maddr=239.255.255.1;ttl=123", true);
+        assertSipUriEquality("sip:alice@example.com;maddr=239.255.255.1", "sip:alice@example.com;maddr=239.255.255.1",
+                true);
+        assertSipUriEquality("sip:alice@example.com;maddr=239.255.255.2", "sip:alice@example.com;maddr=239.255.255.1",
+                false);
+
+        // -----------------------------------------------------------------------
         // Tests taken from RFC3261 section 19.1.4
         //
         String a = "sip:carol@chicago.com";
