@@ -3,6 +3,8 @@
  */
 package io.pkts.packet.sip;
 
+import io.pkts.packet.sip.header.ViaHeader;
+
 /**
  * @author jonas@jonasborjesson.com
  */
@@ -21,6 +23,14 @@ public interface SipResponse extends SipMessage {
      * @return
      */
     boolean isProvisional();
+
+    /**
+     * Convenience method for checking whether this response is a final response, i.e. any response
+     * >= 200.
+     * 
+     * @return
+     */
+    boolean isFinal();
 
     /**
      * Convenience method for checking whether this is a 2xx response or not.
@@ -80,6 +90,16 @@ public interface SipResponse extends SipMessage {
      * @return
      */
     boolean isTimeout();
+
+    /**
+     * Pop the top-most {@link ViaHeader}.
+     * 
+     * This is a convenience method for calling {@link SipMessage#popHeader(Buffer)}.
+     * 
+     * @return the top-most {@link ViaHeader} or null if this {@link SipResponse} contained no
+     *         {@link ViaHeader}s.
+     */
+    ViaHeader popViaHeader() throws SipParseException;
 
     @Override
     SipResponse clone();

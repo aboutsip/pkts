@@ -18,6 +18,10 @@ public class SipParseException extends SipException {
         this.errorOffset = errorOffset;
     }
 
+    public SipParseException(final String message) {
+        this(0, message);
+    }
+
     public SipParseException(final int errorOffset, final String message, final Exception cause) {
         super(message, cause);
         this.errorOffset = errorOffset;

@@ -11,28 +11,28 @@ import java.io.InputStream;
 public final class Buffers {
 
     private final static byte[] DigitTens = {
-            '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '2',
-            '2', '2', '2', '2', '2', '2', '2', '2', '2', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '4', '4',
-            '4', '4', '4', '4', '4', '4', '4', '4', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '6', '6', '6',
-            '6', '6', '6', '6', '6', '6', '6', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '8', '8', '8', '8',
-            '8', '8', '8', '8', '8', '8', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', };
+        '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '2',
+        '2', '2', '2', '2', '2', '2', '2', '2', '2', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '4', '4',
+        '4', '4', '4', '4', '4', '4', '4', '4', '5', '5', '5', '5', '5', '5', '5', '5', '5', '5', '6', '6', '6',
+        '6', '6', '6', '6', '6', '6', '6', '7', '7', '7', '7', '7', '7', '7', '7', '7', '7', '8', '8', '8', '8',
+        '8', '8', '8', '8', '8', '8', '9', '9', '9', '9', '9', '9', '9', '9', '9', '9', };
 
     private final static byte[] DigitOnes = {
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
-            '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1',
-            '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2',
-            '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3',
-            '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', };
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1',
+        '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2',
+        '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3',
+        '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', };
 
     /**
      * All possible chars for representing a number as a String
      */
     private final static byte[] digits = {
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
-            'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
+        'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 
     private final static int[] sizeTable = {
-            9, 99, 999, 9999, 99999, 999999, 9999999, 99999999, 999999999, Integer.MAX_VALUE };
+        9, 99, 999, 9999, 99999, 999999, 9999999, 99999999, 999999999, Integer.MAX_VALUE };
 
     /**
      * An empty buffer.
@@ -60,9 +60,20 @@ public final class Buffers {
         return new ByteBuffer(bytes);
     }
 
+    public static Buffer wrap(final long value) {
+        final int size = value < 0 ? stringSize(-value) + 1 : stringSize(value);
+        final byte[] bytes = new byte[size];
+        getBytes(value, size, bytes);
+        return new ByteBuffer(bytes);
+    }
+
     public static Buffer wrap(final String s) {
         if (s == null) {
             throw new IllegalArgumentException("String cannot be null");
+        }
+
+        if (s.isEmpty()) {
+            return Buffers.EMPTY_BUFFER;
         }
 
         return Buffers.wrap(s.getBytes());
@@ -178,12 +189,11 @@ public final class Buffers {
     }
 
     /**
-     * Copied straight from the Integer class
+     * Copied straight from the Integer class but modified to return bytes instead.
      * 
-     * Places characters representing the integer i into the character array
-     * buf. The characters are placed into the buffer backwards starting with
-     * the least significant digit at the specified index (exclusive), and
-     * working backwards from there.
+     * Places characters representing the integer i into the character array buf. The characters are
+     * placed into the buffer backwards starting with the least significant digit at the specified
+     * index (exclusive), and working backwards from there.
      * 
      * Will fail if i == Integer.MIN_VALUE
      */
@@ -223,6 +233,16 @@ public final class Buffers {
         }
     }
 
+    /**
+     * Find out how many characters it would take to represent the value as a string.
+     * 
+     * @param value
+     * @return
+     */
+    public static int stringSizeOf(final int value) {
+        return value < 0 ? stringSize(-value) + 1 : stringSize(value);
+    }
+
     // Requires positive x
     protected static int stringSize(final int x) {
         for (int i = 0;; i++) {
@@ -231,5 +251,86 @@ public final class Buffers {
             }
         }
     }
+
+    /**
+     * Copied straight from the Long class but modified to return bytes instead.
+     * 
+     * Places characters representing the integer i into the character array buf. The characters are
+     * placed into the buffer backwards starting with the least significant digit at the specified
+     * index (exclusive), and working backwards from there.
+     *
+     * Will fail if i == Long.MIN_VALUE
+     */
+    protected static void getBytes(long i, final int index, final byte[] buf) {
+        long q;
+        int r;
+        int charPos = index;
+        char sign = 0;
+
+        if (i < 0) {
+            sign = '-';
+            i = -i;
+        }
+
+        // Get 2 digits/iteration using longs until quotient fits into an int
+        while (i > Integer.MAX_VALUE) {
+            q = i / 100;
+            // really: r = i - (q * 100);
+            r = (int) (i - ((q << 6) + (q << 5) + (q << 2)));
+            i = q;
+            buf[--charPos] = DigitOnes[r];
+            buf[--charPos] = DigitTens[r];
+        }
+
+        // Get 2 digits/iteration using ints
+        int q2;
+        int i2 = (int) i;
+        while (i2 >= 65536) {
+            q2 = i2 / 100;
+            // really: r = i2 - (q * 100);
+            r = i2 - ((q2 << 6) + (q2 << 5) + (q2 << 2));
+            i2 = q2;
+            buf[--charPos] = DigitOnes[r];
+            buf[--charPos] = DigitTens[r];
+        }
+
+        // Fall thru to fast mode for smaller numbers
+        // assert(i2 <= 65536, i2);
+        for (;;) {
+            q2 = i2 * 52429 >>> 16 + 3;
+            r = i2 - ((q2 << 3) + (q2 << 1)); // r = i2-(q2*10) ...
+            buf[--charPos] = digits[r];
+            i2 = q2;
+            if (i2 == 0) {
+                break;
+            }
+        }
+        if (sign != 0) {
+            buf[--charPos] = (byte) sign;
+        }
+    }
+
+    /**
+     * Find out how many characters it would take to represent the value as a string.
+     * 
+     * @param value
+     * @return
+     */
+    public static int stringSizeOf(final long value) {
+        return value < 0 ? stringSize(-value) + 1 : stringSize(value);
+    }
+
+    // Requires positive x
+    protected static int stringSize(final long x) {
+        long p = 10;
+        for (int i = 1; i < 19; i++) {
+            if (x < p) {
+                return i;
+            }
+            p = 10 * p;
+        }
+        return 19;
+    }
+
 
 }

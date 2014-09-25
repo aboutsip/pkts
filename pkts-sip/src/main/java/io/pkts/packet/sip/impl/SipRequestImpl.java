@@ -13,6 +13,7 @@ import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.CallIdHeader;
 import io.pkts.packet.sip.header.FromHeader;
 import io.pkts.packet.sip.header.MaxForwardsHeader;
+import io.pkts.packet.sip.header.RouteHeader;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
@@ -54,6 +55,26 @@ public final class SipRequestImpl extends SipMessageImpl implements SipRequest {
     public URI getRequestUri() throws SipParseException {
         return getRequestLine().getRequestUri();
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public RouteHeader popRouteHeader() {
+        final SipHeader header = popHeader(RouteHeader.NAME);
+        if (header instanceof RouteHeader) {
+            return (RouteHeader) header;
+        }
+
+        if (header == null) {
+            return null;
+        }
+
+
+        final Buffer buffer = header.getValue();
+        return RouteHeader.frame(buffer);
+    }
+
 
     @Override
     public SipRequest toRequest() throws ClassCastException {

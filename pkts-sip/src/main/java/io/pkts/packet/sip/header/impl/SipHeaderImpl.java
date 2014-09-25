@@ -9,6 +9,8 @@ import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.impl.SipParser;
 
+import java.util.function.Function;
+
 
 /**
  * @author jonas@jonasborjesson.com
@@ -56,6 +58,18 @@ public class SipHeaderImpl implements SipHeader {
         // Subclasses should override this method and
         // check that everything is ok...
 
+    }
+
+    /**
+     * If this method actually gets called it means that we are the {@inheritDoc}
+     */
+    @Override
+    public SipHeader ensure() {
+        final Function<SipHeader, ? extends SipHeader> framer = SipParser.framers.get(this.name);
+        if (framer != null) {
+            return framer.apply(this);
+        }
+        return this;
     }
 
     @Override

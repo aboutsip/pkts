@@ -3,42 +3,36 @@
  */
 package io.pkts.packet.sip.header.impl;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.SipParseException;
-import io.pkts.packet.sip.header.impl.AddressParametersHeader;
-import io.pkts.packet.sip.header.impl.ToHeaderImpl;
+import io.pkts.packet.sip.header.ToHeader;
+import io.pkts.packet.sip.header.ToHeader.Builder;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Test;
 
 
 /**
+ * Really the same as the other {@link ToHeaderImplTest} but here we are using the factory method
+ * from the {@link ToHeader} directly instead.
+ * 
  * @author jonas@jonasborjesson.com
  */
 public class ToHeaderTest extends AddressParameterHeadersTestBase {
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
+    public AddressParametersHeaderImpl frameHeader(final Buffer buffer) throws SipParseException {
+        return (ToHeaderImpl) ToHeader.frame(buffer);
     }
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @Override
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
+    @Test
+    public void testCreateToHeader() {
+        final Builder builder = ToHeader.with();
+        builder.host("hello.com");
+        final ToHeader to = builder.build();
+        assertThat(to.toString(), is("To: <sip:hello.com>"));
+        assertThat(to.getAddress().getURI().toString(), is("sip:hello.com"));
     }
-
-    @Override
-    public AddressParametersHeader frameHeader(final Buffer buffer) throws SipParseException {
-        return (ToHeaderImpl) ToHeaderImpl.frame(buffer);
-    }
-
 
 }

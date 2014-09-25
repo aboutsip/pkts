@@ -9,10 +9,8 @@ import static org.junit.Assert.assertThat;
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
 import io.pkts.buffer.Buffer;
-import io.pkts.buffer.Buffers;
-import io.pkts.packet.sip.header.HeaderFactory;
+import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.ViaHeader;
-import io.pkts.packet.sip.header.impl.HeaderFactoryImpl;
 
 import java.util.List;
 
@@ -24,8 +22,6 @@ import org.junit.Test;
  * @author jonas@jonasborjesson.com
  */
 public class SipMessageImplTest extends PktsTestBase {
-
-    private final HeaderFactory headerFactory = new HeaderFactoryImpl();
 
     /**
      * Some default Via values we will be using for testing
@@ -167,6 +163,14 @@ public class SipMessageImplTest extends PktsTestBase {
         }
     }
 
+    @Test
+    public void testCSeqHeader() throws Exception {
+        final SipRequest request = (SipRequest) parseMessage(RawData.sipInvite);
+        final CSeqHeader cseq = request.getCSeqHeader();
+        assertThat(cseq.getSeqNumber(), is(1L));
+        assertThat(cseq.getMethod().toString(), is("INVITE"));
+    }
+
     /**
      * Make sure that all our Via-headers can be modified the way we need it.
      */
@@ -187,8 +191,9 @@ public class SipMessageImplTest extends PktsTestBase {
 
     private void assertTopMostVia(final SipMessage msg, final String host, final int port, final String transport)
             throws Exception {
-        final ViaHeader via = this.headerFactory.createViaHeader(Buffers.wrap(host), port, Buffers.wrap(transport),
-                null);
+
+        final ViaHeader via =
+                ViaHeader.with().host(host).port(port).branch(ViaHeader.generateBranch()).transport(transport).build();
         msg.addHeaderFirst(via);
         final ViaHeader topMostVia = msg.getViaHeader();
         assertThat(topMostVia.getBranch(), not((Buffer) null));

@@ -8,7 +8,7 @@ import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.SipResponse;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.SipHeader;
-import io.pkts.packet.sip.header.impl.CSeqHeaderImpl;
+import io.pkts.packet.sip.header.ViaHeader;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -39,11 +39,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
      */
     @Override
     public Buffer getMethod() throws SipParseException {
-        if (this.cseq == null) {
-            final SipHeader header = getHeader(CSEQ_HEADER);
-            this.cseq = CSeqHeaderImpl.parseValue(header.getValue());
-        }
-        return this.cseq.getMethod();
+        return getCSeqHeader().getMethod();
     }
 
     /**
@@ -60,6 +56,14 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
     @Override
     public boolean isProvisional() {
         return getStatus() / 100 == 1;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isFinal() {
+        return getStatus() >= 200;
     }
 
     /**
@@ -134,6 +138,22 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
     @Override
     public SipResponse clone() {
         throw new RuntimeException("Sorry, not implemented right now");
+    }
+
+    @Override
+    public ViaHeader popViaHeader() throws SipParseException {
+        final SipHeader header = popHeader(ViaHeader.NAME);
+        if (header instanceof ViaHeader) {
+            return (ViaHeader) header;
+        }
+
+        if (header == null) {
+            return null;
+        }
+
+
+        final Buffer buffer = header.getValue();
+        return ViaHeader.frame(buffer);
     }
 
 }

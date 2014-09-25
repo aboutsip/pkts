@@ -13,7 +13,7 @@ import io.pkts.packet.sip.address.Address;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.header.FromHeader;
 import io.pkts.packet.sip.header.ToHeader;
-import io.pkts.packet.sip.header.impl.AddressParametersHeader;
+import io.pkts.packet.sip.header.impl.AddressParametersHeaderImpl;
 
 import org.junit.After;
 import org.junit.Before;
@@ -22,7 +22,7 @@ import org.junit.Test;
 
 /**
  * The test base for testing all headers that are considered to be
- * {@link AddressParametersHeader}s, which include headers such as
+ * {@link AddressParametersHeaderImpl}s, which include headers such as
  * {@link ToHeader}, {@link FromHeader} etc.
  * 
  * @author jonas@jonasborjesson.com
@@ -49,9 +49,9 @@ public abstract class AddressParameterHeadersTestBase {
      * @param buffer
      * @return
      */
-    public abstract AddressParametersHeader frameHeader(final Buffer buffer) throws SipParseException;
+    public abstract AddressParametersHeaderImpl frameHeader(final Buffer buffer) throws SipParseException;
 
-    private void assertGetBytes(final String expected, final AddressParametersHeader header) {
+    private void assertGetBytes(final String expected, final AddressParametersHeaderImpl header) {
         final Buffer copy = Buffers.createBuffer(100);
         header.getBytes(copy);
         assertThat(copy.toString(), is(header.getName().toString() + ": " + expected));
@@ -65,7 +65,7 @@ public abstract class AddressParameterHeadersTestBase {
     @Test
     public void testParameters() throws Exception {
         String s = "sip:alice@example.com;hello=world;apa=monkey";
-        AddressParametersHeader to = frameHeader(Buffers.wrap(s));
+        AddressParametersHeaderImpl to = frameHeader(Buffers.wrap(s));
         assertThat(to.getParameter("hello").toString(), is("world"));
         assertThat(to.getParameter("apa").toString(), is("monkey"));
         assertGetBytes(s, to);
@@ -111,7 +111,7 @@ public abstract class AddressParameterHeadersTestBase {
      * @throws Exception
      */
     public void testGetTag() throws Exception {
-        AddressParametersHeader to = frameHeader(Buffers.wrap("sip:alice@example.com;hello=world;apa=monkey"));
+        AddressParametersHeaderImpl to = frameHeader(Buffers.wrap("sip:alice@example.com;hello=world;apa=monkey"));
         if (to instanceof ToHeader) {
             assertThat(to.getName().toString(), is("To"));
             assertThat(((ToHeader) to).getTag(), is((Buffer) null));
@@ -143,8 +143,8 @@ public abstract class AddressParameterHeadersTestBase {
      */
     @Test
     public void testClone() throws Exception {
-        final AddressParametersHeader header = frameHeader(Buffers.wrap("sip:alice@example.com"));
-        final AddressParametersHeader clone = (AddressParametersHeader) header.clone();
+        final AddressParametersHeaderImpl header = frameHeader(Buffers.wrap("sip:alice@example.com"));
+        final AddressParametersHeaderImpl clone = (AddressParametersHeaderImpl) header.clone();
         assertThat(header.toString(), is(clone.toString()));
         final Address a1 = header.getAddress();
         final Address a2 = clone.getAddress();
@@ -164,7 +164,7 @@ public abstract class AddressParameterHeadersTestBase {
      */
     @Test
     public void testGetAddress() throws Exception {
-        AddressParametersHeader to = frameHeader(Buffers.wrap("sip:alice@example.com"));
+        AddressParametersHeaderImpl to = frameHeader(Buffers.wrap("sip:alice@example.com"));
         assertThat(to.getAddress(), not((Address) null));
         assertThat(to.getAddress().getDisplayName().isEmpty(), is(true));
 

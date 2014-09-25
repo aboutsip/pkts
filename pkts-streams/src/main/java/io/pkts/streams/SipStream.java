@@ -3,6 +3,7 @@ package io.pkts.streams;
 import io.pkts.frame.PcapGlobalHeader;
 import io.pkts.packet.sip.SipPacket;
 import io.pkts.packet.sip.SipParseException;
+import io.pkts.sdp.SDP;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -40,14 +41,37 @@ public interface SipStream extends Stream<SipPacket> {
     long getPostDialDelay() throws SipParseException;
 
     /**
-     * Get the identifier used for grouping the {@link SipPacket}s together.
-     * Currently, this is the same as the call-id.
+     * Convenience method for returning the {@link SDP} found on the first INVITE request. Note, if
+     * you want to find the SDP for a re-invite, then you will have to {@link #getPackets()} and
+     * find the particular INVITE you are looking for.
      * 
-     * Note, perhaps this should be a dialog id instead since ideally that is
-     * what we should be using for grouping together {@link SipStream}s. On the
-     * other hand, using the dialog-id as an identifier can make things messy
-     * for forked dialogs etc. This works and keeps things simple so we will
-     * stick with it for now.
+     * @return the SDP found in the first INVITE request or null if no INVITE was found in the
+     *         stream or if that INVITE simply didn't contain an SDP
+     * @throws SipParseException
+     */
+    SDP getInviteSDP() throws SipParseException;
+
+    /**
+     * Convenience method for returning the {@link SDP} found on the 200 OK to the first INVITE
+     * request.
+     * 
+     * Note, if you want to find the SDP for 200 OK to a re-invite, then you will have to
+     * {@link #getPackets()} and find the particular response you are looking for.
+     * 
+     * @return the SDP found in the first INVITE request or null if no INVITE was found in the
+     *         stream or if that INVITE simply didn't contain an SDP
+     * @throws SipParseException
+     */
+    SDP get200OkSDP() throws SipParseException;
+
+    /**
+     * Get the identifier used for grouping the {@link SipPacket}s together. Currently, this is the
+     * same as the call-id.
+     * 
+     * Note, perhaps this should be a dialog id instead since ideally that is what we should be
+     * using for grouping together {@link SipStream}s. On the other hand, using the dialog-id as an
+     * identifier can make things messy for forked dialogs etc. This works and keeps things simple
+     * so we will stick with it for now.
      * 
      * @return
      */

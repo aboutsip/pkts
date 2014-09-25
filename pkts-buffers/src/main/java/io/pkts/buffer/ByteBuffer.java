@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 
 /**
  * A buffer directly backed by a byte-array
@@ -255,20 +254,49 @@ public final class ByteBuffer extends AbstractBuffer {
      * {@inheritDoc}
      */
     @Override
-    public boolean equals(final Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (this == obj) {
+    public boolean equals(final Object other) {
+        return internalEquals(false, other);
+    }
+
+    @Override
+    public boolean equalsIgnoreCase(final Object other) {
+        return internalEquals(true, other);
+    }
+
+    private boolean internalEquals(final boolean ignoreCase, final Object other) {
+        try {
+            if (this == other) {
+                return true;
+            }
+            final ByteBuffer b = (ByteBuffer) other;
+            if (getReadableBytes() != b.getReadableBytes()) {
+                return false;
+            }
+
+
+            final int length = getReadableBytes();
+            for (int i = 0; i < length; ++i) {
+                final byte a1 = this.buffer[this.lowerBoundary + i];
+                final byte b1 = b.buffer[b.lowerBoundary + i];
+                if (a1 != b1) {
+                    if (ignoreCase) {
+                        // lazy! Fix this and also this won't really work
+                        // for UTF-8 I believe. Def not for UTF-16 but good
+                        // enough for now.
+                        final String s1 = new String(new byte[] {a1});
+                        final String s2 = new String(new byte[] {b1});
+                        if (s1.equalsIgnoreCase(s2)) {
+                            continue;
+                        }
+                    }
+                    return false;
+                }
+            }
+
             return true;
-        }
-        if (getClass() != obj.getClass()) {
+        } catch (NullPointerException | ClassCastException e) {
             return false;
         }
-        final ByteBuffer other = (ByteBuffer) obj;
-        // TODO: compare them byte by byte "manually" instead of having to
-        // copy them first.
-        return Arrays.equals(getArray(), other.getArray());
     }
 
     /**
@@ -350,13 +378,13 @@ public final class ByteBuffer extends AbstractBuffer {
 
     @Override
     public void write(final String s) throws IndexOutOfBoundsException, WriteNotSupportedException,
-            UnsupportedEncodingException {
+    UnsupportedEncodingException {
         write(s, "UTF-8");
     }
 
     @Override
     public void write(final String s, final String charset) throws IndexOutOfBoundsException,
-            WriteNotSupportedException, UnsupportedEncodingException {
+    WriteNotSupportedException, UnsupportedEncodingException {
         final byte[] bytes = s.getBytes(charset);
         if (!checkWritableBytesSafe(bytes.length)) {
             throw new IndexOutOfBoundsException("Unable to write the entire String to this buffer. Nothing was written");
@@ -402,7 +430,34 @@ public final class ByteBuffer extends AbstractBuffer {
     }
 
     @Override
+    public void write(final long value) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        if (!checkWritableBytesSafe(8)) {
+            throw new IndexOutOfBoundsException("Unable to write the entire String to this buffer. Nothing was written");
+        }
+        final int index = this.lowerBoundary + this.writerIndex;
+        this.buffer[index + 0] = (byte) (value >>> 56);
+        this.buffer[index + 1] = (byte) (value >>> 48);
+        this.buffer[index + 2] = (byte) (value >>> 40);
+        this.buffer[index + 3] = (byte) (value >>> 32);
+        this.buffer[index + 4] = (byte) (value >>> 24);
+        this.buffer[index + 5] = (byte) (value >>> 16);
+        this.buffer[index + 6] = (byte) (value >>> 8);
+        this.buffer[index + 7] = (byte) value;
+        this.writerIndex += 8;
+    }
+
+    @Override
     public void writeAsString(final int value) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        final int size = value < 0 ? Buffers.stringSize(-value) + 1 : Buffers.stringSize(value);
+        if (!checkWritableBytesSafe(size)) {
+            throw new IndexOutOfBoundsException();
+        }
+        Buffers.getBytes(value, this.lowerBoundary + this.writerIndex + size, this.buffer);
+        this.writerIndex += size;
+    }
+
+    @Override
+    public void writeAsString(final long value) throws IndexOutOfBoundsException, WriteNotSupportedException {
         final int size = value < 0 ? Buffers.stringSize(-value) + 1 : Buffers.stringSize(value);
         if (!checkWritableBytesSafe(size)) {
             throw new IndexOutOfBoundsException();

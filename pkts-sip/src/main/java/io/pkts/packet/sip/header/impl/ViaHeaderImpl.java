@@ -3,6 +3,8 @@
  */
 package io.pkts.packet.sip.header.impl;
 
+import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
+import gov.nist.javax.sip.header.HeaderFactoryImpl;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
@@ -14,7 +16,7 @@ import io.pkts.packet.sip.impl.SipParser;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
  * Not extending the {@link ParametersImpl} because the way we parse the
@@ -63,7 +65,7 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
     /**
      * Constructor mainly used by the {@link #frame(Buffer)} method.
      */
-    protected ViaHeaderImpl(final Buffer original, final Buffer transport, final Buffer host, final Buffer port,
+    public ViaHeaderImpl(final Buffer original, final Buffer transport, final Buffer host, final Buffer port,
             final List<Buffer[]> params) {
         this.original = original;
         this.transport = transport;
@@ -84,21 +86,18 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
      * @param port
      * @param branch
      */
-    protected ViaHeaderImpl(final Buffer transport, final Buffer host, final int port, final Buffer branch) {
-        assert port > 0;
+    public ViaHeaderImpl(final Buffer transport, final Buffer host, final int port, final Buffer branch) {
+        assert port >= -1;
         this.original = null;
         this.transport = transport;
         this.port = port;
         this.host = host;
         this.rawPort = null;
-        this.indexOfBranch = 0;
         this.params = new ArrayList<Buffer[]>();
-        this.params.add(new Buffer[] { BRANCH, branch != null ? branch : generateBranch() });
-    }
-
-    private Buffer generateBranch() {
-        // TODO: implement something else...
-        return Buffers.wrap("z9hG4bK-" + UUID.randomUUID().toString());
+        if (branch != null) {
+            this.indexOfBranch = 0;
+            this.params.add(new Buffer[] {BRANCH, branch});
+        }
     }
 
     /**
@@ -123,18 +122,21 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
     }
 
     @Override
-    public Buffer setParameter(final Buffer name, final Buffer value) throws SipParseException,
-            IllegalArgumentException {
+    public void setParameter(final Buffer name, final Buffer value) throws SipParseException,
+    IllegalArgumentException {
         final int index = findParameter(name);
-        Buffer previousValue = null;
         if (index == -1) {
             this.params.add(new Buffer[] { name, value });
         } else {
-            previousValue = this.params.get(index)[1];
             this.params.get(index)[1] = value;
         }
+    }
 
-        return previousValue;
+    @Override
+    public void setParameter(final Buffer name, final Supplier<Buffer> value) throws SipParseException,
+    IllegalArgumentException {
+        assertNotNull(value);
+        setParameter(name, value.get());
     }
 
     /**
@@ -160,11 +162,9 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
      */
     @Override
     public Buffer getValue() {
-        // TODO: we can use the original in case the value hasn't changed.
-        // However, if it has, then we can re-build one through the getBytes
-        // stuff
-        // and store it for future reference.
-        return this.original;
+        final Buffer buffer = Buffers.createBuffer(1024);
+        transferValue(buffer);
+        return buffer;
     }
 
     @Override
@@ -276,68 +276,36 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
     }
 
     @Override
-    public boolean isUDP() {
-        try {
-            final Buffer t = this.transport;
-            return t.capacity() == 3 && t.getByte(0) == 'U' && t.getByte(1) == 'D' && t.getByte(2) == 'P';
-        } catch (final IOException e) {
-            throw new RuntimeException("Got IOException when examining the transport. Should not be possible", e);
+    public void setBranch(final Buffer branch) {
+        if (this.indexOfBranch == -1) {
+            this.indexOfBranch = findParameter(BRANCH);
         }
+        if (this.indexOfBranch == -1) {
+            this.indexOfBranch = this.params.size();
+            this.params.add(new Buffer[] {BRANCH, branch});
+        } else {
+            this.params.get(this.indexOfBranch)[1] = branch;
+        }
+    }
+
+    @Override
+    public boolean isUDP() {
+        return SipParser.isUDP(this.transport);
     }
 
     @Override
     public boolean isTCP() {
-        try {
-            final Buffer t = this.transport;
-            return t.capacity() == 3 && t.getByte(0) == 'T' && t.getByte(1) == 'C' && t.getByte(2) == 'P';
-        } catch (final IOException e) {
-            throw new RuntimeException("Got IOException when examining the transport. Should not be possible", e);
-        }
+        return SipParser.isTCP(this.transport);
     }
 
     @Override
     public boolean isTLS() {
-        try {
-            final Buffer t = this.transport;
-            return t.capacity() == 3 && t.getByte(0) == 'T' && t.getByte(1) == 'L' && t.getByte(2) == 'S';
-        } catch (final IOException e) {
-            throw new RuntimeException("Got IOException when examining the transport. Should not be possible", e);
-        }
+        return SipParser.isTLS(this.transport);
     }
 
     @Override
     public boolean isSCTP() {
-        try {
-            final Buffer t = this.transport;
-            return t.capacity() == 4 && t.getByte(0) == 'S' && t.getByte(1) == 'C' && t.getByte(2) == 'T'
-                    && t.getByte(3) == 'P';
-        } catch (final IOException e) {
-            throw new RuntimeException("Got IOException when examining the transport. Should not be possible", e);
-        }
-    }
-
-    /**
-     * Frame a buffer into a {@link ViaHeader}.
-     * 
-     * NOTE, this method assumes that you have already stripped off the header
-     * name "Via".
-     * 
-     * @param buffer
-     * @return
-     * @throws SipParseException
-     */
-    public static ViaHeader frame(final Buffer buffer) throws SipParseException {
-        try {
-            final Buffer original = buffer.slice();
-            final Object[] result = SipParser.consumeVia(buffer);
-            final Buffer transport = (Buffer) result[0];
-            final Buffer host = (Buffer) result[1];
-            final Buffer port = result[2] == null ? null : (Buffer) result[2];
-            final List<Buffer[]> params = (List<Buffer[]>) result[3];
-            return new ViaHeaderImpl(original, transport, host, port, params);
-        } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to frame the Via header due to IOException", e);
-        }
+        return SipParser.isSCTP(this.transport);
     }
 
     /**
@@ -394,13 +362,20 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
 
     @Override
     public ViaHeader clone() {
+        // TODO: probably inefficient and could also be plain wrong in that
+        // we may not generate a large enough buffer (probably less likely though).
         final Buffer buffer = Buffers.createBuffer(1024);
         transferValue(buffer);
         try {
-            return ViaHeaderImpl.frame(buffer);
+            return ViaHeader.frame(buffer);
         } catch (final SipParseException e) {
             throw new RuntimeException("Unable to clone the Via-header", e);
         }
+    }
+
+    @Override
+    public ViaHeader ensure() {
+        return this;
     }
 
 }

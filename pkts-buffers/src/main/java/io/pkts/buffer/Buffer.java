@@ -456,6 +456,8 @@ public interface Buffer extends Cloneable {
 
     void write(int value) throws IndexOutOfBoundsException, WriteNotSupportedException;
 
+    void write(long value) throws IndexOutOfBoundsException, WriteNotSupportedException;
+
     /**
      * Same as {@link Buffer#write(String, String)} where the charset is set to
      * "UTF-8"
@@ -483,23 +485,32 @@ public interface Buffer extends Cloneable {
     void writeAsString(int value) throws IndexOutOfBoundsException, WriteNotSupportedException;
 
     /**
-     * Write a string to this buffer using the specified charset to convert the
-     * String into bytes. The <code>writerInxex</code> of this buffer will be
-     * increased with the corresponding number of bytes.
+     * Write the long value to this {@link Buffer} as a String.
      * 
-     * Note, either the entire string is written to this buffer or if it doesn't
-     * fit then nothing is written to this buffer.
+     * @param value the value that will be converted to a String before being written to this
+     *        {@link Buffer}.
+     * @throws IndexOutOfBoundsException
+     * @throws WriteNotSupportedException
+     */
+    void writeAsString(long value) throws IndexOutOfBoundsException, WriteNotSupportedException;
+
+    /**
+     * Write a string to this buffer using the specified charset to convert the String into bytes.
+     * The <code>writerInxex</code> of this buffer will be increased with the corresponding number
+     * of bytes.
+     * 
+     * Note, either the entire string is written to this buffer or if it doesn't fit then nothing is
+     * written to this buffer.
      * 
      * @param s
      * @param charset
-     * @throws IndexOutOfBoundsException
-     *             in case we cannot write entire String to this {@link Buffer}.
+     * @throws IndexOutOfBoundsException in case we cannot write entire String to this
+     *         {@link Buffer}.
      * @throws WriteNotSupportedException
-     * @throws UnsupportedEncodingException
-     *             in case the specified charset is not supported
+     * @throws UnsupportedEncodingException in case the specified charset is not supported
      */
     void write(final String s, String charset) throws IndexOutOfBoundsException, WriteNotSupportedException,
-            UnsupportedEncodingException;
+    UnsupportedEncodingException;
 
     /**
      * Check whether to buffers are considered to be equal.
@@ -512,6 +523,8 @@ public interface Buffer extends Cloneable {
      */
     @Override
     boolean equals(Object b);
+
+    boolean equalsIgnoreCase(Object b);
 
     @Override
     int hashCode();

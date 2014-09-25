@@ -20,16 +20,6 @@ import io.pkts.packet.sip.header.RouteHeader;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
-import io.pkts.packet.sip.header.impl.CSeqHeaderImpl;
-import io.pkts.packet.sip.header.impl.CallIdHeaderImpl;
-import io.pkts.packet.sip.header.impl.ContactHeaderImpl;
-import io.pkts.packet.sip.header.impl.ContentTypeHeaderImpl;
-import io.pkts.packet.sip.header.impl.FromHeaderImpl;
-import io.pkts.packet.sip.header.impl.MaxForwardsHeaderImpl;
-import io.pkts.packet.sip.header.impl.RecordRouteHeaderImpl;
-import io.pkts.packet.sip.header.impl.RouteHeaderImpl;
-import io.pkts.packet.sip.header.impl.ToHeaderImpl;
-import io.pkts.packet.sip.header.impl.ViaHeaderImpl;
 import io.pkts.sdp.SDPFactory;
 import io.pkts.sdp.SdpException;
 import io.pkts.sdp.SdpParseException;
@@ -41,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -75,12 +66,6 @@ public abstract class SipMessageImpl implements SipMessage {
     private final Buffer headers;
 
     /**
-     * Stupid, just to fix it quickly and since a sliced buffer is kind of cheap
-     * perhaps it is ok for now
-     */
-    private Buffer headersCopy;
-
-    /**
      * The payload, which may be null
      */
     private final Buffer payload;
@@ -109,9 +94,6 @@ public abstract class SipMessageImpl implements SipMessage {
     public SipMessageImpl(final Buffer rawInitialBuffer, final Buffer headers, final Buffer payload) {
         this.rawInitialLine = rawInitialBuffer;
         this.headers = headers;
-        if (headers != null) {
-            this.headersCopy = headers.slice();
-        }
         this.payload = payload;
     }
 
@@ -128,9 +110,6 @@ public abstract class SipMessageImpl implements SipMessage {
         this.initialLine = initialLine;
         this.rawInitialLine = null;
         this.headers = headers;
-        if (headers != null) {
-            this.headersCopy = headers.slice();
-        }
         this.payload = payload;
     }
 
@@ -196,14 +175,31 @@ public abstract class SipMessageImpl implements SipMessage {
         return (SipResponseLine) getInitialLineInternal();
     }
 
+    public SipHeader getSipHeader(final Buffer name) {
+        return getHeaderInternal(name, true);
+    }
+
     /**
-     * {@inheritDoc}
+     * 
+     * @param headerName
+     * @param frame flag indicating whether or not we should make sure that the header has been
+     *        framed to its "real" type.
+     * @return
+     * @throws SipParseException
      */
-    @Override
-    public SipHeader getHeader(final Buffer headerName) throws SipParseException {
+    private SipHeader getHeaderInternal(final Buffer headerName, final boolean frame) throws SipParseException {
         List<SipHeader> headers = this.parsedHeaders.get(headerName);
         final SipHeader h = headers == null || headers.isEmpty() ? null : headers.get(0);
         if (h != null) {
+            if (frame) {
+                final SipHeader framed = h.ensure();
+                if (framed != h) {
+                    // if the two references are different that means that we did
+                    // indeed re-frame the header to a more specific header type.
+                    headers.set(0, framed);
+                    return framed;
+                }
+            }
             return h;
         }
 
@@ -222,13 +218,55 @@ public abstract class SipMessageImpl implements SipMessage {
             }
 
             if (currentHeaderName.equals(headerName)) {
-                return nextHeaders.get(0);
+                final SipHeader header = nextHeaders.get(0);
+                if (frame) {
+                    final SipHeader framed = header.ensure();
+                    if (framed != header) {
+                        nextHeaders.set(0, framed);
+                    }
+                    return framed;
+                }
+                return header;
             }
         }
 
         // didn't find the header that was requested
         return null;
+
     }
+
+    private SipHeader ensureHeaderIsFramed(final SipHeader header) {
+        final Function<SipHeader, ? extends SipHeader> function = SipParser.framers.get(header.getName());
+        if (function != null) {
+            return function.apply(header);
+        }
+        return header;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SipHeader getHeader(final Buffer headerName) throws SipParseException {
+        return getHeaderInternal(headerName, false);
+    }
+
+    @Override
+    public SipHeader popHeader(final Buffer headerName) throws SipParseException {
+        final SipHeader header = getHeader(headerName);
+        if (header == null) {
+            return null;
+        }
+
+        final List<SipHeader> headers = this.parsedHeaders.get(headerName);
+        headers.remove(0);
+        if (headers.isEmpty()) {
+            this.parsedHeaders.remove(headerName);
+        }
+
+        return header;
+    }
+
 
     @Override
     public void addHeader(final SipHeader header) {
@@ -301,16 +339,8 @@ public abstract class SipMessageImpl implements SipMessage {
      */
     @Override
     public FromHeader getFromHeader() throws SipParseException {
-        final SipHeader header = getHeader(FromHeader.NAME);
-        if (header instanceof FromHeader) {
-            return (FromHeader) header;
-        }
-
-        final Buffer buffer = header.getValue();
-        final FromHeader from = FromHeaderImpl.frame(buffer);
-        final List<SipHeader> headers = this.parsedHeaders.get(from.getName());
-        headers.set(0, from);
-        return from;
+        final SipHeader header = getHeaderInternal(FromHeader.NAME, true);
+        return (FromHeader) header;
     }
 
     /**
@@ -318,20 +348,8 @@ public abstract class SipMessageImpl implements SipMessage {
      */
     @Override
     public ViaHeader getViaHeader() throws SipParseException {
-        final SipHeader header = getHeader(ViaHeader.NAME);
-        if (header instanceof ViaHeader) {
-            return (ViaHeader) header;
-        }
-
-        if (header == null) {
-            return null;
-        }
-
-        final Buffer buffer = header.getValue();
-        final ViaHeader via = ViaHeaderImpl.frame(buffer);
-        final List<SipHeader> headers = this.parsedHeaders.get(via.getName());
-        headers.set(0, via);
-        return via;
+        final SipHeader header = getHeaderInternal(ViaHeader.NAME, true);
+        return (ViaHeader) header;
     }
 
     @Override
@@ -348,7 +366,7 @@ public abstract class SipMessageImpl implements SipMessage {
                 vias.add((ViaHeader) header);
             } else {
                 final Buffer buffer = header.getValue();
-                final ViaHeader via = ViaHeaderImpl.frame(buffer);
+                final ViaHeader via = ViaHeader.frame(buffer);
                 headers.set(i, via);
                 vias.add(via);
             }
@@ -370,7 +388,7 @@ public abstract class SipMessageImpl implements SipMessage {
                 routes.add((RouteHeader) header);
             } else {
                 final Buffer buffer = header.getValue();
-                final RouteHeader route = RouteHeaderImpl.frame(buffer);
+                final RouteHeader route = RouteHeader.frame(buffer);
                 headers.set(i, route);
                 routes.add(route);
             }
@@ -383,20 +401,8 @@ public abstract class SipMessageImpl implements SipMessage {
      */
     @Override
     public RecordRouteHeader getRecordRouteHeader() throws SipParseException {
-        final SipHeader header = getHeader(RecordRouteHeader.NAME);
-        if (header instanceof RecordRouteHeader) {
-            return (RecordRouteHeader) header;
-        }
-
-        if (header == null) {
-            return null;
-        }
-
-        final Buffer buffer = header.getValue();
-        final RecordRouteHeader rr = RecordRouteHeaderImpl.frame(buffer);
-        final List<SipHeader> headers = this.parsedHeaders.get(rr.getName());
-        headers.set(0, rr);
-        return rr;
+        final SipHeader header = getHeaderInternal(RecordRouteHeader.NAME, true);
+        return (RecordRouteHeader) header;
     }
 
     @Override
@@ -413,7 +419,7 @@ public abstract class SipMessageImpl implements SipMessage {
                 recordRoutes.add((RecordRouteHeader) header);
             } else {
                 final Buffer buffer = header.getValue();
-                final RecordRouteHeader rr = RecordRouteHeaderImpl.frame(buffer);
+                final RecordRouteHeader rr = RecordRouteHeader.frame(buffer);
                 headers.set(i, rr);
                 recordRoutes.add(rr);
             }
@@ -426,39 +432,14 @@ public abstract class SipMessageImpl implements SipMessage {
      */
     @Override
     public RouteHeader getRouteHeader() throws SipParseException {
-        final SipHeader header = getHeader(RouteHeader.NAME);
-        if (header instanceof RouteHeader) {
-            return (RouteHeader) header;
-        }
-
-        if (header == null) {
-            return null;
-        }
-
-        final Buffer buffer = header.getValue();
-        final RouteHeader route = RouteHeaderImpl.frame(buffer);
-        final List<SipHeader> headers = this.parsedHeaders.get(route.getName());
-        headers.set(0, route);
-        return route;
+        final SipHeader header = getHeaderInternal(RouteHeader.NAME, true);
+        return (RouteHeader) header;
     }
 
     @Override
     public MaxForwardsHeader getMaxForwards() throws SipParseException {
-        final SipHeader header = getHeader(MaxForwardsHeader.NAME);
-        if (header instanceof MaxForwardsHeader) {
-            return (MaxForwardsHeader) header;
-        }
-
-        if (header == null) {
-            return null;
-        }
-
-        final Buffer buffer = header.getValue();
-        final MaxForwardsHeader max = MaxForwardsHeaderImpl.frame(buffer);
-        final List<SipHeader> headers = this.parsedHeaders.get(max.getName());
-        headers.set(0, max);
-        return max;
-
+        final SipHeader header = getHeaderInternal(MaxForwardsHeader.NAME, true);
+        return (MaxForwardsHeader) header;
     }
 
     /**
@@ -466,34 +447,14 @@ public abstract class SipMessageImpl implements SipMessage {
      */
     @Override
     public ContactHeader getContactHeader() throws SipParseException {
-        final SipHeader header = getHeader(ContactHeader.NAME);
-        if (header instanceof ContactHeader) {
-            return (ContactHeader) header;
-        }
-
-        if (header == null) {
-            return null;
-        }
-
-        final Buffer buffer = header.getValue();
-        final ContactHeader contact = ContactHeaderImpl.frame(buffer);
-        final List<SipHeader> headers = this.parsedHeaders.get(contact.getName());
-        headers.set(0, contact);
-        return contact;
+        final SipHeader header = getHeaderInternal(ContactHeader.NAME, true);
+        return (ContactHeader) header;
     }
 
     @Override
     public ContentTypeHeader getContentTypeHeader() throws SipParseException {
-        final SipHeader header = getHeader(ContentTypeHeader.NAME);
-        if (header instanceof ContentTypeHeader) {
-            return (ContentTypeHeader) header;
-        }
-
-        final Buffer buffer = header.getValue();
-        final ContentTypeHeader ct = ContentTypeHeaderImpl.frame(buffer);
-        final List<SipHeader> headers = this.parsedHeaders.get(ct.getName());
-        headers.set(0, ct);
-        return ct;
+        final SipHeader header = getHeaderInternal(ContentTypeHeader.NAME, true);
+        return (ContentTypeHeader) header;
     }
 
     /**
@@ -501,30 +462,14 @@ public abstract class SipMessageImpl implements SipMessage {
      */
     @Override
     public ToHeader getToHeader() throws SipParseException {
-        final SipHeader header = getHeader(ToHeader.NAME);
-        if (header instanceof ToHeader) {
-            return (ToHeader) header;
-        }
-
-        final Buffer buffer = header.getValue();
-        final ToHeader to = ToHeaderImpl.frame(buffer);
-        final List<SipHeader> headers = this.parsedHeaders.get(to.getName());
-        headers.set(0, to);
-        return to;
+        final SipHeader header = getHeaderInternal(ToHeader.NAME, true);
+        return (ToHeader) header;
     }
 
     @Override
     public CSeqHeader getCSeqHeader() throws SipParseException {
-        final SipHeader header = getHeader(CSeqHeader.NAME);
-        if (header instanceof CSeqHeader) {
-            return (CSeqHeader) header;
-        }
-
-        final Buffer buffer = header.getValue();
-        final CSeqHeader cseq = CSeqHeaderImpl.parseValue(buffer);
-        final List<SipHeader> headers = this.parsedHeaders.get(cseq.getName());
-        headers.set(0, cseq);
-        return cseq;
+        final SipHeader header = getHeaderInternal(CSeqHeader.NAME, true);
+        return (CSeqHeader) header;
     }
 
     /**
@@ -532,28 +477,13 @@ public abstract class SipMessageImpl implements SipMessage {
      */
     @Override
     public CallIdHeader getCallIDHeader() throws SipParseException {
-        SipHeader header = getHeader(CallIdHeader.NAME);
-        if (header instanceof CallIdHeader) {
+        final SipHeader header = getHeaderInternal(CallIdHeader.NAME, true);
+        if (header != null) {
             return (CallIdHeader) header;
         }
-        boolean compactForm = false;
 
-        if (header == null) {
-            header = getHeader(CallIdHeader.COMPACT_NAME);
-            if (header != null) {
-                compactForm = true;
-            }
-        }
+        return (CallIdHeader) getHeaderInternal(CallIdHeader.COMPACT_NAME, true);
 
-        if (header == null) {
-            throw new SipParseException(0, "The Call-ID header is missing. Bad SIP message!");
-        }
-
-        final Buffer buffer = header.getValue();
-        final CallIdHeader callId = CallIdHeaderImpl.frame(compactForm, buffer);
-        final List<SipHeader> headers = this.parsedHeaders.get(callId.getName());
-        headers.set(0, callId);
-        return callId;
     }
 
     /**
@@ -590,6 +520,20 @@ public abstract class SipMessageImpl implements SipMessage {
         try {
             return m.getByte(0) == 'I' && m.getByte(1) == 'N' && m.getByte(2) == 'V' && m.getByte(3) == 'I'
                     && m.getByte(4) == 'T' && m.getByte(5) == 'E';
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isRegister() throws SipParseException {
+        final Buffer m = getMethod();
+        try {
+            return m.getByte(0) == 'R' && m.getByte(1) == 'E' && m.getByte(2) == 'G' && m.getByte(3) == 'I'
+                    && m.getByte(4) == 'S' && m.getByte(5) == 'T' && m.getByte(6) == 'E' && m.getByte(7) == 'R';
         } catch (final IOException e) {
             throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
         }

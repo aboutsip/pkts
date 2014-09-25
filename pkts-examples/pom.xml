@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.pkts</groupId>
     <artifactId>pkts-parent</artifactId>
-    <version>0.9.9-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
   </parent>
 
   <name>Pkts Examples</name>
@@ -55,7 +55,7 @@
                 <transformers>
                     <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                     <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                        <mainClass>io.pkts.examples.core.ProcessPcap</mainClass>
+                        <mainClass>io.pkts.examples.streams.HuntForPrivateIPs</mainClass>
                     </transformer>
                 </transformers>
             </configuration>

@@ -4,14 +4,21 @@
 package io.pkts.packet.sip.header.impl;
 
 import io.pkts.buffer.Buffer;
+import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.CallIdHeader;
+
+import java.util.UUID;
 
 /**
  * @author jonas@jonasborjesson.com
  * 
  */
 public final class CallIdHeaderImpl extends SipHeaderImpl implements CallIdHeader {
+
+    public CallIdHeaderImpl() {
+        super(CallIdHeader.NAME, generateCallId());
+    }
 
     public CallIdHeaderImpl(final Buffer value) {
         super(CallIdHeader.NAME, value);
@@ -29,28 +36,18 @@ public final class CallIdHeaderImpl extends SipHeaderImpl implements CallIdHeade
         return getValue();
     }
 
-    public static CallIdHeader frame(final Buffer buffer) throws SipParseException {
-        return new CallIdHeaderImpl(buffer);
-    }
-
-    /**
-     * 
-     * @param compactForm
-     * @param buffer
-     * @return
-     * @throws SipParseException
-     */
-    public static CallIdHeader frame(final boolean compactForm, final Buffer buffer) throws SipParseException {
-        return new CallIdHeaderImpl(compactForm, buffer);
-    }
-
     @Override
     public CallIdHeader clone() {
         try {
-            return CallIdHeaderImpl.frame(getValue().clone());
+            return CallIdHeader.frame(getValue().clone());
         } catch (final SipParseException e) {
             throw new RuntimeException("Unable to clone the CallId-header", e);
         }
+    }
+
+    private static final Buffer generateCallId() {
+        // TODO: implement something else...
+        return Buffers.wrap(UUID.randomUUID().toString());
     }
 
     /**
@@ -90,6 +87,11 @@ public final class CallIdHeaderImpl extends SipHeaderImpl implements CallIdHeade
             return false;
         }
         return true;
+    }
+
+    @Override
+    public CallIdHeader ensure() {
+        return this;
     }
 
 }

@@ -297,7 +297,7 @@ public class EmptyBuffer implements Buffer {
 
     @Override
     public int indexOf(final int maxBytes, final byte... bytes) throws IOException, ByteNotFoundException,
-            IllegalArgumentException {
+    IllegalArgumentException {
         return -1;
     }
 
@@ -323,7 +323,7 @@ public class EmptyBuffer implements Buffer {
 
     @Override
     public void write(final String s, final String charset) throws IndexOutOfBoundsException,
-            WriteNotSupportedException, UnsupportedEncodingException {
+    WriteNotSupportedException, UnsupportedEncodingException {
         throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
     }
 
@@ -333,7 +333,17 @@ public class EmptyBuffer implements Buffer {
     }
 
     @Override
+    public void write(final long value) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+    }
+
+    @Override
     public void writeAsString(final int value) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+    }
+
+    @Override
+    public void writeAsString(final long value) throws IndexOutOfBoundsException, WriteNotSupportedException {
         throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
     }
 
@@ -387,6 +397,19 @@ public class EmptyBuffer implements Buffer {
     @Override
     public void setUnsignedInt(final int index, final long value) throws IndexOutOfBoundsException {
         throw new IndexOutOfBoundsException("This buffer is empty");
+    }
+
+    @Override
+    public boolean equalsIgnoreCase(final Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        try {
+            return ((Buffer) other).isEmpty();
+        } catch (NullPointerException | ClassCastException e) {
+            return false;
+        }
     }
 
 }

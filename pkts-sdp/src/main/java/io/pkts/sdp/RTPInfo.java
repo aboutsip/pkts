@@ -4,6 +4,8 @@
 package io.pkts.sdp;
 
 /**
+ * TODO: need to add the profile as well. voice, video, application etc.
+ * 
  * @author jonas@jonasborjesson.com
  */
 public interface RTPInfo {
@@ -15,6 +17,14 @@ public interface RTPInfo {
      * @return
      */
     String getAddress();
+
+    /**
+     * Get the address as a raw byte array.
+     * 
+     * @return
+     * @throws IllegalArgumentException in case the address is not an IPv4 address
+     */
+    byte[] getRawAddress() throws IllegalArgumentException;
 
     /**
      * Get the media port where we are expected to send media. Typical

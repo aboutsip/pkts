@@ -6,6 +6,10 @@ package io.pkts.packet.sip.header;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.address.Address;
+import io.pkts.packet.sip.header.impl.FromHeaderImpl;
+
+import java.util.Random;
 
 
 /**
@@ -60,7 +64,7 @@ import io.pkts.packet.sip.SipParseException;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface FromHeader extends SipHeader, HeaderAddress, Parameters {
+public interface FromHeader extends AddressParametersHeader {
 
     Buffer NAME = Buffers.wrap("From");
 
@@ -73,6 +77,54 @@ public interface FromHeader extends SipHeader, HeaderAddress, Parameters {
      */
     Buffer getTag() throws SipParseException;
 
+    @Override
     FromHeader clone();
+
+
+    /**
+     * Frame the value as a {@link FromHeader}.
+     * 
+     * @param value
+     * @return
+     * @throws SipParseException in case anything goes wrong while parsing.
+     */
+    public static FromHeader frame(final Buffer buffer) throws SipParseException {
+        final Object[] result = AddressParametersHeader.frame(buffer);
+        return new FromHeaderImpl((Address) result[0], (Buffer) result[1]);
+    }
+
+    /**
+     * Generate a new tag that can be used as a tag parameter for the {@link FromHeader}. A
+     * tag-parameter only has to be unique within the same Call-ID space so therefore it doesn't
+     * have to be cryptographically strong etc.
+     * 
+     * @return
+     */
+    static Buffer generateTag() {
+        // TODO: fix this and move it to a better place.
+        return Buffers.wrap(Integer.toHexString(new Random().nextInt()));
+    }
+
+    static Builder with() {
+        return new Builder();
+    }
+
+    static Builder with(final Address address) throws SipParseException {
+        final Builder builder = new Builder();
+        builder.address(address);
+        return builder;
+    }
+
+    static class Builder extends AddressParametersHeader.Builder<FromHeader> {
+
+        private Builder() {
+            super(NAME);
+        }
+
+        @Override
+        public FromHeader internalBuild(final Address address, final Buffer params) throws SipParseException {
+            return new FromHeaderImpl(address, params);
+        }
+    }
 
 }

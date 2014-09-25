@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.pkts</groupId>
     <artifactId>pkts-parent</artifactId>
-    <version>0.9.9-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
   </parent>
 
   <name>Pkts Streams</name>

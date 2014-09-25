@@ -5,8 +5,8 @@ package io.pkts;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
-import io.pkts.packet.sip.SipFramer;
 import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.sip.impl.SipParser;
 
 import org.junit.After;
 import org.junit.Before;
@@ -57,7 +57,7 @@ public class PktsTestBase {
     }
 
     public SipMessage parseMessage(final Buffer buffer) throws Exception {
-        return SipFramer.frame(buffer);
+        return SipParser.frame(buffer);
     }
 
     public SipMessage parseMessage(final String msg) throws Exception {

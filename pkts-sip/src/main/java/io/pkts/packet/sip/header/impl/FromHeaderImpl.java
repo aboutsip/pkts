@@ -13,7 +13,7 @@ import io.pkts.packet.sip.header.FromHeader;
 /**
  * @author jonas@jonasborjesson.com
  */
-public class FromHeaderImpl extends AddressParametersHeader implements FromHeader {
+public class FromHeaderImpl extends AddressParametersHeaderImpl implements FromHeader {
 
     /**
      * @param name
@@ -32,28 +32,20 @@ public class FromHeaderImpl extends AddressParametersHeader implements FromHeade
         return getParameter(TAG);
     }
 
-    /**
-     * Frame the value as a {@link FromHeader}.
-     * 
-     * @param value
-     * @return
-     * @throws SipParseException
-     *             in case anything goes wrong while parsing.
-     */
-    public static FromHeader frame(final Buffer buffer) throws SipParseException {
-        final Object[] result = AddressParametersHeader.frameAddressParameters(buffer);
-        return new FromHeaderImpl((Address) result[0], (Buffer) result[1]);
-    }
-
     @Override
     public FromHeader clone() {
         final Buffer buffer = Buffers.createBuffer(1024);
         transferValue(buffer);
         try {
-            return FromHeaderImpl.frame(buffer);
+            return FromHeader.frame(buffer);
         } catch (final SipParseException e) {
             throw new RuntimeException("Unable to clone the From-header", e);
         }
+    }
+
+    @Override
+    public FromHeader ensure() {
+        return this;
     }
 
 }

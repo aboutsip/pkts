@@ -8,6 +8,8 @@ package io.pkts.packet.sip;
  */
 public class SipException extends RuntimeException {
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * 
      */

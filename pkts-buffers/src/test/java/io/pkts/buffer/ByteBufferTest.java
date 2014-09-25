@@ -31,7 +31,7 @@ public class ByteBufferTest extends AbstractBufferTest {
     }
 
     @Test
-    public void testWriteAsString() throws Exception {
+    public void testWriteIntAsString() throws Exception {
         final Buffer buffer = Buffers.createBuffer(100);
         buffer.writeAsString(0);
         buffer.write((byte) ' ');
@@ -40,6 +40,19 @@ public class ByteBufferTest extends AbstractBufferTest {
         buffer.writeAsString(100);
         buffer.write((byte) ' ');
         buffer.writeAsString(9712);
+        assertThat(buffer.toString(), is("0 10 100 9712"));
+    }
+
+    @Test
+    public void testWriteLongAsString() throws Exception {
+        final Buffer buffer = Buffers.createBuffer(100);
+        buffer.writeAsString(0L);
+        buffer.write((byte) ' ');
+        buffer.writeAsString(10L);
+        buffer.write((byte) ' ');
+        buffer.writeAsString(100L);
+        buffer.write((byte) ' ');
+        buffer.writeAsString(9712L);
         assertThat(buffer.toString(), is("0 10 100 9712"));
     }
 
@@ -82,7 +95,6 @@ public class ByteBufferTest extends AbstractBufferTest {
 
         assertParseAsIntSliceFirst("hello:5060:asdf", 6, 10, 5060);
         assertParseAsIntSliceFirst("hello:-5:asdf", 6, 8, -5);
-
     }
 
     /**
@@ -115,7 +127,6 @@ public class ByteBufferTest extends AbstractBufferTest {
         buffer.readByte(); // should affect nothing
         final Buffer number = buffer.slice(lowerSlice, upperSlice);
         assertThat(number.parseToInt(), is(expected));
-
     }
 
     private void assertParseAsIntBadInput(final String badNumber) throws IOException {
@@ -129,7 +140,7 @@ public class ByteBufferTest extends AbstractBufferTest {
     }
 
     private void assertParseAsInt(final String number, final int expectedNumber) throws NumberFormatException,
-            IOException {
+    IOException {
         final Buffer buffer = createBuffer(number);
         assertThat(buffer.parseToInt(), is(expectedNumber));
     }
@@ -189,13 +200,37 @@ public class ByteBufferTest extends AbstractBufferTest {
 
     @Test
     public void testEqualsBasicStuff() throws Exception {
-        final Buffer a = createBuffer("hello");
-        final Buffer b = createBuffer("hello");
-        final Buffer c = createBuffer("world");
-        assertThat(a, is(b));
-        assertThat(b, is(a));
-        assertThat(c, is(c));
-        assertThat(c, not(b));
+        assertBufferEquality("hello", "hello", true);
+        assertBufferEquality("hello", "world", false);
+        assertBufferEquality("hello ", "world", false);
+        assertBufferEquality("hello world", "world", false);
+        assertBufferEquality("Hello", "hello", false);
+        assertBufferEquality("h", "h", true);
+    }
+
+    @Test
+    public void testEqualsIgnoreCase() throws Exception {
+        assertBufferEqualityIgnoreCase("Hello", "hello", true);
+        assertBufferEqualityIgnoreCase("this is A lOng string...", "tHis iS a long string...", true);
+        assertBufferEqualityIgnoreCase("Hello", "HEllo", true);
+        assertBufferEqualityIgnoreCase("Hello", "HEllO", true);
+        assertBufferEqualityIgnoreCase("Hello", "HEllO ", false); // space at the end
+        assertBufferEqualityIgnoreCase("123 abC", "123 abc", true);
+        assertBufferEqualityIgnoreCase("123 abC !@#$", "123 ABc !@#$", true);
+    }
+
+    private void assertBufferEqualityIgnoreCase(final String a, final String b, final boolean equals) {
+        final Buffer bufA = createBuffer(a);
+        final Buffer bufB = createBuffer(b);
+        assertThat(bufA.equalsIgnoreCase(bufB), is(equals));
+        assertThat(bufB.equalsIgnoreCase(bufA), is(equals));
+    }
+
+    private void assertBufferEquality(final String a, final String b, final boolean equals) {
+        final Buffer bufA = createBuffer(a);
+        final Buffer bufB = createBuffer(b);
+        assertThat(bufA.equals(bufB), is(equals));
+        assertThat(bufB.equals(bufA), is(equals));
     }
 
     @Test
@@ -449,6 +484,18 @@ public class ByteBufferTest extends AbstractBufferTest {
         final Buffer copy = Buffers.createBuffer(50);
         world.getBytes(0, copy);
         assertThat(copy.toString(), is("world"));
+    }
+
+    @Test
+    public void testWrapLong() throws Exception {
+        assertThat(Buffers.wrap(123L).toString(), is("123"));
+        assertThat(Buffers.wrap(-123L).toString(), is("-123"));
+    }
+
+    @Test
+    public void testWrapInt() throws Exception {
+        assertThat(Buffers.wrap(123).toString(), is("123"));
+        assertThat(Buffers.wrap(-123).toString(), is("-123"));
     }
 
     /**

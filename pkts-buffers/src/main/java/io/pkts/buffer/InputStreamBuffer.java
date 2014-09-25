@@ -482,6 +482,11 @@ public final class InputStreamBuffer extends AbstractBuffer {
         }
     }
 
+    @Override
+    public boolean equalsIgnoreCase(final Object other) {
+        throw new RuntimeException("Sorry, InputStreamBuffer.equalsIgnoreCase isn't implemented yet");
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -535,7 +540,17 @@ public final class InputStreamBuffer extends AbstractBuffer {
     }
 
     @Override
+    public void write(final long value) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        throw new WriteNotSupportedException("Cannot write to an InputStreamBuffer");
+    }
+
+    @Override
     public void writeAsString(final int value) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        throw new WriteNotSupportedException("Cannot write to an InputStreamBuffer");
+    }
+
+    @Override
+    public void writeAsString(final long value) throws IndexOutOfBoundsException, WriteNotSupportedException {
         throw new WriteNotSupportedException("Cannot write to an InputStreamBuffer");
     }
 
