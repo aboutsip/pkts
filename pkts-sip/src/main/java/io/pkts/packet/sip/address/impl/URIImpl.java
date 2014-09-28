@@ -38,4 +38,8 @@ public abstract class URIImpl implements URI {
         return false;
     }
 
+    @Override
+    public abstract URI clone();
+
+
 }

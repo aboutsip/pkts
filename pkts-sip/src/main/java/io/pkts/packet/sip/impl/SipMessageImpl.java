@@ -13,6 +13,7 @@ import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.CallIdHeader;
 import io.pkts.packet.sip.header.ContactHeader;
 import io.pkts.packet.sip.header.ContentTypeHeader;
+import io.pkts.packet.sip.header.ExpiresHeader;
 import io.pkts.packet.sip.header.FromHeader;
 import io.pkts.packet.sip.header.MaxForwardsHeader;
 import io.pkts.packet.sip.header.RecordRouteHeader;
@@ -440,6 +441,15 @@ public abstract class SipMessageImpl implements SipMessage {
     public MaxForwardsHeader getMaxForwards() throws SipParseException {
         final SipHeader header = getHeaderInternal(MaxForwardsHeader.NAME, true);
         return (MaxForwardsHeader) header;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ExpiresHeader getExpiresHeader() throws SipParseException {
+        final SipHeader header = getHeaderInternal(ExpiresHeader.NAME, true);
+        return (ExpiresHeader) header;
     }
 
     /**

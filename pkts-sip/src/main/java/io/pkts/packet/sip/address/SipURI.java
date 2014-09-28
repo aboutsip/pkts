@@ -153,6 +153,24 @@ public interface SipURI extends URI {
     void setParameter(String name, String value) throws SipParseException, IllegalArgumentException;
 
     /**
+     * 
+     * @param name
+     * @param value
+     * @throws SipParseException
+     * @throws IllegalArgumentException
+     */
+    void setParameter(Buffer name, int value) throws SipParseException, IllegalArgumentException;
+
+    /**
+     * 
+     * @param name
+     * @param value
+     * @throws SipParseException
+     * @throws IllegalArgumentException
+     */
+    void setParameter(String name, int value) throws SipParseException, IllegalArgumentException;
+
+    /**
      * See rules for comparing URI's in RFC3261 section 19.1.4.
      * 
      * @param o
@@ -168,6 +186,9 @@ public interface SipURI extends URI {
      * @return
      */
     Buffer toBuffer();
+
+    @Override
+    SipURI clone();
 
     /**
      * Frame a sip or sips-uri, which according to RFC3261 is:
@@ -205,7 +226,7 @@ public interface SipURI extends URI {
             if (b == SipParser.COLON) {
                 final int index = hostPort.getReaderIndex();
                 host = hostPort.slice(0, index - 1); // skip the ':'
-                port = hostPort;
+                port = hostPort.slice();
             }
         }
         if (host == null) {

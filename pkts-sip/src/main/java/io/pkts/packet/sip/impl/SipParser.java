@@ -354,7 +354,11 @@ public class SipParser {
         }
         if (consumeEQUAL(buffer) > 0) {
             // TODO: consume host and quoted string
-            value = consumeToken(buffer);
+            if (isNext(buffer, DOUBLE_QOUTE)) {
+                value = consumeQuotedString(buffer);
+            } else {
+                value = consumeToken(buffer);
+            }
         }
         return new Buffer[] {
                 key, value };

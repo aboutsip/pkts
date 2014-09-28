@@ -79,7 +79,7 @@ public class SipParserTest {
 
     private void assertConsumeSentProtocol(final String toParse, final String expectedProtocol,
             final String expectedLeftOver)
-            throws Exception {
+                    throws Exception {
         final Buffer buffer = Buffers.wrap(toParse);
         final Buffer protocol = SipParser.consumeSentProtocol(buffer);
         assertThat(protocol.toString(), is(expectedProtocol));
@@ -143,7 +143,7 @@ public class SipParserTest {
      */
     private void assertConsumeUserInfoHost(final String toParse, final String expectedUser, final String expectedHost,
             final String expectedLeftOver)
-            throws Exception {
+                    throws Exception {
         final Buffer buffer = Buffers.wrap(toParse);
         final Buffer[] userHost = SipParser.consumeUserInfoHostPort(buffer);
         if (expectedUser == null) {
@@ -291,11 +291,14 @@ public class SipParserTest {
      */
     @Test
     public void testConsumeGenericParams() throws Exception {
+        assertGenericParams(";+sip.instance=\"<urn:uuid:D5E3DFFEFC3E4B69BCDFCC5DAC7BDEA9326B2EB8>\"", "+sip.instance",
+                "<urn:uuid:D5E3DFFEFC3E4B69BCDFCC5DAC7BDEA9326B2EB8>");
         assertGenericParams(";a=b;c=d;foo", "a", "b", "c", "d", "foo", null);
         assertGenericParams(";a", "a", null);
         assertGenericParams(";a ;b;c = d", "a", null, "b", null, "c", "d");
         assertGenericParams("hello this is not a params");
         assertGenericParams(";lr the lr was a flag param followed by some crap", "lr", null);
+
     }
 
     /**
@@ -403,7 +406,7 @@ public class SipParserTest {
         }
     }
 
-/**
+    /**
      * Test all the below stuff
      * 
      * (from RFC 3261 25.1)
@@ -882,7 +885,7 @@ public class SipParserTest {
 
     private void assertConsumeSentBy(final String toParse, final String expectedHost, final String expectedPort,
             final String leftOver)
-            throws Exception {
+                    throws Exception {
         final Buffer buffer = Buffers.wrap(toParse);
         final Buffer[] result = SipParser.consumeSentBye(buffer);
         if (expectedHost == null) {

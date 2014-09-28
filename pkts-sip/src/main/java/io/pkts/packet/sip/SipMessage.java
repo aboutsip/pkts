@@ -8,6 +8,7 @@ import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.CallIdHeader;
 import io.pkts.packet.sip.header.ContactHeader;
 import io.pkts.packet.sip.header.ContentTypeHeader;
+import io.pkts.packet.sip.header.ExpiresHeader;
 import io.pkts.packet.sip.header.FromHeader;
 import io.pkts.packet.sip.header.MaxForwardsHeader;
 import io.pkts.packet.sip.header.RecordRouteHeader;
@@ -263,6 +264,14 @@ public interface SipMessage extends Cloneable {
      * @throws SipParseException
      */
     List<RouteHeader> getRouteHeaders() throws SipParseException;
+
+    /**
+     * Get the {@link ExpiresHeader}
+     * 
+     * @return
+     * @throws SipParseException
+     */
+    ExpiresHeader getExpiresHeader() throws SipParseException;
 
     /**
      * Get the {@link ContactHeader}
