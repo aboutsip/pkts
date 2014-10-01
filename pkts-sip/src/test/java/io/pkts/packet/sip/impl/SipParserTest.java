@@ -656,6 +656,7 @@ public class SipParserTest {
     @Test
     public void testLunch() throws Exception {
 
+        assertHeader("Subject                :\r\n lunch", "Subject", "lunch");
         assertHeader("Subject:            lunch", "Subject", "lunch");
         assertHeader("Subject      :      lunch", "Subject", "lunch");
         assertHeader("Subject            :lunch", "Subject", "lunch");
@@ -663,7 +664,6 @@ public class SipParserTest {
         assertHeader("Subject: lunch", "Subject", "lunch");
         assertHeader("Subject   :lunch", "Subject", "lunch");
         assertHeader("Subject                :lunch", "Subject", "lunch");
-        assertHeader("Subject                :\r\n lunch", "Subject", "lunch");
     }
 
     /**
@@ -692,6 +692,33 @@ public class SipParserTest {
 
         // note that these are assertHeadersSSSSSSSSS
         assertHeaders("Allow: BYE, INVITE, ACK", "Allow", "BYE, INVITE, ACK");
+    }
+
+    /**
+     * Even though slightly odd, it is def happening in the wild where empty headers are pushed onto
+     * a message (seems like you simply shouldn't push the header to begin with, certainly will save
+     * space!). When this happens, we have to make sure that we don't continue reading the next
+     * header as the value of the previous empty one.
+     * 
+     * In the example below, the "Hello" header is empty and the value got to be the Call-ID, hence,
+     * there wouldn't be any Call-ID header in the request anymore..
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testEmptyHeaders() throws Exception {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("To: <sip:jonas@127.0.0.1>\r\n");
+        sb.append("Hello: \r\n");
+        sb.append("Call-ID: 123641868\r\n");
+        final Buffer headers = Buffers.wrap(sb.toString());
+        final SipHeader to = SipParser.nextHeader(headers);
+        final SipHeader hello = SipParser.nextHeader(headers);
+        final SipHeader callId = SipParser.nextHeader(headers);
+
+        assertThat(to.toString(), is("To: <sip:jonas@127.0.0.1>"));
+        assertThat(hello.toString(), is("Hello: "));
+        assertThat(callId.toString(), is("Call-ID: 123641868"));
     }
 
     /**

@@ -19,6 +19,11 @@ public interface TransportPacket extends IPPacket, Cloneable {
 
     void setDestinationPort(int port);
 
+    boolean isUDP();
+
+    boolean isTCP();
+
+
     @Override
     TransportPacket clone();
 

@@ -33,16 +33,12 @@ public abstract class TransportPacketImpl extends AbstractPacket implements Tran
         this.headers = headers;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public boolean isUDP() {
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public boolean isTCP() {
         return false;
     }

@@ -39,4 +39,14 @@ public class UnknownApplicationPacketImpl extends AbstractApplicationPacket {
         return new UnknownApplicationPacketImpl(getParent(), getPayload());
     }
 
+    @Override
+    public boolean isUDP() {
+        return getParent().isUDP();
+    }
+
+    @Override
+    public boolean isTCP() {
+        return getParent().isTCP();
+    }
+
 }
