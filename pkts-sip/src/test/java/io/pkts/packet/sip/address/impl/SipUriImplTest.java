@@ -171,6 +171,20 @@ public class SipUriImplTest {
     }
 
     @Test
+    public void testAddParameters() throws Exception {
+        final SipURI uri = SipURI.frame(Buffers.wrap("sip:hello@10.0.1.5:51945;ob"));
+        assertThat(uri.toString(), is("sip:hello@10.0.1.5:51945;ob"));
+        uri.setParameter("expires", 500);
+        assertThat(uri.toString(), is("sip:hello@10.0.1.5:51945;ob;expires=500"));
+
+        final SipURI clone = uri.clone();
+        assertThat(clone.getPort(), is(51945));
+        assertThat(clone.getParameter("ob"), is(Buffers.EMPTY_BUFFER));
+        assertThat(clone.getParameter("expires").toString(), is("500"));
+
+    }
+
+    @Test
     public void testFramingSipURI() throws Exception {
         assertSipUri("sip:alice@example.com:5090", "alice", "example.com", 5090);
         assertSipUri("sip:alice@example.com", "alice", "example.com", -1);

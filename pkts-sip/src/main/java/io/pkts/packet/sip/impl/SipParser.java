@@ -354,7 +354,11 @@ public class SipParser {
         }
         if (consumeEQUAL(buffer) > 0) {
             // TODO: consume host and quoted string
-            value = consumeToken(buffer);
+            if (isNext(buffer, DOUBLE_QOUTE)) {
+                value = consumeQuotedString(buffer);
+            } else {
+                value = consumeToken(buffer);
+            }
         }
         return new Buffer[] {
                 key, value };
@@ -443,7 +447,13 @@ public class SipParser {
             int consumed = consumeWS(buffer);
             expect(buffer, COLON);
             ++consumed;
-            consumed += consumeSWS(buffer);
+            // Part of the fix for empty header values. Which based on the BNF I don't
+            // think is legal but it is certainly happening in the wild
+            // so need to accept it.
+            consumed += consumeWS(buffer);
+            if (!isNext(buffer, CR)) {
+                consumed += consumeSWS(buffer);
+            }
             return consumed;
         } catch (final IOException e) {
             throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
@@ -1818,33 +1828,36 @@ public class SipParser {
             // Note, we are framing headers from a sip request or response which
             // is why we safely can assume that there will ALWAYS be a CRLF
             // after each line
-            // Buffer valueBuffer = readLine(buffer, ',');
             Buffer valueBuffer = buffer.readLine();
 
-            // the header may be a folded one so check that and if so, consume
-            // it too
-            List<Buffer> foldedLines = null;
-            boolean done = false;
-            while (!done) {
-                if (isNext(buffer, SP) || isNext(buffer, HTAB)) {
-                    consumeWS(buffer);
-                    if (foldedLines == null) {
-                        foldedLines = new ArrayList<Buffer>(2);
-                    }
-                    foldedLines.add(buffer.readLine());
-                } else {
-                    done = true;
-                }
-            }
+            // Foled lines are rare so try and avoid the bulk of
+            // the work if possible.
+            if (isNext(buffer, SP) || isNext(buffer, HTAB)) {
+                List<Buffer> foldedLines = null;
+                boolean done = false;
 
-            if (foldedLines != null) {
-                // even though stupid, folded lines are not that common
-                // so optimize if this ever becomes a problem.
-                String stupid = valueBuffer.toString();
-                for (final Buffer line : foldedLines) {
-                    stupid += " " + line.toString();
+                while (!done) {
+                    if (isNext(buffer, SP) || isNext(buffer, HTAB)) {
+                        consumeWS(buffer);
+                        if (foldedLines == null) {
+                            foldedLines = new ArrayList<Buffer>(2);
+                        }
+                        foldedLines.add(buffer.readLine());
+                    } else {
+                        done = true;
+                    }
                 }
-                valueBuffer = Buffers.wrap(stupid.getBytes());
+
+                if (foldedLines != null) {
+                    // even though stupid, folded lines are not that common
+                    // so optimize if this ever becomes a problem.
+                    String stupid = valueBuffer.toString();
+                    for (final Buffer line : foldedLines) {
+                        stupid += " " + line.toString();
+                    }
+                    valueBuffer = Buffers.wrap(stupid.getBytes());
+                    consumeWS(valueBuffer);
+                }
             }
 
             return new SipHeaderImpl(name, valueBuffer);

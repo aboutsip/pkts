@@ -30,6 +30,7 @@ import io.pkts.sdp.SDP;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -793,6 +794,39 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
     @Override
     public short getFragmentOffset() {
         return this.parent.getFragmentOffset();
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        if (isUDP()) {
+            sb.append("U ");
+        } else if (isTCP()) {
+            sb.append("T ");
+        } else {
+            // TODO: need WS, SCTP etc as well. but not as common
+            // right now so no big deal.
+        }
+
+        // final DateTimeFormatter formatter =
+        // DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss.SSS");
+        final Instant timestamp = Instant.ofEpochMilli(getArrivalTime() / 1000);
+        sb.append(timestamp.toString());
+        sb.append(" ").append(getSourceIP()).append(":").append(getSourcePort());
+        sb.append(" -> ").append(getDestinationIP()).append(":").append(getDestinationPort());
+        sb.append("\n");
+        sb.append(this.msg.toString());
+        return sb.toString();
+    }
+
+    @Override
+    public boolean isUDP() {
+        return this.parent.isUDP();
+    }
+
+    @Override
+    public boolean isTCP() {
+        return this.parent.isTCP();
     }
 
 }

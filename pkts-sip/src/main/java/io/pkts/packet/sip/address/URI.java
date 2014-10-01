@@ -58,5 +58,7 @@ public interface URI {
         throw new RuntimeException("Have only implemented SIP uri parsing right now. Sorry");
     }
 
+    URI clone();
+
 
 }

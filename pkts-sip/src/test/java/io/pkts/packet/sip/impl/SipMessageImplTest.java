@@ -283,6 +283,38 @@ public class SipMessageImplTest extends PktsTestBase {
     }
 
     /**
+     * Even though slightly odd, it is def happening in the wild where empty headers are pushed onto
+     * a message (seems like you simply shouldn't push the header to begin with, certainly will save
+     * space!). When this happens, we have to make sure that we don't continue reading the next
+     * header as the value of the previous empty one.
+     * 
+     * In the example below, the "Hello" header is empty and the value got to be the Call-ID, hence,
+     * there wouldn't be any Call-ID header in the request anymore..
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testParsingEmptyHeaders() throws Exception {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("REGISTER sip:127.0.0.1 SIP/2.0\r\n");
+        sb.append("Via: SIP/2.0/UDP 10.0.1.14:5069;rport;branch=z9hG4bK662351435\r\n");
+        sb.append("From: <sip:jonas@127.0.0.1>;tag=1923738050\r\n");
+        sb.append("To: <sip:jonas@127.0.0.1>\r\n");
+        sb.append("Hello: \r\n");
+        sb.append("Call-ID: 123641868\r\n");
+        sb.append("CSeq: 1 REGISTER\r\n");
+        sb.append("Contact: <sip:jonas@10.0.1.14:5069;line=6227298e2959de7>\r\n");
+        sb.append("Max-Forwards: 70\r\n");
+        sb.append("Expires: 3600\r\n");
+        sb.append("Content-Length: 0\r\n");
+
+        final SipMessage message = SipMessage.frame(sb.toString());
+        message.getCallIDHeader();
+        assertThat(message.getCallIDHeader().getValue().toString(), is("123641868"));
+        System.out.println(message);
+    }
+
+    /**
      * The {@link SipMessage} interface has many convenience methods for fetching the most common
      * headers however, we cannot add all headers to the interface and also in order to facilitate
      * new headers in the future we are allowing to register framers using lambda expressions so

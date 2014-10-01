@@ -379,4 +379,14 @@ public final class RtpPacketImpl extends AbstractPacket implements RtpPacket {
         return null;
     }
 
+    @Override
+    public boolean isUDP() {
+        return this.parent.isUDP();
+    }
+
+    @Override
+    public boolean isTCP() {
+        return this.parent.isTCP();
+    }
+
 }

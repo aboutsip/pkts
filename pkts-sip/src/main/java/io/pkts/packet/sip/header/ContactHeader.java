@@ -4,6 +4,7 @@ import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.Address;
+import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.header.impl.ContactHeaderImpl;
 
 /**
@@ -26,6 +27,12 @@ public interface ContactHeader extends AddressParametersHeader {
         return builder;
     }
 
+    static Builder with(final SipURI uri) throws SipParseException {
+        final Builder builder = new Builder();
+        final Address address = Address.with(uri.clone()).build();
+        builder.address(address);
+        return builder;
+    }
 
     /**
      * Frame the value as a {@link ContactHeader}.

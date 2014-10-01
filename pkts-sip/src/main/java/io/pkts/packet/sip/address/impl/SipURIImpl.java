@@ -132,6 +132,19 @@ public class SipURIImpl extends URIImpl implements SipURI {
         }
     }
 
+    @Override
+    public SipURI clone() {
+        try {
+            if (!this.isDirty) {
+                return SipURI.frame(this.buffer.clone());
+            }
+            return SipURI.frame(toBuffer());
+        } catch (SipParseException | IndexOutOfBoundsException | IOException e) {
+            // shouldn't really be able to happen
+            throw new RuntimeException("Unable to clone the SipURI due to exception ", e);
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -147,7 +160,7 @@ public class SipURIImpl extends URIImpl implements SipURI {
         final Buffer buffer = Buffers.createBuffer(1024);
         getBytes(buffer);
         this.isDirty = false;
-        this.buffer = buffer;
+        this.buffer = buffer.slice();
         return buffer;
     }
 
@@ -376,4 +389,14 @@ public class SipURIImpl extends URIImpl implements SipURI {
         this.paramsSupport.setParameter(name, value);
     }
 
+
+    @Override
+    public void setParameter(final Buffer name, final int value) throws SipParseException, IllegalArgumentException {
+        setParameter(name, Buffers.wrap(value));
+    }
+
+    @Override
+    public void setParameter(final String name, final int value) throws SipParseException, IllegalArgumentException {
+        this.setParameter(Buffers.wrap(name), Buffers.wrap(value));
+    }
 }

@@ -305,4 +305,14 @@ public class RtcpPacketImpl extends AbstractPacket implements RtcpPacket {
         this.parent.setDestinationIP(a, b, c, d);
     }
 
+    @Override
+    public boolean isUDP() {
+        return this.parent.isUDP();
+    }
+
+    @Override
+    public boolean isTCP() {
+        return this.parent.isTCP();
+    }
+
 }
