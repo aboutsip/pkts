@@ -174,6 +174,15 @@ public class SipParserTest {
         assertThat(SipParser.consumeQuotedString(buffer).toString(), is("hello world"));
         assertThat(buffer.toString(), is(""));
 
+        // Empty quoted string
+        buffer = Buffers.wrap("\"\" <sip:hello@world.com>");
+        assertThat(SipParser.consumeQuotedString(buffer).toString(), is(""));
+        assertThat(buffer.toString(), is(" <sip:hello@world.com>"));
+
+        buffer = Buffers.wrap("\"\"");
+        assertThat(SipParser.consumeQuotedString(buffer).toString(), is(""));
+        assertThat(buffer.toString(), is(""));
+
         buffer = Buffers.wrap("\"hello\"");
         assertThat(SipParser.consumeQuotedString(buffer).toString(), is("hello"));
         assertThat(buffer.toString(), is(""));

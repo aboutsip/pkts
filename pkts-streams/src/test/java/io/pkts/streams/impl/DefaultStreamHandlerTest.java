@@ -190,6 +190,14 @@ public class DefaultStreamHandlerTest extends StreamsTestBase {
         public int packetCount;
         public int endCount;
 
+        public List<Stream<SipPacket>> getStreams() {
+            return this.streams;
+        }
+
+        public Stream<SipPacket> getFirstStream() {
+            return this.streams.get(0);
+        }
+
         @Override
         public void startStream(final Stream<SipPacket> stream, final SipPacket packet) {
             this.streams.add(stream);

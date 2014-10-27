@@ -13,7 +13,6 @@ import io.pkts.packet.sip.address.Address;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.header.FromHeader;
 import io.pkts.packet.sip.header.ToHeader;
-import io.pkts.packet.sip.header.impl.AddressParametersHeaderImpl;
 
 import org.junit.After;
 import org.junit.Before;
@@ -176,6 +175,14 @@ public abstract class AddressParameterHeadersTestBase {
         assertThat(to.getParameter("lr").isEmpty(), is(true));
         assertThat(to.getParameter("hello").toString(), is("world"));
         assertThat(to.getParameter("apa").toString(), is("monkey"));
+    }
+
+    @Test
+    public void testEmptyDisplayName() throws Exception {
+        final AddressParametersHeaderImpl to = frameHeader(Buffers.wrap("\"\" <sip:alice@example.com>;tag=asdf-asdf-asdf"));
+        assertThat(to.getAddress().getDisplayName().toString(), is(""));
+        assertThat(to.getParameter("lr"), is((Buffer)null));
+        assertThat(to.getParameter("tag").toString(), is("asdf-asdf-asdf"));
     }
 
 }
