@@ -128,6 +128,16 @@ public final class AddressImpl implements Address {
         final Buffer displayName = SipParser.consumeDisplayName(buffer);
         boolean leftAngleBracket = true;
 
+        // handle the case of an address that looks like:
+        // "" <sip:alice@example.com>
+        // where the two double quotes is the ones that
+        // caused a problem. This checks for that case and
+        // consumes any potential white space that is left
+        // after the consumption of that weird display name
+        if (doubleQuote && displayName.isEmpty()) {
+            SipParser.consumeWS(buffer);
+        }
+
         // if no display name, then there may be a '<' present
         // and if so, consume it.
         if (displayName.isEmpty() && buffer.peekByte() == SipParser.LAQUOT) {

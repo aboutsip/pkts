@@ -59,6 +59,9 @@ public final class ByteBuffer extends AbstractBuffer {
      */
     @Override
     public Buffer readBytes(final int length) throws IndexOutOfBoundsException {
+        if (length == 0) {
+            return Buffers.EMPTY_BUFFER;
+        }
         checkReadableBytes(length);
         final int lowerBoundary = this.readerIndex + this.lowerBoundary;
         this.readerIndex += length;

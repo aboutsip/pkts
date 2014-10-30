@@ -10,7 +10,6 @@ import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.address.Address;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.address.URI;
-import io.pkts.packet.sip.address.impl.AddressImpl;
 
 import org.junit.After;
 import org.junit.Before;
@@ -108,6 +107,12 @@ public class AddressImplTest {
         buffer = Buffers.wrap("sip:example.com");
         address = AddressImpl.parse(buffer);
         assertThat(address.getURI().toString(), is("sip:example.com"));
+
+        // Empty display name
+        buffer = Buffers.wrap("\"\" <sip:alice@example.com>");
+        address = AddressImpl.parse(buffer);
+        assertThat(address.getDisplayName().isEmpty(), is(true));
+        assertThat(address.getURI().toString(), is("sip:alice@example.com"));
     }
 
     /**
