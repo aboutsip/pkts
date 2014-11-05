@@ -26,6 +26,19 @@ public interface SipStream extends Stream<SipPacket> {
     List<SipPacket> getPackets();
 
     /**
+     * Check whether this {@link SipStream} is in the terminated state, which it is if any of the following is true:
+     * For INVITE streams:
+     * <ul>
+     *     <li>If the initial handshake failed with an error 
+     *         response (which will include CANCEL scenarios)</li>
+     *     <li>If the call was successfully established and a BYE 
+     *         request and the corresponding final response has been processed</li>
+     * </ul>
+     * @return
+     */
+    boolean isTerminated();
+
+    /**
      * Post Dial Delay (PDD) is defined as the time it takes between the INVITE
      * and until some sort of ringing signal is received (18x responses).
      * 
