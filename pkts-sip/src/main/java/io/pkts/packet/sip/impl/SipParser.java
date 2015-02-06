@@ -264,6 +264,57 @@ public class SipParser {
         }
     }
 
+    /**
+     * Check whether the buffer is exactly three bytes long and has the
+     * bytes "udp" in it. Note, in SIP there is a different between transport
+     * specified in a Via-header and a transport-param specified in a SIP URI.
+     * One is upper case, one is lower case. Another really annoying thing
+     * with SIP.
+     * 
+     * @param t
+     * @return
+     */
+    public static boolean isUDPLower(final Buffer t) {
+        try {
+            return t.capacity() == 3 && t.getByte(0) == 'u' && t.getByte(1) == 'd' && t.getByte(2) == 'p';
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
+    public static boolean isTCPLower(final Buffer t) {
+        try {
+            return t.capacity() == 3 && t.getByte(0) == 't' && t.getByte(1) == 'c' && t.getByte(2) == 'p';
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
+    public static boolean isTLSLower(final Buffer t) {
+        try {
+            return t.capacity() == 3 && t.getByte(0) == 't' && t.getByte(1) == 'l' && t.getByte(2) == 's';
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
+    public static boolean isWSLower(final Buffer t) {
+        try {
+            return t.capacity() == 2 && t.getByte(0) == 'w' && t.getByte(1) == 's';
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
+    public static boolean isSCTPLower(final Buffer t) {
+        try {
+            return t.capacity() == 4 && t.getByte(0) == 's' && t.getByte(1) == 'c' && t.getByte(2) == 't'
+                    && t.getByte(3) == 'p';
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
     public static boolean isSips(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException, IOException {
         SipParser.expect(buffer, 's');
         SipParser.expect(buffer, 'i');

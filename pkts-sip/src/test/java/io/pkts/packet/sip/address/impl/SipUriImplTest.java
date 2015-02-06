@@ -184,6 +184,42 @@ public class SipUriImplTest {
 
     }
 
+    /**
+     * We can create a new builder off of another {@link SipURI} and by default
+     * the builder will only copy user, host, port and transport along with if it is
+     * a sip or sips. Any other parameters are not copied.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testBuilderBasedOffOfSipURI() throws Exception {
+        assertBuildClone("sip:alice@aboutsip.com");
+        assertBuildClone("sips:alice@aboutsip.com");
+        assertBuildClone("sip:alice@aboutsip.com:5098");
+        assertBuildClone("sip:alice@aboutsip.com:5098;transport=tcp");
+        assertBuildClone("sip:alice@aboutsip.com;transport=udp");
+        assertBuildClone("sip:aboutsip.com:5098;transport=tcp");
+        assertBuildClone("sips:aboutsip.com:5098;transport=tcp");
+
+        assertBuildClone("sips:aboutsip.com:5098;transport=tcp;apa=fup");
+        assertBuildClone("sips:nisse@aboutsip.com;apa=fup");
+        assertBuildClone("sips:nisse@aboutsip.com;apa=fup;transport=udp;kalles=kaviar");
+    }
+
+    /**
+     * Comparing that the uri 'toParse' is equal to the result after we have built a new
+     * one using {@link SipURI#with(SipURI)}.
+     * 
+     * @param toParse
+     * @throws Exception
+     */
+    private void assertBuildClone(final String toParse) throws Exception {
+        final Buffer buffer = Buffers.wrap(toParse);
+        final SipURI uri = SipURI.frame(buffer);
+        final SipURI clone = SipURI.with(uri).build();
+        assertThat(uri, is(clone));
+    }
+
     @Test
     public void testFramingSipURI() throws Exception {
         assertSipUri("sip:alice@example.com:5090", "alice", "example.com", 5090);

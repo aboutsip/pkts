@@ -525,6 +525,11 @@ public final class InputStreamBuffer extends AbstractBuffer {
     }
 
     @Override
+    public void getByes(final byte[] dst) throws IndexOutOfBoundsException {
+        throw new RuntimeException("Not implemented just yet");
+    }
+
+    @Override
     public void getBytes(final int index, final Buffer dst) throws IndexOutOfBoundsException {
         throw new RuntimeException("Not implemented just yet");
     }

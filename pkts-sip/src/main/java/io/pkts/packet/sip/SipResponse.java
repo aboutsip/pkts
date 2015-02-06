@@ -3,6 +3,7 @@
  */
 package io.pkts.packet.sip;
 
+import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.header.ViaHeader;
 
 /**
@@ -16,6 +17,13 @@ public interface SipResponse extends SipMessage {
      * @return
      */
     int getStatus();
+    
+    /**
+     * Get the reason phrase of this {@link SipResponse}
+     * 
+     * @return
+     */
+    Buffer getReasonPhrase();
 
     /**
      * Convenience method for checking whether this is a 1xx response or not.

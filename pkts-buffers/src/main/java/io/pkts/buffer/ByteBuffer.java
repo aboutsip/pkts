@@ -355,6 +355,12 @@ public final class ByteBuffer extends AbstractBuffer {
         }
     }
 
+    @Override
+    public void getByes(final byte[] dst) throws IndexOutOfBoundsException {
+        final int length = Math.min(dst.length, getReadableBytes());
+        System.arraycopy(this.buffer, this.lowerBoundary + this.readerIndex, dst, 0, length);
+    }
+
     public void getBytes(final int index, final java.nio.ByteBuffer dst) {
         if (index < 0) {
             throw new IndexOutOfBoundsException("Index less than zero");

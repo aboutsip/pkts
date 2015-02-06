@@ -22,7 +22,7 @@ public interface Buffer extends Cloneable {
      * Same as calling {@link #getBytes(int, Buffer)} where the index is
      * {@link #getReaderIndex()}.
      * 
-     * @param buffer
+     * @param dst
      * @throws IndexOutOfBoundsException
      */
     void getBytes(Buffer dst);
@@ -39,6 +39,8 @@ public interface Buffer extends Cloneable {
      *             in case index < 0
      */
     void getBytes(final int index, final Buffer dst) throws IndexOutOfBoundsException;
+
+    void getByes(final byte[] dst) throws IndexOutOfBoundsException;
 
     /**
      * Read the requested number of bytes and increase the readerIndex with the
@@ -92,7 +94,7 @@ public interface Buffer extends Cloneable {
      * Checks whether this buffer has any bytes available for reading without
      * blocking.
      * 
-     * This is the same as <code>{@link #readableBytes} > 0</code>
+     * This is the same as <code>{@link #getReadableBytes()} > 0</code>
      * 
      * @return
      */
@@ -114,8 +116,8 @@ public interface Buffer extends Cloneable {
     byte[] getArray();
 
     /**
-     * Same as {@link #readUntil(4096, b)}
-     * 
+     * Same as {@link #readUntil(4096, 'b')}
+     *
      * Read until the specified byte is encountered and return a buffer
      * representing that section of the buffer.
      * 

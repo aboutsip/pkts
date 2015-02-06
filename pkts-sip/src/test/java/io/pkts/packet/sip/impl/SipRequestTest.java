@@ -8,7 +8,9 @@ import static org.junit.Assert.assertThat;
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
 import io.pkts.buffer.Buffers;
+import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipRequest;
+import io.pkts.packet.sip.SipResponse;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.header.impl.SipHeaderImpl;
 
@@ -54,6 +56,25 @@ public class SipRequestTest extends PktsTestBase {
     public void testToString() throws Exception {
         final SipRequest req = (SipRequest) parseMessage(RawData.sipInvite);
         assertThat(req.toString().contains("o=user1 53655765 2353687637 IN IP4 127.0.1.1"), is(true));
+    }
+    
+    @Test
+    public void testCreateResponse() throws Exception {
+        assertReasonPhrase(100, "Trying");
+        assertReasonPhrase(180, "Ringing");
+        assertReasonPhrase(200, "OK");
+        assertReasonPhrase(202, "Accepted");
+        assertReasonPhrase(302, "Moved Temporarily");
+        assertReasonPhrase(400, "Bad Request");
+        assertReasonPhrase(500, "Server Internal Error");
+        assertReasonPhrase(600, "Busy Everywhere");
+        assertReasonPhrase(603, "Decline");
+    }
+    
+    private void assertReasonPhrase(int statusCode, String expectedReason) throws Exception {
+        final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader);
+        final SipResponse response = msg.createResponse(statusCode);
+        assertThat(response.getReasonPhrase().toString(), is(expectedReason));
     }
 
     /**

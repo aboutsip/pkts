@@ -69,6 +69,15 @@ public interface SipRequest extends SipMessage {
         return new Builder(Builder.ACK, requestURI);
     }
 
+    static Builder cancel(final SipURI requestURI) throws SipParseException {
+        assertNotNull(requestURI, "RequestURI canot be null or the empty string");
+        return new Builder(Builder.CANCEL, requestURI);
+    }
+
+    static Builder cancel(final String requestURI) throws SipParseException {
+        return request(Builder.CANCEL, requestURI);
+    }
+
     static Builder request(final Buffer method, final String requestURI) throws SipParseException {
         assertNotEmpty(requestURI, "RequestURI canot be null or the empty string");
         try {
@@ -83,6 +92,7 @@ public interface SipRequest extends SipMessage {
 
         private static final Buffer INVITE = Buffers.wrap("INVITE");
         private static final Buffer ACK = Buffers.wrap("ACK");
+        private static final Buffer CANCEL = Buffers.wrap("CANCEL");
 
         private final Buffer method;
 

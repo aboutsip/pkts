@@ -249,6 +249,36 @@ public interface SipURI extends URI {
         return new Builder();
     }
 
+    /**
+     * Create a new {@link Builder} based on the {@link SipURI}.
+     * 
+     * <ul>
+     *     <li>user</li>
+     *     <li>host</li>
+     *     <li>port</li>
+     *     <li>transport</li>
+     *     <li>schema (sip or sips)</li>
+     * </ul>
+     * 
+     * Any other parameter will be ignored.
+     * 
+     * @param uri
+     * @return
+     */
+    public static Builder with(final SipURI uri) {
+        final Builder b = new Builder();
+        b.user(uri.getUser());
+        b.host(uri.getHost());
+        b.port(uri.getPort());
+        b.secure(uri.isSecure());
+        final Buffer transport = uri.getTransportParam();
+        if (transport != null && !transport.isEmpty()) {
+            b.parameter(SipParser.TRANSPORT, transport);
+        }
+
+        return b;
+    }
+
     static class Builder {
 
         private Buffer user;
@@ -302,6 +332,18 @@ public interface SipURI extends URI {
         public Builder host(final String host) throws SipParseException {
             assertNotEmpty(host, "Host cannot be null or the empty string");
             this.host = Buffers.wrap(host);
+            return this;
+        }
+
+        public Builder transport(final Buffer transport) throws SipParseException {
+            assertNotEmpty(transport, "Transport cannot be null or empty");
+            this.paramSupport.setParameter(SipParser.TRANSPORT, transport);
+            return this;
+        }
+
+        public Builder transport(final String transport) throws SipParseException {
+            assertNotEmpty(transport, "Transport cannot be null or empty");
+            this.paramSupport.setParameter(SipParser.TRANSPORT, Buffers.wrap(transport));
             return this;
         }
 
