@@ -3,8 +3,6 @@
  */
 package io.pkts.packet.sip.impl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
 import io.pkts.buffer.Buffers;
@@ -13,10 +11,12 @@ import io.pkts.packet.sip.SipRequest;
 import io.pkts.packet.sip.SipResponse;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.header.impl.SipHeaderImpl;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
 
 /**
  * @author jonas
@@ -90,6 +90,31 @@ public class SipRequestTest extends PktsTestBase {
         assertThat(req.toString(), is(clone.toString()));
         assertThat(req.toBuffer(), is(clone.toBuffer()));
         req.addHeader(new SipHeaderImpl(Buffers.wrap("Hello"), Buffers.wrap("world")));
+
+        assertThat(req.toString().contains("Hello: world"), is(true));
+        assertThat(clone.toString().contains("Hello: world"), is(false));
+
+        ((SipURI) req.getRequestUri()).setPort(7777);
+        ((SipURI) clone.getRequestUri()).setPort(8888);
+
+        assertThat(req.toString().contains("sip:service@127.0.0.1:7777"), is(true));
+        assertThat(clone.toString().contains("sip:service@127.0.0.1:8888"), is(true));
+    }
+
+    @Test
+    public void testCloneAfterManipulation() throws Exception {
+        final SipRequest req = (SipRequest) parseMessage(RawData.sipInvite);
+        req.getCallIDHeader();
+        System.err.println(req.getHeader("Content-Length"));
+        req.getContentTypeHeader();
+        System.err.println(req.getContent());
+        final SipRequest clone = req.clone();
+        System.err.println(clone);
+        // assertThat(req.toString(), is(clone.toString()));
+        assertThat(req.toBuffer(), is(clone.toBuffer()));
+        req.addHeader(new SipHeaderImpl(Buffers.wrap("Hello"), Buffers.wrap("world")));
+
+        System.err.println(clone);
 
         assertThat(req.toString().contains("Hello: world"), is(true));
         assertThat(clone.toString().contains("Hello: world"), is(false));

@@ -3,6 +3,10 @@
 .project
 .settings
 
+# Intellij
+*.iml
+.idea
+
 # Where maven compiles by default
 target
 

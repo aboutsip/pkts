@@ -9,7 +9,7 @@ package io.pkts.packet;
  * @author jonas@jonasborjesson.com
  * 
  */
-public class PacketParseException extends Exception {
+public class PacketParseException extends RuntimeException {
 
     private static final long serialVersionUID = 3856475199594072886L;
 

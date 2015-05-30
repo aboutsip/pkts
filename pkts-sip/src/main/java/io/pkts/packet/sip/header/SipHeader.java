@@ -3,10 +3,13 @@
  */
 package io.pkts.packet.sip.header;
 
-import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
 import io.pkts.buffer.Buffer;
+import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.header.impl.SipHeaderImpl;
 import io.pkts.packet.sip.impl.SipParser;
+
+import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
 
 
 /**
@@ -88,6 +91,11 @@ public interface SipHeader extends Cloneable {
     static SipHeader frame(final Buffer value) throws SipParseException {
         assertNotEmpty(value, "The value of the header cannot be null or the empty buffer");
         return SipParser.nextHeader(value);
+    }
+
+    static SipHeader create(final String name, final String value) {
+        assertNotEmpty(name, "The name of the header cannot be empty");
+        return new SipHeaderImpl(Buffers.wrap(name), Buffers.wrap(value));
     }
 
     /**
