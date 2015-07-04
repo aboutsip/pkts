@@ -34,7 +34,7 @@ public interface ContentTypeHeader extends SipHeader, MediaTypeHeader, Parameter
      * @return
      * @throws SipParseException in case anything goes wrong while parsing.
      */
-    public static ContentTypeHeader frame(final Buffer buffer) throws SipParseException {
+    static ContentTypeHeader frame(final Buffer buffer) throws SipParseException {
         final Buffer[] mediaType = MediaTypeHeader.frame(buffer);
         return new ContentTypeHeaderImpl(mediaType[0], mediaType[1], buffer);
     }

@@ -3,8 +3,6 @@
  */
 package io.pkts.packet.sip.header;
 
-import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
-import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.Address;
@@ -15,6 +13,9 @@ import io.pkts.packet.sip.header.impl.ParametersSupport;
 import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
+
+import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
+import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -78,7 +79,7 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
 
 
         public final Builder<T> port(final int port) {
-            ensureBuilder().port(port);
+            ensureBuilder().withPort(port);
             return this;
         }
 
@@ -91,12 +92,12 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          * @return
          */
         public final Builder<T> user(final Buffer user) {
-            ensureBuilder().user(user);
+            ensureBuilder().withUser(user);
             return this;
         }
 
         public final Builder<T> user(final String user) {
-            ensureBuilder().user(user);
+            ensureBuilder().withUser(user);
             return this;
         }
 
@@ -110,12 +111,12 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          * @return
          */
         public final Builder<T> host(final Buffer host) {
-            ensureBuilder().host(host);
+            ensureBuilder().withHost(host);
             return this;
         }
 
         public final Builder<T> host(final String host) {
-            ensureBuilder().host(host);
+            ensureBuilder().withHost(host);
             return this;
         }
 
@@ -154,7 +155,7 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          */
         public Builder<T> uriParameter(final Buffer name, final Buffer value) throws SipParseException,
         IllegalArgumentException {
-            ensureBuilder().parameter(name, value);
+            ensureBuilder().withParameter(name, value);
             return this;
         }
 
@@ -169,7 +170,7 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          */
         public Builder<T> uriParameter(final String name, final String value) throws SipParseException,
         IllegalArgumentException {
-            ensureBuilder().parameter(name, value);
+            ensureBuilder().withParameter(name, value);
             return this;
         }
 
@@ -180,7 +181,7 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          * @throws SipParseException
          */
         public Builder<T> transportTCP() throws SipParseException {
-            ensureBuilder().parameter(SipParser.TRANSPORT, SipParser.TCP);
+            ensureBuilder().withParameter(SipParser.TRANSPORT, SipParser.TCP);
             return this;
         }
 
@@ -191,7 +192,7 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          * @throws SipParseException
          */
         public Builder<T> transportUDP() throws SipParseException {
-            ensureBuilder().parameter(SipParser.TRANSPORT, SipParser.UDP);
+            ensureBuilder().withParameter(SipParser.TRANSPORT, SipParser.UDP);
             return this;
         }
 
@@ -202,7 +203,7 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          * @throws SipParseException
          */
         public Builder<T> transportTLS() throws SipParseException {
-            ensureBuilder().parameter(SipParser.TRANSPORT, SipParser.TLS);
+            ensureBuilder().withParameter(SipParser.TRANSPORT, SipParser.TLS);
             return this;
         }
 
@@ -213,7 +214,7 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          * @throws SipParseException
          */
         public Builder<T> transportSCTP() throws SipParseException {
-            ensureBuilder().parameter(SipParser.TRANSPORT, SipParser.SCTP);
+            ensureBuilder().withParameter(SipParser.TRANSPORT, SipParser.SCTP);
             return this;
         }
 
@@ -224,7 +225,7 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          * @throws SipParseException
          */
         public Builder<T> transportWS() throws SipParseException {
-            ensureBuilder().parameter(SipParser.TRANSPORT, SipParser.WS);
+            ensureBuilder().withParameter(SipParser.TRANSPORT, SipParser.WS);
             return this;
         }
 

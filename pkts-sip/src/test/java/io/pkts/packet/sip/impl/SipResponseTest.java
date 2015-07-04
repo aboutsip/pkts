@@ -64,7 +64,7 @@ public class SipResponseTest extends PktsTestBase {
         sb.append("Call-ID: 3dec1fff-cdfe-49f0-9b99-76d58a6d0d31\r\n");
         sb.append("CSeq: 0 INVITE\r\n");
         sb.append("Contact: <sip:127.0.0.1:5070;transport=UDP>\r\n");
-        sb.append("Content-Type: application/sdp\r\n");
+        sb.append("Content-Type: io.sipstack.application.application/sdp\r\n");
         sb.append("Content-Length:   129\r\n");
         sb.append("\r\n");
         sb.append("v=0\r\n");

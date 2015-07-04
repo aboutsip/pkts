@@ -18,7 +18,7 @@ import java.io.IOException;
  * Simple example showing how to use streams.
  * 
  * The core pcap support provided by pkts.io is only focusing on each individual
- * packet but quite often your application may be interested in a stream of
+ * packet but quite often your io.sipstack.application.application may be interested in a stream of
  * packets. A stream can mean different things for different protocols. E.g. for
  * UDP, a stream in this context could be all packets sent and received from the
  * same local and remote port-pair (which is how the stream support in pkts.io

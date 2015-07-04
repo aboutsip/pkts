@@ -1414,7 +1414,7 @@ public class SipParser {
      * 
      * <pre>
      * m-type           =  discrete-type / composite-type
-     * discrete-type    =  "text" / "image" / "audio" / "video" / "application" / extension-token
+     * discrete-type    =  "text" / "image" / "audio" / "video" / "io.sipstack.application.application" / extension-token
      * composite-type   =  "message" / "multipart" / extension-token
      * extension-token  =  ietf-token / x-token
      * ietf-token       =  token

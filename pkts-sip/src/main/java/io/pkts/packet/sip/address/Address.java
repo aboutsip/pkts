@@ -143,7 +143,7 @@ public interface Address {
 
             URI uriToUse = this.uri;
             if (this.host != null) {
-                uriToUse = SipURI.with().user(user).host(host).port(port).build();
+                uriToUse = SipURI.withUser(user).withHost(host).withPort(port).build();
             }
             return new AddressImpl(this.displayName, uriToUse);
         }

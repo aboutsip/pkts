@@ -42,7 +42,7 @@ This section describes how to e.g. add a new protocol framer and how to test tha
 
 Every protocol, no matter how simple it is, needs a Framer. The job of the framer is just to frame the entire message for that particular protocol. The framer is not supposed to do any extensive validation of the content, it should only concentrate on finding the boundaries of the data and that's it. The framer needs to be as fast as possible so feel free to make a lot of assumptions of the data. If it so happens that the data is corrupt in some way, that will later be detected when the content is parsed into a packet.
 
-So, create a new protocol framer and add it to the corresponding framer layer. E.g., the most common thing to do is probably to create a new application layer framer such as one for HTTP or RTP etc. In this case, that Framer (let's call is RTPFramer) should live in the package com.aboutsip.yajpcap.framer.layer7. Note, there is a helper interface in each different layer (such as Layer7Framer) that you probably want to extend.
+So, create a new protocol framer and add it to the corresponding framer layer. E.g., the most common thing to do is probably to create a new io.sipstack.application.application layer framer such as one for HTTP or RTP etc. In this case, that Framer (let's call is RTPFramer) should live in the package com.aboutsip.yajpcap.framer.layer7. Note, there is a helper interface in each different layer (such as Layer7Framer) that you probably want to extend.
 
 ## Example: adding RTP
 

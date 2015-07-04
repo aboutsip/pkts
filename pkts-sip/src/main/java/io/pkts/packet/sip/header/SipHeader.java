@@ -49,7 +49,7 @@ import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
  * <p>
  * Note, by default most things are done lazily in order to speed things up. As such, you may
  * successfully construct a header but it may in fact miss important information. If you are
- * building an application where you want to be 100% sure that a header is correct according to the
+ * building an io.sipstack.application.application where you want to be 100% sure that a header is correct according to the
  * BNF in rfc 3261 then call {@link #verify()}.
  * </p>
  * 

@@ -34,7 +34,7 @@
       Contact: sip:sipp@[local_ip]:[local_port]
       Max-Forwards: 70
       Subject: Performance Test
-      Content-Type: application/sdp
+      Content-Type: io.sipstack.application.application/sdp
       Content-Length: [len]
 
       v=0

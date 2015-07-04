@@ -3,18 +3,17 @@
  */
 package io.pkts.packet.sip.header.impl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.ContentTypeHeader;
 import io.pkts.packet.sip.header.MediaTypeHeader;
 import io.pkts.packet.sip.header.Parameters;
-
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -30,34 +29,34 @@ public class ContentTypeHeaderTest {
     }
 
     /**
-     * Just test a regular application/sdp media type and a few variants thereof
+     * Just test a regular io.sipstack.application.application/sdp media type and a few variants thereof
      */
     @Test
     public void testBasicFraming() throws Exception {
-        ContentTypeHeader header = ContentTypeHeader.frame(Buffers.wrap("application/sdp"));
-        assertThat(header.getContentType().toString(), is("application"));
+        ContentTypeHeader header = ContentTypeHeader.frame(Buffers.wrap("io.sipstack.application.application/sdp"));
+        assertThat(header.getContentType().toString(), is("io.sipstack.application.application"));
         assertThat(header.getContentSubType().toString(), is("sdp"));
         assertThat(header.getParameter("apa"), is((Buffer) null));
 
         // some space around the slash is apperently ok according to rfc
-        header = ContentTypeHeader.frame(Buffers.wrap("application   /sdp"));
-        assertThat(header.getContentType().toString(), is("application"));
+        header = ContentTypeHeader.frame(Buffers.wrap("io.sipstack.application.application   /sdp"));
+        assertThat(header.getContentType().toString(), is("io.sipstack.application.application"));
         assertThat(header.getContentSubType().toString(), is("sdp"));
         assertThat(header.getParameter("monkey"), is((Buffer) null));
 
-        header = ContentTypeHeader.frame(Buffers.wrap("application   /   sdp"));
-        assertThat(header.getContentType().toString(), is("application"));
+        header = ContentTypeHeader.frame(Buffers.wrap("io.sipstack.application.application   /   sdp"));
+        assertThat(header.getContentType().toString(), is("io.sipstack.application.application"));
         assertThat(header.getContentSubType().toString(), is("sdp"));
         assertThat(header.getParameter("hello"), is((Buffer) null));
 
-        header = ContentTypeHeader.frame(Buffers.wrap("application/   sdp"));
-        assertThat(header.getContentType().toString(), is("application"));
+        header = ContentTypeHeader.frame(Buffers.wrap("io.sipstack.application.application/   sdp"));
+        assertThat(header.getContentType().toString(), is("io.sipstack.application.application"));
         assertThat(header.getContentSubType().toString(), is("sdp"));
         assertThat(header.getParameter("world"), is((Buffer) null));
 
         // some space at the end should be ok too...
-        header = ContentTypeHeader.frame(Buffers.wrap("application/   sdp     "));
-        assertThat(header.getContentType().toString(), is("application"));
+        header = ContentTypeHeader.frame(Buffers.wrap("io.sipstack.application.application/   sdp     "));
+        assertThat(header.getContentType().toString(), is("io.sipstack.application.application"));
         assertThat(header.getContentSubType().toString(), is("sdp"));
         assertThat(header.getParameter("world"), is((Buffer) null));
     }
@@ -70,12 +69,12 @@ public class ContentTypeHeaderTest {
      */
     @Test
     public void testGetValue() throws Exception {
-        ContentTypeHeader header = ContentTypeHeader.frame(Buffers.wrap("application/sdp"));
-        assertThat(header.getValue().toString(), is("application/sdp"));
+        ContentTypeHeader header = ContentTypeHeader.frame(Buffers.wrap("io.sipstack.application.application/sdp"));
+        assertThat(header.getValue().toString(), is("io.sipstack.application.application/sdp"));
 
         // spaces etc will get lost in translation and that's ok i think
-        header = ContentTypeHeader.frame(Buffers.wrap("application  /   sdp"));
-        assertThat(header.getValue().toString(), is("application/sdp"));
+        header = ContentTypeHeader.frame(Buffers.wrap("io.sipstack.application.application  /   sdp"));
+        assertThat(header.getValue().toString(), is("io.sipstack.application.application/sdp"));
 
         header = ContentTypeHeader.frame(Buffers.wrap("hello/world;apa=monkey"));
         assertThat(header.getValue().toString(), is("hello/world;apa=monkey"));
@@ -83,7 +82,7 @@ public class ContentTypeHeaderTest {
 
     /**
      * Make sure we correctly identify a {@link MediaTypeHeader} of type
-     * application/sdp
+     * io.sipstack.application.application/sdp
      * 
      * @throws Exception
      */
@@ -171,16 +170,16 @@ public class ContentTypeHeaderTest {
      */
     @Test
     public void testWithParams() throws Exception {
-        ContentTypeHeader header = ContentTypeHeader.frame(Buffers.wrap("application/   sdp     ;hello=world"));
-        assertThat(header.getContentType().toString(), is("application"));
+        ContentTypeHeader header = ContentTypeHeader.frame(Buffers.wrap("io.sipstack.application.application/   sdp     ;hello=world"));
+        assertThat(header.getContentType().toString(), is("io.sipstack.application.application"));
         assertThat(header.getContentSubType().toString(), is("sdp"));
         assertThat(header.getParameter("hello").toString(), is("world"));
 
-        header = ContentTypeHeader.frame(Buffers.wrap("application/sdp;hello=world;apa=monkey"));
+        header = ContentTypeHeader.frame(Buffers.wrap("io.sipstack.application.application/sdp;hello=world;apa=monkey"));
         assertThat(header.getParameter("hello").toString(), is("world"));
         assertThat(header.getParameter("apa").toString(), is("monkey"));
 
-        header = ContentTypeHeader.frame(Buffers.wrap("application/sdp;flag"));
+        header = ContentTypeHeader.frame(Buffers.wrap("io.sipstack.application.application/sdp;flag"));
         assertThat(header.getParameter("flag").capacity(), is(0));
     }
 

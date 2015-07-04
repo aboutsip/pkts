@@ -80,7 +80,7 @@ public abstract class MediaTypeHeaderImpl extends ParametersImpl implements Medi
             final byte m = this.mType.getByte(9);
             final byte n = this.mType.getByte(10);
 
-            // check for application
+            // check for io.sipstack.application.application
             return (d == 'a' || d == 'A') && (e == 'p' || e == 'P') && (f == 'p' || f == 'P')
                     && (g == 'l' || g == 'L') && (h == 'i' || h == 'I') && (i == 'c' || i == 'C')
                     && (j == 'a' || j == 'A') && (k == 't' || k == 'T') && (l == 'i' || l == 'I')

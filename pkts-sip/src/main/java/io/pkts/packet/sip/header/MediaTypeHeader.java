@@ -29,7 +29,7 @@ public interface MediaTypeHeader extends SipHeader {
 
     /**
      * Convenience method for checking whether the media type is
-     * "application/sdp"
+     * "io.sipstack.application.application/sdp"
      * 
      * @return
      */
@@ -43,7 +43,7 @@ public interface MediaTypeHeader extends SipHeader {
      * @return
      * @throws SipParseException
      */
-    public static Buffer[] frame(final Buffer buffer) throws SipParseException {
+    static Buffer[] frame(final Buffer buffer) throws SipParseException {
         if (buffer == null) {
             throw new SipParseException(0, "Cannot parse a null-buffer. Cmon!");
         }

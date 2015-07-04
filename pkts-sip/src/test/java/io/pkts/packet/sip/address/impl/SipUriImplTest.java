@@ -3,14 +3,14 @@
  */
 package io.pkts.packet.sip.address.impl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.address.SipURI;
-
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
 
 
 /**
@@ -216,7 +216,7 @@ public class SipUriImplTest {
     private void assertBuildClone(final String toParse) throws Exception {
         final Buffer buffer = Buffers.wrap(toParse);
         final SipURI uri = SipURI.frame(buffer);
-        final SipURI clone = SipURI.with(uri).build();
+        final SipURI clone = SipURI.withTemplate(uri).build();
         assertThat(uri, is(clone));
     }
 

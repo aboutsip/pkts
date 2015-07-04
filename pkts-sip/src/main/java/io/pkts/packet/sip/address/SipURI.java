@@ -3,10 +3,6 @@
  */
 package io.pkts.packet.sip.address;
 
-import static io.pkts.packet.sip.impl.PreConditions.assertArgument;
-import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
-import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
-import static io.pkts.packet.sip.impl.PreConditions.checkIfNotEmpty;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
@@ -15,6 +11,11 @@ import io.pkts.packet.sip.header.impl.ParametersSupport;
 import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
+
+import static io.pkts.packet.sip.impl.PreConditions.assertArgument;
+import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
+import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
+import static io.pkts.packet.sip.impl.PreConditions.checkIfNotEmpty;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -250,6 +251,38 @@ public interface SipURI extends URI {
     }
 
     /**
+     * Create a new builder based where the user portion has been specified.
+     *
+     * Note, even though the user portion of a SIP URI isn't mandatory it will be
+     * checked for empty or null by this method. The reason for this is simply
+     * if you call a method called "withUser" then it is assumed you actually do
+     * want the user portion to be present. If this is not what you want, simply
+     * call another "withXXX" method.
+     *
+     * @param user
+     * @return
+     */
+    public static Builder withUser(final String user) {
+        final Builder builder = new Builder();
+        return builder.withUser(user);
+    }
+
+    public static Builder withUser(final Buffer user) {
+        final Builder builder = new Builder();
+        return builder.withUser(user);
+    }
+
+    public static Builder withHost(final String host) {
+        final Builder builder = new Builder();
+        return builder.withHost(host);
+    }
+
+    public static Builder withHost(final Buffer host) {
+        final Builder builder = new Builder();
+        return builder.withHost(host);
+    }
+
+    /**
      * Create a new {@link Builder} based on the {@link SipURI}.
      * 
      * <ul>
@@ -265,15 +298,15 @@ public interface SipURI extends URI {
      * @param uri
      * @return
      */
-    public static Builder with(final SipURI uri) {
+    public static Builder withTemplate(final SipURI uri) {
         final Builder b = new Builder();
-        b.user(uri.getUser());
-        b.host(uri.getHost());
-        b.port(uri.getPort());
-        b.secure(uri.isSecure());
+        b.withUser(uri.getUser());
+        b.withHost(uri.getHost());
+        b.withPort(uri.getPort());
+        b.withSecure(uri.isSecure());
         final Buffer transport = uri.getTransportParam();
         if (transport != null && !transport.isEmpty()) {
-            b.parameter(SipParser.TRANSPORT, transport);
+            b.withParameter(SipParser.TRANSPORT, transport);
         }
 
         return b;
@@ -296,7 +329,7 @@ public interface SipURI extends URI {
          * @param user
          * @return
          */
-        public Builder user(final Buffer user) {
+        public Builder withUser(final Buffer user) {
             if (user != null) {
                 this.user = user.slice();
             } else {
@@ -310,7 +343,7 @@ public interface SipURI extends URI {
          * @param user
          * @return
          */
-        public Builder user(final String user) {
+        public Builder withUser(final String user) {
             if (checkIfNotEmpty(user)) {
                 this.user = Buffers.wrap(user);
             }
@@ -323,37 +356,37 @@ public interface SipURI extends URI {
          * @param host
          * @return
          */
-        public Builder host(final Buffer host) throws SipParseException {
+        public Builder withHost(final Buffer host) throws SipParseException {
             assertNotNull(host, "Host cannot be null");
             this.host = host.slice();
             return this;
         }
 
-        public Builder host(final String host) throws SipParseException {
+        public Builder withHost(final String host) throws SipParseException {
             assertNotEmpty(host, "Host cannot be null or the empty string");
             this.host = Buffers.wrap(host);
             return this;
         }
 
-        public Builder transport(final Buffer transport) throws SipParseException {
+        public Builder withTransport(final Buffer transport) throws SipParseException {
             assertNotEmpty(transport, "Transport cannot be null or empty");
             this.paramSupport.setParameter(SipParser.TRANSPORT, transport);
             return this;
         }
 
-        public Builder transport(final String transport) throws SipParseException {
+        public Builder withTransport(final String transport) throws SipParseException {
             assertNotEmpty(transport, "Transport cannot be null or empty");
             this.paramSupport.setParameter(SipParser.TRANSPORT, Buffers.wrap(transport));
             return this;
         }
 
-        public Builder parameter(final Buffer name, final Buffer value) throws SipParseException,
+        public Builder withParameter(final Buffer name, final Buffer value) throws SipParseException,
         IllegalArgumentException {
             this.paramSupport.setParameter(name, value);
             return this;
         }
 
-        public Builder parameter(final String name, final String value) throws SipParseException,
+        public Builder withParameter(final String name, final String value) throws SipParseException,
         IllegalArgumentException {
             this.paramSupport.setParameter(name, value);
             return this;
@@ -376,7 +409,7 @@ public interface SipURI extends URI {
          * 
          * @return
          */
-        public Builder secure(final boolean secure) {
+        public Builder withSecure(final boolean secure) {
             this.isSecure = secure;
             return this;
         }
@@ -389,7 +422,7 @@ public interface SipURI extends URI {
          * @param port
          * @return
          */
-        public Builder port(final int port) throws SipParseException {
+        public Builder withPort(final int port) throws SipParseException {
             assertArgument(port > 0 || port == -1, "Port must be greater than zero or negative one (use default)");
             this.port = port;
             return this;

@@ -21,7 +21,7 @@ import java.util.function.Supplier;
  * Source rfc 3261 section 8.1.1.7
  * 
  * <p>
- * The Via header field indicates the transport used for the transaction and
+ * The Via header field indicates the transport used for the io.sipstack.transaction.transaction and
  * identifies the location where the response is to be sent. A Via header field
  * value is added only after the transport that will be used to reach the next
  * hop has been selected (which may involve the usage of the procedures in [4]).
@@ -31,7 +31,7 @@ import java.util.function.Supplier;
  * When the UAC creates a request, it MUST insert a Via into that request. The
  * protocol name and protocol version in the header field MUST be SIP and 2.0,
  * respectively. The Via header field value MUST contain a branch parameter.
- * This parameter is used to identify the transaction created by that request.
+ * This parameter is used to identify the io.sipstack.transaction.transaction created by that request.
  * This parameter is used by both the client and the server.
  * </p>
  * 
@@ -46,7 +46,7 @@ import java.util.function.Supplier;
  * 
  * <p>
  * The uniqueness property of the branch ID parameter, to facilitate its use as
- * a transaction ID, was not part of RFC 2543.
+ * a io.sipstack.transaction.transaction ID, was not part of RFC 2543.
  * </p>
  * 
  * <p>
@@ -124,7 +124,7 @@ public interface ViaHeader extends Parameters, SipHeader {
      * However, everything is done lazily in this library so there is not a 100%
      * guarantee that the branch header actually is present. Hence, you MUST be
      * prepared to check for null in case the Via-header is bad. If important to
-     * your application (and if you are building a stack it probably will be)
+     * your io.sipstack.application.application (and if you are building a stack it probably will be)
      * then please call {@link #verify()} on your headers since that will
      * guarantee that they conform to whatever the various RFC's mandates.
      * 

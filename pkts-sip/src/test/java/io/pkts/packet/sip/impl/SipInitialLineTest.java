@@ -3,23 +3,22 @@
  */
 package io.pkts.packet.sip.impl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.SipURI;
-
-import java.io.IOException;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.IOException;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -55,7 +54,7 @@ public class SipInitialLineTest {
      */
     @Test
     public void testCreateRequestLine() throws Exception {
-        final SipURI uri = SipURI.with().user("alice").host("example.com").build();
+        final SipURI uri = SipURI.withUser("alice").withHost("example.com").build();
         final SipRequestLine line = new SipRequestLine(Buffers.wrap("INVITE"), uri);
         assertThat(line.isRequestLine(), is(true));
         assertThat(line.isResponseLine(), is(false));
