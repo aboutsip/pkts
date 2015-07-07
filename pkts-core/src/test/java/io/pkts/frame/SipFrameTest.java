@@ -57,8 +57,8 @@ public class SipFrameTest extends PktsTestBase {
         assertThat(((SipRequestPacket) sip).getRequestUri().toString(), is("sip:service@127.0.0.1:5090"));
 
         // just check some random headers
-        assertThat(sip.getHeader(Buffers.wrap("Content-Length")).getValue().toString(), is("129"));
-        assertThat(sip.getHeader(Buffers.wrap("Call-ID")).getValue().toString(), is("1-16732@127.0.1.1"));
+        assertThat(sip.getHeader(Buffers.wrap("Content-Length")).get().getValue().toString(), is("129"));
+        assertThat(sip.getHeader(Buffers.wrap("Call-ID")).get().getValue().toString(), is("1-16732@127.0.1.1"));
 
         assertThat(sip.getArrivalTime(), is(123L));
         assertThat(sip.getSourceIP(), is("192.168.0.100"));
@@ -72,8 +72,8 @@ public class SipFrameTest extends PktsTestBase {
         final SIPFramer framer = new SIPFramer();
         final SipPacket sip = framer.frame(this.transportPkt, this.sipFrameBuffer180Response);
         assertThat(sip.getMethod().toString(), is("INVITE"));
-        assertThat(sip.getHeader(Buffers.wrap("Call-ID")).getValue().toString(), is("1-16732@127.0.1.1"));
-        assertThat(sip.getHeader(Buffers.wrap("Content-Length")).getValue().toString(), is("0"));
+        assertThat(sip.getHeader(Buffers.wrap("Call-ID")).get().getValue().toString(), is("1-16732@127.0.1.1"));
+        assertThat(sip.getHeader(Buffers.wrap("Content-Length")).get().getValue().toString(), is("0"));
     }
 
 }

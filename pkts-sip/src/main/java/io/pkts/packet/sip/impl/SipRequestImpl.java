@@ -3,6 +3,8 @@
  */
 package io.pkts.packet.sip.impl;
 
+import java.util.Optional;
+
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
@@ -199,13 +201,13 @@ public final class SipRequestImpl extends SipMessageImpl implements SipRequest {
 
         // TODO: need to extract all via headers
         final ViaHeader via = getViaHeader();
-        final SipHeader maxForwards = getHeader(MaxForwardsHeader.NAME);
+        final Optional<SipHeader> maxForwards = getHeader(MaxForwardsHeader.NAME);
         response.setHeader(from);
         response.setHeader(to);
         response.setHeader(callID);
         response.setHeader(cseq);
         response.setHeader(via);
-        response.setHeader(maxForwards);
+        response.setHeader(maxForwards.orElse(null));
 
         // The TimeStamp header should be there as well but screw it.
         // TODO: need to add any record-route headers

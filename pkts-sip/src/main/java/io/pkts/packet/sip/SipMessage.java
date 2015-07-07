@@ -20,6 +20,7 @@ import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Packet representing a SIP message.
@@ -148,7 +149,7 @@ public interface SipMessage extends Cloneable {
      * @return the header as a {@link SipHeader} or null if not found
      * @throws SipParseException
      */
-    SipHeader getHeader(Buffer headerName) throws SipParseException;
+    Optional<SipHeader> getHeader(Buffer headerName) throws SipParseException;
 
     /**
      * Same as {@link #getHeader(Buffers.wrap(keyParameter)}.
@@ -158,7 +159,7 @@ public interface SipMessage extends Cloneable {
      * @return the header as a {@link SipHeader} or null if not found
      * @throws SipParseException
      */
-    SipHeader getHeader(String headerName) throws SipParseException;
+    Optional<SipHeader> getHeader(String headerName) throws SipParseException;
 
     void addHeader(SipHeader header) throws SipParseException;
 

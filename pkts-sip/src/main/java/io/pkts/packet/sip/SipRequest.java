@@ -60,6 +60,10 @@ public interface SipRequest extends SipMessage {
         return request(Builder.INVITE, requestURI);
     }
 
+    static Builder invite(final URI requestURI) throws SipParseException {
+        return request(Builder.INVITE, requestURI);
+    }
+
     static Builder ack(final String requestURI) throws SipParseException {
         return request(Builder.ACK, requestURI);
     }
@@ -86,6 +90,11 @@ public interface SipRequest extends SipMessage {
         } catch (IndexOutOfBoundsException | IOException e) {
             throw new SipParseException(0, "Unable to parse the request-uri", e);
         }
+    }
+
+    static Builder request(final Buffer method, final URI requestURI) throws SipParseException {
+        // TODO since URI is mutable we have to make a copy so for now just delegate to string method
+        return request(method, requestURI.toString());
     }
 
     public static class Builder {

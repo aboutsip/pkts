@@ -15,6 +15,7 @@ import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Packet representing a SIP message.
@@ -123,17 +124,17 @@ public interface SipPacket extends ApplicationPacket {
      * @return the header as a {@link SipHeader} or null if not found
      * @throws SipParseException
      */
-    SipHeader getHeader(Buffer headerName) throws SipParseException;
+    Optional<SipHeader> getHeader(Buffer headerName) throws SipParseException;
 
     /**
      * Same as {@link #getHeader(Buffers.wrap(keyParameter)}.
      * 
      * @param headerName
      *            the name of the header we wish to fetch
-     * @return the header as a {@link SipHeader} or null if not found
+     * @return the header as a {@link SipHeader}
      * @throws SipParseException
      */
-    SipHeader getHeader(String headerName) throws SipParseException;
+    Optional<SipHeader> getHeader(String headerName) throws SipParseException;
 
     void addHeader(SipHeader header) throws SipParseException;
 

@@ -47,7 +47,7 @@ public class SipMessageFactoryImplTest extends PktsTestBase {
         assertThat(resp.getToHeader().getValue().toString(), is("sut <sip:service@127.0.0.1:5090>"));
         assertThat(resp.getCallIDHeader().getValue().toString(), is("1-16732@127.0.1.1"));
         assertThat(resp.getViaHeader().getValue().toString(), is("SIP/2.0/UDP 127.0.1.1:5060;branch=z9hG4bK-16732-1-0"));
-        assertThat(resp.getHeader(MaxForwardsHeader.NAME).getValue().toString(), is("70"));
+        assertThat(resp.getHeader(MaxForwardsHeader.NAME).get().getValue().toString(), is("70"));
 
         final Buffer buffer = resp.toBuffer();
         System.out.println(buffer);

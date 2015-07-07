@@ -35,7 +35,7 @@ public class PcapOutputStreamTest extends PktsTestBase {
         final InputStream stream = PktsTestBase.class.getResourceAsStream("sipp.pcap");
         final Pcap pcap = Pcap.openStream(stream);
         // final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final FileOutputStream out = new FileOutputStream("hello.pcap");
+        final FileOutputStream out = new FileOutputStream("target/hello.pcap");
         final PcapOutputStream pcapStream = pcap.createOutputStream(out);
         final TestWriteStreamHandler handler = new TestWriteStreamHandler(pcapStream);
         pcap.loop(handler);
