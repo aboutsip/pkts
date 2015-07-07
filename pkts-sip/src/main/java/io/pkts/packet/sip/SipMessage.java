@@ -405,6 +405,10 @@ public interface SipMessage extends Cloneable {
      */
     boolean isInitial() throws SipParseException;
 
+    default boolean isSubsequent() throws SipParseException {
+        return !isInitial();
+    }
+
     /**
      * <p>
      * <ul>
