@@ -15,6 +15,7 @@ import io.pkts.packet.sip.header.ContactHeader;
 import io.pkts.packet.sip.header.FromHeader;
 import io.pkts.packet.sip.header.MaxForwardsHeader;
 import io.pkts.packet.sip.header.RouteHeader;
+import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.packet.sip.impl.SipRequestImpl;
@@ -60,6 +61,10 @@ public interface SipRequest extends SipMessage {
         return request(Builder.INVITE, requestURI);
     }
 
+    static Builder invite(final URI requestURI) throws SipParseException {
+        return request(Builder.INVITE, requestURI);
+    }
+
     static Builder ack(final String requestURI) throws SipParseException {
         return request(Builder.ACK, requestURI);
     }
@@ -88,6 +93,11 @@ public interface SipRequest extends SipMessage {
         }
     }
 
+    static Builder request(final Buffer method, final URI requestURI) throws SipParseException {
+        // TODO since URI is mutable we have to make a copy so for now just delegate to string method
+        return request(method, requestURI.toString());
+    }
+
     public static class Builder {
 
         private static final Buffer INVITE = Buffers.wrap("INVITE");
@@ -106,6 +116,7 @@ public interface SipRequest extends SipMessage {
         private CallIdHeader callId;
         private ViaHeader via;
         private List<ViaHeader> vias; // after the first one, we will add Via headers to this list
+        private List<SipHeader> headers;
 
         /**
          * 
@@ -115,9 +126,21 @@ public interface SipRequest extends SipMessage {
             this.method = method;
         }
 
+        public SipURI requestURI() {
+            return requestURI;
+        }
+
+        public ToHeader to() {
+            return to;
+        }
+
         public Builder to(final ToHeader to) {
             this.to = assertNotNull(to, "The To-header cannot be null");
             return this;
+        }
+
+        public FromHeader from() {
+            return from;
         }
 
         public Builder from(final FromHeader from) {
@@ -158,6 +181,12 @@ public interface SipRequest extends SipMessage {
             return this;
         }
 
+        public Builder header(final SipHeader header) {
+            assertNotNull(header, "The header cannot be null");
+            ensureHeaders().add(header);
+            return this;
+        }
+
         /**
          * Build a new {@link SipRequest}. The only mandatory value is the request-uri and the
          * From-address. The following headers will be generated with default values unless
@@ -190,11 +219,14 @@ public interface SipRequest extends SipMessage {
             if (via != null) {
                 request.addHeader(via);
                 if (this.vias != null) {
-                    vias.forEach(via -> request.addHeader(via));
+                    vias.forEach(request::addHeader);
                 }
             }
             if (contact != null) {
                 request.setHeader(contact);
+            }
+            if (headers != null) {
+                headers.forEach(request::addHeader);
             }
             return request;
         }
@@ -225,7 +257,6 @@ public interface SipRequest extends SipMessage {
          * Get the To-header but if the user hasn't explicitly speficied one then base it off of the
          * request uri.
          * 
-         * @param requestURI
          * @return
          */
         private ToHeader getToHeader() {
@@ -239,9 +270,16 @@ public interface SipRequest extends SipMessage {
 
         private List<ViaHeader> ensureViaList() {
             if (vias == null) {
-                this.vias = new ArrayList<ViaHeader>(2);
+                this.vias = new ArrayList<>(2);
             }
             return this.vias;
+        }
+
+        private List<SipHeader> ensureHeaders() {
+            if (headers == null) {
+                this.headers = new ArrayList<>(8);
+            }
+            return this.headers;
         }
     }
 

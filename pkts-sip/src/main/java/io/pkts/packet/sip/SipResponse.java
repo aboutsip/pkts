@@ -48,6 +48,15 @@ public interface SipResponse extends SipMessage {
     boolean isSuccess();
 
     /**
+     * Convenience method for checking whether this response is >= 400.
+     *
+     * @return
+     */
+    default boolean isError() {
+        return getStatus() / 100 >= 4;
+    }
+
+    /**
      * Convenience method for checking whether this is a 3xx response or not.
      * 
      * @return

@@ -32,6 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -248,24 +249,23 @@ public abstract class SipMessageImpl implements SipMessage {
      * {@inheritDoc}
      */
     @Override
-    public SipHeader getHeader(final Buffer headerName) throws SipParseException {
-        return getHeaderInternal(headerName, false);
+    public Optional<SipHeader> getHeader(final Buffer headerName) throws SipParseException {
+        return Optional.ofNullable(getHeaderInternal(headerName, false));
     }
 
     @Override
     public SipHeader popHeader(final Buffer headerName) throws SipParseException {
-        final SipHeader header = getHeader(headerName);
-        if (header == null) {
-            return null;
-        }
+        final Optional<SipHeader> header = getHeader(headerName);
 
-        final List<SipHeader> headers = this.parsedHeaders.get(headerName);
-        headers.remove(0);
-        if (headers.isEmpty()) {
-            this.parsedHeaders.remove(headerName);
-        }
+        header.ifPresent(h -> {
+            final List<SipHeader> headers = this.parsedHeaders.get(headerName);
+            headers.remove(0);
+            if (headers.isEmpty()) {
+                this.parsedHeaders.remove(headerName);
+            }
+        });
 
-        return header;
+        return header.orElse(null);
     }
 
 
@@ -331,7 +331,7 @@ public abstract class SipMessageImpl implements SipMessage {
      * {@inheritDoc}
      */
     @Override
-    public SipHeader getHeader(final String headerName) throws SipParseException {
+    public Optional<SipHeader> getHeader(final String headerName) throws SipParseException {
         return getHeader(Buffers.wrap(headerName));
     }
 

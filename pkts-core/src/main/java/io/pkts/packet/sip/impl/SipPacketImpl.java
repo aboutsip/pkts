@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -378,7 +379,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getHeader(io.pkts.buffer.Buffer)
      */
     @Override
-    public SipHeader getHeader(final Buffer headerName) throws SipParseException {
+    public Optional<SipHeader> getHeader(final Buffer headerName) throws SipParseException {
         return this.msg.getHeader(headerName);
     }
 
@@ -388,7 +389,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getHeader(java.lang.String)
      */
     @Override
-    public SipHeader getHeader(final String headerName) throws SipParseException {
+    public Optional<SipHeader> getHeader(final String headerName) throws SipParseException {
         return this.msg.getHeader(headerName);
     }
 

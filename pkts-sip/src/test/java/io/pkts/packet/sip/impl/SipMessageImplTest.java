@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -222,23 +223,23 @@ public class SipMessageImplTest extends PktsTestBase {
         assertThat(from.getValue(), is(Buffers.wrap("sipp <sip:sipp@127.0.1.1:5060>;tag=16732SIPpTag001")));
 
         // should also be able to do like so
-        from = this.request.getHeader(Buffers.wrap("From"));
+        from = this.request.getHeader(Buffers.wrap("From")).get();
         assertThat(from.getName(), is(Buffers.wrap("From")));
         assertThat(from.getValue(), is(Buffers.wrap("sipp <sip:sipp@127.0.1.1:5060>;tag=16732SIPpTag001")));
 
         // Grab the Via header
-        final SipHeader via = this.request.getHeader(Buffers.wrap("Via"));
+        final SipHeader via = this.request.getHeader(Buffers.wrap("Via")).get();
         assertThat(via.getName(), is(Buffers.wrap("Via")));
         assertThat(via.getValue(), is(Buffers.wrap("SIP/2.0/UDP 127.0.1.1:5060;branch=z9hG4bK-16732-1-0")));
 
         // Lets skip a few headers. The contact header comes further
         // into the message
-        final SipHeader contact = this.request.getHeader(Buffers.wrap("Contact"));
+        final SipHeader contact = this.request.getHeader(Buffers.wrap("Contact")).get();
         assertThat(contact.getName(), is(Buffers.wrap("Contact")));
         assertThat(contact.getValue(), is(Buffers.wrap("sip:sipp@127.0.1.1:5060")));
 
         // fetch a header that doesn't exist.
-        assertThat(this.request.getHeader("Whatever"), is((SipHeader) null));
+        assertThat(this.request.getHeader("Whatever").isPresent(), is(false));
 
         // this message does not have a Record-Route header
         final RecordRouteHeader rr = this.request.getRecordRouteHeader();
@@ -251,26 +252,26 @@ public class SipMessageImplTest extends PktsTestBase {
         // and the purpose with that is that now that we ask for a header that
         // appear before the contact, we should actually find it in the internal
         // parsed storage
-        final SipHeader callId = this.request.getHeader(Buffers.wrap("Call-ID"));
+        final SipHeader callId = this.request.getHeader(Buffers.wrap("Call-ID")).get();
         assertThat(callId.getName(), is(Buffers.wrap("Call-ID")));
         assertThat(callId.getValue(), is(Buffers.wrap("1-16732@127.0.1.1")));
 
         // ask for something that doesn't exist...
         // which would have caused us to go through everything
         // in the headers buffer...
-        assertThat(this.request.getHeader(Buffers.wrap("Whatever")), is((SipHeader) null));
+        assertThat(this.request.getHeader(Buffers.wrap("Whatever")), is(Optional.empty()));
 
         // but of course, we should still be able to ask
         // for anything we want
-        final SipHeader maxForwards = this.request.getHeader(Buffers.wrap("Max-Forwards"));
+        final SipHeader maxForwards = this.request.getHeader(Buffers.wrap("Max-Forwards")).get();
         assertThat(maxForwards.getName(), is(Buffers.wrap("Max-Forwards")));
         assertThat(maxForwards.getValue(), is(Buffers.wrap("70")));
 
-        final SipHeader contentLength = this.request.getHeader(Buffers.wrap("Content-Length"));
+        final SipHeader contentLength = this.request.getHeader(Buffers.wrap("Content-Length")).get();
         assertThat(contentLength.getName(), is(Buffers.wrap("Content-Length")));
         assertThat(contentLength.getValue(), is(Buffers.wrap("129")));
 
-        final SipHeader contentType = this.request.getHeader(Buffers.wrap("Content-Type"));
+        final SipHeader contentType = this.request.getHeader(Buffers.wrap("Content-Type")).get();
         assertThat(contentType.getName(), is(Buffers.wrap("Content-Type")));
         assertThat(contentType.getValue(), is(Buffers.wrap("application/sdp")));
 

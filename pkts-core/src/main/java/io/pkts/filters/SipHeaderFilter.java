@@ -12,6 +12,7 @@ import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -33,12 +34,12 @@ public class SipHeaderFilter extends SipFilter {
         try {
             if (super.accept(packet)) {
                 final SipPacket msg = (SipPacket) packet.getPacket(Protocol.SIP);
-                final SipHeader header = msg.getHeader(this.name);
-                if (header == null) {
+                final Optional<SipHeader> header = msg.getHeader(this.name);
+                if (header.isPresent()) {
                     return false;
                 }
 
-                return header.getValue().equals(this.value);
+                return header.get().getValue().equals(this.value);
             }
         } catch (final IOException e) {
             throw new FilterException("Unable to process the frame due to IOException", e);
