@@ -69,9 +69,8 @@ public interface SipRequest extends SipMessage {
         return request(Builder.ACK, requestURI);
     }
 
-    static Builder ack(final SipURI requestURI) throws SipParseException {
-        assertNotNull(requestURI, "RequestURI canot be null or the empty string");
-        return new Builder(Builder.ACK, requestURI);
+    static Builder ack(final URI requestURI) throws SipParseException {
+        return request(Builder.ACK, requestURI);
     }
 
     static Builder cancel(final SipURI requestURI) throws SipParseException {
@@ -81,6 +80,10 @@ public interface SipRequest extends SipMessage {
 
     static Builder cancel(final String requestURI) throws SipParseException {
         return request(Builder.CANCEL, requestURI);
+    }
+
+    static Builder bye(final URI requestURI) throws SipParseException {
+        return request(Builder.BYE, requestURI);
     }
 
     static Builder request(final Buffer method, final String requestURI) throws SipParseException {
@@ -103,6 +106,7 @@ public interface SipRequest extends SipMessage {
         private static final Buffer INVITE = Buffers.wrap("INVITE");
         private static final Buffer ACK = Buffers.wrap("ACK");
         private static final Buffer CANCEL = Buffers.wrap("CANCEL");
+        private static final Buffer BYE = Buffers.wrap("BYE");
 
         private final Buffer method;
 
