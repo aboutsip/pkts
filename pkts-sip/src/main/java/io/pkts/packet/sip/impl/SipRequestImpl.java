@@ -206,8 +206,6 @@ public final class SipRequestImpl extends SipMessageImpl implements SipRequest {
         response.setHeader(to);
         response.setHeader(callID);
         response.setHeader(cseq);
-        //List<ViaHeader> vias = getViaHeaders();
-        //Collections.reverse(vias);
         getViaHeaders().forEach(response::addHeader);
 
         response.setHeader(maxForwards.orElse(null));
