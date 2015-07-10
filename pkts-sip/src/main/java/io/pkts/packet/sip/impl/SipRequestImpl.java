@@ -208,7 +208,7 @@ public final class SipRequestImpl extends SipMessageImpl implements SipRequest {
         response.setHeader(cseq);
         getViaHeaders().forEach(response::addHeader);
 
-        response.setHeader(maxForwards.orElse(null));
+        maxForwards.ifPresent(response::setHeader);
 
         // The TimeStamp header should be there as well but screw it.
         // TODO: need to add any record-route headers
