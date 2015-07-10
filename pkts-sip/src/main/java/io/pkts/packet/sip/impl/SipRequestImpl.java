@@ -3,6 +3,8 @@
  */
 package io.pkts.packet.sip.impl;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import io.pkts.buffer.Buffer;
@@ -191,22 +193,23 @@ public final class SipRequestImpl extends SipMessageImpl implements SipRequest {
      * {@inheritDoc}
      */
     @Override
-    public SipResponse createResponse(final int statusCode) throws SipParseException, ClassCastException {
+    public SipResponse createResponse(final int statusCode, final Buffer content) throws SipParseException, ClassCastException {
         final SipResponseLine initialLine = new SipResponseLine(statusCode, getDefaultResponseReason(statusCode));
-        final SipResponse response = new SipResponseImpl(initialLine, null, null);
+        final SipResponse response = new SipResponseImpl(initialLine, null, content);
         final CallIdHeader callID = getCallIDHeader();
         final FromHeader from = getFromHeader();
         final ToHeader to = getToHeader();
         final CSeqHeader cseq = getCSeqHeader();
 
-        // TODO: need to extract all via headers
-        final ViaHeader via = getViaHeader();
         final Optional<SipHeader> maxForwards = getHeader(MaxForwardsHeader.NAME);
         response.setHeader(from);
         response.setHeader(to);
         response.setHeader(callID);
         response.setHeader(cseq);
-        response.setHeader(via);
+        //List<ViaHeader> vias = getViaHeaders();
+        //Collections.reverse(vias);
+        getViaHeaders().forEach(response::addHeader);
+
         response.setHeader(maxForwards.orElse(null));
 
         // The TimeStamp header should be there as well but screw it.

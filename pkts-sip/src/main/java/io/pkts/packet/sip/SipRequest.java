@@ -121,6 +121,7 @@ public interface SipRequest extends SipMessage {
         private ViaHeader via;
         private List<ViaHeader> vias; // after the first one, we will add Via headers to this list
         private List<SipHeader> headers;
+        private Buffer rawContent;
 
         /**
          * 
@@ -191,6 +192,11 @@ public interface SipRequest extends SipMessage {
             return this;
         }
 
+        public Builder content(final Buffer rawContent) {
+            this.rawContent = rawContent;
+            return this;
+        }
+
         /**
          * Build a new {@link SipRequest}. The only mandatory value is the request-uri and the
          * From-address. The following headers will be generated with default values unless
@@ -214,7 +220,7 @@ public interface SipRequest extends SipMessage {
         public SipRequest build() throws SipParseException {
             assertNotNull(from, "The From-header has not been specified");
             final SipRequestLine initialLine = new SipRequestLine(method, requestURI);
-            final SipRequest request = new SipRequestImpl(initialLine, null, null);
+            final SipRequest request = new SipRequestImpl(initialLine, null, rawContent);
             request.setHeader(getToHeader());
             request.setHeader(from);
             request.setHeader(getCSeq());
