@@ -135,6 +135,10 @@ public interface SipRequest extends SipMessage {
             return requestURI;
         }
 
+        public Buffer method() {
+            return method;
+        }
+
         public ToHeader to() {
             return to;
         }
