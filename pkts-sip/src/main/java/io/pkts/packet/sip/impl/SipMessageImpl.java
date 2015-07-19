@@ -689,8 +689,9 @@ public abstract class SipMessageImpl implements SipMessage {
         buffer.write(SipParser.CR);
         buffer.write(SipParser.LF);
         transferHeaders(buffer);
-        buffer.write(SipParser.CR);
-        buffer.write(SipParser.LF);
+        // Note, this is conflicting now with how things are done in sipstack.io
+        // buffer.write(SipParser.CR);
+        // buffer.write(SipParser.LF);
         if (this.payload != null) {
             this.payload.getBytes(0, buffer);
         }

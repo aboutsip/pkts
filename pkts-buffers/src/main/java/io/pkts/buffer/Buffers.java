@@ -84,7 +84,7 @@ public final class Buffers {
             throw new IllegalArgumentException("the input stream cannot be null or empty");
         }
 
-        return new InputStreamBuffer(is);
+        return new BoundedInputStreamBuffer(is);
     }
 
     /**

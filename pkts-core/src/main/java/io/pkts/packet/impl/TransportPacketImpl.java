@@ -9,6 +9,7 @@ import io.pkts.framer.SIPFramer;
 import io.pkts.packet.IPPacket;
 import io.pkts.packet.Packet;
 import io.pkts.packet.TransportPacket;
+import io.pkts.packet.rtp.RtpPacket;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
@@ -231,9 +232,23 @@ public abstract class TransportPacketImpl extends AbstractPacket implements Tran
         if (sipFramer.accept(payload)) {
             return sipFramer.frame(this, payload);
         } else if (rtpFramer.accept(payload)) {
+            // RTP is tricky to parse so if we return
+            // null then it wasn't an RTP packet afterall
+            // so fall through...
+            final RtpPacket rtp = frameRtp(payload);
+            if (rtp != null) {
+                return rtp;
+            }
+        }
+
+        return new UnknownApplicationPacketImpl(this, payload);
+    }
+
+    private RtpPacket frameRtp(final Buffer payload) throws IOException {
+        try {
             return rtpFramer.frame(this, payload);
-        } else {
-            return new UnknownApplicationPacketImpl(this, payload);
+        } catch (final IndexOutOfBoundsException e) {
+            return null;
         }
     }
 

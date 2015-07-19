@@ -68,6 +68,7 @@ public abstract class SipInitialLine extends SipParser {
      * @return
      */
     public static final SipInitialLine parse(final Buffer buffer) throws SipParseException {
+        String apa = buffer.toString();
         Buffer part1 = null;
         Buffer part2 = null;
         Buffer part3 = null;
@@ -95,6 +96,8 @@ public abstract class SipInitialLine extends SipParser {
         } catch (final SipParseException e) {
             // is only thrown by the expectSIP2_0. Calculate the correct
             // index into the buffer
+            System.err.println(apa);
+            e.printStackTrace();;
             final int index = buffer.getReaderIndex() - part3.capacity() + e.getErrorOffset() - 1;
             throw new SipParseException(index, "Wrong SIP version");
         } catch (final IOException e) {

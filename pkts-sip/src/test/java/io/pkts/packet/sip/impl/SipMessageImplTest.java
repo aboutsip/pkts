@@ -106,6 +106,20 @@ public class SipMessageImplTest extends PktsTestBase {
         assertRouteHeader(routes.get(1), "two", "aboutsip.com", "<sip:two@aboutsip.com;transport=tcp>");
     }
 
+    /*
+    public void testNewAPI() throws Exception {
+        SipMessage msg = parseMessage(RawData.sipInviteThreeRouteHeaders);
+        // msg.copy().headerStream().filter(h -> h.name.equals(X-Twilio)).map(h.builder()).collect().stream().h.chan
+
+        msg.copy().stream().onRequestURI(r -> r.setUserParam("nisse")).onHeaders(h -> {
+            if (h.isVia()) {
+                return h.copy().withBlah.withPort();
+            }
+            return h;
+        }).onViaIsAboutToGetConstructed(viaBuilder -> viaBuilder.setParam("nisse", "apa")).onFrom().onTo().onContact().onRoutes().onMyRoute().onTopVia().build();`
+    }
+    */
+
     /**
      * Make sure we can extract three route headers and where the 3rd header is
      * NOT directly following the other two headers.
