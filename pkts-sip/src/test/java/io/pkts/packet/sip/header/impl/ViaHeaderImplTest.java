@@ -1,23 +1,50 @@
 package io.pkts.packet.sip.header.impl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.ViaHeader;
-
-import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
 
 
 /**
- * 
+ * This is a test for both the Via header implementation itself but also very much so
+ * for the builder.
+ *
  * @author jonas@jonasborjesson.com
  */
 public class ViaHeaderImplTest {
 
-    @Before
-    public void setUp() throws Exception {
+    @Test
+    public void testBuildFromScratch() throws Exception {
+        final ViaHeader via = ViaHeader.withHost("pkts.io")
+                .withBranch("hello")
+                .withPort(5088)
+                .build();
+
+        assertThat(via.getPort(), is(5088));
+        assertThat(via.getBranch().toString(), is("hello"));
+        assertThat(via.getHost().toString(), is("pkts.io"));
+        assertThat(via.toString(), is("Via: SIP/2.0/UDP pkts.io:5088;branch=hello"));
+    }
+
+    @Test
+    public void testBuildFromScratchLotsOfParams() throws Exception {
+        final ViaHeader via = ViaHeader.withHost("pkts.io")
+                .withBranch("hello")
+                .withReceived("received-from-here")
+                .withParameter("apa", "monkey")
+                .withParameter("nisse", "kalle")
+                .build();
+
+        assertThat(via.getReceived().toString(), is("received-from-here"));
+        assertThat(via.getBranch().toString(), is("hello"));
+        assertThat(via.getParameter("nisse").toString(), is("kalle"));
+        assertThat(via.getParameter("apa").toString(), is("monkey"));
+        assertThat(via.getHost().toString(), is("pkts.io"));
     }
 
     @Test
@@ -32,22 +59,23 @@ public class ViaHeaderImplTest {
     }
 
     /**
-     * Even though an invalid Via-header from a SIP perspective, we still allow for no Via-header so
-     * make sure that works.
-     * 
+     * A Via header without a branch parameter is illegal
      * @throws Exception
      */
-    @Test
+    @Test (expected = SipParseException.class)
     public void testNoViaBranchParameter() throws Exception {
-        ViaHeader via = ViaHeader.frame(Buffers.wrap("SIP/2.0/UDP aboutsip.com;hello=45"));
-        assertThat(via.getBranch(), is((Buffer) null));
+        ViaHeader.frame(Buffers.wrap("SIP/2.0/UDP aboutsip.com;hello=45"));
+    }
 
-        via.setBranch(Buffers.wrap("hello"));
-        assertThat(via.getBranch().toString(), is("hello"));
-
-        // make sure the same is achieved when using builders
-        via = ViaHeader.with().host("aboutsip.com").transportTLS().build();
-        assertThat(via.getBranch(), is((Buffer) null));
+    /**
+     * A Via header without a branch parameter is illegal so make sure that we get
+     * the same result when using the builder directly.
+     *
+     * @throws Exception
+     */
+    @Test (expected = SipParseException.class)
+    public void testNoViaBranchParameterUsingBuilder() throws Exception {
+        ViaHeader.withHost("pkts.io").build();
     }
 
     @Test
@@ -66,9 +94,12 @@ public class ViaHeaderImplTest {
 
     @Test
     public void testSetBranch() throws Exception {
-        final ViaHeader via = ViaHeader.frame(Buffers.wrap("SIP/2.0/TCP aboutsip.com;branch=asdf;hello=world"));
+        final Buffer buf = Buffers.wrap("SIP/2.0/TCP aboutsip.com;branch=asdf;hello=world");
+        ViaHeader via = ViaHeader.frame(buf);
         assertThat(via.getBranch().toString(), is("asdf"));
-        via.setBranch(Buffers.wrap("hello-world"));
+
+        via = via.copy().withBranch(Buffers.wrap("hello-world")).build();
+
         assertThat(via.getBranch().toString(), is("hello-world"));
         assertThat(via.toString(), is("Via: SIP/2.0/TCP aboutsip.com;branch=hello-world;hello=world"));
         assertThat(via.getValue().toString(), is("SIP/2.0/TCP aboutsip.com;branch=hello-world;hello=world"));
@@ -76,12 +107,15 @@ public class ViaHeaderImplTest {
 
     @Test
     public void testSetParam() throws Exception {
-        final ViaHeader via = ViaHeader.frame(Buffers.wrap("SIP/2.0/TCP aboutsip.com;branch=3;hello=world"));
+        ViaHeader via = ViaHeader.frame(Buffers.wrap("SIP/2.0/TCP aboutsip.com;branch=3;hello=world"));
         assertThat(via.getParameter("hello").toString(), is("world"));
-        via.setParameter(Buffers.wrap("hello"), Buffers.wrap("fup"));
-        assertThat(via.getParameter("hello").toString(), is("fup"));
 
-        via.setParameter(Buffers.wrap("apa"), Buffers.wrap("monkey"));
+        ViaHeader.Builder builder = via.copy();
+        builder.withParameter(Buffers.wrap("hello"), Buffers.wrap("fup")).build();
+        builder.withParameter(Buffers.wrap("apa"), Buffers.wrap("monkey"));
+
+        via = builder.build();
+        assertThat(via.getParameter("hello").toString(), is("fup"));
         assertThat(via.getParameter("apa").toString(), is("monkey"));
 
         assertThat(via.toString().contains("hello=fup"), is(true));
@@ -94,16 +128,15 @@ public class ViaHeaderImplTest {
     }
 
     private void assertViaRport(final String toParse, final int port) throws Exception {
-        final ViaHeader via = ViaHeader.frame(Buffers.wrap(toParse));
-        via.setRPort(port);
+        final ViaHeader via = ViaHeader.frame(Buffers.wrap(toParse)).copy().withRPort(port).build();
         assertThat(via.getRPort(), is(port));
         assertThat(via.toString().contains("rport=" + Buffers.wrap(port).toString()), is(true));
     }
 
     private void assertViaReceived(final String toParse, final String received) throws Exception {
         final Buffer buffer = Buffers.wrap(received);
-        final ViaHeader via = ViaHeader.frame(Buffers.wrap(toParse));
-        via.setReceived(buffer);
+        final ViaHeader via = ViaHeader.frame(Buffers.wrap(toParse)).copy().withReceived(received).build();
+
         assertThat(via.getReceived().toString(), is(received.toString()));
         assertThat(via.toString().contains("received=" + buffer.toString()), is(true));
 

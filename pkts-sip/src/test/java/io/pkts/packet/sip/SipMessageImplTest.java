@@ -3,20 +3,20 @@
  */
 package io.pkts.packet.sip;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.ViaHeader;
-
-import java.util.List;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.*;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -193,14 +193,13 @@ public class SipMessageImplTest extends PktsTestBase {
             throws Exception {
 
         final ViaHeader via =
-                ViaHeader.with().host(host).port(port).branch(ViaHeader.generateBranch()).transport(transport).build();
+                ViaHeader.withHost(host).withPort(port).withBranch(ViaHeader.generateBranch()).withTransport(transport).build();
         msg.addHeaderFirst(via);
         final ViaHeader topMostVia = msg.getViaHeader();
         assertThat(topMostVia.getBranch(), not((Buffer) null));
         assertThat(topMostVia.getHost().toString(), is(host));
         assertThat(topMostVia.getPort(), is(port));
         assertThat(topMostVia.getTransport().toString(), is(transport));
-
     }
 
 }

@@ -3,9 +3,6 @@
  */
 package io.pkts.packet.sip;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
 import io.pkts.PktsTestBase;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.header.CSeqHeader;
@@ -14,9 +11,12 @@ import io.pkts.packet.sip.header.ContactHeader;
 import io.pkts.packet.sip.header.FromHeader;
 import io.pkts.packet.sip.header.MaxForwardsHeader;
 import io.pkts.packet.sip.header.ViaHeader;
-
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.*;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -76,7 +76,7 @@ public class SipRequestTest extends PktsTestBase {
     @Test
     public void testCreateInviteWithViaHeaders() throws Exception {
         final ViaHeader via =
-                ViaHeader.with().host("127.0.0.1").port(9898).transportUDP().branch(ViaHeader.generateBranch()).build();
+                ViaHeader.withHost("127.0.0.1").withPort(9898).withTransportUdp().withBranch(ViaHeader.generateBranch()).build();
         SipRequest invite = SipRequest.invite("sip:alice@example.com").from(this.from).via(via).build();
 
         // since there is only one via header, getting the "top-most" via header should
@@ -90,7 +90,7 @@ public class SipRequestTest extends PktsTestBase {
 
         // two via headers
         final ViaHeader via2 =
-                ViaHeader.with().host("192.168.0.100").transportTCP().branch(ViaHeader.generateBranch()).build();
+                ViaHeader.withHost("192.168.0.100").withTransportTCP().withBranch(ViaHeader.generateBranch()).build();
         invite = SipRequest.invite("sip:alice@example.com").from(this.from).via(via).via(via2).build();
         assertThat(invite.getViaHeaders().size(), is(2));
 

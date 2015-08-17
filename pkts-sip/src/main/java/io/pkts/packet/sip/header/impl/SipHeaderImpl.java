@@ -29,6 +29,10 @@ public class SipHeaderImpl implements SipHeader {
         this.value = value;
     }
 
+    public SipHeader.Builder<SipHeader> copy() {
+        return new SipHeaderBuilder(name, value);
+    }
+
     /**
      * Subclasses may override this one and are in fact encourage to do so
      * 
@@ -57,11 +61,12 @@ public class SipHeaderImpl implements SipHeader {
         // by default, everything is assumed to be correct.
         // Subclasses should override this method and
         // check that everything is ok...
-
     }
 
     /**
-     * If this method actually gets called it means that we are the {@inheritDoc}
+     * If this method actually gets called it means that we are the {@link SipHeaderImpl} itself
+     * and that we need to frame it further. Subclasses must override this method and simply return
+     * 'this'.
      */
     @Override
     public SipHeader ensure() {

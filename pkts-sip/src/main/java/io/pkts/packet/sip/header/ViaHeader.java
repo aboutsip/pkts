@@ -3,9 +3,6 @@
  */
 package io.pkts.packet.sip.header;
 
-import static io.pkts.packet.sip.impl.PreConditions.assertArgument;
-import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
-import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
@@ -13,9 +10,13 @@ import io.pkts.packet.sip.header.impl.ViaHeaderImpl;
 import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Supplier;
+
+import static io.pkts.packet.sip.impl.PreConditions.assertArgument;
+import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
+import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 
 /**
  * Source rfc 3261 section 8.1.1.7
@@ -91,7 +92,7 @@ public interface ViaHeader extends Parameters, SipHeader {
 
     Buffer getReceived();
 
-    void setReceived(Buffer received);
+    // void setReceived(Buffer received);
 
     /**
      * For a request, the rport value will not be filled out since the
@@ -117,7 +118,7 @@ public interface ViaHeader extends Parameters, SipHeader {
      */
     int getRPort();
 
-    void setRPort(int port);
+    // void setRPort(int port);
 
     /**
      * The branch-parameter is mandatory and as such should always be there.
@@ -132,7 +133,7 @@ public interface ViaHeader extends Parameters, SipHeader {
      */
     Buffer getBranch();
 
-    void setBranch(Buffer branch);
+    // void setBranch(Buffer branch);
 
     int getTTL();
 
@@ -167,6 +168,9 @@ public interface ViaHeader extends Parameters, SipHeader {
     @Override
     ViaHeader clone();
 
+    @Override
+    ViaHeader.Builder copy();
+
     /**
      * Frame a buffer into a {@link ViaHeader}.
      * 
@@ -176,15 +180,16 @@ public interface ViaHeader extends Parameters, SipHeader {
      * @return
      * @throws SipParseException
      */
-    public static ViaHeader frame(final Buffer buffer) throws SipParseException {
+    static ViaHeader frame(final Buffer buffer) throws SipParseException {
         try {
-            final Buffer original = buffer.slice();
-            final Object[] result = SipParser.consumeVia(buffer);
-            final Buffer transport = (Buffer) result[0];
-            final Buffer host = (Buffer) result[1];
-            final Buffer port = result[2] == null ? null : (Buffer) result[2];
-            final List<Buffer[]> params = (List<Buffer[]>) result[3];
-            return new ViaHeaderImpl(original, transport, host, port, params);
+            return new Builder(buffer).build();
+            // final Buffer original = buffer.slice();
+            // final Object[] result = SipParser.consumeVia(buffer);
+            // final Buffer transport = (Buffer) result[0];
+            // final Buffer host = (Buffer) result[1];
+            // final Buffer port = result[2] == null ? null : (Buffer) result[2];
+            // final List<Buffer[]> params = (List<Buffer[]>) result[3];
+            // return new ViaHeaderImpl(original, transport, host, port, params);
         } catch (final IOException e) {
             throw new SipParseException(0, "Unable to frame the Via header due to IOException", e);
         }
@@ -201,16 +206,17 @@ public interface ViaHeader extends Parameters, SipHeader {
         return Buffers.wrap("z9hG4bK-" + UUID.randomUUID().toString());
     }
 
-    /**
-     * Factory method for obtaining a {@link ViaHeaderBuilder}.
-     * 
-     * @return
-     */
-    static ViaHeaderBuilder with() {
-        return new ViaHeaderBuilder();
+    static Builder withHost(final Buffer host) {
+        final Builder builder = new Builder();
+        return builder.withHost(host);
     }
 
-    public static class ViaHeaderBuilder {
+    static Builder withHost(final String host) {
+        final Builder builder = new Builder();
+        return builder.withHost(host);
+    }
+
+    class Builder implements SipHeader.Builder<ViaHeader> {
 
         private static final Buffer udp = Buffers.wrap("UDP");
         private static final Buffer tcp = Buffers.wrap("TCP");
@@ -218,26 +224,189 @@ public interface ViaHeader extends Parameters, SipHeader {
         private static final Buffer sctp = Buffers.wrap("SCTP");
         private static final Buffer ws = Buffers.wrap("WS");
 
-        private int port = -1;
-        private Buffer host;
-        private Buffer branch;
-        private Buffer transport;
+        private static final Buffer BRANCH = Buffers.wrap("branch");
+        private static final Buffer RECEIVED = Buffers.wrap("received");
+        private static final Buffer RPORT = Buffers.wrap("rport");
+        private static final Buffer TTL = Buffers.wrap("ttl");
 
-        public ViaHeaderBuilder port(final int port) {
-            assertArgument(port > 0, "Port must be greater than zer");
+        private int indexOfBranch;
+
+        private int indexOfReceived;
+
+        private int indexOfRPort;
+
+        private Buffer transport;
+        private Buffer host;
+        private int port;
+        private List<Buffer[]> params;
+
+        private Buffer branch;
+
+        public Builder() {
+            params = new ArrayList<>(3);
+            port = -1;
+            this.indexOfBranch = -1;
+            this.indexOfReceived = -1;
+            this.indexOfRPort = -1;
+        }
+
+        public Builder(final Buffer transport,
+                       final Buffer host,
+                       final int port,
+                       final List<Buffer[]> params,
+                       final int indexOfBranch,
+                       final int indexOfReceived,
+                       final int indexOfRPort) {
+            this.transport = transport;
+            this.host = host;
             this.port = port;
+            this.params = params;
+            this.indexOfBranch = indexOfBranch;
+            this.indexOfReceived = indexOfReceived;
+            this.indexOfRPort = indexOfRPort;
+        }
+
+        public Builder(final Buffer buffer) throws IOException {
+            try {
+                final Object[] result = SipParser.consumeVia(buffer);
+                this.transport = (Buffer) result[0];
+                this.host = (Buffer) result[1];
+                this.port = result[2] == null ? -1 : ((Buffer) result[2]).parseToInt();
+                this.params = (List<Buffer[]>) result[3];
+                this.indexOfBranch = findParameter(BRANCH);
+                this.indexOfReceived = findParameter(RECEIVED);
+                this.indexOfRPort = findParameter(RPORT);
+            } catch (final IOException e) {
+                throw new SipParseException(0, "Unable to frame the Via header due to IOException", e);
+            }
+        }
+
+        private int findParameter(final Buffer param) {
+            for (int i = 0; i < this.params.size(); ++i) {
+                final Buffer[] keyValue = this.params.get(i);
+                if (keyValue[0].equals(param)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        public Builder withParameter(final Buffer name, final Buffer value) throws SipParseException,
+                IllegalArgumentException {
+            final int index = findParameter(name);
+            if (index == -1) {
+                this.params.add(new Buffer[] { name, value });
+            } else {
+                this.params.get(index)[1] = value;
+            }
+            return this;
+        }
+
+        public Builder withParameter(final String name, final String value) throws SipParseException,
+                IllegalArgumentException {
+            return withParameter(Buffers.wrap(name), Buffers.wrap(value));
+        }
+
+        public Builder withPort(final int port) {
+            assertArgument(port > 0, "Port must be greater than zero");
+            this.port = port;
+            return this;
+        }
+
+        public Builder withHost(final Buffer host) {
+            this.host = assertNotEmpty(host, "Host cannot be empty or null");
+            return this;
+        }
+
+        public Builder withHost(final String host) {
+            assertNotEmpty(host, "Host cannot be empty or null");
+            this.host = Buffers.wrap(host);
+            return this;
+        }
+
+        public Builder withBranch(final Buffer branch) {
+            assertNotEmpty(branch, "Branch cannot be empty or null.");
+            if (this.indexOfBranch == -1) {
+                this.indexOfBranch = findParameter(BRANCH);
+            }
+            if (this.indexOfBranch == -1) {
+                this.indexOfBranch = this.params.size();
+                this.params.add(new Buffer[]{BRANCH, branch});
+            } else {
+                this.params.get(this.indexOfBranch)[1] = branch;
+            }
+            return this;
+        }
+
+        public Builder withBranch(final String branch) {
+            assertNotEmpty(branch, "Branch cannot be empty or null.");
+            withBranch(Buffers.wrap(branch));
+            return this;
+        }
+
+        public Builder withRPort(final int rport) {
+            if (this.indexOfRPort == -1) {
+                this.indexOfRPort = findParameter(RPORT);
+            }
+            if (this.indexOfRPort == -1) {
+                this.indexOfRPort = this.params.size();
+                this.params.add(new Buffer[] { RPORT, Buffers.wrap(rport) });
+            } else {
+                this.params.get(this.indexOfRPort)[1] = Buffers.wrap(rport);
+            }
+            return this;
+        }
+        public Builder withReceived(final String received) {
+            return withReceived(Buffers.wrap(received));
+        }
+
+        public Builder withReceived(final Buffer received) {
+            if (this.indexOfReceived == -1) {
+                this.indexOfReceived = findParameter(RECEIVED);
+            }
+            if (this.indexOfReceived == -1) {
+                this.indexOfReceived = this.params.size();
+                this.params.add(new Buffer[] { RECEIVED, received });
+            } else {
+                this.params.get(this.indexOfReceived)[1] = received;
+            }
+            return this;
+        }
+
+        public Builder withTransportUdp() {
+            this.transport = udp.clone();
+            return this;
+        }
+
+        public Builder withTransportSCTP() {
+            this.transport = sctp.clone();
+            return this;
+        }
+
+        public Builder withTransportTCP() {
+            this.transport = tcp.clone();
+            return this;
+        }
+
+        public Builder withTransportTLS() {
+            this.transport = tls.clone();
+            return this;
+        }
+
+        public Builder withTransportWS() {
+            this.transport = ws.clone();
             return this;
         }
 
         /**
          * Set the transport. Normally, you should really use the {@link #transportUDP()} methods
          * rather than this.
-         * 
+         *
          * @param transport
          * @return
          * @throws SipParseException in case the transport is not any of UDP, TCP, TLS, SCTP or WS.
          */
-        public ViaHeaderBuilder transport(final Buffer transport) throws SipParseException {
+        public Builder withTransport(final Buffer transport) throws SipParseException {
             assertNotNull(transport);
             if (SipParser.isUDP(transport) || SipParser.isTCP(transport) || SipParser.isTLS(transport)
                     || SipParser.isWS(transport) || SipParser.isSCTP(transport)) {
@@ -248,70 +417,49 @@ public interface ViaHeader extends Parameters, SipHeader {
             throw new SipParseException(0, "Illegal transport");
         }
 
-        public ViaHeaderBuilder transport(final String transport) throws SipParseException {
-            return transport(Buffers.wrap(assertNotEmpty(transport, "Transport cannot be null or the empty string")));
+        public Builder withTransport(final String transport) throws SipParseException {
+            return withTransport(Buffers.wrap(transport));
         }
 
-        public ViaHeaderBuilder host(final Buffer host) {
-            this.host = assertNotEmpty(host, "Host cannot be empty or null");
-            return this;
-        }
-
-        public ViaHeaderBuilder host(final String host) {
-            assertNotEmpty(host, "Host cannot be empty or null");
-            this.host = Buffers.wrap(host);
-            return this;
-        }
-
-        public ViaHeaderBuilder branch(final Buffer branch) {
-            this.branch = assertNotEmpty(branch, "Branch cannot be empty or null.");
-            return this;
-        }
-
-        public ViaHeaderBuilder branch(final String branch) {
-            assertNotEmpty(branch, "Branch cannot be empty or null.");
-            this.branch = Buffers.wrap(branch);
-            return this;
-        }
-
-        public ViaHeaderBuilder branch(final Supplier<Buffer> branch) {
-            assertNotNull(branch);
-            this.branch = branch.get();
-            return this;
-        }
-
-        public ViaHeaderBuilder transportUDP() {
-            this.transport = udp.clone();
-            return this;
-        }
-
-        public ViaHeaderBuilder transportSCTP() {
-            this.transport = sctp.clone();
-            return this;
-        }
-
-        public ViaHeaderBuilder transportTCP() {
-            this.transport = tcp.clone();
-            return this;
-        }
-
-        public ViaHeaderBuilder transportTLS() {
-            this.transport = tls.clone();
-            return this;
-        }
-
-        public ViaHeaderBuilder transportWS() {
-            this.transport = ws.clone();
-            return this;
-        }
-
+        @Override
         public ViaHeader build() throws SipParseException {
-            if (host == null) {
-                throw new SipParseException("Missing host, cannot create ViaHeader");
+            if (indexOfBranch == -1) {
+                throw new SipParseException("You must specify a branch parameter");
             }
-            return new ViaHeaderImpl(transport, host, port, branch);
+
+            if (transport == null) {
+                transport = udp.clone();
+            }
+
+            if (host == null) {
+                throw new SipParseException("You must specify the host of the Via-header");
+            }
+
+            final Buffer via = Buffers.createBuffer(1024);
+            transferValue(via);
+
+            return new ViaHeaderImpl(via, transport, host, port, params, indexOfBranch, indexOfReceived, indexOfRPort);
+        }
+
+        private void transferValue(final Buffer dst) {
+            SipParser.SIP2_0_SLASH.getBytes(0, dst);
+            this.transport.getBytes(0, dst);
+            dst.write(SipParser.SP);
+            this.host.getBytes(0, dst);
+            if (this.port != -1) {
+                dst.write(SipParser.COLON);
+                dst.writeAsString(this.port);
+            }
+
+            for (final Buffer[] param : this.params) {
+                dst.write(SipParser.SEMI);
+                param[0].getBytes(0, dst);
+                if (param[1] != null) {
+                    dst.write(SipParser.EQ);
+                    param[1].getBytes(0, dst);
+                }
+            }
         }
 
     }
-
 }

@@ -3,8 +3,6 @@
  */
 package io.pkts.packet.sip.header.impl;
 
-import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
-import gov.nist.javax.sip.header.HeaderFactoryImpl;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
@@ -14,7 +12,6 @@ import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -28,13 +25,9 @@ import java.util.function.Supplier;
  */
 public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
 
-    private static final Buffer BRANCH = Buffers.wrap("branch");
-    private static final Buffer RECEIVED = Buffers.wrap("received");
-    private static final Buffer RPORT = Buffers.wrap("rport");
-    private static final Buffer TTL = Buffers.wrap("ttl");
-
     /**
-     * The original Via-header.
+     * The original Via-header and since a header is immutable, all the pre-parsed
+     * values are just there for convenience.
      */
     private final Buffer original;
 
@@ -42,9 +35,7 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
 
     private final Buffer host;
 
-    private final Buffer rawPort;
-
-    private int port = -2; // negative two indicates we haven't set it yet.
+    private final int port;
 
     /**
      * Contains a list of all the parameters. It may be more efficient to keep
@@ -60,44 +51,35 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
 
     private int indexOfRPort = -1;
 
-    private final int indexOfTTL = -1;
-
     /**
-     * Constructor mainly used by the {@link #frame(Buffer)} method.
+     *
+     * @param via the actual value of the via header, which cannot be changed and is what
+     *            we will be using when transferring this value to external sources. Note, it says the VALUE of the
+     *            Via-header, hence the actual header name ("Via") must NOT be part of this buffer.
+     * @param transport the parsed transport
+     * @param host the parsed host
+     * @param port the parsed port or negative 1 if it isn't set.
+     * @param params all the parameters such as the branch and the rport parameter
+     * @param indexOfBranch the index of the branch parameter
+     * @param indexOfReceived the index of the received parameter
+     * @param indexOfRPort the index of the rport parameter
      */
-    public ViaHeaderImpl(final Buffer original, final Buffer transport, final Buffer host, final Buffer port,
-            final List<Buffer[]> params) {
-        this.original = original;
+    public ViaHeaderImpl(final Buffer via,
+                         final Buffer transport,
+                         final Buffer host,
+                         final int port,
+                         final List<Buffer[]> params,
+                         final int indexOfBranch,
+                         final int indexOfReceived,
+                         final int indexOfRPort) {
+        this.original = via;
         this.transport = transport;
         this.host = host;
-        this.rawPort = port;
-        if (this.rawPort == null) {
-            this.port = -1;
-        }
-
-        this.params = params;
-    }
-
-    /**
-     * Constructor used mainly by the {@link HeaderFactoryImpl}
-     * 
-     * @param transport
-     * @param host
-     * @param port
-     * @param branch
-     */
-    public ViaHeaderImpl(final Buffer transport, final Buffer host, final int port, final Buffer branch) {
-        assert port >= -1;
-        this.original = null;
-        this.transport = transport;
         this.port = port;
-        this.host = host;
-        this.rawPort = null;
-        this.params = new ArrayList<Buffer[]>();
-        if (branch != null) {
-            this.indexOfBranch = 0;
-            this.params.add(new Buffer[] {BRANCH, branch});
-        }
+        this.params = params;
+        this.indexOfBranch = indexOfBranch;
+        this.indexOfReceived = indexOfReceived;
+        this.indexOfRPort = indexOfRPort;
     }
 
     /**
@@ -122,21 +104,13 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
     }
 
     @Override
-    public void setParameter(final Buffer name, final Buffer value) throws SipParseException,
-    IllegalArgumentException {
-        final int index = findParameter(name);
-        if (index == -1) {
-            this.params.add(new Buffer[] { name, value });
-        } else {
-            this.params.get(index)[1] = value;
-        }
+    public void setParameter(Buffer name, Buffer value) throws SipParseException, IllegalArgumentException {
+        throw new IllegalArgumentException("Forbidden");
     }
 
     @Override
-    public void setParameter(final Buffer name, final Supplier<Buffer> value) throws SipParseException,
-    IllegalArgumentException {
-        assertNotNull(value);
-        setParameter(name, value.get());
+    public void setParameter(Buffer name, Supplier<Buffer> value) throws SipParseException, IllegalArgumentException {
+        throw new IllegalArgumentException("Forbidden");
     }
 
     /**
@@ -162,9 +136,7 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
      */
     @Override
     public Buffer getValue() {
-        final Buffer buffer = Buffers.createBuffer(1024);
-        transferValue(buffer);
-        return buffer;
+        return this.original;
     }
 
     @Override
@@ -174,20 +146,11 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
 
     @Override
     public int getPort() {
-        if (this.port == -2) {
-            // TODO: perhaps save it plus implement my own
-            // to string function in buffer
-            this.port = Integer.parseInt(this.rawPort.toString());
-        }
-
         return this.port;
     }
 
     @Override
     public Buffer getReceived() {
-        if (this.indexOfReceived == -1) {
-            this.indexOfReceived = findParameter(RECEIVED);
-        }
         if (this.indexOfReceived == -1) {
             return null;
         }
@@ -195,23 +158,7 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
     }
 
     @Override
-    public void setReceived(final Buffer received) {
-        if (this.indexOfReceived == -1) {
-            this.indexOfReceived = findParameter(RECEIVED);
-        }
-        if (this.indexOfReceived == -1) {
-            this.indexOfReceived = this.params.size();
-            this.params.add(new Buffer[] { RECEIVED, received });
-        } else {
-            this.params.get(this.indexOfReceived)[1] = received;
-        }
-    }
-
-    @Override
     public boolean hasRPort() {
-        if (this.indexOfRPort == -1) {
-            this.indexOfRPort = findParameter(RPORT);
-        }
         if (this.indexOfRPort == -1) {
             return false;
         }
@@ -220,9 +167,6 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
 
     @Override
     public int getRPort() {
-        if (this.indexOfRPort == -1) {
-            this.indexOfRPort = findParameter(RPORT);
-        }
         if (this.indexOfRPort == -1) {
             return -1;
         }
@@ -242,23 +186,7 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
     }
 
     @Override
-    public void setRPort(final int port) {
-        if (this.indexOfRPort == -1) {
-            this.indexOfRPort = findParameter(RPORT);
-        }
-        if (this.indexOfRPort == -1) {
-            this.indexOfRPort = this.params.size();
-            this.params.add(new Buffer[] { RPORT, Buffers.wrap(port) });
-        } else {
-            this.params.get(this.indexOfRPort)[1] = Buffers.wrap(port);
-        }
-    }
-
-    @Override
     public Buffer getBranch() {
-        if (this.indexOfBranch == -1) {
-            this.indexOfBranch = findParameter(BRANCH);
-        }
         if (this.indexOfBranch == -1) {
             return null;
         }
@@ -273,19 +201,6 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
             }
         }
         return -1;
-    }
-
-    @Override
-    public void setBranch(final Buffer branch) {
-        if (this.indexOfBranch == -1) {
-            this.indexOfBranch = findParameter(BRANCH);
-        }
-        if (this.indexOfBranch == -1) {
-            this.indexOfBranch = this.params.size();
-            this.params.add(new Buffer[] {BRANCH, branch});
-        } else {
-            this.params.get(this.indexOfBranch)[1] = branch;
-        }
     }
 
     @Override
@@ -315,18 +230,13 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
      */
     @Override
     public void verify() throws SipParseException {
-        if (getBranch() == null) {
-            throw new SipParseException(0, "Did not find the mandatory branch parameter. Via is illegal");
-        }
+        // A via header can never be constructed
+        // in a faulty manner.
     }
 
     @Override
     public String toString() {
-        // TODO: need to do something else. This is probably
-        // not that efficient but performance testing will reveal
-        final Buffer buffer = Buffers.createBuffer(1024);
-        getBytes(buffer);
-        return buffer.toString();
+        return NAME.toString() + ": " + original.toString();
     }
 
     @Override
@@ -334,48 +244,22 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
         NAME.getBytes(0, dst);
         dst.write(SipParser.COLON);
         dst.write(SipParser.SP);
-        transferValue(dst);
-    }
-
-    protected void transferValue(final Buffer dst) {
-        SipParser.SIP2_0_SLASH.getBytes(0, dst);
-        this.transport.getBytes(0, dst);
-        dst.write(SipParser.SP);
-        this.host.getBytes(0, dst);
-        if (this.port == -2 && this.rawPort != null) {
-            dst.write(SipParser.COLON);
-            this.rawPort.getBytes(dst);
-        } else if (this.port != -1) {
-            dst.write(SipParser.COLON);
-            dst.writeAsString(this.port);
-        }
-
-        for (final Buffer[] param : this.params) {
-            dst.write(SipParser.SEMI);
-            param[0].getBytes(0, dst);
-            if (param[1] != null) {
-                dst.write(SipParser.EQ);
-                param[1].getBytes(0, dst);
-            }
-        }
+        this.original.getBytes(0, dst);
     }
 
     @Override
     public ViaHeader clone() {
-        // TODO: probably inefficient and could also be plain wrong in that
-        // we may not generate a large enough buffer (probably less likely though).
-        final Buffer buffer = Buffers.createBuffer(1024);
-        transferValue(buffer);
-        try {
-            return ViaHeader.frame(buffer);
-        } catch (final SipParseException e) {
-            throw new RuntimeException("Unable to clone the Via-header", e);
-        }
+        return new ViaHeaderImpl(original, transport, host, port, params, indexOfBranch, indexOfReceived, indexOfRPort);
     }
 
     @Override
     public ViaHeader ensure() {
         return this;
+    }
+
+    @Override
+    public ViaHeader.Builder copy() {
+        return new ViaHeader.Builder(transport, host, port, params, indexOfBranch, indexOfReceived, indexOfRPort);
     }
 
 }

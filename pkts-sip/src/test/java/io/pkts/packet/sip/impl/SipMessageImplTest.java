@@ -108,7 +108,7 @@ public class SipMessageImplTest extends PktsTestBase {
 
     /*
     public void testNewAPI() throws Exception {
-        SipMessage msg = parseMessage(RawData.sipInviteThreeRouteHeaders);
+        final SipMessage msg = parseMessage(RawData.sipInviteThreeRouteHeaders);
         // msg.copy().headerStream().filter(h -> h.name.equals(X-Twilio)).map(h.builder()).collect().stream().h.chan
 
         msg.copy().stream().onRequestURI(r -> r.setUserParam("nisse")).onHeaders(h -> {

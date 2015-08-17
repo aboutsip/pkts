@@ -1,7 +1,5 @@
 package io.pkts.packet.sip;
 
-import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
-import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.header.CSeqHeader;
@@ -21,6 +19,10 @@ import io.pkts.packet.sip.impl.SipParser;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+
+import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
+import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 
 /**
  * Packet representing a SIP message.
@@ -498,6 +500,35 @@ public interface SipMessage extends Cloneable {
     static SipMessage frame(final String buffer) throws SipParseException, IOException {
         assertNotEmpty(buffer, "Buffer cannot be null or the empty string");
         return SipParser.frame(Buffers.wrap(buffer));
+    }
+
+    // Builder copy();
+
+    interface Builder {
+
+        /**
+         *
+         * @param f
+         */
+        void onHeader(Function<SipHeader, SipHeader> f);
+
+        /**
+         *
+         * @param f
+         */
+        void onFrom(Function<SipHeader, SipHeader> f);
+
+        void onTo(Function<SipHeader, SipHeader> f);
+
+        void onTopMostVia(Function<SipHeader, SipHeader> f);
+
+        void onContact(Function<SipHeader, SipHeader> f);
+
+        void onCSeq(Function<SipHeader, SipHeader> f);
+
+        void onCallId(Function<SipHeader, SipHeader> f);
+
+        void onBody();
     }
 
 }

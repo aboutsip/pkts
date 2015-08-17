@@ -110,4 +110,19 @@ public interface SipHeader extends Cloneable {
      */
     SipHeader ensure();
 
+    /**
+     * Everything within the pkts.io SIP module are immutable so if you actually want
+     * to change anything you have to create a copy, which will return a specific Builder
+     * for that header.
+     *
+     * @return
+     */
+    Builder<? extends SipHeader> copy();
+
+    interface Builder<H extends SipHeader> {
+
+        H build() throws SipParseException;
+    }
+
+
 }

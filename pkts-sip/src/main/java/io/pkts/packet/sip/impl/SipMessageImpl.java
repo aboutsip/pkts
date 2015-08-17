@@ -684,18 +684,41 @@ public abstract class SipMessageImpl implements SipMessage {
 
     @Override
     public Buffer toBuffer() {
+        // TODO: this isn't correct either. Needs to be configurable
         final Buffer buffer = Buffers.createBuffer(2048);
         getInitialLine().getBytes(buffer);
         buffer.write(SipParser.CR);
         buffer.write(SipParser.LF);
         transferHeaders(buffer);
-        // Note, this is conflicting now with how things are done in sipstack.io
-        // buffer.write(SipParser.CR);
-        // buffer.write(SipParser.LF);
+
+        if (shouldWriteCRLF()) {
+            buffer.write(SipParser.CR);
+            buffer.write(SipParser.LF);
+        }
+
         if (this.payload != null) {
             this.payload.getBytes(0, buffer);
         }
         return buffer;
+    }
+
+    /**
+     * Depending on how this message was framed, the payload
+     * may already contain CRLF and in that case you don't want to
+     * write it again.
+     *
+     * TODO: should have a solid way of handling the payload and not as it is
+     * now where it kind of depends on how the message was created.
+     *
+     * @param buffer
+     * @return
+     */
+    private boolean shouldWriteCRLF() {
+        try {
+            return payload == null || payload.getByte(0) == SipParser.CR && payload.getByte(1) == SipParser.LF;
+        } catch (final Exception e) {
+            return false;
+        }
     }
 
     /**
