@@ -31,7 +31,7 @@ public class SipURIBuilderTest {
         sipURI = SipURI.withUser("nisse").withPort(5060).useUDP().withHost(this.host).build();
         assertThat(sipURI.toBuffer().toString(), is("sip:nisse@example.com:5060;transport=udp"));
 
-        sipURI.setPort(-1);
+        sipURI = sipURI.copy().withPort(-1).build();
         assertThat(sipURI.toBuffer().toString(), is("sip:nisse@example.com;transport=udp"));
     }
 
@@ -43,11 +43,13 @@ public class SipURIBuilderTest {
 
     @Test
     public void testMessingWithParameters() throws Exception {
-        final SipURI sipURI = SipURI.withHost(this.host).withParameter("hello", "world").build();
+        SipURI sipURI = SipURI.withHost(this.host).withParameter("hello", "world").build();
         assertThat(sipURI.toBuffer().toString(), is("sip:example.com;hello=world"));
-        sipURI.setParameter("hello", "world2");
-        sipURI.setParameter("foo", "boo");
-        sipURI.setParameter("lr", null);
+        final SipURI.Builder builder = sipURI.copy();
+        builder.withParameter("hello", "world2");
+        builder.withParameter("foo", "boo");
+        builder.withParameter("lr", null);
+        sipURI = builder.build();
         assertThat(sipURI.toBuffer().toString(), is("sip:example.com;hello=world2;foo=boo;lr"));
 
     }

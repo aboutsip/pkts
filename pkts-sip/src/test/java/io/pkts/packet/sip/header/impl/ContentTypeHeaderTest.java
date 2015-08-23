@@ -72,9 +72,8 @@ public class ContentTypeHeaderTest {
         ContentTypeHeader header = ContentTypeHeader.frame(Buffers.wrap("io.sipstack.application.application/sdp"));
         assertThat(header.getValue().toString(), is("io.sipstack.application.application/sdp"));
 
-        // spaces etc will get lost in translation and that's ok i think
         header = ContentTypeHeader.frame(Buffers.wrap("io.sipstack.application.application  /   sdp"));
-        assertThat(header.getValue().toString(), is("io.sipstack.application.application/sdp"));
+        assertThat(header.getValue().toString(), is("io.sipstack.application.application  /   sdp"));
 
         header = ContentTypeHeader.frame(Buffers.wrap("hello/world;apa=monkey"));
         assertThat(header.getValue().toString(), is("hello/world;apa=monkey"));

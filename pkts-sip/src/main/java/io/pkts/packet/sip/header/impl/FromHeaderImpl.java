@@ -4,7 +4,6 @@
 package io.pkts.packet.sip.header.impl;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.Address;
 import io.pkts.packet.sip.header.FromHeader;
@@ -20,8 +19,8 @@ public class FromHeaderImpl extends AddressParametersHeaderImpl implements FromH
      * @param address
      * @param params
      */
-    public FromHeaderImpl(final Address address, final Buffer params) {
-        super(FromHeader.NAME, address, params);
+    public FromHeaderImpl(final Buffer value, final Address address, final Buffer params) {
+        super(FromHeader.NAME, value, address, params);
     }
 
     /**
@@ -34,13 +33,18 @@ public class FromHeaderImpl extends AddressParametersHeaderImpl implements FromH
 
     @Override
     public FromHeader clone() {
-        final Buffer buffer = Buffers.createBuffer(1024);
-        transferValue(buffer);
-        try {
-            return FromHeader.frame(buffer);
-        } catch (final SipParseException e) {
-            throw new RuntimeException("Unable to clone the From-header", e);
-        }
+        final Buffer value = getValue();
+        final Address address = getAddress();
+        final Buffer params = getRawParams();
+        // TODO: once Buffer is truly immutable we don't actually have to clone, like we don't have to do for Address anymore
+        return new FromHeaderImpl(value.clone(), address, params.clone());
+    }
+
+    @Override
+    public FromHeader.Builder copy() {
+        final FromHeader.Builder builder = FromHeader.withAddress(getAddress());
+        builder.withParameters(getRawParams().slice());
+        return builder;
     }
 
     @Override

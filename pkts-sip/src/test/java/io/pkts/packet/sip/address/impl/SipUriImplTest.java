@@ -25,6 +25,42 @@ public class SipUriImplTest {
     public void setUp() throws Exception {
     }
 
+    @Test
+    public void testSipURIImmutability() throws Exception {
+        final SipURI uri1 = SipURI.frame("sip:hello@pkts.io");
+        final SipURI uri2 = uri1.copy().withParameter("transport", "tcp").withPort(8765).build();
+
+        final SipURI uri3 = uri2.copy().withNoPort().build();
+        final SipURI uri4 = uri2.copy().withNoParameters().build();
+        final SipURI uri5 = uri3.copy().withNoParameters().build();
+
+        assertThat(uri1.toString(), is("sip:hello@pkts.io"));
+        assertThat(uri2.toString(), is("sip:hello@pkts.io:8765;transport=tcp"));
+        assertThat(uri3.toString(), is("sip:hello@pkts.io;transport=tcp"));
+        assertThat(uri4.toString(), is("sip:hello@pkts.io:8765"));
+        assertThat(uri5.toString(), is("sip:hello@pkts.io"));
+
+        // since we removed everything again from URI 5 we are back to what URI 1 has...
+        assertThat(uri1, is(uri5));
+        assertThat(uri5, is(uri1));
+
+        assertThat(uri1.getHost().toString(), is("pkts.io"));
+        assertThat(uri1.getUser().toString(), is("hello"));
+        assertThat(uri1.getPort(), is(-1));
+        assertThat(uri1.getTransportParam(), is((Buffer)null));
+
+        assertThat(uri2.getHost().toString(), is("pkts.io"));
+        assertThat(uri2.getUser().toString(), is("hello"));
+        assertThat(uri2.getPort(), is(8765));
+        assertThat(uri2.getTransportParam().toString(), is("tcp"));
+
+        assertThat(uri3.getHost().toString(), is("pkts.io"));
+        assertThat(uri3.getUser().toString(), is("hello"));
+        assertThat(uri3.getPort(), is(-1));
+        assertThat(uri3.getTransportParam().toString(), is("tcp"));
+
+    }
+
     /**
      * Comparing two SIP URI's aren't super trivial. Make sure that we get it right!
      * 
@@ -172,16 +208,15 @@ public class SipUriImplTest {
 
     @Test
     public void testAddParameters() throws Exception {
-        final SipURI uri = SipURI.frame(Buffers.wrap("sip:hello@10.0.1.5:51945;ob"));
+        SipURI uri = SipURI.frame(Buffers.wrap("sip:hello@10.0.1.5:51945;ob"));
         assertThat(uri.toString(), is("sip:hello@10.0.1.5:51945;ob"));
-        uri.setParameter("expires", 500);
+        uri = uri.copy().withParameter("expires", 500).build();
         assertThat(uri.toString(), is("sip:hello@10.0.1.5:51945;ob;expires=500"));
 
         final SipURI clone = uri.clone();
         assertThat(clone.getPort(), is(51945));
         assertThat(clone.getParameter("ob"), is(Buffers.EMPTY_BUFFER));
         assertThat(clone.getParameter("expires").toString(), is("500"));
-
     }
 
     /**
@@ -208,14 +243,13 @@ public class SipUriImplTest {
 
     /**
      * Comparing that the uri 'toParse' is equal to the result after we have built a new
-     * one using {@link SipURI#with(SipURI)}.
+     * one using {@link SipURI#withTemplate(SipURI)}.
      * 
      * @param toParse
      * @throws Exception
      */
     private void assertBuildClone(final String toParse) throws Exception {
-        final Buffer buffer = Buffers.wrap(toParse);
-        final SipURI uri = SipURI.frame(buffer);
+        final SipURI uri = SipURI.frame(toParse);
         final SipURI clone = SipURI.withTemplate(uri).build();
         assertThat(uri, is(clone));
     }
@@ -238,20 +272,19 @@ public class SipUriImplTest {
      */
     @Test
     public void testSetPort() throws Exception {
+        assertSetPort("sip:alice@example.com:7", 8, "sip:alice@example.com:8");
         assertSetPort("sip:alice@example.com", 9999, "sip:alice@example.com:9999");
         assertSetPort("sip:alice@example.com:8888", 7777, "sip:alice@example.com:7777");
-        assertSetPort("sip:alice@example.com:7", 8, "sip:alice@example.com:8");
         assertSetPort("sip:alice@example.com:7;transport=udp", 8, "sip:alice@example.com:8;transport=udp");
         assertSetPort("sip:alice@example.com;transport=tcp&hello=world", 9999,
                 "sip:alice@example.com:9999;transport=tcp&hello=world");
     }
 
     private void assertSetPort(final String toParse, final int port, final String expected) throws Exception {
-        final SipURI uri = SipURI.frame(Buffers.wrap(toParse));
-        uri.setPort(port);
+        SipURI uri = SipURI.frame(Buffers.wrap(toParse));
+        uri = uri.copy().withPort(port).build();
         assertThat(uri.getPort(), is(port));
         assertThat(uri.toString(), is(expected));
-
     }
 
     /**

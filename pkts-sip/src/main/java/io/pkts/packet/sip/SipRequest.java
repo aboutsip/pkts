@@ -3,8 +3,6 @@
  */
 package io.pkts.packet.sip;
 
-import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
-import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.address.SipURI;
@@ -24,6 +22,9 @@ import io.pkts.packet.sip.impl.SipRequestLine;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
+import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -261,7 +262,7 @@ public interface SipRequest extends SipMessage {
 
         private CSeqHeader getCSeq() {
             if (this.cseq == null) {
-                this.cseq = CSeqHeader.with().method(method).build();
+                this.cseq = CSeqHeader.withMethod(method).build();
             }
             return this.cseq;
         }
@@ -277,7 +278,7 @@ public interface SipRequest extends SipMessage {
             if (this.to == null) {
                 final Buffer user = this.requestURI.getUser();
                 final Buffer host = this.requestURI.getHost();
-                this.to = ToHeader.with().user(user).host(host).build();
+                this.to = ToHeader.withHost(host).withUser(user).build();
             }
             return this.to;
         }

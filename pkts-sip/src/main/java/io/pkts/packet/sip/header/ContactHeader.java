@@ -29,7 +29,7 @@ public interface ContactHeader extends AddressParametersHeader {
 
     static Builder with(final SipURI uri) throws SipParseException {
         final Builder builder = new Builder();
-        final Address address = Address.with(uri.clone()).build();
+        final Address address = Address.withURI(uri.clone()).build();
         builder.address(address);
         return builder;
     }
@@ -42,8 +42,9 @@ public interface ContactHeader extends AddressParametersHeader {
      * @throws SipParseException in case anything goes wrong while parsing.
      */
     public static ContactHeader frame(final Buffer buffer) throws SipParseException {
+        final Buffer original = buffer.slice();
         final Object[] result = AddressParametersHeader.frame(buffer);
-        return new ContactHeaderImpl((Address) result[0], (Buffer) result[1]);
+        return new ContactHeaderImpl(original, (Address) result[0], (Buffer) result[1]);
     }
 
     static class Builder extends AddressParametersHeader.Builder<ContactHeader> {
@@ -53,8 +54,8 @@ public interface ContactHeader extends AddressParametersHeader {
         }
 
         @Override
-        public ContactHeader internalBuild(final Address address, final Buffer params) throws SipParseException {
-            return new ContactHeaderImpl(address, params);
+        public ContactHeader internalBuild(final Buffer rawValue, final Address address, final Buffer params) throws SipParseException {
+            return new ContactHeaderImpl(rawValue, address, params);
         }
     }
 

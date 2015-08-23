@@ -4,13 +4,12 @@
 package io.pkts.packet.sip.header;
 
 import io.pkts.buffer.Buffer;
+import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.Address;
 import io.pkts.packet.sip.address.SipURI;
-import io.pkts.packet.sip.address.impl.AddressImpl;
 import io.pkts.packet.sip.header.impl.AddressParametersHeaderImpl;
 import io.pkts.packet.sip.header.impl.ParametersSupport;
-import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
 
@@ -20,7 +19,7 @@ import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 /**
  * @author jonas@jonasborjesson.com
  */
-public interface AddressParametersHeader extends SipHeader, HeaderAddress, Parameters {
+public interface AddressParametersHeader extends SipHeader,HeaderAddress,Parameters{
 
     /**
      * Frame the value as a {@link AddressParametersHeaderImpl}. This method assumes that you have
@@ -37,9 +36,9 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
      *         {@link Buffer} with all the parameters.
      * @throws SipParseException in case anything goes wrong while parsing.
      */
-    public static Object[] frame(final Buffer buffer) throws SipParseException {
+    static Object[] frame(final Buffer buffer) throws SipParseException {
         try {
-            final Address address = AddressImpl.parse(buffer);
+            final Address address = Address.frame(buffer);
             // we assume that the passed in buffer ONLY contains
             // this header and nothing else. Therefore, there are only
             // header parameters left after we have consumed the address
@@ -64,21 +63,32 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
         return new Builder<AddressParametersHeader>(headerName);
     }
 
-    static class Builder<T extends AddressParametersHeader> {
+    @Override
+    Builder copy();
+
+    class Builder<T extends AddressParametersHeader> implements SipHeader.Builder<T> {
+
         private final Buffer name;
 
-        private SipURI.Builder uriBuilder;
+        private Address.Builder addressBuilder;
 
-        private Address address;
-
-        private final ParametersSupport paramSupport = new ParametersSupport(null);
+        /**
+         * Note these are the header parameters and are not to be confused with any URI parameters
+         * that are "attached" to the URI within the address object.
+         */
+        private ParametersSupport paramSupport;
 
         protected Builder(final Buffer name) {
+            this(name, new ParametersSupport(null));
+        }
+
+        protected Builder(final Buffer name, final ParametersSupport params) {
             this.name = name;
+            this.paramSupport = params;
         }
 
 
-        public final Builder<T> port(final int port) {
+        public final Builder<T> withPort(final int port) {
             ensureBuilder().withPort(port);
             return this;
         }
@@ -91,13 +101,23 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          * @param user
          * @return
          */
-        public final Builder<T> user(final Buffer user) {
+        public final Builder<T> withUser(final Buffer user) {
             ensureBuilder().withUser(user);
             return this;
         }
 
-        public final Builder<T> user(final String user) {
+        public final Builder<T> withUser(final String user) {
             ensureBuilder().withUser(user);
+            return this;
+        }
+
+        public final Builder<T> withDisplayName(final String displayName) {
+            ensureBuilder().withDisplayName(displayName);
+            return this;
+        }
+
+        public final Builder<T> withDisplayName(final Buffer displayName) {
+            ensureBuilder().withDisplayName(displayName);
             return this;
         }
 
@@ -110,12 +130,12 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          * @param host
          * @return
          */
-        public final Builder<T> host(final Buffer host) {
+        public final Builder<T> withHost(final Buffer host) {
             ensureBuilder().withHost(host);
             return this;
         }
 
-        public final Builder<T> host(final String host) {
+        public final Builder<T> withHost(final String host) {
             ensureBuilder().withHost(host);
             return this;
         }
@@ -132,17 +152,42 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          * @throws SipParseException
          * @throws IllegalArgumentException
          */
-        public Builder<T> parameter(final Buffer name, final Buffer value) throws SipParseException,
+        public Builder<T> withParameter(final Buffer name, final Buffer value) throws SipParseException,
         IllegalArgumentException {
             this.paramSupport.setParameter(name, value);
             return this;
         }
 
-        public Builder<T> parameter(final String name, final String value) throws SipParseException,
+        public Builder<T> withParameter(final String name, final String value) throws SipParseException,
         IllegalArgumentException {
             this.paramSupport.setParameter(name, value);
             return this;
         }
+
+        /**
+         * Set a bunch of parameters at the same time.
+         *
+         * WARNING! This one will wipe out any previously set parameters so be sure to call
+         * this one FIRST before any other calls to withParameter...
+         *
+         * @param params
+         * @return
+         */
+        public Builder<T> withParameters(final Buffer params) {
+            this.paramSupport = new ParametersSupport(params);
+            return this;
+        }
+
+        /**
+         * Remove all header parameters.
+         *
+         * @return
+         */
+        public Builder withNoParameters() {
+            this.paramSupport = new ParametersSupport();
+            return this;
+        }
+
 
         /**
          * Set a parameter on the underlying {@link SipURI}.
@@ -155,7 +200,7 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          */
         public Builder<T> uriParameter(final Buffer name, final Buffer value) throws SipParseException,
         IllegalArgumentException {
-            ensureBuilder().withParameter(name, value);
+            ensureBuilder().withURIParameter(name, value);
             return this;
         }
 
@@ -170,7 +215,7 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          */
         public Builder<T> uriParameter(final String name, final String value) throws SipParseException,
         IllegalArgumentException {
-            ensureBuilder().withParameter(name, value);
+            ensureBuilder().withURIParameter(name, value);
             return this;
         }
 
@@ -181,7 +226,7 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          * @throws SipParseException
          */
         public Builder<T> transportTCP() throws SipParseException {
-            ensureBuilder().withParameter(SipParser.TRANSPORT, SipParser.TCP);
+            ensureBuilder().useTCP();
             return this;
         }
 
@@ -192,7 +237,7 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          * @throws SipParseException
          */
         public Builder<T> transportUDP() throws SipParseException {
-            ensureBuilder().withParameter(SipParser.TRANSPORT, SipParser.UDP);
+            ensureBuilder().useUDP();
             return this;
         }
 
@@ -203,7 +248,7 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          * @throws SipParseException
          */
         public Builder<T> transportTLS() throws SipParseException {
-            ensureBuilder().withParameter(SipParser.TRANSPORT, SipParser.TLS);
+            ensureBuilder().useTLS();
             return this;
         }
 
@@ -214,7 +259,7 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          * @throws SipParseException
          */
         public Builder<T> transportSCTP() throws SipParseException {
-            ensureBuilder().withParameter(SipParser.TRANSPORT, SipParser.SCTP);
+            ensureBuilder().useSCTP();
             return this;
         }
 
@@ -225,21 +270,25 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          * @throws SipParseException
          */
         public Builder<T> transportWS() throws SipParseException {
-            ensureBuilder().withParameter(SipParser.TRANSPORT, SipParser.WS);
+            ensureBuilder().useWS();
             return this;
         }
 
         /**
          * Use this address for the ToHeader.
-         * 
-         * NOTE: you can only specify either an address or a host and user but not both. If you do,
-         * an exception will occur at the time you try and {@link #build()} the header.
+         *
+         * Note, if you already have specified any part of the address, such as the host,
+         * then this
          * 
          * @param address
+         * @throws SipParseException in case an address already has been specified either by
+         * a previous call to this method or by specifying parts of an address through e.g.
+         * withHost etc.
          * @return
          */
-        public final Builder<T> address(final Address address) {
-            this.address = assertNotNull(address, "Address cannot be null");
+        public final Builder<T> address(final Address address) throws SipParseException {
+            assertNotNull(address, "Address cannot be null");
+            this.addressBuilder = address.copy();
             return this;
         }
 
@@ -251,31 +300,30 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          *         {@link ToHeader}.
          */
         public final T build() throws SipParseException {
-            if (uriBuilder != null && address != null) {
-                throw new SipParseException(
-                        "You specified both an address as well as parts of a SipURI. Not sure which to choose");
-            } else if (uriBuilder == null && address == null) {
-                throw new SipParseException("You must sepcify either the host or a full address.");
+            if (addressBuilder == null) {
+                throw new SipParseException("You must specify an address of some sort.");
             }
 
-            Address addressToUse = this.address;
-            if (uriBuilder != null) {
-                final SipURI uri = uriBuilder.build();
-                addressToUse = Address.with(uri).build();
-            }
-            return internalBuild(addressToUse, this.paramSupport.toBuffer());
+            Address addressToUse = this.addressBuilder.build();
+            final Buffer addressBuffer = addressToUse.toBuffer();
+            final Buffer paramsBuffer = this.paramSupport.toBuffer();
+            final Buffer headerValue = Buffers.createBuffer(addressBuffer.capacity() + paramsBuffer.capacity());
+            addressBuffer.getBytes(0, headerValue);
+            paramsBuffer.getBytes(0, headerValue);
+
+            return internalBuild(headerValue, addressToUse, paramsBuffer);
         }
 
         @SuppressWarnings("unchecked")
-        protected T internalBuild(final Address address, final Buffer params) {
-            return (T) new AddressParametersHeaderImpl(name, address, params);
+        protected T internalBuild(final Buffer rawValue, final Address address, final Buffer params) {
+            return (T) new AddressParametersHeaderImpl(name, rawValue, address, params);
         }
 
-        private SipURI.Builder ensureBuilder() {
-            if (uriBuilder == null) {
-                this.uriBuilder = SipURI.with();
+        private Address.Builder ensureBuilder() {
+            if (addressBuilder == null) {
+                this.addressBuilder = Address.builder();
             }
-            return this.uriBuilder;
+            return this.addressBuilder;
         }
 
     }

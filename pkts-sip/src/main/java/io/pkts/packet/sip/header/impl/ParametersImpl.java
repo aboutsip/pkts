@@ -3,12 +3,14 @@
  */
 package io.pkts.packet.sip.header.impl;
 
-import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 import io.pkts.buffer.Buffer;
+import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.Parameters;
 
 import java.util.function.Supplier;
+
+import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 
 
 /**
@@ -17,14 +19,16 @@ import java.util.function.Supplier;
 public abstract class ParametersImpl extends SipHeaderImpl implements Parameters {
 
     private final ParametersSupport support;
+    private final Buffer params;
 
     /**
      * 
      * @param name
      * @param params
      */
-    protected ParametersImpl(final Buffer name, final Buffer params) {
-        super(name, null);
+    protected ParametersImpl(final Buffer name, final Buffer value, final Buffer params) {
+        super(name, value);
+        this.params = params != null ? params.slice() : Buffers.EMPTY_BUFFER;
         this.support = new ParametersSupport(params);
     }
 
@@ -51,18 +55,9 @@ public abstract class ParametersImpl extends SipHeaderImpl implements Parameters
         this.support.setParameter(name, value.get());
     }
 
-    /**
-     * Will only return the parameters. Sub-classes will have to build up the
-     * rest of the buffer {@inheritDoc}
-     */
-    @Override
-    public Buffer getValue() {
-        return this.support.toBuffer();
-    }
-
-    @Override
-    protected void transferValue(final Buffer dst) {
-        this.support.transferValue(dst);
+    protected Buffer getRawParams() {
+        // TODO: once buffer is truly immutable we don't need this slice stuff either.
+        return this.params.slice();
     }
 
 }

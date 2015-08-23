@@ -29,7 +29,7 @@ public class SipRequestTest extends PktsTestBase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        this.from = FromHeader.with().user("bob").host("somewhere.com").build();
+        this.from = FromHeader.builder().withUser("bob").withHost("somewhere.com").build();
     }
 
 
@@ -65,7 +65,7 @@ public class SipRequestTest extends PktsTestBase {
      */
     @Test
     public void testCreateInviteWithContactHeader() throws Exception {
-        final ContactHeader contact = ContactHeader.with().host("12.13.14.15").port(1234).transportTCP().build();
+        final ContactHeader contact = ContactHeader.with().withHost("12.13.14.15").withPort(1234).transportTCP().build();
         final SipRequest invite = SipRequest.invite("sip:alice@example.com").from(this.from).contact(contact).build();
         final SipURI contactURI = (SipURI) invite.getContactHeader().getAddress().getURI();
         assertThat(contactURI.getPort(), is(1234));

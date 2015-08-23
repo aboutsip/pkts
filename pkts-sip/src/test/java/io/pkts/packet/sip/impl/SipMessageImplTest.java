@@ -9,6 +9,7 @@ import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.address.URI;
 import io.pkts.packet.sip.header.ContentTypeHeader;
 import io.pkts.packet.sip.header.ExpiresHeader;
+import io.pkts.packet.sip.header.MaxForwardsHeader;
 import io.pkts.packet.sip.header.RecordRouteHeader;
 import io.pkts.packet.sip.header.RouteHeader;
 import io.pkts.packet.sip.header.SipHeader;
@@ -202,11 +203,16 @@ public class SipMessageImplTest extends PktsTestBase {
 
     @Test
     public void testSetMaxForwardsHeader() throws Exception {
+        // TODO: has to be enabled once the new sip message stuff is in place.
         final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader);
         assertThat(msg.toString().contains("Max-Forwards: 70"), is(true));
-        msg.getMaxForwards().setMaxForwards(55);
+
+        final MaxForwardsHeader m1 = msg.getMaxForwards().copy().withValue(55).build();
+        msg.setHeader(m1);
         assertThat(msg.toString().contains("Max-Forwards: 55"), is(true));
-        msg.getMaxForwards().setMaxForwards(32);
+
+        final MaxForwardsHeader m2 = msg.getMaxForwards().copy().withValue(32).build();
+        msg.setHeader(m2);
         assertThat(msg.toBuffer().toString().contains("Max-Forwards: 32"), is(true));
     }
 

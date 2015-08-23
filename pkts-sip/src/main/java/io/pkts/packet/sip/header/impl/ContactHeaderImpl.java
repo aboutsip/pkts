@@ -20,8 +20,8 @@ public class ContactHeaderImpl extends AddressParametersHeaderImpl implements Co
      * @param address
      * @param params
      */
-    public ContactHeaderImpl(final Address address, final Buffer params) {
-        super(ContactHeader.NAME, address, params);
+    public ContactHeaderImpl(final Buffer value, final Address address, final Buffer params) {
+        super(ContactHeader.NAME, value, address, params);
     }
 
     @Override

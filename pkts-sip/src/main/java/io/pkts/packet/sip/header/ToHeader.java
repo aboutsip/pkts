@@ -7,6 +7,7 @@ import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.Address;
+import io.pkts.packet.sip.header.impl.ParametersSupport;
 import io.pkts.packet.sip.header.impl.ToHeaderImpl;
 
 import java.util.Random;
@@ -45,9 +46,10 @@ public interface ToHeader extends AddressParametersHeader {
      * @return
      * @throws SipParseException in case anything goes wrong while parsing.
      */
-    public static ToHeader frame(final Buffer buffer) throws SipParseException {
+    static ToHeader frame(final Buffer buffer) throws SipParseException {
+        final Buffer original = buffer.slice();
         final Object[] result = AddressParametersHeader.frame(buffer);
-        return new ToHeaderImpl((Address) result[0], (Buffer) result[1]);
+        return new ToHeaderImpl(original, (Address) result[0], (Buffer) result[1]);
     }
 
     /**
@@ -62,8 +64,14 @@ public interface ToHeader extends AddressParametersHeader {
         return Buffers.wrap(Integer.toHexString(new Random().nextInt()));
     }
 
-    static Builder with() {
-        return new Builder();
+    static Builder withHost(final Buffer host) {
+        final Builder b = new Builder();
+        b.withHost(host);
+        return b;
+    }
+
+    static Builder withHost(final String host) {
+        return withHost(Buffers.wrap(host));
     }
 
     static Builder with(final Address address) throws SipParseException {
@@ -72,15 +80,22 @@ public interface ToHeader extends AddressParametersHeader {
         return builder;
     }
 
-    static class Builder extends AddressParametersHeader.Builder<ToHeader> {
+    @Override
+    Builder copy();
+
+    class Builder extends AddressParametersHeader.Builder<ToHeader> {
+
+        private Builder(ParametersSupport params) {
+            super(NAME, params);
+        }
 
         private Builder() {
             super(NAME);
         }
 
         @Override
-        public ToHeader internalBuild(final Address address, final Buffer params) throws SipParseException {
-            return new ToHeaderImpl(address, params);
+        public ToHeader internalBuild(final Buffer rawValue, final Address address, final Buffer params) throws SipParseException {
+            return new ToHeaderImpl(rawValue, address, params);
         }
     }
 

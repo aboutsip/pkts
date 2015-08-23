@@ -46,6 +46,11 @@ public interface SipURI extends URI {
      */
     int getPort();
 
+    @Override
+    default SipURI toSipURI() {
+        return this;
+    }
+
     /**
      * Set the port.
      * 
@@ -56,7 +61,7 @@ public interface SipURI extends URI {
      * @param port
      * @return
      */
-    void setPort(int port);
+    // void setPort(int port);
 
     /**
      * Check whether this is a sips URI.
@@ -142,7 +147,7 @@ public interface SipURI extends URI {
      * @throws SipParseException in case anything goes wrong when setting the parameter.
      * @throws IllegalArgumentException in case the name is null or empty.
      */
-    void setParameter(Buffer name, Buffer value) throws SipParseException, IllegalArgumentException;
+    // void setParameter(Buffer name, Buffer value) throws SipParseException, IllegalArgumentException;
 
     /**
      * 
@@ -151,7 +156,7 @@ public interface SipURI extends URI {
      * @throws SipParseException
      * @throws IllegalArgumentException
      */
-    void setParameter(String name, String value) throws SipParseException, IllegalArgumentException;
+    // void setParameter(String name, String value) throws SipParseException, IllegalArgumentException;
 
     /**
      * 
@@ -160,7 +165,7 @@ public interface SipURI extends URI {
      * @throws SipParseException
      * @throws IllegalArgumentException
      */
-    void setParameter(Buffer name, int value) throws SipParseException, IllegalArgumentException;
+    // void setParameter(Buffer name, int value) throws SipParseException, IllegalArgumentException;
 
     /**
      * 
@@ -169,7 +174,7 @@ public interface SipURI extends URI {
      * @throws SipParseException
      * @throws IllegalArgumentException
      */
-    void setParameter(String name, int value) throws SipParseException, IllegalArgumentException;
+    // void setParameter(String name, int value) throws SipParseException, IllegalArgumentException;
 
     /**
      * See rules for comparing URI's in RFC3261 section 19.1.4.
@@ -190,6 +195,9 @@ public interface SipURI extends URI {
 
     @Override
     SipURI clone();
+
+    @Override
+    Builder copy();
 
     /**
      * Frame a sip or sips-uri, which according to RFC3261 is:
@@ -215,7 +223,7 @@ public interface SipURI extends URI {
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
-    public static SipURI frame(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException, IOException {
+    static SipURI frame(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException, IOException {
         final Buffer original = buffer.slice();
         final boolean isSips = SipParser.isSips(buffer);
         final Buffer[] userHost = SipParser.consumeUserInfoHostPort(buffer);
@@ -246,7 +254,17 @@ public interface SipURI extends URI {
         return new SipURIImpl(isSips, userHost[0], host, port, buffer, original);
     }
 
-    public static Builder with() {
+    static SipURI frame(final String buffer) throws SipParseException, IndexOutOfBoundsException, IOException {
+        assertNotEmpty(buffer, "Cannot frame a null or empty string into a SIP URI");
+        return SipURI.frame(Buffers.wrap(buffer));
+    }
+
+
+    static Builder with() {
+        return new Builder();
+    }
+
+    static Builder builder() {
         return new Builder();
     }
 
@@ -262,22 +280,27 @@ public interface SipURI extends URI {
      * @param user
      * @return
      */
-    public static Builder withUser(final String user) {
+    static Builder withUser(final String user) {
         final Builder builder = new Builder();
         return builder.withUser(user);
     }
 
-    public static Builder withUser(final Buffer user) {
+    static Builder withUser(final Buffer user) {
         final Builder builder = new Builder();
         return builder.withUser(user);
     }
 
-    public static Builder withHost(final String host) {
+    static Builder withHost(final String host) {
         final Builder builder = new Builder();
         return builder.withHost(host);
     }
 
-    public static Builder withHost(final Buffer host) {
+    static Builder withParameters(final Buffer params) {
+        final ParametersSupport paramSupport = new ParametersSupport(params);
+        return new Builder(paramSupport);
+    }
+
+    static Builder withHost(final Buffer host) {
         final Builder builder = new Builder();
         return builder.withHost(host);
     }
@@ -298,7 +321,7 @@ public interface SipURI extends URI {
      * @param uri
      * @return
      */
-    public static Builder withTemplate(final SipURI uri) {
+    static Builder withTemplate(final SipURI uri) {
         final Builder b = new Builder();
         b.withUser(uri.getUser());
         b.withHost(uri.getHost());
@@ -312,16 +335,30 @@ public interface SipURI extends URI {
         return b;
     }
 
-    static class Builder {
+    class Builder extends URI.Builder<SipURI> {
 
         private Buffer user;
         private Buffer host;
-        private int port = -1;
+        private Buffer port;
         private boolean isSecure;
-        private final ParametersSupport paramSupport = new ParametersSupport(null);
+        private ParametersSupport paramSupport;
+
+        /**
+         * The final size of the buffer. We keep track of this so we at the end
+         * can allocate a final buffer to which we will write all the various
+         * parts to this single buffer.
+         *
+         * Note, we start counting at 4 because by default the scheme is "sip", which
+         * will be 4 long including the ':' (colon, as in "sip:").
+         */
+        private int size = 4;
 
         private Builder() {
-            // let empty intentionally
+            this(new ParametersSupport(null));
+        }
+
+        private Builder(final ParametersSupport params) {
+            this.paramSupport = params;
         }
 
         /**
@@ -331,8 +368,13 @@ public interface SipURI extends URI {
          */
         public Builder withUser(final Buffer user) {
             if (user != null) {
+                // note that we must subtract the previous capacity of the user portion.
+                // the +1 is for the '@' sign that we will write into the buffer if there
+                // indeed is a user portion in this URI.
+                size += user.capacity() + 1 - (this.user != null ? this.user.capacity() + 1 : 0);
                 this.user = user.slice();
             } else {
+                size -= this.user != null ? this.user.capacity() + 1 : 0;
                 this.user = null;
             }
             return this;
@@ -345,7 +387,7 @@ public interface SipURI extends URI {
          */
         public Builder withUser(final String user) {
             if (checkIfNotEmpty(user)) {
-                this.user = Buffers.wrap(user);
+                withUser(Buffers.wrap(user));
             }
             return this;
         }
@@ -358,14 +400,14 @@ public interface SipURI extends URI {
          */
         public Builder withHost(final Buffer host) throws SipParseException {
             assertNotNull(host, "Host cannot be null");
+            size += host.capacity() - (this.host != null ? this.host.capacity() : 0);
             this.host = host.slice();
             return this;
         }
 
         public Builder withHost(final String host) throws SipParseException {
             assertNotEmpty(host, "Host cannot be null or the empty string");
-            this.host = Buffers.wrap(host);
-            return this;
+            return withHost(Buffers.wrap(host));
         }
 
         public Builder withTransport(final Buffer transport) throws SipParseException {
@@ -392,6 +434,29 @@ public interface SipURI extends URI {
             return this;
         }
 
+        public Builder withParameter(final String name, final int value) throws SipParseException,
+                IllegalArgumentException {
+            this.paramSupport.setParameter(Buffers.wrap(name), Buffers.wrap(value));
+            return this;
+        }
+
+        public Builder withParameter(final Buffer name, final int value) throws SipParseException,
+                IllegalArgumentException {
+            this.paramSupport.setParameter(name, Buffers.wrap(value));
+            return this;
+        }
+
+        /**
+         * Wipe out all parameters. Useful if you e.g. create a copy of a SipURI but you want to
+         * remove any potential parameters that may be on the SIP URI.
+         *
+         * @return
+         */
+        public Builder withNoParameters() {
+            this.paramSupport = new ParametersSupport(null);
+            return this;
+        }
+
         /**
          * Mark this {@link SipURI} as a secure sip address, i.e. "sips". Same as calling
          * {@link #secure(true)}
@@ -399,7 +464,11 @@ public interface SipURI extends URI {
          * @return
          */
         public Builder secure() {
-            this.isSecure = true;
+            if (!this.isSecure) {
+                this.isSecure = true;
+                ++size;
+            }
+
             return this;
         }
 
@@ -410,6 +479,16 @@ public interface SipURI extends URI {
          * @return
          */
         public Builder withSecure(final boolean secure) {
+            if (secure == this.isSecure) {
+                return this;
+            }
+
+            if (secure && !this.isSecure) {
+                ++size;
+            } else {
+                --size;
+            }
+
             this.isSecure = secure;
             return this;
         }
@@ -424,8 +503,51 @@ public interface SipURI extends URI {
          */
         public Builder withPort(final int port) throws SipParseException {
             assertArgument(port > 0 || port == -1, "Port must be greater than zero or negative one (use default)");
-            this.port = port;
+            if (port == -1) {
+                return withPort(null);
+            } else {
+                return withPort(Buffers.wrap(port));
+            }
+        }
+
+        /**
+         * Specify the port as a buffer.
+         * @param port if null the port will be reset.
+         * @return
+         * @throws SipParseException in case the port is
+         */
+        public Builder withPort(final Buffer port) throws SipParseException {
+            if (port != null) {
+                try {
+                    assertArgument(port.parseToInt() > 0, "Port must be greater than zero or null (use default)");
+                } catch (final IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (this.port != null) {
+                size -= this.port.capacity() + 1;
+            }
+
+            if (port == null) {
+                this.port = null;
+            } else {
+                this.port = port;
+                size += this.port.capacity() + 1;
+            }
+
             return this;
+        }
+
+        /**
+         * Convenience method for removing the port from this SIP URI. Same as
+         * {@link io.pkts.packet.sip.address.SipURI.Builder#withPort(null)}
+         *
+         * @return
+         * @throws SipParseException
+         */
+        public Builder withNoPort() throws SipParseException {
+            return withPort(null);
         }
 
         /**
@@ -478,6 +600,10 @@ public interface SipURI extends URI {
             return this;
         }
 
+        public boolean hasParameters() {
+            return this.paramSupport.hasParameters();
+        }
+
         /**
          * Construct a {@link SipURI}.
          * 
@@ -487,15 +613,36 @@ public interface SipURI extends URI {
          */
         public SipURI build() throws SipParseException {
             assertNotEmpty(this.host, "Host cannot be empty");
-            final Buffer port = convertPort();
-            return new SipURIImpl(this.isSecure, this.user, this.host, port, this.paramSupport.toBuffer(), null);
+
+            final Buffer scheme = isSecure ? SipParser.SCHEME_SIPS_COLON : SipParser.SCHEME_SIP_COLON;
+            final Buffer params = this.paramSupport.toBuffer();
+            if (params != null) {
+                size += params.capacity();
+            }
+
+            final Buffer uri = Buffers.createBuffer(size);
+            transferbytes(uri, params);
+
+            return new SipURIImpl(this.isSecure, this.user, this.host, port, params, uri);
         }
 
-        private Buffer convertPort() {
-            if (this.port == -1) {
-                return null;
-            }
-            return Buffers.wrap(this.port);
+        private void transferbytes(final Buffer dst, final Buffer params) {
+                if (this.isSecure) {
+                    SipParser.SCHEME_SIPS_COLON.getBytes(0, dst);
+                } else {
+                    SipParser.SCHEME_SIP_COLON.getBytes(0, dst);
+                }
+                if (this.user != null) {
+                    this.user.getBytes(0, dst);
+                    dst.write(SipParser.AT);
+                }
+                this.host.getBytes(0, dst);
+                if (this.port != null) {
+                    dst.write(SipParser.COLON);
+                    this.port.getBytes(0, dst);
+                }
+
+                params.getBytes(0, dst);
         }
 
     }

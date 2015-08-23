@@ -3,20 +3,20 @@
  */
 package io.pkts.packet.sip.header.impl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.Address;
-import io.pkts.packet.sip.address.SipURI;
+import io.pkts.packet.sip.header.AddressParametersHeader;
 import io.pkts.packet.sip.header.FromHeader;
 import io.pkts.packet.sip.header.ToHeader;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.*;
 
 
 /**
@@ -50,10 +50,40 @@ public abstract class AddressParameterHeadersTestBase {
      */
     public abstract AddressParametersHeaderImpl frameHeader(final Buffer buffer) throws SipParseException;
 
+    /**
+     * To be overriden by subclasses.
+     *
+     * @param host
+     * @return
+     */
+    public abstract AddressParametersHeader.Builder withHost(String host);
+
     private void assertGetBytes(final String expected, final AddressParametersHeaderImpl header) {
         final Buffer copy = Buffers.createBuffer(100);
         header.getBytes(copy);
         assertThat(copy.toString(), is(header.getName().toString() + ": " + expected));
+    }
+
+    /**
+     * Ensure we can create an {@link AddressParametersHeader}-subclass correctly using builders and the
+     * copy-constructor.
+     */
+    @Test
+    public void testCreateHeaderUsingBuilder() throws Exception {
+        final AddressParametersHeader to = withHost("hello.com").build();
+        final String method = to.getName().toString();
+        assertThat(to.toString(), is(method + ": sip:hello.com"));
+        assertThat(to.getAddress().getURI().toString(), is("sip:hello.com"));
+
+        final AddressParametersHeader t2 = to.copy().uriParameter("foo", "woo").build();
+        assertThat(t2.toString(), is(method + ": <sip:hello.com;foo=woo>"));
+
+        final AddressParametersHeader t3 = to.copy().withParameter("nisse", "kalle").withPort(9999).build();
+        assertThat(t3.toString(), is(method + ": sip:hello.com:9999;nisse=kalle"));
+
+        assertThat(to.toString(), not(t2.toString()));
+        assertThat(to.toString(), not(t3.toString()));
+        assertThat(t2.toString(), not(t3.toString()));
     }
 
     /**
@@ -135,6 +165,24 @@ public abstract class AddressParameterHeadersTestBase {
         }
     }
 
+    @Test
+    public void testCopy() throws Exception {
+        final AddressParametersHeaderImpl h1 = frameHeader(Buffers.wrap("sip:alice@example.com;hello=world"));
+        final AddressParametersHeader h2 = h1.copy().withHost("pkts.io").build();
+        assertThat(h1.getValue().toString(), is("sip:alice@example.com;hello=world"));
+        assertThat(h2.getValue().toString(), is("sip:alice@pkts.io;hello=world"));
+
+        final AddressParametersHeader h3 = h1.copy().uriParameter("apa", "monkey").withPort(7654)
+                .withDisplayName("Apa").withNoParameters().withParameter("nisse", "kalle").build();
+        assertThat(h3.getValue().toString(), is("Apa <sip:alice@example.com:7654;apa=monkey>;nisse=kalle"));
+
+        // since everything is immutable, nothing of the other
+        // headers should have been affected when building new headers.
+        assertThat(h1.getValue(), not(h2.getValue()));
+        assertThat(h1.getValue(), not(h3.getValue()));
+        assertThat(h2.getValue(), not(h3.getValue()));
+    }
+
     /**
      * Make sure clone works.
      * 
@@ -145,12 +193,13 @@ public abstract class AddressParameterHeadersTestBase {
         final AddressParametersHeaderImpl header = frameHeader(Buffers.wrap("sip:alice@example.com"));
         final AddressParametersHeaderImpl clone = (AddressParametersHeaderImpl) header.clone();
         assertThat(header.toString(), is(clone.toString()));
-        final Address a1 = header.getAddress();
-        final Address a2 = clone.getAddress();
+        Address a1 = header.getAddress();
+        Address a2 = clone.getAddress();
 
         assertThat(a1.toString(), is(a2.toString()));
-        ((SipURI) a1.getURI()).setPort(876);
-        ((SipURI) a2.getURI()).setPort(7777);
+
+        a1 = a1.copy().withPort(876).build();
+        a2 = a2.copy().withPort(7777).build();
 
         assertThat(a1.toString().contains("876"), is(true));
         assertThat(a2.toString().contains("7777"), is(true));

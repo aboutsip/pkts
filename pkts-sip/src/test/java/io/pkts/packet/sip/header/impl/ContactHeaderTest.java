@@ -3,21 +3,23 @@
  */
 package io.pkts.packet.sip.header.impl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.Address;
 import io.pkts.packet.sip.address.SipURI;
+import io.pkts.packet.sip.header.AddressParametersHeader;
 import io.pkts.packet.sip.header.ContactHeader;
-
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
 
 /**
  * @author jonas@jonasborjesson.com
  *
  */
-public class ContactHeaderTest {
+public class ContactHeaderTest extends AddressParameterHeadersTestBase {
 
     @Test
     public void testBriaContactHeader() {
@@ -44,13 +46,19 @@ public class ContactHeaderTest {
 
     @Test
     public void testBuildContact() throws Exception {
-        final SipURI uri = SipURI.frame(Buffers.wrap("sip:hello@10.0.1.5:51945;ob"));
-        System.out.println(uri);
-        uri.setParameter("expires", 600);
-        System.out.println(uri);
+        final SipURI uri = SipURI.frame(Buffers.wrap("sip:hello@10.0.1.5:51945;ob")).copy().withParameter("expires", 600).build();
         final ContactHeader contact = ContactHeader.with(uri).build();
         contact.toString();
         assertThat(contact.toString(), is("Contact: <sip:hello@10.0.1.5:51945;ob;expires=600>"));
     }
 
+    @Override
+    public AddressParametersHeaderImpl frameHeader(Buffer buffer) throws SipParseException {
+        return (ContactHeaderImpl)ContactHeader.frame(buffer);
+    }
+
+    @Override
+    public AddressParametersHeader.Builder withHost(String host) {
+        return null;
+    }
 }

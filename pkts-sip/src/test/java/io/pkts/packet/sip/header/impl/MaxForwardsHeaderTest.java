@@ -1,26 +1,15 @@
 package io.pkts.packet.sip.header.impl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.header.MaxForwardsHeader;
-import io.pkts.packet.sip.header.impl.MaxForwardsHeaderImpl;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
 
 
 public class MaxForwardsHeaderTest {
-
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
 
     @Test
     public void test() {
@@ -31,7 +20,22 @@ public class MaxForwardsHeaderTest {
         final Buffer copy = Buffers.createBuffer(100);
         max.getBytes(copy);
         assertThat(copy.toString(), is("Max-Forwards: 70"));
+    }
 
+    @Test
+    public void testBuild() {
+        final MaxForwardsHeader m1 = MaxForwardsHeader.create();
+        final MaxForwardsHeader m2 = m1.copy().decrement().build();
+        final MaxForwardsHeader m3 = m2.copy().decrement().build();
+        assertThat(m1.getMaxForwards(), is(70));
+        assertThat(m2.getMaxForwards(), is(69));
+        assertThat(m3.getMaxForwards(), is(68));
+
+        assertThat(m2.toString(), is("Max-Forwards: 69"));
+        assertThat(m3.toString(), is("Max-Forwards: 68"));
+
+        assertThat(m2.getValue().toString(), is("69"));
+        assertThat(m3.getValue().toString(), is("68"));
     }
 
 }

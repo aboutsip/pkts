@@ -3,16 +3,15 @@
  */
 package io.pkts.packet.sip.header.impl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.header.Parameters;
-import io.pkts.packet.sip.header.impl.ParametersImpl;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
 
 
 /**
@@ -41,7 +40,7 @@ public class ParametersTest {
     public void testParseParameters() throws Exception {
         final Buffer name = Buffers.wrap("Whatever");
         final Buffer value = Buffers.wrap("hello;foo=boo");
-        final Parameters params = new ParametersImpl(name, value) {
+        final Parameters params = new ParametersImpl(Buffers.wrap("not-used-just-yet"), name, value) {
         };
 
         assertThat(params.getParameter("foo").toString(), is("boo"));

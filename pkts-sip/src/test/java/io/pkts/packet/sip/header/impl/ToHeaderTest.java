@@ -3,14 +3,10 @@
  */
 package io.pkts.packet.sip.header.impl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.header.AddressParametersHeader;
 import io.pkts.packet.sip.header.ToHeader;
-import io.pkts.packet.sip.header.ToHeader.Builder;
-
-import org.junit.Test;
 
 
 /**
@@ -26,13 +22,31 @@ public class ToHeaderTest extends AddressParameterHeadersTestBase {
         return (ToHeaderImpl) ToHeader.frame(buffer);
     }
 
-    @Test
-    public void testCreateToHeader() {
-        final Builder builder = ToHeader.with();
-        builder.host("hello.com");
-        final ToHeader to = builder.build();
-        assertThat(to.toString(), is("To: <sip:hello.com>"));
-        assertThat(to.getAddress().getURI().toString(), is("sip:hello.com"));
+    @Override
+    public AddressParametersHeader.Builder withHost(final String host) {
+        return ToHeader.withHost(host);
     }
+
+    /**
+     * Ensure we can create a from header correctly and that it is immutable.
+     */
+    /*
+    @Test
+    public void testCreateToHeader() throws Exception {
+        final ToHeader to = ToHeader.withHost("hello.com").build();
+        assertThat(to.toString(), is("To: sip:hello.com"));
+        assertThat(to.getAddress().getURI().toString(), is("sip:hello.com"));
+
+        final ToHeader t2 = to.copy().uriParameter("foo", "woo").build();
+        assertThat(t2.toString(), is("To: <sip:hello.com;foo=woo>"));
+
+        final ToHeader t3 = to.copy().withParameter("nisse", "kalle").withPort(9999).build();
+        assertThat(t3.toString(), is("To: sip:hello.com:9999;nisse=kalle"));
+
+        assertThat(to.toString(), not(t2.toString()));
+        assertThat(to.toString(), not(t3.toString()));
+        assertThat(t2.toString(), not(t3.toString()));
+    }
+    */
 
 }

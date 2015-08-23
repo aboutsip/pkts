@@ -7,6 +7,7 @@ import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.Address;
+import io.pkts.packet.sip.header.impl.ParametersSupport;
 import io.pkts.packet.sip.header.impl.RouteHeaderImpl;
 
 /**
@@ -43,9 +44,45 @@ public interface RouteHeader extends AddressParametersHeader {
      * @return
      * @throws SipParseException in case anything goes wrong while parsing.
      */
-    public static RouteHeader frame(final Buffer buffer) throws SipParseException {
+    static RouteHeader frame(final Buffer buffer) throws SipParseException {
+        final Buffer original = buffer.slice();
         final Object[] result = AddressParametersHeader.frame(buffer);
-        return new RouteHeaderImpl((Address) result[0], (Buffer) result[1]);
+        return new RouteHeaderImpl(original, (Address) result[0], (Buffer) result[1]);
+    }
+
+    @Override
+    Builder copy();
+
+    static Builder withHost(final Buffer host) {
+        final Builder b = new Builder();
+        b.withHost(host);
+        return b;
+    }
+
+    static Builder withHost(final String host) {
+        return withHost(Buffers.wrap(host));
+    }
+
+    static Builder withAddress(final Address address) throws SipParseException {
+        final Builder builder = new Builder();
+        builder.address(address);
+        return builder;
+    }
+
+    class Builder extends AddressParametersHeader.Builder<RouteHeader> {
+
+        private Builder(ParametersSupport params) {
+            super(NAME, params);
+        }
+
+        private Builder() {
+            super(NAME);
+        }
+
+        @Override
+        public RouteHeader internalBuild(final Buffer rawValue, final Address address, final Buffer params) throws SipParseException {
+            return new RouteHeaderImpl(rawValue, address, params);
+        }
     }
 
 }

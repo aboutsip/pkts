@@ -21,11 +21,6 @@ import java.util.Set;
 public class SipURIImpl extends URIImpl implements SipURI {
 
     /**
-     * The full raw sip(s) URI
-     */
-    private Buffer buffer;
-
-    /**
      * The "userinfo" part.
      */
     private final Buffer userInfo;
@@ -38,23 +33,19 @@ public class SipURIImpl extends URIImpl implements SipURI {
     /**
      * The port
      */
-    private Buffer port;
+    private final Buffer port;
 
     /**
      * contains the uri-parameters and/or headers.
      */
     private final ParametersSupport paramsSupport;
 
+    private final Buffer paramsHeaders;
+
     /**
      * Flag indicating whether this is a sips uri or not.
      */
     private final boolean isSecure;
-
-    /**
-     * Flag telling us whether we need to rebuild the buffer because values have
-     * changed.
-     */
-    private boolean isDirty = false;
 
     /**
      * 
@@ -78,18 +69,14 @@ public class SipURIImpl extends URIImpl implements SipURI {
     public SipURIImpl(final boolean isSips, final Buffer userInfo, final Buffer host, final Buffer port,
             final Buffer paramsHeaders,
             final Buffer original) {
-        super(isSips ? SipParser.SCHEME_SIPS : SipParser.SCHEME_SIP);
+        super(original, isSips ? SipParser.SCHEME_SIPS : SipParser.SCHEME_SIP);
         this.isSecure = isSips;
         this.userInfo = userInfo;
         this.host = host;
         this.port = port;
+        this.paramsHeaders = paramsHeaders.slice();
         // note, need to split out the header portion (if there is one)
         this.paramsSupport = new ParametersSupport(paramsHeaders);
-
-        if (original == null) {
-            this.isDirty = true;
-        }
-        this.buffer = original;
     }
 
     /**
@@ -108,6 +95,7 @@ public class SipURIImpl extends URIImpl implements SipURI {
         return this.isSecure;
     }
 
+    /*
     @Override
     public void getBytes(final Buffer dst) {
         if (!this.isDirty) {
@@ -131,18 +119,21 @@ public class SipURIImpl extends URIImpl implements SipURI {
             this.paramsSupport.transferValue(dst);
         }
     }
+    */
 
     @Override
     public SipURI clone() {
-        try {
-            if (!this.isDirty) {
-                return SipURI.frame(this.buffer.clone());
-            }
-            return SipURI.frame(toBuffer());
-        } catch (SipParseException | IndexOutOfBoundsException | IOException e) {
-            // shouldn't really be able to happen
-            throw new RuntimeException("Unable to clone the SipURI due to exception ", e);
-        }
+        return new SipURIImpl(isSecure, userInfo, host, port, paramsHeaders, getRawURI());
+    }
+
+    @Override
+    public SipURI.Builder copy() {
+        SipURI.Builder b = SipURI.withParameters(paramsHeaders);
+        b.withHost(host);
+        b.withUser(userInfo);
+        b.withPort(port);
+        b.withSecure(isSecure);
+        return b;
     }
 
     /**
@@ -150,18 +141,8 @@ public class SipURIImpl extends URIImpl implements SipURI {
      */
     @Override
     public Buffer toBuffer() {
-        if (!this.isDirty) {
-            return this.buffer;
-        }
-
-        // TODO: need a better strategy around this.
-        // Probably want to create a dynamic buffer
-        // implementation where this is only the initial size
-        final Buffer buffer = Buffers.createBuffer(1024);
-        getBytes(buffer);
-        this.isDirty = false;
-        this.buffer = buffer.slice();
-        return buffer;
+        // TODO: once the Buffers have changed to also be immutable we dont need this slicing stuff.
+        return getRawURI().slice();
     }
 
     /**
@@ -208,6 +189,7 @@ public class SipURIImpl extends URIImpl implements SipURI {
         }
     }
 
+    /*
     @Override
     public void setPort(final int port) {
         this.isDirty = true;
@@ -217,6 +199,7 @@ public class SipURIImpl extends URIImpl implements SipURI {
             this.port = Buffers.wrap(port);
         }
     }
+    */
 
     @Override
     public Buffer getTransportParam() throws SipParseException {
@@ -375,6 +358,7 @@ public class SipURIImpl extends URIImpl implements SipURI {
         return this.paramsSupport.getParameter(name);
     }
 
+    /*
     @Override
     public void setParameter(final Buffer name, final Buffer value) throws SipParseException,
     IllegalArgumentException {
@@ -399,4 +383,5 @@ public class SipURIImpl extends URIImpl implements SipURI {
     public void setParameter(final String name, final int value) throws SipParseException, IllegalArgumentException {
         this.setParameter(Buffers.wrap(name), Buffers.wrap(value));
     }
+    */
 }

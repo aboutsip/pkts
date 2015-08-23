@@ -3,8 +3,6 @@
  */
 package io.pkts.packet.sip.header.impl;
 
-import static io.pkts.buffer.Buffers.wrap;
-import static io.pkts.packet.sip.impl.PreConditions.ifNull;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
@@ -14,6 +12,9 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+
+import static io.pkts.buffer.Buffers.wrap;
+import static io.pkts.packet.sip.impl.PreConditions.ifNull;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -51,6 +52,10 @@ public final class ParametersSupport {
 
     private final int estimatedSize = 0;
 
+    public ParametersSupport() {
+        this(null);
+    }
+
     /**
      * 
      * @param name
@@ -64,6 +69,16 @@ public final class ParametersSupport {
             this.originalParams = null;
             this.params = Buffers.EMPTY_BUFFER;
         }
+    }
+
+    /**
+     * Check if there are any parameters specified at all.
+     *
+     * @return
+     */
+    public boolean hasParameters() {
+        return (this.originalParams != null && !this.originalParams.isEmpty())
+                || (this.paramMap != null && !this.paramMap.isEmpty());
     }
 
     public boolean hasParameter(final Buffer name) {

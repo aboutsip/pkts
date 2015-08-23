@@ -8,6 +8,8 @@ import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.impl.ContentTypeHeaderImpl;
 
+import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
+
 /**
  * Represents the a content type header.
  * 
@@ -35,8 +37,10 @@ public interface ContentTypeHeader extends SipHeader, MediaTypeHeader, Parameter
      * @throws SipParseException in case anything goes wrong while parsing.
      */
     static ContentTypeHeader frame(final Buffer buffer) throws SipParseException {
+        assertNotEmpty(buffer, "The supplied buffer cannot be null or empty");
+        final Buffer original = buffer.slice();
         final Buffer[] mediaType = MediaTypeHeader.frame(buffer);
-        return new ContentTypeHeaderImpl(mediaType[0], mediaType[1], buffer);
+        return new ContentTypeHeaderImpl(original, mediaType[0], mediaType[1], buffer);
     }
 
 }

@@ -4,7 +4,6 @@
 package io.pkts.packet.sip.header.impl;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.impl.SipParser;
@@ -29,7 +28,8 @@ public class SipHeaderImpl implements SipHeader {
         this.value = value;
     }
 
-    public SipHeader.Builder<SipHeader> copy() {
+    @Override
+    public SipHeader.Builder<? extends SipHeader> copy() {
         return new SipHeaderBuilder(name, value);
     }
 
@@ -48,7 +48,7 @@ public class SipHeaderImpl implements SipHeader {
      */
     @Override
     public Buffer getValue() {
-        return this.value;
+        return this.value.slice();
     }
 
     @Override
@@ -98,9 +98,11 @@ public class SipHeaderImpl implements SipHeader {
 
     @Override
     public SipHeader clone() {
-        final Buffer buffer = Buffers.createBuffer(1024);
-        transferValue(buffer);
-        return new SipHeaderImpl(this.name.clone(), buffer);
+        // TODO: this will be easier once everything is immutable since you just have to clone the
+        // value buffer and that is it. No need to transfer the value etc.
+        // final Buffer buffer = Buffers.createBuffer(1024);
+        // transferValue(buffer);
+        return new SipHeaderImpl(this.name.clone(), value.clone());
     }
 
 }
