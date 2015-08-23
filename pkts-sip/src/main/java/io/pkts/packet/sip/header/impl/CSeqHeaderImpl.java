@@ -33,6 +33,10 @@ public final class CSeqHeaderImpl extends SipHeaderImpl implements CSeqHeader {
         return this.method;
     }
 
+    @Override
+    public CSeqHeader.Builder copy() {
+        return CSeqHeader.withMethod(this.method).withCSeq(this.cseqNumber);
+    }
     /**
      * {@inheritDoc}
      */

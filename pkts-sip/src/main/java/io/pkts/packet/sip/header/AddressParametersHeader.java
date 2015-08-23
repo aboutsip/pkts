@@ -19,7 +19,7 @@ import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 /**
  * @author jonas@jonasborjesson.com
  */
-public interface AddressParametersHeader extends SipHeader,HeaderAddress,Parameters{
+public interface AddressParametersHeader extends SipHeader, HeaderAddress, Parameters{
 
     /**
      * Frame the value as a {@link AddressParametersHeaderImpl}. This method assumes that you have
@@ -183,11 +183,10 @@ public interface AddressParametersHeader extends SipHeader,HeaderAddress,Paramet
          *
          * @return
          */
-        public Builder withNoParameters() {
+        public Builder<T> withNoParameters() {
             this.paramSupport = new ParametersSupport();
             return this;
         }
-
 
         /**
          * Set a parameter on the underlying {@link SipURI}.

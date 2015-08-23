@@ -50,7 +50,7 @@ public final class ToHeaderImpl extends AddressParametersHeaderImpl implements T
 
     @Override
     public ToHeader.Builder copy() {
-        final ToHeader.Builder builder = ToHeader.with(getAddress());
+        final ToHeader.Builder builder = ToHeader.withAddress(getAddress());
         builder.withParameters(getRawParams().slice());
         return builder;
     }

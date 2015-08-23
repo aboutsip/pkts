@@ -22,6 +22,9 @@ public interface ContentTypeHeader extends SipHeader, MediaTypeHeader, Parameter
     @Override
     ContentTypeHeader clone();
 
+    @Override
+    Builder copy();
+
     /**
      * Frame the value as a {@link ContentTypeHeader}. This method assumes that you have already
      * parsed out the actual header name "Content-Type: ". Also, this method assumes that a message
@@ -41,6 +44,36 @@ public interface ContentTypeHeader extends SipHeader, MediaTypeHeader, Parameter
         final Buffer original = buffer.slice();
         final Buffer[] mediaType = MediaTypeHeader.frame(buffer);
         return new ContentTypeHeaderImpl(original, mediaType[0], mediaType[1], buffer);
+    }
+
+    static Builder withType(final Buffer type) {
+        final Builder builder = new Builder();
+        builder.withType(type);
+        return builder;
+    }
+
+    static Builder withType(final String type) {
+        return withType(Buffers.wrap(type));
+    }
+
+    static Builder withParams(final Buffer params) {
+        return new Builder(params);
+    }
+
+    class Builder extends MediaTypeHeader.Builder<ContentTypeHeader> {
+
+        protected Builder() {
+            super(NAME);
+        }
+
+        protected Builder(final Buffer params) {
+            super(NAME, params);
+        }
+
+        @Override
+        protected ContentTypeHeader internalBuild(Buffer rawValue, Buffer type, Buffer subType, Buffer params) {
+            return new ContentTypeHeaderImpl(rawValue, type, subType, params);
+        }
     }
 
 }

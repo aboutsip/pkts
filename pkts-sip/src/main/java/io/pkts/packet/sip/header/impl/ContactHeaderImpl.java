@@ -4,8 +4,6 @@
 package io.pkts.packet.sip.header.impl;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.buffer.Buffers;
-import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.Address;
 import io.pkts.packet.sip.header.ContactHeader;
 
@@ -26,13 +24,18 @@ public class ContactHeaderImpl extends AddressParametersHeaderImpl implements Co
 
     @Override
     public ContactHeader clone() {
-        final Buffer buffer = Buffers.createBuffer(1024);
-        transferValue(buffer);
-        try {
-            return ContactHeader.frame(buffer);
-        } catch (final SipParseException e) {
-            throw new RuntimeException("Unable to clone the Contact-header", e);
-        }
+        final Buffer value = getValue();
+        final Address address = getAddress();
+        final Buffer params = getRawParams();
+        // TODO: once Buffer is truly immutable we don't actually have to clone, like we don't have to do for Address anymore
+        return new ContactHeaderImpl(value.clone(), address, params.clone());
+    }
+
+    @Override
+    public ContactHeader.Builder copy() {
+        final ContactHeader.Builder builder = ContactHeader.withAddress(getAddress());
+        builder.withParameters(getRawParams().slice());
+        return builder;
     }
 
     @Override

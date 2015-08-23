@@ -26,6 +26,14 @@ public final class ContentTypeHeaderImpl extends MediaTypeHeaderImpl implements 
     }
 
     @Override
+    public ContentTypeHeader.Builder copy() {
+        final ContentTypeHeader.Builder builder = ContentTypeHeader.withParams(getRawParams());
+        builder.withType(getContentType());
+        builder.withSubType(getContentSubType());
+        return builder;
+    }
+
+    @Override
     public ContentTypeHeader ensure() {
         return this;
     }

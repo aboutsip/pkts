@@ -21,15 +21,27 @@ public interface ContactHeader extends AddressParametersHeader {
         return new Builder();
     }
 
-    static Builder with(final Address address) throws SipParseException {
+    static Builder withAddress(final Address address) throws SipParseException {
         final Builder builder = new Builder();
         builder.address(address);
         return builder;
     }
 
-    static Builder with(final SipURI uri) throws SipParseException {
+    static Builder withHost(final Buffer host) throws SipParseException {
         final Builder builder = new Builder();
-        final Address address = Address.withURI(uri.clone()).build();
+        builder.withHost(host);
+        return builder;
+    }
+
+    static Builder withHost(final String host) throws SipParseException {
+        final Builder builder = new Builder();
+        builder.withHost(host);
+        return builder;
+    }
+
+    static Builder withSipURI(final SipURI uri) throws SipParseException {
+        final Builder builder = new Builder();
+        final Address address = Address.withURI(uri).build();
         builder.address(address);
         return builder;
     }
@@ -41,13 +53,16 @@ public interface ContactHeader extends AddressParametersHeader {
      * @return
      * @throws SipParseException in case anything goes wrong while parsing.
      */
-    public static ContactHeader frame(final Buffer buffer) throws SipParseException {
+    static ContactHeader frame(final Buffer buffer) throws SipParseException {
         final Buffer original = buffer.slice();
         final Object[] result = AddressParametersHeader.frame(buffer);
         return new ContactHeaderImpl(original, (Address) result[0], (Buffer) result[1]);
     }
 
-    static class Builder extends AddressParametersHeader.Builder<ContactHeader> {
+    @Override
+    Builder copy();
+
+    class Builder extends AddressParametersHeader.Builder<ContactHeader> {
 
         private Builder() {
             super(NAME);

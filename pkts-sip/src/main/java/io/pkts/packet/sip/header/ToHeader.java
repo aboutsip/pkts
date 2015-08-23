@@ -74,7 +74,7 @@ public interface ToHeader extends AddressParametersHeader {
         return withHost(Buffers.wrap(host));
     }
 
-    static Builder with(final Address address) throws SipParseException {
+    static Builder withAddress(final Address address) throws SipParseException {
         final Builder builder = new Builder();
         builder.address(address);
         return builder;

@@ -28,6 +28,9 @@ public interface CSeqHeader extends SipHeader {
     @Override
     CSeqHeader clone();
 
+    @Override
+    Builder copy();
+
     /**
      * Parse the value as a cseq value. This method assumes that you have already parsed out the
      * actual header name "CSeq: "
@@ -36,7 +39,7 @@ public interface CSeqHeader extends SipHeader {
      * @return
      * @throws SipParseException
      */
-    public static CSeqHeader frame(final Buffer value) throws SipParseException {
+    static CSeqHeader frame(final Buffer value) throws SipParseException {
         try {
             final Buffer valueCopy = value.slice();
             final Buffer cseq = SipParser.expectDigit(value);
@@ -50,20 +53,20 @@ public interface CSeqHeader extends SipHeader {
         }
     }
 
-    static CSeqHeaderBuilder withMethod(final Buffer method) {
-        return new CSeqHeaderBuilder(assertNotEmpty(method, "Method cannot be null or empty"));
+    static Builder withMethod(final Buffer method) {
+        return new Builder(assertNotEmpty(method, "Method cannot be null or empty"));
     }
 
-    static CSeqHeaderBuilder withMethod(final String method) {
-        return new CSeqHeaderBuilder(Buffers.wrap(assertNotEmpty(method, "Method cannot be null or empty")));
+    static Builder withMethod(final String method) {
+        return new Builder(Buffers.wrap(assertNotEmpty(method, "Method cannot be null or empty")));
     }
 
-    class CSeqHeaderBuilder {
+    class Builder implements SipHeader.Builder<CSeqHeader> {
 
         private long cseq;
-        private final Buffer method;
+        private Buffer method;
 
-        private CSeqHeaderBuilder(final Buffer method) {
+        private Builder(final Buffer method) {
             this.method = method;
         }
 
@@ -73,9 +76,20 @@ public interface CSeqHeader extends SipHeader {
          * @return
          * @throws SipParseException in case the specified sequence number is less than zero.
          */
-        public CSeqHeaderBuilder cseq(final long cseq) throws SipParseException {
+        public Builder withCSeq(final long cseq) throws SipParseException {
             assertArgument(cseq >= 0, "Sequence number must be greater or equal to zero");
             this.cseq = cseq;
+            return this;
+        }
+
+        public Builder withMethod(final Buffer method) throws SipParseException {
+            assertNotEmpty(method, "Method cannot be null or empty");
+            this.method = method;
+            return this;
+        }
+
+        public Builder withMethod(final String method) throws SipParseException {
+            this.method = Buffers.wrap(assertNotEmpty(method, "Method cannot be null or empty"));
             return this;
         }
 

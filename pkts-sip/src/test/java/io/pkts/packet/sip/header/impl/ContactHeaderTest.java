@@ -47,7 +47,7 @@ public class ContactHeaderTest extends AddressParameterHeadersTestBase {
     @Test
     public void testBuildContact() throws Exception {
         final SipURI uri = SipURI.frame(Buffers.wrap("sip:hello@10.0.1.5:51945;ob")).copy().withParameter("expires", 600).build();
-        final ContactHeader contact = ContactHeader.with(uri).build();
+        final ContactHeader contact = ContactHeader.withSipURI(uri).build();
         contact.toString();
         assertThat(contact.toString(), is("Contact: <sip:hello@10.0.1.5:51945;ob;expires=600>"));
     }
@@ -59,6 +59,6 @@ public class ContactHeaderTest extends AddressParameterHeadersTestBase {
 
     @Override
     public AddressParametersHeader.Builder withHost(String host) {
-        return null;
+        return ContactHeader.withHost(host);
     }
 }

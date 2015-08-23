@@ -25,7 +25,7 @@ public class CSeqHeaderTest {
         cseq = CSeqHeader.withMethod(Buffers.wrap("H")).build();
         assertThat(cseq.toString(), is("CSeq: 0 H"));
 
-        cseq = CSeqHeader.withMethod(Buffers.wrap("ACK")).cseq(102).build();
+        cseq = CSeqHeader.withMethod(Buffers.wrap("ACK")).withCSeq(102).build();
         assertThat(cseq.toString(), is("CSeq: 102 ACK"));
 
         final Buffer value = cseq.getValue();
@@ -35,4 +35,21 @@ public class CSeqHeaderTest {
         assertThat(cseq.getMethod().toString(), is("ACK"));
     }
 
+    @Test
+    public void testCopyConstructor() {
+        final CSeqHeader c1 = CSeqHeader.withMethod("INVITE").withCSeq(10).build();
+        final CSeqHeader c2 = c1.copy().build();
+        final CSeqHeader c3 = c1.copy().withCSeq(11).build();
+        final CSeqHeader c4 = c3.copy().withMethod("ACK").build();
+
+        assertThat(c1.toString(), is("CSeq: 10 INVITE"));
+        assertThat(c2.toString(), is("CSeq: 10 INVITE"));
+        assertThat(c3.toString(), is("CSeq: 11 INVITE"));
+        assertThat(c4.toString(), is("CSeq: 11 ACK"));
+
+        assertThat(c1.getValue().toString(), is("10 INVITE"));
+        assertThat(c2.getValue().toString(), is("10 INVITE"));
+        assertThat(c3.getValue().toString(), is("11 INVITE"));
+        assertThat(c4.getValue().toString(), is("11 ACK"));
+    }
 }
