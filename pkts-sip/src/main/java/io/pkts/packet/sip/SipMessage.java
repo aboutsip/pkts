@@ -2,6 +2,8 @@ package io.pkts.packet.sip;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.packet.sip.address.SipURI;
+import io.pkts.packet.sip.header.AddressParametersHeader;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.CallIdHeader;
 import io.pkts.packet.sip.header.ContactHeader;
@@ -17,9 +19,12 @@ import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
 import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
@@ -502,15 +507,237 @@ public interface SipMessage extends Cloneable {
         return SipParser.frame(Buffers.wrap(buffer));
     }
 
+    default List<SipHeader> getAllHeaders() {
+        return new ArrayList<>();
+    }
+
+    default Builder copy() {
+        return null;
+    }
+
     // Builder copy();
 
-    interface Builder {
+    /**
+     *
+     */
+    interface Builder2 {
+
+        // use this from header, which then will override any From headers
+        // there may be from the potential sip message we copied.
+        Builder2 withFrom(FromHeader from);
+        Builder2 withFrom(FromHeader.Builder from);
+
+        Builder2 onFrom(FromHeader.Builder from);
+
+        FromHeader.Builder getFromBuilder();
+
+        /**
+         * After the {@link SipMessage} has been fully built and created the "end result"
+         * will be conveyed to the registered function. It is utterly important
+         * that the function returns as quickly as possible since the build method
+         * will not be able to return until the call to this function has been completed.
+         *
+         * @param f
+         */
+        void onMessageCommited(Consumer<SipMessage> f);
+    }
+
+    /**
+     * Whenever you create a new {@link SipMessage} you will end up with a {@link Builder}.
+     * The pattern of the {@link SipMessage} builders is that you can specify the various
+     * headers, request-uri, body etc through the withXXX-methods and then upon build time,
+     * the builder will call out to any registered functions (as registered through the onXXX-methods)
+     * allowing the application to make any last minute changes.
+     *
+     * In a real SIP stack there are headers within a {@link SipMessage} that typically needs to be
+     * manipulated before being sent out over the network. One such header is the {@link ViaHeader} where
+     * the transport layer typically has the responsibility to fill out the ip and port from which the
+     * message was sent as well as specify the transport used.
+     *
+     * The idea is as follows: everything within this SIP library is immutable, which includes {@link SipRequest}
+     * and {@link SipResponse}s but if you build a stack, the stack may actually need to change headers
+     * before creating the "final" version of the {@link SipMessage} which is then sent out over the network.
+     * The typical use case is of course the {@link ViaHeader} where it typically isn't known by the application
+     * which protocol, or interface of the stack will be used. This is only known at the time the message
+     * is about to be sent out and will (should) be filled out by the transport layer. Therefore, if you build
+     * a stack you probably want to pass down a {@link Builder} to be "sent" all the way down to the transport layer
+     * which will
+     *
+     * All callback as registered through the various onXXXX-methods allow for multiple callbacks to be registered.
+     * They are called in reverse order from the order of registration.
+     *
+     * Order of precedence where the top one "wins" over the others:
+     * <ul>
+     *     <li>Any header added as a builder object will ALWAYS take precedence</li>
+     *     <li>Any header added through a withXXX-method</li>
+     *     <li>Any header copied from a "template"</li>
+     * </ul>
+     *
+     * I.e., if you e.g. have added a from-header builder object
+     * through {@link Builder#withFromHeader(AddressParametersHeader.Builder)}
+     * method then that builder will be used even if this builder is based off
+     * another {@link SipMessage} (which then serves as a "template")
+     *
+     *
+     */
+    interface Builder<T extends SipMessage> {
+
+        /**
+         * By default, the following headers will automatically be generated if not explicitly provided:
+         *
+         * <ul>
+         *     <li>{@link ToHeader} - the request-uri will be used to construct the to-header</li>
+         *     <li>{@link CSeqHeader} - a new CSeq header will be added where the
+         *     method is the same as this message and the sequence number is set to zero</li>
+         *     <li>{@link CallIdHeader} - a new random call-id will be added</li>
+         *     <li>{@link MaxForwardsHeader} - a max forwards of 70 will be added</li>
+         * </ul>
+         *
+         * but if you don't want that, simply call this method and all the defaults
+         * of this builder will be suspended. Of course, if you wish to actually
+         * construct a valid {@link SipMessage} you are then responsible for adding
+         * the mandatory headers to this builder (unless you don't care of course).
+         *
+         * @return
+         */
+        Builder withNoDefaults();
+
+        /**
+         * A header can be added to the new {@link SipMessage} in two ways,
+         * either by being copied from the {@link SipMessage} used
+         * as a template, or the header can be explicitly added through one of the withXXX-methods.
+         * Those headers that are copied from the template are subject to the result of the
+         * filter function. Those headers that have been explicitly added are not (since if you
+         * did add them it is assumed you actually want to include them. If not, why add them
+         * in the first place?)
+         *
+         * Any header, which includes those copied headers that "survived" the filtering
+         * step, can be manipulated before it is added to the new SIP message by registering
+         * a function with the method {@link Builder#onHeader(Function)}.
+         *
+         * Note, this API allows you to filter out mandatory headers, such as the {@link ContactHeader} etc,
+         * and of course, if you are building a real SIP stack you need to include the mandatory
+         * headers but the reason why there are no restrictions imposed by this library is because
+         * perhaps you want to build a tool that actually sends bad {@link SipMessage}s? You should be
+         * able to do so and therefore, there are no restrictions on how you create your messages.
+         * It is up to your stack/application to enforce any rules you see fit.
+         *
+         * @param filter
+         */
+        Builder filter(Predicate<SipHeader> filter);
+
+        /**
+         * Whenever a header is about to be pushed onto the new {@link SipMessage}
+         * you have a chance to change the value of that header. You do so
+         * by registering a function that takes a {@link SipHeader} as an argument and if you
+         * wish to change that header, then simply {@link SipHeader#copy()} it, manipulate
+         * it through its builder object and then return that builder.
+         *
+         * If you wish to leave the header un-touched, then simply return null (or an empty {@link Optional}).
+         *
+         * Also note that the following headers have explicit "on" methods.
+         *
+         * <ul>
+         *     <li>{@link FromHeader}</li>
+         *     <li>{@link ToHeader}</li>
+         *     <li>{@link MaxForwardsHeader}</li>
+         *     <li>{@link CSeqHeader}</li>
+         * </ul>
+         *
+         * The reason is simply because these are typically manipulated before
+         * copying them over to a new request or response (e.g., Max Forwards is decremented,
+         * CSeq may increase etc)
+         *
+         * @param f
+         * @return
+         */
+        Builder onHeader(Function<SipHeader, Optional<SipHeader.Builder>> f);
+
+        /**
+         * If this {@link Builder} is based off of a template (as in {@link SipRequest#createResponse(int)}
+         * or {@link SipMessage#copy()}) and the {@link FromHeader} was not excluded in the filter step
+         * then when the {@link FromHeader} is copied from the template to the new message being
+         * built by this {@link Builder} then you have a chance to manipulate it before it gets commited.
+         *
+         *
+         * NEW NEW NEW NEW text and idea
+         *
+         * When the {@link FromHeader} is about to get added to the new message you have the option
+         * of manipulating that {@link FromHeader} by copy it and return a builder (wrapped in an {@link Optional}).
+         *
+         * Note, this method will ONLY be called in those cases where we don't already have a builder
+         * registered through
+         *
+         *
+         * @param f
+         * @return If you wish to change the {@link FromHeader} then return an optional with
+         * a {@link io.pkts.packet.sip.header.FromHeader.Builder} (where you obviously have made
+         * the changes you wish to make).
+         */
+        Builder onFromHeader(Function<FromHeader, Optional<AddressParametersHeader.Builder<FromHeader>>> f);
 
         /**
          *
          * @param f
+         * @return
          */
-        void onHeader(Function<SipHeader, SipHeader> f);
+        Builder onFromHeaderBuilder(Consumer<AddressParametersHeader.Builder<FromHeader>> f);
+
+        /**
+         * Add this {@link FromHeader} to the builder and when it is about to be added to the {@link SipMessage}
+         * we are building, the method {@link Builder#onFromHeader(Function)} will
+         * be called giving you a chance to manipulate the header.
+         *
+         * Note, if you already have {@link io.pkts.packet.sip.header.FromHeader.Builder} object then
+         * you probably just want to add the builder itself and in that case, the {@link Builder#onFromHeader(Function)}
+         * will NOT be called.
+         *
+         *
+         * @param from
+         * @return
+         */
+        Builder withFromHeader(FromHeader from);
+
+        /**
+         *
+         * @param builder
+         * @return
+         */
+        Builder withFromHeader(AddressParametersHeader.Builder<FromHeader> builder);
+
+        /**
+         * Same as {@link io.pkts.packet.sip.SipMessage.Builder#onCopyFromHeader(Function)} but for
+         * the {@link ToHeader}.
+         *
+         * @param f
+         * @return
+         */
+        Builder onToHeader(Function<ToHeader, Optional<ToHeader.Builder>> f);
+
+        /**
+         * Same as {@link io.pkts.packet.sip.SipMessage.Builder#onCopyFromHeader(Function)} but for
+         * the {@link CSeqHeader}.
+         *
+         * @param f
+         * @return
+         */
+        Builder onCSeqHeader(Function<CSeqHeader, Optional<CSeqHeader.Builder>> f);
+
+        /**
+         * Same as {@link io.pkts.packet.sip.SipMessage.Builder#onCopyFromHeader(Function)} but for
+         * the {@link MaxForwardsHeader}.
+         *
+         * @param f
+         * @return
+         */
+        Builder onMaxForwardsHeader(Function<MaxForwardsHeader, Optional<MaxForwardsHeader.Builder>> f);
+
+        /**
+         *
+         * @param f
+         * @return
+         */
+        Builder onRequestURI(Function<SipURI, SipURI.Builder> f);
 
         /**
          *
@@ -518,17 +745,33 @@ public interface SipMessage extends Cloneable {
          */
         void onFrom(Function<SipHeader, SipHeader> f);
 
-        void onTo(Function<SipHeader, SipHeader> f);
+        void onTo(Function<ToHeader, Optional<ToHeader.Builder>> f);
 
-        void onTopMostVia(Function<SipHeader, SipHeader> f);
+        Builder withTopMostVia(ViaHeader.Builder via);
+
+        Builder pushVia(ViaHeader.Builder via);
+
+        Builder withPushedVia(ViaHeader.Builder via);
+
+        Builder pushVia(ViaHeader via);
+
+        void onTopMostVia(Function<ViaHeader, SipHeader> f);
 
         void onContact(Function<SipHeader, SipHeader> f);
 
-        void onCSeq(Function<SipHeader, SipHeader> f);
+        void onRecordRoute(Function<SipHeader, SipHeader> f);
 
-        void onCallId(Function<SipHeader, SipHeader> f);
+        T build();
 
-        void onBody();
+        /**
+         * After the {@link SipMessage} has been fully built and created the "end result"
+         * will be conveyed to the registered function. It is utterly important
+         * that the function returns as quickly as possible since the build method
+         * will not be able to return until the call to this function has been completed.
+         *
+         * @param f
+         */
+        void onCommit(Consumer<SipMessage> f);
     }
 
 }

@@ -2,11 +2,13 @@ package io.pkts.packet.sip.impl;
 
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
+import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipRequest;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.address.URI;
+import io.pkts.packet.sip.header.AddressParametersHeader;
 import io.pkts.packet.sip.header.ContentTypeHeader;
 import io.pkts.packet.sip.header.ExpiresHeader;
 import io.pkts.packet.sip.header.MaxForwardsHeader;
@@ -18,6 +20,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,6 +66,74 @@ public class SipMessageImplTest extends PktsTestBase {
         final SipMessage msg = parseMessage(RawData.sipInvite);
         assertThat(msg.getRouteHeader(), is((RouteHeader) null));
         assertThat(msg.getRouteHeaders().size(), is(0));
+    }
+
+    @Test
+    public void testBuilderPattern() throws Exception {
+        final SipMessage msg = parseMessage(RawData.sipInvite);
+        // msg.copy().headerStream().filter().onHeader(b -> b.)
+        // msg.createResponse(200).onFrom();
+        // msg.copy().filter(predicate);
+
+        SipRequest.invite("sip:alice@example.com").withNoDefaults();
+
+        // copy everything but change the user portion of the
+        // from address to "nisse"
+        msg.copy().onFromHeader(from -> Optional.of(from.copy().withUser("nisse"))).build();
+
+        // copy everything except X-headers.
+        msg.copy().filter(h -> !h.getName().toString().startsWith("X-")).build();
+
+        // include all headers and add the user=phone as a parameter to the request uri
+        msg.copy().onRequestURI(uri -> uri.copy().withParameter("user", "phone")).build();
+
+        // use method pointers for filtering and manipulating the headers
+        msg.copy().filter(this::filter).onHeader(this::manipulateHeader).build();
+
+        tomorrow, what about indicating we want a default new via header?;
+        how can we check so that it wasnt already added by someone else further up in the stack?;
+        Perhaps pushVia() is enough and that will create a new ViaHeader.Builder() if one doesnt;
+        already exist and if multiple calls to pushVia is made those are then no-ops...
+
+        SipRequest.invite("sip:alice@example.com").withDefaultTo().withFrom(from).withContact(cBuilder).withDefaultCSeq().withDefaultCallId().withHeader().withHeader().withBody().build();
+        filter(name -> !name.startsWith("X-")).onContact(cBuilder).onHeader(headerBuilder);
+    }
+
+    /**
+     * Only keep headers starting with 'A'
+     * @param header
+     * @return
+     */
+    private boolean filter(final SipHeader header) {
+        try {
+            return header.getName().getByte(0) == 'A';
+        } catch (final IOException e) {
+            // TODO: once we have fixed the buffer stuff there will no
+            // longer be an IO exception here!
+            return false;
+        }
+    }
+
+    /**
+     * Example of a method that manipulates headers by creating a copy of it and return that
+     * which the sip message builder then will eventually build. Also note how this method
+     * uses the ensure to make sure that the header is fully parsed etc.
+     *
+     * Note, parsing every header is expensive.
+     *
+     * @param header
+     * @return
+     */
+    private Optional<SipHeader.Builder> manipulateHeader(final SipHeader header) {
+
+        // TODO: perhaps rename the ensure method to "parseIt" or something like that?
+        final SipHeader parsedForSure = header.ensure();
+        if (parsedForSure.isAddressParametersHeader()) {
+            final AddressParametersHeader h = parsedForSure.toAddressParametersHeader();
+            return Optional.of(h.copy().withHost("pkts.io"));
+        }
+
+        return Optional.empty();
     }
 
     /**

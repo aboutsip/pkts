@@ -106,30 +106,24 @@ public interface FromHeader extends AddressParametersHeader {
         return Buffers.wrap(Integer.toHexString(new Random().nextInt()));
     }
 
-    static Builder builder() {
+    static AddressParametersHeader.Builder<FromHeader> builder() {
         return new Builder();
     }
 
-    static Builder withHost(final Buffer host) throws SipParseException {
-        final Builder b = builder();
-        b.withHost(host);
-        return b;
+    static AddressParametersHeader.Builder<FromHeader> withHost(final Buffer host) throws SipParseException {
+        return builder().withHost(host);
     }
 
-    static Builder withHost(final String host) throws SipParseException {
-        final Builder b = builder();
-        b.withHost(host);
-        return b;
+    static AddressParametersHeader.Builder<FromHeader> withHost(final String host) throws SipParseException {
+        return builder().withHost(host);
     }
 
-    static Builder withAddress(final Address address) throws SipParseException {
-        final Builder builder = new Builder();
-        builder.address(address);
-        return builder;
+    static AddressParametersHeader.Builder<FromHeader> withAddress(final Address address) throws SipParseException {
+        return builder().address(address);
     }
 
     @Override
-    Builder copy();
+    AddressParametersHeader.Builder<FromHeader> copy();
 
     class Builder extends AddressParametersHeader.Builder<FromHeader> {
 

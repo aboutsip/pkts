@@ -6,6 +6,7 @@ package io.pkts.packet.sip.header.impl;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.Address;
+import io.pkts.packet.sip.header.AddressParametersHeader;
 import io.pkts.packet.sip.header.FromHeader;
 
 
@@ -41,10 +42,8 @@ public class FromHeaderImpl extends AddressParametersHeaderImpl implements FromH
     }
 
     @Override
-    public FromHeader.Builder copy() {
-        final FromHeader.Builder builder = FromHeader.withAddress(getAddress());
-        builder.withParameters(getRawParams().slice());
-        return builder;
+    public AddressParametersHeader.Builder<FromHeader> copy() {
+        return FromHeader.withAddress(getAddress()).withParameters(getRawParams().slice());
     }
 
     @Override

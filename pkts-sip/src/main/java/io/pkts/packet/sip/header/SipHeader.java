@@ -105,10 +105,31 @@ public interface SipHeader extends Cloneable {
      * {@link ContactHeader} but it is still in its "raw" form and therefore represented as a
      * {@link SipHeader} as opposed to an actual {@link ContactHeader} but by calling this method
      * you will force the library to actually fully frame it.
+     *
+     * Note, if the header is successfully parsed into a more explicit header type you may
+     * still not really know what to cast it so in order to make life somewhat easier you can
+     * use the isXXXHeader methods (such as {@link SipHeader#isAddressParametersHeader()} to
+     * check what type it possible can be and then use the corresponding toXXXHeader to
+     * "cast" it.
      * 
      * @return
      */
     SipHeader ensure();
+
+    /**
+     * If you use the {@link SipHeader#ensure()} method than, if possible, the header will
+     * be parsed to a more specific header type but you may not know exactly which type
+     * but you can
+     * @return
+     */
+    default boolean isAddressParametersHeader() {
+        return false;
+    }
+
+    default AddressParametersHeader toAddressParametersHeader() throws ClassCastException {
+        throw new ClassCastException("Cannot cast header of type " + getClass().getName()
+                + " to type " + AddressParametersHeader.class.getName());
+    }
 
     /**
      * Everything within the pkts.io SIP module are immutable so if you actually want

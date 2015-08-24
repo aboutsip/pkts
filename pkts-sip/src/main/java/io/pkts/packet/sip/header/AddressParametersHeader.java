@@ -66,6 +66,14 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
     @Override
     Builder copy();
 
+    default boolean isAddressParametersHeader() {
+        return true;
+    }
+
+    default AddressParametersHeader toAddressParametersHeader() throws ClassCastException {
+        return this;
+    }
+
     class Builder<T extends AddressParametersHeader> implements SipHeader.Builder<T> {
 
         private final Buffer name;

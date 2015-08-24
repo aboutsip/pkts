@@ -65,7 +65,7 @@ public class SipHeaderImpl implements SipHeader {
 
     /**
      * If this method actually gets called it means that we are the {@link SipHeaderImpl} itself
-     * and that we need to frame it further. Subclasses must override this method and simply return
+     * and that we need to frame it further. Subclasses MUST override this method and simply return
      * 'this'.
      */
     @Override

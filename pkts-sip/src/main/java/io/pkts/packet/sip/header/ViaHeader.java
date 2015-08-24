@@ -206,6 +206,10 @@ public interface ViaHeader extends Parameters, SipHeader {
         return Buffers.wrap("z9hG4bK-" + UUID.randomUUID().toString());
     }
 
+    static Builder builder() {
+        return new Builder();
+    }
+
     static Builder withHost(final Buffer host) {
         final Builder builder = new Builder();
         return builder.withHost(host);

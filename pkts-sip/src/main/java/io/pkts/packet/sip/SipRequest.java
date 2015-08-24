@@ -102,7 +102,7 @@ public interface SipRequest extends SipMessage {
         return request(method, requestURI.toString());
     }
 
-    public static class Builder {
+    class Builder {
 
         private static final Buffer INVITE = Buffers.wrap("INVITE");
         private static final Buffer ACK = Buffers.wrap("ACK");
@@ -269,7 +269,7 @@ public interface SipRequest extends SipMessage {
 
 
         /**
-         * Get the To-header but if the user hasn't explicitly speficied one then base it off of the
+         * Get the To-header but if the user hasn't explicitly specified one then base it off of the
          * request uri.
          * 
          * @return
