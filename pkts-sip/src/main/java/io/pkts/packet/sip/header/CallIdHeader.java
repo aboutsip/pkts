@@ -27,11 +27,20 @@ public interface CallIdHeader extends SipHeader {
     @Override
     CallIdHeader clone();
 
+    @Override
+    default boolean isCallIdHeader() {
+        return true;
+    }
+
+    @Override
+    default CallIdHeader toCallIdHeader() {
+        return this;
+    }
+
     static CallIdHeader frame(final Buffer buffer) {
         assertNotEmpty(buffer, "The value of the Call-ID cannot be null or empty");
         return new CallIdHeaderImpl(buffer);
     }
-
 
     /**
      * Frame the {@link CallIdHeader} using its compact name.

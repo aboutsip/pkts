@@ -20,6 +20,8 @@ public interface ToHeader extends AddressParametersHeader {
 
     Buffer NAME = Buffers.wrap("To");
 
+    Buffer COMPACT_NAME = Buffers.wrap("t");
+
     /**
      * Get the tag parameter.
      * 
@@ -31,6 +33,12 @@ public interface ToHeader extends AddressParametersHeader {
 
     @Override
     ToHeader clone();
+
+
+    @Override
+    default ToHeader toToHeader() {
+        return this;
+    }
 
     /**
      * Frame the value as a {@link ToHeader}. This method assumes that you have already parsed out
@@ -62,6 +70,11 @@ public interface ToHeader extends AddressParametersHeader {
     static Buffer generateTag() {
         // TODO: fix this and move it to a better place.
         return Buffers.wrap(Integer.toHexString(new Random().nextInt()));
+    }
+
+    @Override
+    default boolean isToHeader() {
+        return true;
     }
 
     static Builder withHost(final Buffer host) {

@@ -53,7 +53,6 @@ public class AddressParametersHeaderImpl extends ParametersImpl implements Addre
         return this;
     }
 
-
     /**
      * {@inheritDoc}
      */

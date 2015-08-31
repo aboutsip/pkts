@@ -53,6 +53,16 @@ public interface RouteHeader extends AddressParametersHeader {
     @Override
     Builder copy();
 
+    @Override
+    default boolean isRouteHeader() {
+        return true;
+    }
+
+    @Override
+    default RouteHeader toRouterHeader() {
+        return this;
+    }
+
     static Builder withHost(final Buffer host) {
         final Builder b = new Builder();
         b.withHost(host);

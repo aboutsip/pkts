@@ -59,6 +59,16 @@ public interface RecordRouteHeader extends AddressParametersHeader {
     @Override
     Builder copy();
 
+    @Override
+    default boolean isRecordRouteHeader() {
+        return true;
+    }
+
+    @Override
+    default RecordRouteHeader toRecordRouteHeader() {
+        return this;
+    }
+
     static Builder withHost(final Buffer host) {
         final Builder b = new Builder();
         b.withHost(host);

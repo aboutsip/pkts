@@ -32,7 +32,7 @@ import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
  * When the UAC creates a request, it MUST insert a Via into that request. The
  * protocol name and protocol version in the header field MUST be SIP and 2.0,
  * respectively. The Via header field value MUST contain a branch parameter.
- * This parameter is used to identify the io.sipstack.transaction.transaction created by that request.
+ * This parameter is used to identify the transaction created by that request.
  * This parameter is used by both the client and the server.
  * </p>
  * 
@@ -78,6 +78,8 @@ public interface ViaHeader extends Parameters, SipHeader {
 
     Buffer NAME = Buffers.wrap("Via");
 
+    Buffer COMPACT_NAME = Buffers.wrap("v");
+
     /**
      * The protocol, which typically is "UDP", "TCP" or "TLS" but can really be
      * anything according to RFC3261.
@@ -92,7 +94,15 @@ public interface ViaHeader extends Parameters, SipHeader {
 
     Buffer getReceived();
 
-    // void setReceived(Buffer received);
+    @Override
+    default ViaHeader toViaHeader() {
+        return this;
+    }
+
+    @Override
+    default boolean isViaHeader() {
+        return true;
+    }
 
     /**
      * For a request, the rport value will not be filled out since the

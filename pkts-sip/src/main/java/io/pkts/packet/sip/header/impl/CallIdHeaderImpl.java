@@ -50,6 +50,11 @@ public final class CallIdHeaderImpl extends SipHeaderImpl implements CallIdHeade
         return Buffers.wrap(UUID.randomUUID().toString());
     }
 
+    @Override
+    public CallIdHeader ensure() {
+        return this;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -89,9 +94,5 @@ public final class CallIdHeaderImpl extends SipHeaderImpl implements CallIdHeade
         return true;
     }
 
-    @Override
-    public CallIdHeader ensure() {
-        return this;
-    }
 
 }

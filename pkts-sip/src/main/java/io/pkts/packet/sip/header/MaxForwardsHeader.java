@@ -38,6 +38,16 @@ public interface MaxForwardsHeader extends SipHeader {
     @Override
     MaxForwardsHeader clone();
 
+    @Override
+    default boolean isMaxForwardsHeader() {
+        return true;
+    }
+
+    @Override
+    default MaxForwardsHeader toMaxForwardsHeader() {
+        return this;
+    }
+
     static MaxForwardsHeader create(final int max) {
         assertArgument(max >= 0, "The value must be greater or equal to zero");
         return new MaxForwardsHeaderImpl(max);

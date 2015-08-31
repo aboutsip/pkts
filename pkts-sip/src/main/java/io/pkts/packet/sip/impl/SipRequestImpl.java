@@ -3,10 +3,6 @@
  */
 package io.pkts.packet.sip.impl;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
@@ -20,7 +16,8 @@ import io.pkts.packet.sip.header.MaxForwardsHeader;
 import io.pkts.packet.sip.header.RouteHeader;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ToHeader;
-import io.pkts.packet.sip.header.ViaHeader;
+
+import java.util.Optional;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -162,17 +159,10 @@ public final class SipRequestImpl extends SipMessageImpl implements SipRequest {
     @Override
     public RouteHeader popRouteHeader() {
         final SipHeader header = popHeader(RouteHeader.NAME);
-        if (header instanceof RouteHeader) {
-            return (RouteHeader) header;
+        if (header != null) {
+            return header.ensure().toRouterHeader();
         }
-
-        if (header == null) {
-            return null;
-        }
-
-
-        final Buffer buffer = header.getValue();
-        return RouteHeader.frame(buffer);
+        return null;
     }
 
 

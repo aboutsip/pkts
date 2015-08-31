@@ -54,6 +54,7 @@ public class SipRequestTest extends PktsTestBase {
     @Test
     public void testToString() throws Exception {
         final SipRequest req = (SipRequest) parseMessage(RawData.sipInvite);
+        System.out.println(req);
         assertThat(req.toString().contains("o=user1 53655765 2353687637 IN IP4 127.0.1.1"), is(true));
     }
     

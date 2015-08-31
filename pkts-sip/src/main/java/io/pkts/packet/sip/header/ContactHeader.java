@@ -14,6 +14,8 @@ public interface ContactHeader extends AddressParametersHeader {
 
     Buffer NAME = Buffers.wrap("Contact");
 
+    Buffer COMPACT_NAME = Buffers.wrap("m");
+
     @Override
     ContactHeader clone();
 
@@ -61,6 +63,16 @@ public interface ContactHeader extends AddressParametersHeader {
 
     @Override
     Builder copy();
+
+    @Override
+    default boolean isContactHeader() {
+        return true;
+    }
+
+    @Override
+    default ContactHeader toContactHeader() {
+        return this;
+    }
 
     class Builder extends AddressParametersHeader.Builder<ContactHeader> {
 

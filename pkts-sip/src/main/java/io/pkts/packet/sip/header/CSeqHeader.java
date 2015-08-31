@@ -31,6 +31,16 @@ public interface CSeqHeader extends SipHeader {
     @Override
     Builder copy();
 
+    @Override
+    default boolean isCSeqHeader() {
+        return true;
+    }
+
+    @Override
+    default CSeqHeader toCSeqHeader() {
+        return this;
+    }
+
     /**
      * Parse the value as a cseq value. This method assumes that you have already parsed out the
      * actual header name "CSeq: "
@@ -79,6 +89,11 @@ public interface CSeqHeader extends SipHeader {
         public Builder withCSeq(final long cseq) throws SipParseException {
             assertArgument(cseq >= 0, "Sequence number must be greater or equal to zero");
             this.cseq = cseq;
+            return this;
+        }
+
+        public Builder increment() {
+            ++cseq;
             return this;
         }
 

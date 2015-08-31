@@ -10,6 +10,7 @@ import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.CallIdHeader;
 import io.pkts.packet.sip.header.ContactHeader;
+import io.pkts.packet.sip.header.ContentLengthHeader;
 import io.pkts.packet.sip.header.ContentTypeHeader;
 import io.pkts.packet.sip.header.ExpiresHeader;
 import io.pkts.packet.sip.header.FromHeader;
@@ -172,16 +173,34 @@ public class SipParser {
     static {
         framers.put(CallIdHeader.NAME, header -> CallIdHeader.frame(header.getValue()));
         framers.put(CallIdHeader.COMPACT_NAME, header -> CallIdHeader.frameCompact(header.getValue()));
+
         framers.put(ContactHeader.NAME, header -> ContactHeader.frame(header.getValue()));
+        framers.put(ContactHeader.COMPACT_NAME, header -> ContactHeader.frame(header.getValue()));
+
         framers.put(ContentTypeHeader.NAME, header -> ContentTypeHeader.frame(header.getValue()));
+        framers.put(ContentTypeHeader.COMPACT_NAME, header -> ContentTypeHeader.frame(header.getValue()));
+
+        framers.put(ContentLengthHeader.NAME, header -> ContentLengthHeader.frame(header.getValue()));
+        framers.put(ContentLengthHeader.COMPACT_NAME, header -> ContentLengthHeader.frame(header.getValue()));
+
         framers.put(CSeqHeader.NAME, header -> CSeqHeader.frame(header.getValue()));
+
         framers.put(ExpiresHeader.NAME, header -> ExpiresHeader.frame(header.getValue()));
+
         framers.put(FromHeader.NAME, header -> FromHeader.frame(header.getValue()));
+        framers.put(FromHeader.COMPACT_NAME, header -> FromHeader.frame(header.getValue()));
+
         framers.put(MaxForwardsHeader.NAME, header -> MaxForwardsHeader.frame(header.getValue()));
+
         framers.put(RecordRouteHeader.NAME, header -> RecordRouteHeader.frame(header.getValue()));
+
         framers.put(RouteHeader.NAME, header -> RouteHeader.frame(header.getValue()));
+
         framers.put(ToHeader.NAME, header -> ToHeader.frame(header.getValue()));
+        framers.put(ToHeader.COMPACT_NAME, header -> ToHeader.frame(header.getValue()));
+
         framers.put(ViaHeader.NAME, header -> ViaHeader.frame(header.getValue()));
+        framers.put(ViaHeader.COMPACT_NAME, header -> ViaHeader.frame(header.getValue()));
     }
 
 
@@ -1266,7 +1285,7 @@ public class SipParser {
         if (indexOfSemi == 0) {
             // well, we don't check if the branch parameter is there but
             // if there are no parameters present at all then there
-            // is no chance it is present.
+            // is no chance of it being present.
             throw new SipParseException(buffer.getReaderIndex(),
                     "No via-parameters found. The Via-header MUST contain at least the branch parameter.");
         }
@@ -1881,7 +1900,7 @@ public class SipParser {
             // after each line
             Buffer valueBuffer = buffer.readLine();
 
-            // Foled lines are rare so try and avoid the bulk of
+            // Folded lines are rare so try and avoid the bulk of
             // the work if possible.
             if (isNext(buffer, SP) || isNext(buffer, HTAB)) {
                 List<Buffer> foldedLines = null;
@@ -1926,6 +1945,9 @@ public class SipParser {
      * @return the framed {@link SipMessage}
      */
     public static SipMessage frame(final Buffer buffer) throws IOException {
+        if (true)
+            return frame2(buffer);
+
         if (!couldBeSipMessage(buffer)) {
             throw new SipParseException(0, "Cannot be a SIP message because is doesnt start with \"SIP\" "
                     + "(for responses) or a method (for requests)");
@@ -1958,6 +1980,109 @@ public class SipParser {
         } else {
             return new SipRequestImpl(rawInitialLine, headers, payload);
         }
+    }
+
+    public static SipMessage frame2(final Buffer buffer) throws IOException {
+        if (!couldBeSipMessage(buffer)) {
+            throw new SipParseException(0, "Cannot be a SIP message because is doesnt start with \"SIP\" "
+                    + "(for responses) or a method (for requests)");
+        }
+
+        final int startIndex = buffer.getReaderIndex();
+
+        final SipInitialLine initialLine = SipInitialLine.parse(buffer.readLine());
+
+        // which means that the headers are about
+        // to start now.
+        final int startHeaders = buffer.getReaderIndex();
+
+        // Move along as long as we actually can consume an header and
+        SipHeader header = null;
+        final List<SipHeader> headers = new ArrayList<>();
+        short count = 0;
+        int contentLength = 0;
+
+        short indexOfTo = -1;
+        short indexOfFrom = -1;
+        short indexOfCSeq = -1;
+        short indexOfCallId = -1;
+        short indexOfMaxForwards = -1;
+        short indexOfVia = -1;
+        short indexOfRoute = -1;
+        short indexOfRecordRoute = -1;
+        short indexOfContact = -1;
+
+        while (consumeCRLF(buffer) != 2 && (header = SipParser.nextHeader(buffer)) != null ) {
+            // The headers that are most commonly used will be fully
+            // parsed just because no stack can really function without
+            // looking into these headers.
+            if (header.isContentLengthHeader()) {
+                final ContentLengthHeader l = header.ensure().toContentLengthHeader();
+                contentLength = l.getContentLength();
+                header = l;
+            } else if (header.isContactHeader() && indexOfContact == -1) {
+                header = header.ensure().toContactHeader();
+                indexOfContact = count;
+            } else if (header.isCSeqHeader() && indexOfCSeq == -1) {
+                header = header.ensure().toCSeqHeader();
+                indexOfCSeq = count;
+            } else if (header.isMaxForwardsHeader() && indexOfMaxForwards == -1) {
+                header = header.ensure().toMaxForwardsHeader();
+                indexOfMaxForwards = count;
+            } else if (header.isFromHeader() && indexOfFrom == -1) {
+                header = header.ensure().toFromHeader();
+                indexOfFrom = count;
+            } else if (header.isToHeader() && indexOfTo == -1) {
+                header = header.ensure().toToHeader();
+                indexOfTo = count;
+            } else if (header.isViaHeader() && indexOfVia == -1) {
+                header = header.ensure().toViaHeader();
+                indexOfVia = count;
+            } else if (header.isCallIdHeader() && indexOfCallId == -1) {
+                header = header.ensure().toCallIdHeader();
+                indexOfCallId = count;
+            } else if (header.isRouteHeader() && indexOfRoute == -1) {
+                header = header.ensure().toRouterHeader();
+                indexOfRoute = count;
+            } else if (header.isRecordRouteHeader() && indexOfRecordRoute == -1) {
+                header = header.ensure().toRecordRouteHeader();
+                indexOfRecordRoute = count;
+            }
+
+            headers.add(header);
+            ++count;
+        }
+
+        // final Buffer headers = buffer.slice(startHeaders, buffer.getReaderIndex());
+        Buffer payload = null;
+        if (contentLength > 0 && buffer.hasReadableBytes()) {
+            payload = buffer.readBytes(contentLength);
+        } else {
+            payload = Buffers.EMPTY_BUFFER;
+        }
+
+        // slice out the entire message from this buffer since
+        // everything is immutable when this message potentially
+        // is written to socket again, there is really nothing to do
+        // other than just write these bytes out.
+        final Buffer msg = buffer.slice(startIndex, buffer.getReaderIndex());
+
+        if (initialLine.isRequestLine()) {
+            return new ImmutableSipRequest(msg, initialLine.toRequestLine(), headers,
+                    indexOfTo,
+                    indexOfFrom,
+                    indexOfCSeq,
+                    indexOfCallId,
+                    indexOfMaxForwards,
+                    indexOfVia,
+                    indexOfRoute,
+                    indexOfRecordRoute,
+                    indexOfContact,
+                    payload);
+        } else {
+            // return new SipRequestImpl(rawInitialLine, headers, payload);
+        }
+        return null;
     }
 
     /**

@@ -3,33 +3,35 @@ package io.pkts.packet.sip.header;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
-import io.pkts.packet.sip.header.impl.ExpiresHeaderImpl;
+import io.pkts.packet.sip.header.impl.ContentLengthHeaderImpl;
 
 import java.io.IOException;
 
 import static io.pkts.packet.sip.impl.PreConditions.assertArgument;
 
-public interface ExpiresHeader extends SipHeader {
+public interface ContentLengthHeader extends SipHeader {
 
-    Buffer NAME = Buffers.wrap("Expires");
+    Buffer NAME = Buffers.wrap("Content-Length");
 
-    int getExpires();
+    Buffer COMPACT_NAME = Buffers.wrap("l");
+
+    int getContentLength();
 
     @Override
-    ExpiresHeader clone();
+    ContentLengthHeader clone();
 
-    static ExpiresHeader create(final int expires) {
-        assertArgument(expires >= 0, "The value must be greater or equal to zero");
-        return new ExpiresHeaderImpl(expires);
+    static ContentLengthHeader create(final int contentLength) {
+        assertArgument(contentLength >= 0, "The value must be greater or equal to zero");
+        return new ContentLengthHeaderImpl(contentLength);
     }
 
-    static ExpiresHeader frame(final Buffer buffer) throws SipParseException {
+    static ContentLengthHeader frame(final Buffer buffer) throws SipParseException {
         try {
             final int value = buffer.parseToInt();
-            return new ExpiresHeaderImpl(value);
+            return new ContentLengthHeaderImpl(value);
         } catch (final NumberFormatException e) {
             throw new SipParseException(buffer.getReaderIndex(),
-                    "Unable to parse the Expires header. Value is not an integer");
+                    "Unable to parse the Content-Length header. Value is not an integer");
         } catch (final IOException e) {
             throw new SipParseException(buffer.getReaderIndex(),
                     "Unable to parse the Expires header. Got an IOException", e);
@@ -40,21 +42,20 @@ public interface ExpiresHeader extends SipHeader {
     Builder copy();
 
     @Override
-    default boolean isExpiresHeader() {
+    default boolean isContentLengthHeader() {
         return true;
     }
 
     @Override
-    default ExpiresHeader toExpiresHeader() {
+    default ContentLengthHeader toContentLengthHeader() {
         return this;
     }
 
-    class Builder implements SipHeader.Builder<ExpiresHeader> {
+    class Builder implements SipHeader.Builder<ContentLengthHeader> {
 
         private int value;
 
         public Builder() {
-            this(600);
         }
 
         public Builder(final int value) {
@@ -67,9 +68,9 @@ public interface ExpiresHeader extends SipHeader {
         }
 
         @Override
-        public ExpiresHeader build() throws SipParseException {
+        public ContentLengthHeader build() throws SipParseException {
             assertArgument(this.value >= 0, "The value must be greater or equal to zero");
-            return new ExpiresHeaderImpl(this.value);
+            return new ContentLengthHeaderImpl(this.value);
         }
     }
 

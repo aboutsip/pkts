@@ -19,11 +19,23 @@ public interface ContentTypeHeader extends SipHeader, MediaTypeHeader, Parameter
 
     Buffer NAME = Buffers.wrap("Content-Type");
 
+    Buffer COMPACT_NAME = Buffers.wrap("c");
+
     @Override
     ContentTypeHeader clone();
 
     @Override
     Builder copy();
+
+    @Override
+    default boolean isContentTypeHeader() {
+        return true;
+    }
+
+    @Override
+    default ContentTypeHeader toContentTypeHeader() {
+        return this;
+    }
 
     /**
      * Frame the value as a {@link ContentTypeHeader}. This method assumes that you have already

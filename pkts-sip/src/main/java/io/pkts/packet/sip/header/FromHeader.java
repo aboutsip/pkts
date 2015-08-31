@@ -68,6 +68,8 @@ public interface FromHeader extends AddressParametersHeader {
 
     Buffer NAME = Buffers.wrap("From");
 
+    Buffer COMPACT_NAME = Buffers.wrap("f");
+
     /**
      * Get the tag parameter.
      * 
@@ -80,6 +82,15 @@ public interface FromHeader extends AddressParametersHeader {
     @Override
     FromHeader clone();
 
+    @Override
+    default boolean isFromHeader() {
+        return true;
+    }
+
+    @Override
+    default FromHeader toFromHeader() {
+        return this;
+    }
 
     /**
      * Frame the value as a {@link FromHeader}.

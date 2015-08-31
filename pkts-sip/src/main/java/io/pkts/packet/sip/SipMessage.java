@@ -16,6 +16,8 @@ import io.pkts.packet.sip.header.RouteHeader;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
+import io.pkts.packet.sip.impl.SipInitialLine;
+import io.pkts.packet.sip.impl.SipMessageBuilder;
 import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
@@ -45,6 +47,11 @@ public interface SipMessage extends Cloneable {
      */
     Buffer getInitialLine();
 
+    default SipInitialLine initialLine() {
+        // TODO: once refactoring is done, remove this default
+        return null;
+    }
+
     /**
      * Got tired of casting the {@link SipMessage} into a {@link SipRequest} so
      * you can use this method instead. Just a short cut for:
@@ -58,7 +65,9 @@ public interface SipMessage extends Cloneable {
      *             in case this {@link SipMessage} is actually a
      *             {@link SipResponse}.
      */
-    SipRequest toRequest() throws ClassCastException;
+    default SipRequest toRequest() throws ClassCastException {
+        throw new ClassCastException("Unable to cast a " + this.getClass().getName() + " into a " + SipRequest.class.getName());
+    }
 
     /**
      * Got tired of casting the {@link SipMessage} into a {@link SipResponse} so
@@ -73,7 +82,9 @@ public interface SipMessage extends Cloneable {
      *             in case this {@link SipMessage} is actually a
      *             {@link SipResponse}.
      */
-    SipResponse toResponse() throws ClassCastException;
+    default SipResponse toResponse() throws ClassCastException {
+        throw new ClassCastException("Unable to cast a " + this.getClass().getName() + " into a " + SipResponse.class.getName());
+    }
 
     /**
      * Create a new response based on this {@link SipRequest}. If this
@@ -107,14 +118,18 @@ public interface SipMessage extends Cloneable {
      * 
      * @return
      */
-    boolean isResponse();
+    default boolean isResponse() {
+        return false;
+    }
 
     /**
      * Check whether this sip message is a request or not
      * 
      * @return
      */
-    boolean isRequest();
+    default boolean isRequest() {
+        return true;
+    }
 
     /**
      * Returns the content (payload) of the {@link SipMessage} as an
@@ -224,9 +239,9 @@ public interface SipMessage extends Cloneable {
     ViaHeader getViaHeader() throws SipParseException;
 
     /**
-     * Get all the Via-headers in this {@link SipMessage}. If this is a request
-     * that just was created then this may return an empty list.
-     * 
+     * Get all the Via-headers in this {@link SipMessage}. If there are no
+     * {@link ViaHeader}s then an empty list will be returned.
+     *
      * @return
      * @throws SipParseException
      */
@@ -320,93 +335,158 @@ public interface SipMessage extends Cloneable {
 
     /**
      * Convenience method for determining whether the method of this message is
-     * an INVITE or not. Hence, this is NOT to the method to determine whether
-     * this is a INVITE Request or not!
-     * 
+     * an INVITE or not.
+     *
+     * Note, this method only determined if it is an INVITE, which then could
+     * be either a request or a response, which you can check with {@link SipMessage#isRequest()} and
+     *  {@link SipMessage#isResponse()}
+     *
      * @return true if the method of this message is a INVITE, false otherwise.
      * @throws SipParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
      */
-    boolean isInvite() throws SipParseException;
+    default boolean isInvite() throws SipParseException {
+        final Buffer m = getMethod();
+        try {
+            return m.getByte(0) == 'I' && m.getByte(1) == 'N' && m.getByte(2) == 'V' && m.getByte(3) == 'I'
+                    && m.getByte(4) == 'T' && m.getByte(5) == 'E';
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+        }
+    }
 
     /**
      * Convenience method for determining whether the method of this message is an REGISTER or not.
-     * 
+     *
      * @return true if the method of this message is a REGISTER, false otherwise.
      * @throws SipParseException in case the method could not be parsed out of the underlying
      *         buffer.
      */
-    boolean isRegister() throws SipParseException;
+    default boolean isRegister() throws SipParseException {
+        final Buffer m = getMethod();
+        try {
+            return m.getByte(0) == 'R' && m.getByte(1) == 'E' && m.getByte(2) == 'G' && m.getByte(3) == 'I'
+                    && m.getByte(4) == 'S' && m.getByte(5) == 'T' && m.getByte(6) == 'E' && m.getByte(7) == 'R';
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+        }
+    }
 
     /**
      * Convenience method for determining whether the method of this message is a BYE or not. Hence,
      * this is NOT to the method to determine whether this is a BYE Request or not!
-     * 
+     *
      * @return true if the method of this message is a BYE, false otherwise.
      * @throws SipParseException in case the method could not be parsed out of the underlying
      *         buffer.
      */
-    boolean isBye() throws SipParseException;
+    default boolean isBye() throws SipParseException {
+        final Buffer m = getMethod();
+        try {
+            return m.getByte(0) == 'B' && m.getByte(1) == 'Y' && m.getByte(2) == 'E';
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+        }
+    }
 
     /**
      * Convenience method for determining whether the method of this message is
      * an ACK or not. Hence, this is NOT to the method to determine whether this
      * is an ACK Request or not!
-     * 
+     *
      * @return true if the method of this message is a ACK, false otherwise.
      * @throws SipParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
      */
-    boolean isAck() throws SipParseException;
-
-    /**
-     * Convenience method for determining whether the method of this message is
-     * a OPTIONS or not. Hence, this is NOT to the method to determine whether
-     * this is an OPTIONS Request or not!
-     * 
-     * @return true if the method of this message is a OPTIONS, false otherwise.
-     * @throws SipParseException
-     *             in case the method could not be parsed out of the underlying
-     *             buffer.
-     */
-    boolean isOptions() throws SipParseException;
-
-    /**
-     * Convenience method for determining whether the method of this message is
-     * a MESSAGE or not. Hence, this is NOT to the method to determine whether
-     * this is an MESSAGE Request or not!
-     * 
-     * @return true if the method of this message is a MESSAGE, false otherwise.
-     * @throws SipParseException
-     *             in case the method could not be parsed out of the underlying
-     *             buffer.
-     */
-    boolean isMessage() throws SipParseException;
-
-    /**
-     * Convenience method for determining whether the method of this message is
-     * a INFO or not. Hence, this is NOT to the method to determine whether this
-     * is an INFO Request or not!
-     * 
-     * @return true if the method of this message is a INFO, false otherwise.
-     * @throws SipParseException
-     *             in case the method could not be parsed out of the underlying
-     *             buffer.
-     */
-    boolean isInfo() throws SipParseException;
+    default boolean isAck() throws SipParseException {
+        final Buffer m = getMethod();
+        try {
+            return m.getByte(0) == 'A' && m.getByte(1) == 'C' && m.getByte(2) == 'K';
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+        }
+    }
 
     /**
      * Convenience method for determining whether the method of this message is
      * a CANCEL or not
-     * 
+     *
      * @return true if the method of this message is a CANCEL, false otherwise.
      * @throws SipParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
      */
-    boolean isCancel() throws SipParseException;
+    default boolean isCancel() throws SipParseException {
+        final Buffer m = getMethod();
+        try {
+            return m.getByte(0) == 'C' && m.getByte(1) == 'A' && m.getByte(2) == 'N' && m.getByte(3) == 'C'
+                    && m.getByte(4) == 'E' && m.getByte(5) == 'L';
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+        }
+    }
+
+    /**
+     * Convenience method for determining whether the method of this message is
+     * a OPTIONS or not. Hence, this is NOT to the method to determine whether
+     * this is an OPTIONS Request or not!
+     *
+     * @return true if the method of this message is a OPTIONS, false otherwise.
+     * @throws SipParseException
+     *             in case the method could not be parsed out of the underlying
+     *             buffer.
+     */
+    default boolean isOptions() throws SipParseException {
+        final Buffer m = getMethod();
+        try {
+            return m.getByte(0) == 'O' && m.getByte(1) == 'P' && m.getByte(2) == 'T' && m.getByte(3) == 'I'
+                    && m.getByte(4) == 'O' && m.getByte(5) == 'N' && m.getByte(6) == 'S';
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+        }
+    }
+
+
+    /**
+     * Convenience method for determining whether the method of this message is
+     * a MESSAGE or not. Hence, this is NOT to the method to determine whether
+     * this is an MESSAGE Request or not!
+     *
+     * @return true if the method of this message is a MESSAGE, false otherwise.
+     * @throws SipParseException
+     *             in case the method could not be parsed out of the underlying
+     *             buffer.
+     */
+    default boolean isMessage() throws SipParseException {
+        final Buffer m = getMethod();
+        try {
+            return m.getByte(0) == 'M' && m.getByte(1) == 'E' && m.getByte(2) == 'S' && m.getByte(3) == 'S'
+                    && m.getByte(4) == 'A' && m.getByte(5) == 'G' && m.getByte(6) == 'E';
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+        }
+    }
+
+    /**
+     * Convenience method for determining whether the method of this message is
+     * a INFO or not. Hence, this is NOT to the method to determine whether this
+     * is an INFO Request or not!
+     *
+     * @return true if the method of this message is a INFO, false otherwise.
+     * @throws SipParseException
+     *             in case the method could not be parsed out of the underlying
+     *             buffer.
+     */
+    default boolean isInfo() throws SipParseException {
+        final Buffer m = getMethod();
+        try {
+            return m.getByte(0) == 'I' && m.getByte(1) == 'N' && m.getByte(2) == 'F' && m.getByte(3) == 'O';
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+        }
+    }
 
     /**
      * Checks whether or not this request is considered to be an "initial"
@@ -465,13 +545,7 @@ public interface SipMessage extends Cloneable {
 
     /**
      * Get the {@link Buffer} that is representing this {@link SipMessage}.
-     * Note, the data behind the buffer is shared with the actual
-     * {@link SipMessage} so any changes to the {@link Buffer} will affect this
-     * {@link SipMessage}. Hence, by changing this buffer directly, you bypass
-     * all checks for valid inputs and the end-result of doing so is undefined
-     * (most likely you will either blow up at some point or you will end up
-     * sending garbage across the network).
-     * 
+     *
      * @return
      */
     Buffer toBuffer();
@@ -507,39 +581,18 @@ public interface SipMessage extends Cloneable {
         return SipParser.frame(Buffers.wrap(buffer));
     }
 
+
+    default int countNoOfHeaders() {
+        return getAllHeaders().size();
+    }
+
     default List<SipHeader> getAllHeaders() {
+        // TODO: can't be a default implemenation of this. Just doing this while refactoring...
         return new ArrayList<>();
     }
 
-    default Builder copy() {
-        return null;
-    }
-
-    // Builder copy();
-
-    /**
-     *
-     */
-    interface Builder2 {
-
-        // use this from header, which then will override any From headers
-        // there may be from the potential sip message we copied.
-        Builder2 withFrom(FromHeader from);
-        Builder2 withFrom(FromHeader.Builder from);
-
-        Builder2 onFrom(FromHeader.Builder from);
-
-        FromHeader.Builder getFromBuilder();
-
-        /**
-         * After the {@link SipMessage} has been fully built and created the "end result"
-         * will be conveyed to the registered function. It is utterly important
-         * that the function returns as quickly as possible since the build method
-         * will not be able to return until the call to this function has been completed.
-         *
-         * @param f
-         */
-        void onMessageCommited(Consumer<SipMessage> f);
+    default Builder<SipMessage> copy() {
+        return new SipMessageBuilder(this);
     }
 
     /**
@@ -578,6 +631,29 @@ public interface SipMessage extends Cloneable {
      * method then that builder will be used even if this builder is based off
      * another {@link SipMessage} (which then serves as a "template")
      *
+     * TODO: add and/or clarify how headers are treated in general, i.e.:
+     *
+     * A header can be added to the final {@link SipMessage} that is being built via 1 out of 3 ways:
+     * <ul>
+     *     <li>Either via explicitly calling withXXXBuilder to add a builder object for that header </li>
+     *     <li>Or by explicitly calling withXXXHeader</li>
+     *     <li>Or by copying an existing header from the {@link SipMessage} we are using as a template
+     *     for constructing this new sip message.</li>
+     * </ul>
+     *
+     * No matter how a header is added to the final message (via one of the three ways described above)
+     * you will be given the opportunity to change the value of the header by registering a function
+     * for manipulating the header just before it gets added. You do so through two methods:
+     * <ul>
+     *     <li>{@link io.pkts.packet.sip.SipMessage.Builder#onHeader(Function)}</li>
+     *     <li>or {@link io.pkts.packet.sip.SipMessage.Builder#onHeaderBuilder(Consumer)}</li>
+     * </ul>
+     *
+     * The first method is called when a header was added without a builder already created from it,
+     * which is the case when a header is copied from the template or when you called onXXXHeader(header).
+     * The reason for this is unless you actually want to change it, we don't want to waste time on
+     * constructing a builder that you are not going to use. However, if you added the header
+     * as a builder object then we will of coruse use that builder.
      *
      */
     interface Builder<T extends SipMessage> {
@@ -596,7 +672,9 @@ public interface SipMessage extends Cloneable {
          * but if you don't want that, simply call this method and all the defaults
          * of this builder will be suspended. Of course, if you wish to actually
          * construct a valid {@link SipMessage} you are then responsible for adding
-         * the mandatory headers to this builder (unless you don't care of course).
+         * the mandatory headers to this builder (unless you don't care of course
+         * because perhaps you are building a test tool meant to torture test
+         * a SIP server).
          *
          * @return
          */
@@ -606,8 +684,8 @@ public interface SipMessage extends Cloneable {
          * A header can be added to the new {@link SipMessage} in two ways,
          * either by being copied from the {@link SipMessage} used
          * as a template, or the header can be explicitly added through one of the withXXX-methods.
-         * Those headers that are copied from the template are subject to the result of the
-         * filter function. Those headers that have been explicitly added are not (since if you
+         * Those headers that are copied from the template are subject to filtering and
+         * those headers that have been explicitly added are not (since if you
          * did add them it is assumed you actually want to include them. If not, why add them
          * in the first place?)
          *
@@ -640,97 +718,57 @@ public interface SipMessage extends Cloneable {
          * <ul>
          *     <li>{@link FromHeader}</li>
          *     <li>{@link ToHeader}</li>
+         *     <li>{@link ContactHeader}</li>
+         *     <li>{@link ViaHeader}</li>
+         *     <li>{@link RouteHeader}</li>
+         *     <li>{@link RecordRouteHeader}</li>
          *     <li>{@link MaxForwardsHeader}</li>
          *     <li>{@link CSeqHeader}</li>
          * </ul>
          *
          * The reason is simply because these are typically manipulated before
          * copying them over to a new request or response (e.g., Max Forwards is decremented,
-         * CSeq may increase etc)
+         * CSeq may increase etc) and therefore it makes life easier if those headers are
+         * "down casted" to their specific types.
          *
          * @param f
          * @return
          */
         Builder onHeader(Function<SipHeader, Optional<SipHeader.Builder>> f);
+        Builder onHeaderBuilder(Consumer<SipHeader.Builder> f);
 
-        /**
-         * If this {@link Builder} is based off of a template (as in {@link SipRequest#createResponse(int)}
-         * or {@link SipMessage#copy()}) and the {@link FromHeader} was not excluded in the filter step
-         * then when the {@link FromHeader} is copied from the template to the new message being
-         * built by this {@link Builder} then you have a chance to manipulate it before it gets commited.
-         *
-         *
-         * NEW NEW NEW NEW text and idea
-         *
-         * When the {@link FromHeader} is about to get added to the new message you have the option
-         * of manipulating that {@link FromHeader} by copy it and return a builder (wrapped in an {@link Optional}).
-         *
-         * Note, this method will ONLY be called in those cases where we don't already have a builder
-         * registered through
-         *
-         *
-         * @param f
-         * @return If you wish to change the {@link FromHeader} then return an optional with
-         * a {@link io.pkts.packet.sip.header.FromHeader.Builder} (where you obviously have made
-         * the changes you wish to make).
-         */
+        Builder withHeader(SipHeader header);
+        Builder withHeader(SipHeader.Builder<SipHeader> header);
+
         Builder onFromHeader(Function<FromHeader, Optional<AddressParametersHeader.Builder<FromHeader>>> f);
-
-        /**
-         *
-         * @param f
-         * @return
-         */
         Builder onFromHeaderBuilder(Consumer<AddressParametersHeader.Builder<FromHeader>> f);
-
-        /**
-         * Add this {@link FromHeader} to the builder and when it is about to be added to the {@link SipMessage}
-         * we are building, the method {@link Builder#onFromHeader(Function)} will
-         * be called giving you a chance to manipulate the header.
-         *
-         * Note, if you already have {@link io.pkts.packet.sip.header.FromHeader.Builder} object then
-         * you probably just want to add the builder itself and in that case, the {@link Builder#onFromHeader(Function)}
-         * will NOT be called.
-         *
-         *
-         * @param from
-         * @return
-         */
         Builder withFromHeader(FromHeader from);
-
-        /**
-         *
-         * @param builder
-         * @return
-         */
         Builder withFromHeader(AddressParametersHeader.Builder<FromHeader> builder);
 
-        /**
-         * Same as {@link io.pkts.packet.sip.SipMessage.Builder#onCopyFromHeader(Function)} but for
-         * the {@link ToHeader}.
-         *
-         * @param f
-         * @return
-         */
-        Builder onToHeader(Function<ToHeader, Optional<ToHeader.Builder>> f);
+        Builder onToHeader(Function<ToHeader, Optional<AddressParametersHeader.Builder<ToHeader>>> f);
+        Builder onToHeaderBuilder(Consumer<AddressParametersHeader.Builder<ToHeader>> f);
+        Builder withToHeader(ToHeader to);
+        Builder withToHeader(AddressParametersHeader.Builder<ToHeader> builder);
 
-        /**
-         * Same as {@link io.pkts.packet.sip.SipMessage.Builder#onCopyFromHeader(Function)} but for
-         * the {@link CSeqHeader}.
-         *
-         * @param f
-         * @return
-         */
-        Builder onCSeqHeader(Function<CSeqHeader, Optional<CSeqHeader.Builder>> f);
+        Builder onContactHeader(Function<ContactHeader, Optional<AddressParametersHeader.Builder<ContactHeader>>> f);
+        Builder onContactHeaderBuilder(Consumer<AddressParametersHeader.Builder<ContactHeader>> f);
+        Builder withContactHeader(ContactHeader contact);
+        Builder withContactHeader(AddressParametersHeader.Builder<ContactHeader> builder);
 
-        /**
-         * Same as {@link io.pkts.packet.sip.SipMessage.Builder#onCopyFromHeader(Function)} but for
-         * the {@link MaxForwardsHeader}.
-         *
-         * @param f
-         * @return
-         */
-        Builder onMaxForwardsHeader(Function<MaxForwardsHeader, Optional<MaxForwardsHeader.Builder>> f);
+        Builder onCSeqHeader(Function<CSeqHeader, CSeqHeader.Builder> f);
+        Builder onCSeqHeaderBuilder(Consumer<CSeqHeader.Builder> f);
+        Builder withCSeqHeader(CSeqHeader cseq);
+        Builder withCSeqHeader(CSeqHeader.Builder builder);
+
+        Builder onMaxForwardsHeader(Function<MaxForwardsHeader, MaxForwardsHeader.Builder> f);
+
+        Builder onMaxForwardsHeaderBuilder(Consumer<MaxForwardsHeader.Builder> f);
+        Builder withMaxForwardsHeader(MaxForwardsHeader maxForwards);
+        Builder withMaxForwardsHeader(MaxForwardsHeader.Builder builder);
+
+        // TODO: RecordRoute, Route, CSeq, MaxForwards
+        // Builder onCSeqHeader(Function<CSeqHeader, Optional<CSeqHeader.Builder>> f);
+        // Builder onMaxForwardsHeader(Function<MaxForwardsHeader, Optional<MaxForwardsHeader.Builder>> f);
 
         /**
          *
@@ -738,28 +776,13 @@ public interface SipMessage extends Cloneable {
          * @return
          */
         Builder onRequestURI(Function<SipURI, SipURI.Builder> f);
+        Builder onRequestURIBuilder(Consumer<SipURI.Builder> f);
 
-        /**
-         *
-         * @param f
-         */
-        void onFrom(Function<SipHeader, SipHeader> f);
-
-        void onTo(Function<ToHeader, Optional<ToHeader.Builder>> f);
-
-        Builder withTopMostVia(ViaHeader.Builder via);
-
-        Builder pushVia(ViaHeader.Builder via);
-
-        Builder withPushedVia(ViaHeader.Builder via);
-
-        Builder pushVia(ViaHeader via);
-
-        void onTopMostVia(Function<ViaHeader, SipHeader> f);
-
-        void onContact(Function<SipHeader, SipHeader> f);
-
-        void onRecordRoute(Function<SipHeader, SipHeader> f);
+        // Builder withTopMostVia(ViaHeader.Builder via);
+        // Builder pushVia(ViaHeader.Builder via);
+        // Builder withPushedVia(ViaHeader.Builder via);
+        // Builder pushVia(ViaHeader via);
+        // void onTopMostVia(Function<ViaHeader, SipHeader> f);
 
         T build();
 
