@@ -88,6 +88,19 @@ public interface MaxForwardsHeader extends SipHeader {
         }
 
         @Override
+        public SipHeader.Builder<MaxForwardsHeader> withValue(final Buffer value) {
+            try {
+                this.value = value.parseToInt();
+            } catch (final IOException e) {
+                // This shouldn't really be able to happen once
+                // buffers have been re-written to be immutable as well
+                throw new RuntimeException("Unable to extract out the value from the buffer due to IOException");
+            }
+
+            return this;
+        }
+
+        @Override
         public MaxForwardsHeader build() throws SipParseException {
             assertArgument(this.value >= 0, "The value must be greater or equal to zero");
             return new MaxForwardsHeaderImpl(this.value);

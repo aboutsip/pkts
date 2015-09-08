@@ -80,6 +80,8 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
 
         private Address.Builder addressBuilder;
 
+        private Buffer value;
+
         /**
          * Note these are the header parameters and are not to be confused with any URI parameters
          * that are "attached" to the URI within the address object.
@@ -95,6 +97,12 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
             this.paramSupport = params;
         }
 
+
+        public final Builder<T> withValue(final Buffer buffer) {
+            throw new RuntimeException("Not implemented yet");
+            // Address.frame(buffer).copy();
+            // return this;
+        }
 
         public final Builder<T> withPort(final int port) {
             ensureBuilder().withPort(port);

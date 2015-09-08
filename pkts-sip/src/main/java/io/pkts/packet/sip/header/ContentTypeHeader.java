@@ -86,6 +86,12 @@ public interface ContentTypeHeader extends SipHeader, MediaTypeHeader, Parameter
         protected ContentTypeHeader internalBuild(Buffer rawValue, Buffer type, Buffer subType, Buffer params) {
             return new ContentTypeHeaderImpl(rawValue, type, subType, params);
         }
+
+        @Override
+        public SipHeader.Builder<ContentTypeHeader> withValue(Buffer value) {
+            // TODO: implement me...
+            throw new RuntimeException("TODO: not implemented yet");
+        }
     }
 
 }

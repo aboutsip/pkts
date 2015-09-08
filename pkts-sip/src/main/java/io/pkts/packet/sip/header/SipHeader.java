@@ -67,6 +67,17 @@ public interface SipHeader extends Cloneable {
     Buffer getName();
 
     /**
+     * Get the name as a string.
+     *
+     * TODO: need better method names!
+     *
+     * @return
+     */
+    default String getNameStr() {
+        return getName().toString();
+    }
+
+    /**
      * Get the value of the buffer
      * 
      * @return
@@ -136,6 +147,15 @@ public interface SipHeader extends Cloneable {
      */
     default boolean isAddressParametersHeader() {
         return false;
+    }
+
+    /**
+     *
+     * @return
+     */
+    default boolean isSystemHeader() {
+        return isToHeader() || isFromHeader() || isViaHeader() || isContactHeader()
+                || isRouteHeader() || isRecordRouteHeader() || isCSeqHeader() || isMaxForwardsHeader();
     }
 
     default boolean isFromHeader() {
@@ -412,6 +432,12 @@ public interface SipHeader extends Cloneable {
     Builder<? extends SipHeader> copy();
 
     interface Builder<H extends SipHeader> {
+
+        Builder<H> withValue(Buffer value);
+
+        default Builder<H> withValue(final String value) {
+            return withValue(Buffers.wrap(value));
+        }
 
         H build() throws SipParseException;
     }

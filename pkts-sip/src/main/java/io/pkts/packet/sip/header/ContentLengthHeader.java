@@ -68,6 +68,12 @@ public interface ContentLengthHeader extends SipHeader {
         }
 
         @Override
+        public SipHeader.Builder<ContentLengthHeader> withValue(Buffer value) {
+            // TODO: implement me...
+            throw new RuntimeException("TODO: not implemented yet");
+        }
+
+        @Override
         public ContentLengthHeader build() throws SipParseException {
             assertArgument(this.value >= 0, "The value must be greater or equal to zero");
             return new ContentLengthHeaderImpl(this.value);

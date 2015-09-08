@@ -43,7 +43,6 @@ public class ImmutableSipMessage implements SipMessage {
     private final short indexOfRecordRoute;
     private final short indexOfContact;
 
-
     /**
      *
      * @param message the full immutable buffer which has the entire SIP message in it, including all headers, body

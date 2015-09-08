@@ -436,6 +436,12 @@ public interface ViaHeader extends Parameters, SipHeader {
         }
 
         @Override
+        public SipHeader.Builder<ViaHeader> withValue(final Buffer value) {
+            // TODO: implement me...
+            throw new RuntimeException("TODO: not implemented yet");
+        }
+
+        @Override
         public ViaHeader build() throws SipParseException {
             if (indexOfBranch == -1) {
                 throw new SipParseException("You must specify a branch parameter");

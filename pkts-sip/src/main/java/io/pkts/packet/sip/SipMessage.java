@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
 import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
@@ -619,6 +618,9 @@ public interface SipMessage extends Cloneable {
      * All callback as registered through the various onXXXX-methods allow for multiple callbacks to be registered.
      * They are called in reverse order from the order of registration.
      *
+     * TODO: don't think I will do this anymore. If you add the same header via an of the three methods then
+     * TODO: that header will be included three times. I.e., if you call withHeaderBuilder and withHeader and
+     * TODO: the same header also exists in the template then it will be included that many times.
      * Order of precedence where the top one "wins" over the others:
      * <ul>
      *     <li>Any header added as a builder object will ALWAYS take precedence</li>
@@ -664,9 +666,11 @@ public interface SipMessage extends Cloneable {
          * <ul>
          *     <li>{@link ToHeader} - the request-uri will be used to construct the to-header</li>
          *     <li>{@link CSeqHeader} - a new CSeq header will be added where the
-         *     method is the same as this message and the sequence number is set to zero</li>
+         *     method is the same as this message and the sequence number is set to 1</li>
          *     <li>{@link CallIdHeader} - a new random call-id will be added</li>
          *     <li>{@link MaxForwardsHeader} - a max forwards of 70 will be added</li>
+         *     <li>{@link ContentLengthHeader} - Will be added if there is a body
+         *     on the message and the length set to the correct length.</li>
          * </ul>
          *
          * but if you don't want that, simply call this method and all the defaults
@@ -678,7 +682,7 @@ public interface SipMessage extends Cloneable {
          *
          * @return
          */
-        Builder withNoDefaults();
+        Builder<T> withNoDefaults();
 
         /**
          * A header can be added to the new {@link SipMessage} in two ways,
@@ -701,19 +705,23 @@ public interface SipMessage extends Cloneable {
          * It is up to your stack/application to enforce any rules you see fit.
          *
          * @param filter
+         * @throws IllegalStateException in case a filter already had been registered with
+         * this builder.
          */
-        Builder filter(Predicate<SipHeader> filter);
+        // Builder<T> filter(Predicate<SipHeader> filter) throws IllegalStateException;
 
         /**
          * Whenever a header is about to be pushed onto the new {@link SipMessage}
          * you have a chance to change the value of that header. You do so
-         * by registering a function that takes a {@link SipHeader} as an argument and if you
-         * wish to change that header, then simply {@link SipHeader#copy()} it, manipulate
-         * it through its builder object and then return that builder.
+         * by registering a function that accepts a {@link SipHeader} as an argument and that
+         * returns a {@link SipHeader}, which is the header that will be pushed onto the new
+         * {@link SipMessage}. If you do not want to include the header, then simply return
+         * null and the header will be dropped.
          *
-         * If you wish to leave the header un-touched, then simply return null (or an empty {@link Optional}).
+         * If you wish to leave the header un-touched, then simply return null.
          *
-         * Also note that the following headers have explicit "on" methods.
+         * Also note that the following headers have explicit "on" methods (they are considered
+         * to be "system" headers):
          *
          * <ul>
          *     <li>{@link FromHeader}</li>
@@ -731,40 +739,62 @@ public interface SipMessage extends Cloneable {
          * CSeq may increase etc) and therefore it makes life easier if those headers are
          * "down casted" to their specific types.
          *
+         *
          * @param f
          * @return
+         * @throws IllegalStateException in case a function already had been registered with
+         * this builder.
          */
-        Builder onHeader(Function<SipHeader, Optional<SipHeader.Builder>> f);
-        Builder onHeaderBuilder(Consumer<SipHeader.Builder> f);
+        Builder<T> onHeader(Function<SipHeader, SipHeader> f) throws IllegalStateException;
 
-        Builder withHeader(SipHeader header);
-        Builder withHeader(SipHeader.Builder<SipHeader> header);
+        /**
+         * Adds the header to the list of headers already specified within this builder.
+         * The header will be added last to the list of headers. Any already existing
+         * headers with the same name will be preserved as is.
+         *
+         * If there are any headers with the same name as part of the {@link SipMessage}
+         * used as a template, then those headers will
+         *
+         * TODO: this is essentially an "add header" so should it be called that?
+         * TODO: and then should there be a set version? Just goes bad with a fluent
+         * TODO: naming.
+         * @param header
+         * @return
+         */
+        Builder<T> withHeader(SipHeader header);
 
-        Builder onFromHeader(Function<FromHeader, Optional<AddressParametersHeader.Builder<FromHeader>>> f);
-        Builder onFromHeaderBuilder(Consumer<AddressParametersHeader.Builder<FromHeader>> f);
-        Builder withFromHeader(FromHeader from);
-        Builder withFromHeader(AddressParametersHeader.Builder<FromHeader> builder);
+        /**
+         * Push the header to be the first on the list of existing headers already
+         * added to this builder.
+         *
+         * TODO: naming
+         * @return
+         */
+        Builder<T> withPushHeader(SipHeader header);
 
-        Builder onToHeader(Function<ToHeader, Optional<AddressParametersHeader.Builder<ToHeader>>> f);
-        Builder onToHeaderBuilder(Consumer<AddressParametersHeader.Builder<ToHeader>> f);
-        Builder withToHeader(ToHeader to);
-        Builder withToHeader(AddressParametersHeader.Builder<ToHeader> builder);
+        Builder<T> onFromHeader(Consumer<AddressParametersHeader.Builder<FromHeader>> f);
 
-        Builder onContactHeader(Function<ContactHeader, Optional<AddressParametersHeader.Builder<ContactHeader>>> f);
-        Builder onContactHeaderBuilder(Consumer<AddressParametersHeader.Builder<ContactHeader>> f);
-        Builder withContactHeader(ContactHeader contact);
-        Builder withContactHeader(AddressParametersHeader.Builder<ContactHeader> builder);
+        /**
+         * Set the {@link FromHeader} to be used by the new {@link SipMessage}. If there already
+         * is a {@link FromHeader} present, either through a template or because this method
+         * has been called previously, that value will be overwritten.
+         *
+         * @param from
+         * @return
+         */
+        Builder<T> withFromHeader(FromHeader from);
 
-        Builder onCSeqHeader(Function<CSeqHeader, CSeqHeader.Builder> f);
-        Builder onCSeqHeaderBuilder(Consumer<CSeqHeader.Builder> f);
-        Builder withCSeqHeader(CSeqHeader cseq);
-        Builder withCSeqHeader(CSeqHeader.Builder builder);
+        Builder<T> onToHeader(Consumer<AddressParametersHeader.Builder<ToHeader>> f);
+        Builder<T> withToHeader(ToHeader to);
 
-        Builder onMaxForwardsHeader(Function<MaxForwardsHeader, MaxForwardsHeader.Builder> f);
+        Builder<T> onContactHeader(Consumer<AddressParametersHeader.Builder<ContactHeader>> f);
+        Builder<T> withContactHeader(ContactHeader contact);
 
-        Builder onMaxForwardsHeaderBuilder(Consumer<MaxForwardsHeader.Builder> f);
-        Builder withMaxForwardsHeader(MaxForwardsHeader maxForwards);
-        Builder withMaxForwardsHeader(MaxForwardsHeader.Builder builder);
+        Builder<T> onCSeqHeader(Consumer<CSeqHeader.Builder> f);
+        Builder<T> withCSeqHeader(CSeqHeader cseq);
+
+        Builder<T> onMaxForwardsHeader(Consumer<MaxForwardsHeader.Builder> f);
+        Builder<T> withMaxForwardsHeader(MaxForwardsHeader maxForwards);
 
         // TODO: RecordRoute, Route, CSeq, MaxForwards
         // Builder onCSeqHeader(Function<CSeqHeader, Optional<CSeqHeader.Builder>> f);
@@ -775,8 +805,7 @@ public interface SipMessage extends Cloneable {
          * @param f
          * @return
          */
-        Builder onRequestURI(Function<SipURI, SipURI.Builder> f);
-        Builder onRequestURIBuilder(Consumer<SipURI.Builder> f);
+        Builder<T> onRequestURI(Function<SipURI, SipURI> f);
 
         // Builder withTopMostVia(ViaHeader.Builder via);
         // Builder pushVia(ViaHeader.Builder via);
@@ -794,7 +823,7 @@ public interface SipMessage extends Cloneable {
          *
          * @param f
          */
-        void onCommit(Consumer<SipMessage> f);
+        Builder<T> onCommit(Consumer<SipMessage> f);
     }
 
 }

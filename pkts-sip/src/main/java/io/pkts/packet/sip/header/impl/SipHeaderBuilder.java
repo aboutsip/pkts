@@ -16,6 +16,12 @@ public class SipHeaderBuilder implements SipHeader.Builder<SipHeader> {
     }
 
     @Override
+    public SipHeader.Builder<SipHeader> withValue(final Buffer value) {
+        this.value = value;
+        return this;
+    }
+
+    @Override
     public SipHeader build() {
         return new SipHeaderImpl(name, value);
     }

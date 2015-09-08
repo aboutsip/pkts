@@ -67,6 +67,11 @@ public interface ExpiresHeader extends SipHeader {
         }
 
         @Override
+        public Builder withValue(Buffer value) {
+            throw new RuntimeException("Not implemented yet");
+        }
+
+        @Override
         public ExpiresHeader build() throws SipParseException {
             assertArgument(this.value >= 0, "The value must be greater or equal to zero");
             return new ExpiresHeaderImpl(this.value);

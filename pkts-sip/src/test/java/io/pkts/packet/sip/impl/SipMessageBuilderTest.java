@@ -27,7 +27,7 @@ public class SipMessageBuilderTest extends PktsTestBase {
         System.out.println(msg);
 
         // builder.onMaxForwardsHeader(max -> max.copy().decrement());
-        builder.onMaxForwardsHeader(this::decrement);
+        // builder.onMaxForwardsHeader(this::decrement);
         final SipMessage copy = builder.build();
 
         assertThat(copy.getMaxForwards().getMaxForwards(), is(msg.getMaxForwards().getMaxForwards() - 1));

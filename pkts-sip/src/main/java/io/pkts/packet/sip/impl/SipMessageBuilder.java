@@ -14,7 +14,6 @@ import io.pkts.packet.sip.header.ToHeader;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -25,6 +24,8 @@ import java.util.function.Predicate;
 public class SipMessageBuilder implements SipMessageImpl.Builder<SipMessage> {
 
     private final SipMessage template;
+
+    // private final List<SipHeaderProducer> headers;
     private final List<SipHeader> headers;
 
     private Predicate<SipHeader> filter;
@@ -33,9 +34,15 @@ public class SipMessageBuilder implements SipMessageImpl.Builder<SipMessage> {
     private CSeqHeader.Builder cseqBuilder;
 
     private MaxForwardsHeader maxForwards;
-    private MaxForwardsHeader.Builder maxForwardsBuilder;
-    private Function<MaxForwardsHeader, MaxForwardsHeader.Builder> onMaxForwards;
     private Consumer<MaxForwardsHeader.Builder> onMaxForwardsBuilder;
+
+    private ToHeader toHeader;
+    private Consumer<AddressParametersHeader.Builder<ToHeader>> onToBuilder;
+
+    private FromHeader fromHeader;
+    private Consumer<AddressParametersHeader.Builder<FromHeader>> onFromBuilder;
+
+    private Function<SipHeader, SipHeader> onHeaderFunction;
 
     private short indexOfTo = -1;
     private short indexOfFrom = -1;
@@ -47,93 +54,120 @@ public class SipMessageBuilder implements SipMessageImpl.Builder<SipMessage> {
     private short indexOfRecordRoute = -1;
     private short indexOfContact = -1;
 
+    /**
+     * By default, this builder will add certain headers if missing
+     * but if the user wish to turn off this behavior then she can
+     * do so by flipping this flag.
+     */
+    private boolean useDefaults = true;
+
     public SipMessageBuilder(final SipMessage template) {
         this.template = template;
-        // most common is that when a message is proxied or b2bua:ed
-        // that we add more headers to the message. We really want to avoid
-        // to expand the list.
-        // TODO: grab real-world traffic and do some analysis
-        headers = new ArrayList<>(template.countNoOfHeaders() + 5);
+        headers = new ArrayList<>(10);
     }
 
     @Override
     public SipMessage.Builder withNoDefaults() {
+        useDefaults = false;
         return this;
     }
 
+    /*
     @Override
-    public SipMessage.Builder filter(final Predicate<SipHeader> filter) {
+    public SipMessage.Builder filter(final Predicate<SipHeader> filter) throws IllegalStateException {
+        if (this.filter != null) {
+            throw new IllegalStateException("A filter has already been specified");
+        }
         this.filter = filter;
         return this;
     }
+    */
 
+    /*
     @Override
-    public SipMessage.Builder onHeader(final Function<SipHeader, Optional<SipHeader.Builder>> f) {
+    public SipMessage.Builder modify(final Predicate<SipHeader> filter) {
+        this.filter = filter;
         return this;
     }
+    */
 
     @Override
-    public SipMessage.Builder onHeaderBuilder(final Consumer<SipHeader.Builder> f) {
+    public SipMessage.Builder onHeader(final Function<SipHeader, SipHeader> f) throws IllegalStateException {
+        if (this.onHeaderFunction == null) {
+            this.onHeaderFunction = f;
+        } else {
+            this.onHeaderFunction = this.onHeaderFunction.andThen(f);
+        }
         return this;
     }
 
     @Override
     public SipMessage.Builder withHeader(final SipHeader header) {
+        if (header != null) {
+            if (header.isContactHeader()) {
+                // TODO
+            } else if (header.isCSeqHeader()) {
+                // TODO
+            } else if (header.isMaxForwardsHeader()) {
+                // TODO
+            } else if (header.isFromHeader()) {
+                this.fromHeader = header.ensure().toFromHeader();
+            } else if (header.isToHeader()) {
+                this.toHeader = header.ensure().toToHeader();
+            } else if (header.isViaHeader()) {
+                // TODO
+            } else if (header.isCallIdHeader()) {
+                // TODO
+            } else if (header.isRouteHeader()) {
+                // TODO
+            } else if (header.isRecordRouteHeader()) {
+                // TODO
+            } else {
+                headers.add(header);
+            }
+        }
         return this;
     }
 
     @Override
-    public SipMessage.Builder withHeader(final SipHeader.Builder<SipHeader> header) {
+    public SipMessage.Builder withPushHeader(SipHeader header) {
         return this;
     }
 
     @Override
-    public SipMessage.Builder onFromHeader(final Function<FromHeader, Optional<AddressParametersHeader.Builder<FromHeader>>> f) {
-        return this;
-    }
-
-    @Override
-    public SipMessage.Builder onFromHeaderBuilder(final Consumer<AddressParametersHeader.Builder<FromHeader>> f) {
+    public SipMessage.Builder onFromHeader(final Consumer<AddressParametersHeader.Builder<FromHeader>> f) {
+        if (this.onFromBuilder != null) {
+            this.onFromBuilder = this.onFromBuilder.andThen(f);
+        } else {
+            this.onFromBuilder = f;
+        }
         return this;
     }
 
     @Override
     public SipMessage.Builder withFromHeader(final FromHeader from) {
+        this.fromHeader = from;
         return this;
     }
 
     @Override
-    public SipMessage.Builder withFromHeader(final AddressParametersHeader.Builder<FromHeader> builder) {
-        return this;
-    }
-
-    @Override
-    public SipMessage.Builder onToHeader(final Function<ToHeader, Optional<AddressParametersHeader.Builder<ToHeader>>> f) {
-        return this;
-    }
-
-    @Override
-    public SipMessage.Builder onToHeaderBuilder(final Consumer<AddressParametersHeader.Builder<ToHeader>> f) {
+    public SipMessage.Builder onToHeader(final Consumer<AddressParametersHeader.Builder<ToHeader>> f) {
+        if (this.onToBuilder != null) {
+            this.onToBuilder = this.onToBuilder.andThen(f);
+        } else {
+            this.onToBuilder = f;
+        }
         return this;
     }
 
     @Override
     public SipMessage.Builder withToHeader(final ToHeader to) {
+        this.toHeader = to;
         return this;
     }
 
     @Override
-    public SipMessage.Builder withToHeader(final AddressParametersHeader.Builder<ToHeader> builder) {
-        return this;
-    }
-
-    @Override
-    public SipMessage.Builder onContactHeader(final Function<ContactHeader, Optional<AddressParametersHeader.Builder<ContactHeader>>> f) {
-        return this;
-    }
-
-    @Override
-    public SipMessage.Builder onContactHeaderBuilder(final Consumer<AddressParametersHeader.Builder<ContactHeader>> f) {
+    public SipMessage.Builder onContactHeader(final Consumer<AddressParametersHeader.Builder<ContactHeader>> f) {
         return this;
     }
 
@@ -143,17 +177,7 @@ public class SipMessageBuilder implements SipMessageImpl.Builder<SipMessage> {
     }
 
     @Override
-    public SipMessage.Builder withContactHeader(final AddressParametersHeader.Builder<ContactHeader> builder) {
-        return this;
-    }
-
-    @Override
-    public SipMessage.Builder onCSeqHeader(final Function<CSeqHeader, CSeqHeader.Builder> f) {
-        return this;
-    }
-
-    @Override
-    public SipMessage.Builder onCSeqHeaderBuilder(final Consumer<CSeqHeader.Builder> f) {
+    public SipMessage.Builder onCSeqHeader(final Consumer<CSeqHeader.Builder> f) {
         return this;
     }
 
@@ -164,19 +188,12 @@ public class SipMessageBuilder implements SipMessageImpl.Builder<SipMessage> {
     }
 
     @Override
-    public SipMessage.Builder withCSeqHeader(final CSeqHeader.Builder builder) {
-        this.cseqBuilder = builder;
-        return null;
-    }
-
-    @Override
-    public SipMessage.Builder onMaxForwardsHeader(final Function<MaxForwardsHeader, MaxForwardsHeader.Builder> f) {
-        this.onMaxForwards = f;
-        return this;
-    }
-
-    @Override
-    public SipMessage.Builder onMaxForwardsHeaderBuilder(final Consumer<MaxForwardsHeader.Builder> f) {
+    public SipMessage.Builder onMaxForwardsHeader(final Consumer<MaxForwardsHeader.Builder> f) {
+        if (this.onMaxForwardsBuilder != null) {
+            this.onMaxForwardsBuilder.andThen(f);
+        } else {
+            this.onMaxForwardsBuilder = f;
+        }
         return this;
     }
 
@@ -186,17 +203,7 @@ public class SipMessageBuilder implements SipMessageImpl.Builder<SipMessage> {
     }
 
     @Override
-    public SipMessage.Builder withMaxForwardsHeader(final MaxForwardsHeader.Builder builder) {
-        return this;
-    }
-
-    @Override
-    public SipMessage.Builder onRequestURI(final Function<SipURI, SipURI.Builder> f) {
-        return this;
-    }
-
-    @Override
-    public SipMessage.Builder onRequestURIBuilder(final Consumer<SipURI.Builder> f) {
+    public SipMessage.Builder onRequestURI(final Function<SipURI, SipURI> f) {
         return this;
     }
 
@@ -204,15 +211,19 @@ public class SipMessageBuilder implements SipMessageImpl.Builder<SipMessage> {
     public SipMessage build() {
         int msgSize = 2;
         short index = 0;
+
+        // TODO: run some analysis on what the average number of headers in a message
+        // is.
+        final List<SipHeader> finalHeaders
+                = new ArrayList<>(template != null ? template.getAllHeaders().size() + 10 : 20);
+
         if (template != null) {
             for (final SipHeader header : template.getAllHeaders()) {
-                if (filter == null || filter.test(header)) {
-                    final SipHeader finalHeader = processHeader(index, header);
-                    if (finalHeader != null) {
-                        msgSize += finalHeader.getBufferSize() + 2;
-                        headers.add(finalHeader);
-                        ++index;
-                    }
+                final SipHeader finalHeader = processHeader(index, header);
+                if (finalHeader != null) {
+                    msgSize += finalHeader.getBufferSize() + 2;
+                    finalHeaders.add(finalHeader);
+                    ++index;
                 }
             }
         }
@@ -235,7 +246,7 @@ public class SipMessageBuilder implements SipMessageImpl.Builder<SipMessage> {
         msg.write(SipParser.CR);
         msg.write(SipParser.LF);
 
-        for (final SipHeader header : headers) {
+        for (final SipHeader header : finalHeaders) {
             header.getBytes(msg);
             msg.write(SipParser.CR);
             msg.write(SipParser.LF);
@@ -250,7 +261,7 @@ public class SipMessageBuilder implements SipMessageImpl.Builder<SipMessage> {
         }
 
         if (initialLine.isRequestLine()) {
-            return new ImmutableSipRequest(msg, initialLine.toRequestLine(), headers,
+            return new ImmutableSipRequest(msg, initialLine.toRequestLine(), finalHeaders,
                     indexOfTo,
                     indexOfFrom,
                     indexOfCSeq,
@@ -277,13 +288,16 @@ public class SipMessageBuilder implements SipMessageImpl.Builder<SipMessage> {
             indexOfCSeq = index;
         } else if (header.isMaxForwardsHeader() && indexOfMaxForwards == -1) {
             indexOfMaxForwards = index;
-            return processMaxForwards(header);
+            final MaxForwardsHeader max = maxForwards != null ? maxForwards : header.ensure().toMaxForwardsHeader();
+            finalHeader = invokeMaxForwardsFunction(max);
         } else if (header.isFromHeader() && indexOfFrom == -1) {
-            finalHeader = header.ensure().toFromHeader();
             indexOfFrom = index;
+            final FromHeader from = fromHeader != null ? fromHeader : header.ensure().toFromHeader();
+            finalHeader = invokeFromHeaderFunction(from);
         } else if (header.isToHeader() && indexOfTo == -1) {
-            finalHeader = header.ensure().toToHeader();
             indexOfTo = index;
+            final ToHeader to = toHeader != null ? toHeader : header.ensure().toToHeader();
+            finalHeader = invokeToHeaderFunction(to);
         } else if (header.isViaHeader() && indexOfVia == -1) {
             finalHeader = header.ensure().toViaHeader();
             indexOfVia = index;
@@ -296,42 +310,115 @@ public class SipMessageBuilder implements SipMessageImpl.Builder<SipMessage> {
         } else if (header.isRecordRouteHeader() && indexOfRecordRoute == -1) {
             finalHeader = header.ensure().toRecordRouteHeader();
             indexOfRecordRoute = index;
+        } else {
+            finalHeader = processGenericHeader(header);
         }
 
-        // TODO: need to check if there is a onHeader function and then
-        // invoke it.
         return finalHeader;
     }
 
+    private SipHeader processGenericHeader(final SipHeader header) {
+        if (this.onHeaderFunction != null) {
+            return this.onHeaderFunction.apply(header);
+        }
 
-    private MaxForwardsHeader processMaxForwards(final SipHeader header) {
+        return header;
+    }
+
+    private FromHeader processFromHeader(final FromHeader header) {
+        return null;
+    }
+
+    private MaxForwardsHeader processMaxForwards(final MaxForwardsHeader header) {
         MaxForwardsHeader max = null;
-        if (maxForwardsBuilder != null) {
-            if (onMaxForwardsBuilder != null) {
-                onMaxForwardsBuilder.accept(maxForwardsBuilder);
-            }
-            max = maxForwardsBuilder.build();
-        } else if (maxForwards != null) {
+        if (maxForwards != null) {
             max = invokeMaxForwardsFunction(maxForwards);
         } else if (template != null) {
-            max = invokeMaxForwardsFunction(template.getMaxForwards());
+            max = invokeMaxForwardsFunction(header);
         }
 
         return max;
     }
 
+    private ToHeader invokeToHeaderFunction(final ToHeader to) {
+        if (to != null && onToBuilder != null) {
+            final AddressParametersHeader.Builder<ToHeader> b = to.copy();
+            onToBuilder.accept(b);
+            return b.build();
+        }
+        return to;
+    }
+
+    private FromHeader invokeFromHeaderFunction(final FromHeader from) {
+        if (from != null && onFromBuilder != null) {
+            final AddressParametersHeader.Builder<FromHeader> b = from.copy();
+            onFromBuilder.accept(b);
+            return b.build();
+        }
+        return from;
+    }
+
     private MaxForwardsHeader invokeMaxForwardsFunction(final MaxForwardsHeader max) {
-        if (onMaxForwards != null) {
-            final MaxForwardsHeader.Builder b = onMaxForwards.apply(max);
-            if (b != null) {
-                return b.build();
-            }
+        if (max != null && onMaxForwardsBuilder != null) {
+            final MaxForwardsHeader.Builder b = max.copy();
+            onMaxForwardsBuilder.accept(b);
+            return b.build();
         }
         return max;
     }
 
     @Override
-    public void onCommit(final Consumer<SipMessage> f) {
-
+    public SipMessage.Builder onCommit(final Consumer<SipMessage> f) {
+        return this;
     }
+
+    private interface SipHeaderProducer {
+        SipHeader onHeader(Function<SipHeader, SipHeader.Builder> f, Consumer<SipHeader.Builder> f2);
+
+        static SipHeaderProducer create(final SipHeader header) {
+            return new SipHeaderWrapper(header);
+        }
+
+        static SipHeaderProducer create(final SipHeader.Builder builder) {
+            return new SipHeaderBuilderWrapper(builder);
+        }
+    }
+
+    private static class SipHeaderWrapper implements SipHeaderProducer {
+
+        private final SipHeader header;
+
+        private SipHeaderWrapper(final SipHeader header) {
+            this.header = header;
+        }
+
+        @Override
+        public SipHeader onHeader(final Function<SipHeader, SipHeader.Builder> f, final Consumer<SipHeader.Builder> f2) {
+            if (f != null) {
+                final SipHeader.Builder builder = f.apply(header);
+                if (builder != null) {
+                    return builder.build();
+                }
+            }
+            return header;
+        }
+    }
+
+    private static class SipHeaderBuilderWrapper implements SipHeaderProducer {
+
+        private final SipHeader.Builder builder;
+
+        private SipHeaderBuilderWrapper(final SipHeader.Builder builder) {
+            this.builder = builder;
+        }
+
+        @Override
+        public SipHeader onHeader(final Function<SipHeader, SipHeader.Builder> f, final Consumer<SipHeader.Builder> f2) {
+            if (f2 != null) {
+                f2.accept(builder);
+            }
+            return builder.build();
+        }
+    }
+
 }
