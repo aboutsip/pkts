@@ -1830,7 +1830,7 @@ public class SipParser {
     }
 
     private static List<Buffer> readHeaderValues(final Buffer headerName, final Buffer buffer) throws IOException {
-        final List<Buffer> values = new ArrayList<Buffer>(2);
+        final List<Buffer> values = new ArrayList<>(2);
         int start = buffer.getReaderIndex();
         int stop = -1;
         boolean foundCR = false;
@@ -2037,7 +2037,7 @@ public class SipParser {
         final int startHeaders = buffer.getReaderIndex();
 
         // Move along as long as we actually can consume an header and
-        SipHeader header = null;
+        Buffer headerName = null;
         final List<SipHeader> headers = new ArrayList<>();
         short count = 0;
         int contentLength = 0;
@@ -2052,45 +2052,49 @@ public class SipParser {
         short indexOfRecordRoute = -1;
         short indexOfContact = -1;
 
-        while (consumeCRLF(buffer) != 2 && (header = SipParser.nextHeader(buffer)) != null ) {
-            // The headers that are most commonly used will be fully
-            // parsed just because no stack can really function without
-            // looking into these headers.
-            if (header.isContentLengthHeader()) {
-                final ContentLengthHeader l = header.ensure().toContentLengthHeader();
-                contentLength = l.getContentLength();
-                header = l;
-            } else if (header.isContactHeader() && indexOfContact == -1) {
-                header = header.ensure().toContactHeader();
-                indexOfContact = count;
-            } else if (header.isCSeqHeader() && indexOfCSeq == -1) {
-                header = header.ensure().toCSeqHeader();
-                indexOfCSeq = count;
-            } else if (header.isMaxForwardsHeader() && indexOfMaxForwards == -1) {
-                header = header.ensure().toMaxForwardsHeader();
-                indexOfMaxForwards = count;
-            } else if (header.isFromHeader() && indexOfFrom == -1) {
-                header = header.ensure().toFromHeader();
-                indexOfFrom = count;
-            } else if (header.isToHeader() && indexOfTo == -1) {
-                header = header.ensure().toToHeader();
-                indexOfTo = count;
-            } else if (header.isViaHeader() && indexOfVia == -1) {
-                header = header.ensure().toViaHeader();
-                indexOfVia = count;
-            } else if (header.isCallIdHeader() && indexOfCallId == -1) {
-                header = header.ensure().toCallIdHeader();
-                indexOfCallId = count;
-            } else if (header.isRouteHeader() && indexOfRoute == -1) {
-                header = header.ensure().toRouteHeader();
-                indexOfRoute = count;
-            } else if (header.isRecordRouteHeader() && indexOfRecordRoute == -1) {
-                header = header.ensure().toRecordRouteHeader();
-                indexOfRecordRoute = count;
-            }
+        while (consumeCRLF(buffer) != 2 && (headerName = SipParser.nextHeaderName(buffer)) != null ) {
+            final List<Buffer> values = readHeaderValues(headerName, buffer);
+            for (final Buffer value : values) {
+                SipHeader header = new SipHeaderImpl(headerName, value);
+                // The headers that are most commonly used will be fully
+                // parsed just because no stack can really function without
+                // looking into these headers.
+                if (header.isContentLengthHeader()) {
+                    final ContentLengthHeader l = header.ensure().toContentLengthHeader();
+                    contentLength = l.getContentLength();
+                    header = l;
+                } else if (header.isContactHeader() && indexOfContact == -1) {
+                    header = header.ensure();
+                    indexOfContact = count;
+                } else if (header.isCSeqHeader() && indexOfCSeq == -1) {
+                    header = header.ensure();
+                    indexOfCSeq = count;
+                } else if (header.isMaxForwardsHeader() && indexOfMaxForwards == -1) {
+                    header = header.ensure();
+                    indexOfMaxForwards = count;
+                } else if (header.isFromHeader() && indexOfFrom == -1) {
+                    header = header.ensure();
+                    indexOfFrom = count;
+                } else if (header.isToHeader() && indexOfTo == -1) {
+                    header = header.ensure();
+                    indexOfTo = count;
+                } else if (header.isViaHeader() && indexOfVia == -1) {
+                    header = header.ensure();
+                    indexOfVia = count;
+                } else if (header.isCallIdHeader() && indexOfCallId == -1) {
+                    header = header.ensure();
+                    indexOfCallId = count;
+                } else if (header.isRouteHeader() && indexOfRoute == -1) {
+                    header = header.ensure();
+                    indexOfRoute = count;
+                } else if (header.isRecordRouteHeader() && indexOfRecordRoute == -1) {
+                    header = header.ensure();
+                    indexOfRecordRoute = count;
+                }
 
-            headers.add(header);
-            ++count;
+                headers.add(header);
+                ++count;
+            }
         }
 
         // final Buffer headers = buffer.slice(startHeaders, buffer.getReaderIndex());

@@ -171,24 +171,6 @@ public class SipMessageImplTest extends PktsTestBase {
         assertThat(cseq.getMethod().toString(), is("INVITE"));
     }
 
-    /**
-     * Make sure that all our Via-headers can be modified the way we need it.
-     */
-    @Test
-    public void testViaHeaderManipulation() throws Exception {
-        final SipRequest request = (SipRequest) parseMessage(RawData.sipInvite);
-        final ViaHeader topMostVia = request.getViaHeader();
-        assertThat(topMostVia.getBranch().toString(), is("z9hG4bK-16732-1-0"));
-        assertThat(topMostVia.getHost().toString(), is("127.0.1.1"));
-        assertThat(topMostVia.getPort(), is(5060));
-
-        assertTopMostVia(request, "192.168.0.100", 6789, "TCP");
-        assertTopMostVia(request, "192.168.0.101", 1111, "UDP");
-        final String str = request.toString();
-        assertThat(str.contains("Via: SIP/2.0/TCP 192.168.0.100:6789"), is(true));
-        assertThat(str.contains("Via: SIP/2.0/UDP 192.168.0.101:1111"), is(true));
-    }
-
     private void assertTopMostVia(final SipMessage msg, final String host, final int port, final String transport)
             throws Exception {
 
