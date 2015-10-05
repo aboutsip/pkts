@@ -56,8 +56,8 @@ public class AddressImplTest {
 
     @Test
     public void testCopyConstruct() throws Exception {
-        assertAddressToCopyToStringIsTheSame("<sip:alice@whatever.com>");
-        assertAddressToCopyToStringIsTheSame("sip:alice@whatever.com", "<sip:alice@whatever.com>");
+        assertAddressToCopyToStringIsTheSame("sip:alice@whatever.com");
+        assertAddressToCopyToStringIsTheSame("sip:alice@whatever.com", "sip:alice@whatever.com");
         assertAddressToCopyToStringIsTheSame("alice <sip:alice@whatever.com>");
         assertAddressToCopyToStringIsTheSame("\"alice\" <sip:alice@whatever.com>", "alice <sip:alice@whatever.com>");
         assertAddressToCopyToStringIsTheSame("\"alice smith\" <sip:alice@whatever.com>");

@@ -17,7 +17,6 @@ import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.packet.sip.impl.SipInitialLine;
-import io.pkts.packet.sip.impl.SipMessageBuilder;
 import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
@@ -105,12 +104,14 @@ public interface SipMessage extends Cloneable {
      *             in case anything goes wrong when parsing out headers from the
      *             {@link SipRequest}
      */
-    default SipResponse createResponse(int responseCode) throws SipParseException, ClassCastException {
+    default SipResponse.Builder createResponse(final int responseCode) throws SipParseException, ClassCastException {
         return createResponse(responseCode, null);
     }
 
 
-    SipResponse createResponse(int responseCode, Buffer content) throws SipParseException, ClassCastException;
+    default SipResponse.Builder createResponse(int responseCode, Buffer content) throws SipParseException, ClassCastException {
+        throw new ClassCastException("Unable to cast this SipMessage into a SipRequest");
+    }
 
     /**
      * Check whether this sip message is a response or not
@@ -586,12 +587,14 @@ public interface SipMessage extends Cloneable {
     }
 
     default List<SipHeader> getAllHeaders() {
-        // TODO: can't be a default implemenation of this. Just doing this while refactoring...
+        // TODO: can't be a default implementation of this. Just doing this while refactoring...
         return new ArrayList<>();
     }
 
-    default Builder<SipMessage> copy() {
-        return new SipMessageBuilder(this);
+    default Builder<? extends SipMessage> copy() {
+        // final SipRequestBuilder builder = new SipRequestBuilder()
+        // return new SipMessageBuilder(this);
+        return null;
     }
 
     /**
@@ -718,7 +721,7 @@ public interface SipMessage extends Cloneable {
          * {@link SipMessage}. If you do not want to include the header, then simply return
          * null and the header will be dropped.
          *
-         * If you wish to leave the header un-touched, then simply return null.
+         * If you wish to leave the header un-touched, then simply return it has is.
          *
          * Also note that the following headers have explicit "on" methods (they are considered
          * to be "system" headers):
@@ -763,6 +766,8 @@ public interface SipMessage extends Cloneable {
          */
         Builder<T> withHeader(SipHeader header);
 
+        Builder<T> withHeaders(List<SipHeader> headers);
+
         /**
          * Push the header to be the first on the list of existing headers already
          * added to this builder.
@@ -796,9 +801,113 @@ public interface SipMessage extends Cloneable {
         Builder<T> onMaxForwardsHeader(Consumer<MaxForwardsHeader.Builder> f);
         Builder<T> withMaxForwardsHeader(MaxForwardsHeader maxForwards);
 
-        // TODO: RecordRoute, Route, CSeq, MaxForwards
-        // Builder onCSeqHeader(Function<CSeqHeader, Optional<CSeqHeader.Builder>> f);
-        // Builder onMaxForwardsHeader(Function<MaxForwardsHeader, Optional<MaxForwardsHeader.Builder>> f);
+        Builder<T> withCallIdHeader(CallIdHeader callID);
+
+        /**
+         * Called when the top-most Route header is processed. If there are
+         * more than one Route header present, the other ones will be
+         * processed via the {@link io.pkts.packet.sip.SipMessage.Builder#onRouteHeader(Consumer)}
+         *
+         * @param f
+         * @return
+         */
+        Builder<T> onTopMostRouteHeader(Consumer<AddressParametersHeader.Builder<RouteHeader>> f);
+
+        /**
+         * Called when a Route header is processed (except for the top-most one,
+         * then {@link io.pkts.packet.sip.SipMessage.Builder#onTopMostRouteHeader(Consumer)}
+         * is called instead)
+         *
+         * @param f
+         * @return
+         */
+        Builder<T> onRouteHeader(Consumer<AddressParametersHeader.Builder<RouteHeader>> f);
+
+        /**
+         * Set a Router header to be used on the message that is being built. This will
+         * replace any previously set Route headers. If you wish to add a number of
+         * Route headers, use {@link io.pkts.packet.sip.SipMessage.Builder#withRouteHeaders(RouteHeader...)}.
+         * If you want to push a Route header to a potentially already existing list
+         * of Record Route headers, then use {@link io.pkts.packet.sip.SipMessage.Builder#pushRouteHeader(RouteHeader)}
+         *
+         * @param route
+         * @return
+         */
+        Builder<T> withRouteHeader(RouteHeader route);
+
+        /**
+         * Set a list of Route headers. Any previously Route headers
+         * will be replaced by this list.
+         *
+         * @param route
+         * @return
+         */
+        Builder<T> withRouteHeaders(RouteHeader ... routes);
+
+        Builder<T> withRouteHeaders(List<RouteHeader> routes);
+
+        /**
+         * Push the given Route header to the top of the potential list of existing
+         * Route headers.
+         *
+         * @param recordRoute
+         * @return
+         */
+        Builder<T> pushRouteHeader(RouteHeader route);
+
+        // TODO: CSeq, MaxForwards
+
+        /**
+         * Called when the top-most Record Route header is processed. If there are
+         * more than one Record Route header present, the other ones will be
+         * processed via the {@link io.pkts.packet.sip.SipMessage.Builder#onRecordRouteHeader(Consumer)}
+         *
+         * @param f
+         * @return
+         */
+        Builder<T> onTopMostRecordRouteHeader(Consumer<AddressParametersHeader.Builder<RecordRouteHeader>> f);
+
+        /**
+         * Called when a Record-Route header is processed (except for the top-most one,
+         * then {@link io.pkts.packet.sip.SipMessage.Builder#onTopMostRecordRouteHeader(Consumer)}
+         * is called instead)
+         *
+         * @param f
+         * @return
+         */
+        Builder<T> onRecordRouteHeader(Consumer<AddressParametersHeader.Builder<RecordRouteHeader>> f);
+
+        /**
+         * Set a Record Router header to be used on the message that is being built. This will
+         * replace any previously set Record Route headers. If you wish to add a number of
+         * Record Route headers, use {@link io.pkts.packet.sip.SipMessage.Builder#withRecordRouteHeaders(RecordRouteHeader...)}.
+         * If you want to push a Record Route header to a potentially already existing list
+         * of Record Route headers, then use
+         *
+         * @param recordRoute
+         * @return
+         */
+        Builder<T> withRecordRouteHeader(RecordRouteHeader recordRoute);
+
+        /**
+         * Set a list of Record Route headers. Any previously Record Route headers
+         * will be replaced by this list.
+         *
+         * @param recordRoute
+         * @return
+         */
+        Builder<T> withRecordRouteHeaders(RecordRouteHeader ... recordRoute);
+
+        Builder<T> withRecordRouteHeaders(List<RecordRouteHeader> recordRoute);
+
+        /**
+         * Push the given Record Route header to the top of the potential list of existing
+         * Record Route headers.
+         *
+         * @param recordRoute
+         * @return
+         */
+        Builder<T> pushRecordRouteHeader(RecordRouteHeader recordRoute);
 
         /**
          *
@@ -812,6 +921,68 @@ public interface SipMessage extends Cloneable {
         // Builder withPushedVia(ViaHeader.Builder via);
         // Builder pushVia(ViaHeader via);
         // void onTopMostVia(Function<ViaHeader, SipHeader> f);
+
+        /**
+         * Called when the top-most Via header is processed. If there are
+         * more than one Via header present, the other ones will be
+         * processed via the {@link io.pkts.packet.sip.SipMessage.Builder#onViaHeader(Consumer)}
+         * consumer
+         *
+         * @param f
+         * @return
+         */
+        Builder<T> onTopMostViaHeader(Consumer<SipHeader.Builder<ViaHeader>> f);
+
+        /**
+         * Called when a Via header is processed (except for the top-most one,
+         * then {@link io.pkts.packet.sip.SipMessage.Builder#onTopMostViaHeader(Consumer)}
+         * is called instead)
+         *
+         * @param f
+         * @return
+         */
+        Builder<T> onViaHeader(Consumer<SipHeader.Builder<ViaHeader>> f);
+
+        /**
+         * Add a Via header to be used on the message that is being built. This will
+         * replace any previously set Via headers. If you wish to add a number of
+         * Via headers, use {@link io.pkts.packet.sip.SipMessage.Builder#withViaHeaders(ViaHeader...)}.
+         * If you want to push a Via header to a potentially already existing list
+         * of Via headers, then use {@link io.pkts.packet.sip.SipMessage.Builder#pushViaHeader(ViaHeader)}.
+         *
+         * @param recordRoute
+         * @return
+         */
+        Builder<T> withViaHeader(ViaHeader via);
+
+        /**
+         * Set a list of Via headers. Any previously Via headers
+         * will be replaced by this list.
+         *
+         * @param recordRoute
+         * @return
+         */
+        Builder<T> withViaHeaders(ViaHeader ... vias);
+
+        /**
+         * Set a list of Via headers. Any previously Via headers
+         * will be replaced by this list.
+         *
+         * @param recordRoute
+         * @return
+         */
+        Builder<T> withViaHeaders(List<ViaHeader> vias);
+
+        /**
+         * Push the given Via header to the top of the potential list of existing
+         * Via headers.
+         *
+         * @param recordRoute
+         * @return
+         */
+        Builder<T> pushViaHeader(ViaHeader via);
+
+        Builder<T> withBody(Buffer body);
 
         T build();
 

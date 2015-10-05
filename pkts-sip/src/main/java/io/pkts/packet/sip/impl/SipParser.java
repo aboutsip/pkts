@@ -62,6 +62,20 @@ public class SipParser {
      */
     public static final int MAX_LOOK_AHEAD = 1024;
 
+    public static final Buffer INVITE = Buffers.wrap("INVITE");
+    public static final Buffer ACK = Buffers.wrap("ACK");
+    public static final Buffer CANCEL = Buffers.wrap("CANCEL");
+    public static final Buffer BYE = Buffers.wrap("BYE");
+    public static final Buffer SUBSCRIBE = Buffers.wrap("SUBSCRIBE");
+    public static final Buffer NOTIFY = Buffers.wrap("NOTIFY");
+    public static final Buffer PUBLISH = Buffers.wrap("PUBLISH");
+    public static final Buffer INFO = Buffers.wrap("INFO");
+    public static final Buffer OPTIONS = Buffers.wrap("OPTIONS");
+    public static final Buffer REGISTER = Buffers.wrap("REGISTER");
+    public static final Buffer PRACK = Buffers.wrap("PRACK");
+    public static final Buffer REFER = Buffers.wrap("REFER");
+    public static final Buffer MESSAGE = Buffers.wrap("MESSAGE");
+    public static final Buffer UPDATE = Buffers.wrap("UPDATE");
 
     public static final Buffer USER = Buffers.wrap("user");
 
@@ -1701,6 +1715,32 @@ public class SipParser {
         }
     }
 
+    public static Buffer nextHeaderName(final Buffer buffer) throws SipParseException {
+        try {
+            final int startIndex = buffer.getReaderIndex();
+            int nameIndex = 0;
+            while (buffer.hasReadableBytes() && nameIndex == 0) {
+                if (isNext(buffer, SP) || isNext(buffer, HTAB) || isNext(buffer, COLON)) {
+                    nameIndex = buffer.getReaderIndex();
+                } else {
+                    buffer.readByte();
+                }
+            }
+
+            // Bad header! No HCOLON found! (or beginning thereof anyway)
+            if (nameIndex == 0) {
+                // probably ran out of bytes to read so lets just return null
+                return null;
+            }
+
+            final Buffer name = buffer.slice(startIndex, nameIndex);
+            expectHCOLON(buffer);
+            return name;
+        } catch (final IOException e) {
+            throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
+        }
+    }
+
     public static List<SipHeader> nextHeaders(final Buffer buffer) throws SipParseException {
         try {
             final int startIndex = buffer.getReaderIndex();
@@ -2042,7 +2082,7 @@ public class SipParser {
                 header = header.ensure().toCallIdHeader();
                 indexOfCallId = count;
             } else if (header.isRouteHeader() && indexOfRoute == -1) {
-                header = header.ensure().toRouterHeader();
+                header = header.ensure().toRouteHeader();
                 indexOfRoute = count;
             } else if (header.isRecordRouteHeader() && indexOfRecordRoute == -1) {
                 header = header.ensure().toRecordRouteHeader();
@@ -2080,9 +2120,18 @@ public class SipParser {
                     indexOfContact,
                     payload);
         } else {
-            // return new SipRequestImpl(rawInitialLine, headers, payload);
+            return new ImmutableSipResponse(msg, initialLine.toResponseLine(), headers,
+                    indexOfTo,
+                    indexOfFrom,
+                    indexOfCSeq,
+                    indexOfCallId,
+                    indexOfMaxForwards,
+                    indexOfVia,
+                    indexOfRoute,
+                    indexOfRecordRoute,
+                    indexOfContact,
+                    payload);
         }
-        return null;
     }
 
     /**

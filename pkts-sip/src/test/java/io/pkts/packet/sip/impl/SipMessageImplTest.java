@@ -5,8 +5,6 @@ import io.pkts.RawData;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipRequest;
-import io.pkts.packet.sip.address.SipURI;
-import io.pkts.packet.sip.address.URI;
 import io.pkts.packet.sip.header.ContentTypeHeader;
 import io.pkts.packet.sip.header.ExpiresHeader;
 import io.pkts.packet.sip.header.FromHeader;
@@ -19,11 +17,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 
 public class SipMessageImplTest extends PktsTestBase {
@@ -34,16 +30,6 @@ public class SipMessageImplTest extends PktsTestBase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-
-        // the boundaries between headers and payload has been checked
-        // with wireshark...
-        // final Buffer line = this.sipFrameBuffer.readLine();
-        // final Buffer headers = this.sipFrameBuffer.readBytes(331);
-        // final Buffer payload = this.sipFrameBuffer.slice();
-
-        // final SipInitialLine initialLine = SipInitialLine.parse(line);
-        // assertThat(initialLine.isRequestLine(), is(true));
-
         this.request = (SipRequest) parseMessage(this.sipFrameBuffer);
     }
 
@@ -52,178 +38,6 @@ public class SipMessageImplTest extends PktsTestBase {
     public void tearDown() throws Exception {
         super.tearDown();
     }
-
-    /**
-     * If there are no route headers present, we should return an empty list.
-     * Make sure we do!
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetRouteHeadersNoRoute() throws Exception {
-        final SipMessage msg = parseMessage(RawData.sipInvite);
-        assertThat(msg.getRouteHeader(), is((RouteHeader) null));
-        assertThat(msg.getRouteHeaders().size(), is(0));
-    }
-
-
-    /**
-     * Make sure we can extract out all Route-headers as expected.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetRouteHeadersOneRoute() throws Exception {
-        SipMessage msg = parseMessage(RawData.sipInviteOneRouteHeader);
-        final RouteHeader route = msg.getRouteHeader();
-        assertRouteHeader(route, "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-
-        msg = parseMessage(RawData.sipInviteOneRouteHeader);
-        final List<RouteHeader> routes = msg.getRouteHeaders();
-        assertThat(routes.size(), is(1));
-        assertRouteHeader(routes.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-    }
-
-    /**
-     * Make sure we can extract two route headers.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetRouteHeadersTwoRoutes() throws Exception {
-        SipMessage msg = parseMessage(RawData.sipInviteTwoRouteHeaders);
-
-        final RouteHeader route = msg.getRouteHeader();
-        assertRouteHeader(route, "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-
-        List<RouteHeader> routes = msg.getRouteHeaders();
-        assertThat(routes.size(), is(2));
-        assertRouteHeader(routes.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-        assertRouteHeader(routes.get(1), "two", "aboutsip.com", "<sip:two@aboutsip.com;transport=tcp>");
-
-        // also make sure that we get the same result after we have asked for all routes up front
-        msg = parseMessage(RawData.sipInviteTwoRouteHeaders);
-        routes = msg.getRouteHeaders();
-        assertThat(routes.size(), is(2));
-        assertRouteHeader(routes.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-        assertRouteHeader(routes.get(1), "two", "aboutsip.com", "<sip:two@aboutsip.com;transport=tcp>");
-    }
-
-    /*
-    public void testNewAPI() throws Exception {
-        final SipMessage msg = parseMessage(RawData.sipInviteThreeRouteHeaders);
-        // msg.copy().headerStream().filter(h -> h.name.equals(X-Twilio)).map(h.builder()).collect().stream().h.chan
-
-        msg.copy().stream().onRequestURI(r -> r.setUserParam("nisse")).onHeaders(h -> {
-            if (h.isVia()) {
-                return h.copy().withBlah.withPort();
-            }
-            return h;
-        }).onViaIsAboutToGetConstructed(viaBuilder -> viaBuilder.setParam("nisse", "apa")).onFrom().onTo().onContact().onRoutes().onMyRoute().onTopVia().build();`
-    }
-    */
-
-    /**
-     * Make sure we can extract three route headers and where the 3rd header is
-     * NOT directly following the other two headers.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetRouteHeadersThreeRoutes() throws Exception {
-        SipMessage msg = parseMessage(RawData.sipInviteThreeRouteHeaders);
-
-        final RouteHeader route = msg.getRouteHeader();
-        assertRouteHeader(route, "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-
-        List<RouteHeader> routes = msg.getRouteHeaders();
-        assertThat(routes.size(), is(3));
-        assertRouteHeader(routes.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-        assertRouteHeader(routes.get(1), "two", "aboutsip.com", "<sip:two@aboutsip.com;transport=tcp>");
-        assertRouteHeader(routes.get(2), "three", "aboutsip.com", "<sip:three@aboutsip.com;transport=tcp>");
-
-        // also make sure that we get the same result after we have asked for all routes up front
-        msg = parseMessage(RawData.sipInviteThreeRouteHeaders);
-        routes = msg.getRouteHeaders();
-        assertThat(routes.size(), is(3));
-        assertRouteHeader(routes.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-        assertRouteHeader(routes.get(1), "two", "aboutsip.com", "<sip:two@aboutsip.com;transport=tcp>");
-        assertRouteHeader(routes.get(2), "three", "aboutsip.com", "<sip:three@aboutsip.com;transport=tcp>");
-    }
-
-    private void assertRouteHeader(final RouteHeader route, final String user, final String host,
-            final String headerValue) {
-        assertThat(((SipURI) route.getAddress().getURI()).getHost().toString(), is(host));
-        assertThat(((SipURI) route.getAddress().getURI()).getUser().toString(), is(user));
-        assertThat(route.getValue().toString(), is(headerValue));
-        assertThat(route.toString(), is(RouteHeader.NAME + ": " + headerValue));
-    }
-
-    /**
-     * Record-Route headers are typically handled a little differently since
-     * they actually are ordered. These tests focuses on making sure that we
-     * maintain the order of the RR headers as found in the original request.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetRecordRouteHeaders() throws Exception {
-        final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader);
-        final RecordRouteHeader rr = msg.getRecordRouteHeader();
-        assertThat(rr, not((RecordRouteHeader) null));
-        assertThat(rr.toString(), is("Record-Route: <sip:one@aboutsip.com;transport=udp>"));
-        assertThat(rr.getValue().toString(), is("<sip:one@aboutsip.com;transport=udp>"));
-        assertThat(rr.getAddress().getDisplayName().isEmpty(), is(true));
-        final URI uri = rr.getAddress().getURI();
-        assertThat(uri.isSipURI(), is(true));
-        final SipURI sipUri = (SipURI) uri;
-        assertThat(sipUri.getHost().toString(), is("aboutsip.com"));
-    }
-
-    /**
-     * Make sure that we can parse multiple Record-Route headers.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetRecordRouteHeadersThreeRRs() throws Exception {
-        final SipMessage msg = parseMessage(RawData.sipInviteThreeRecordRoutes);
-        final List<RecordRouteHeader> headers = msg.getRecordRouteHeaders();
-        assertThat(headers.size(), is(3));
-        assertRecordRouteHeader(headers.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-        assertRecordRouteHeader(headers.get(1), "two", "aboutsip.com", "<sip:two@aboutsip.com;transport=tcp>");
-        assertRecordRouteHeader(headers.get(2), "three", "aboutsip.com", "<sip:three@aboutsip.com;transport=tcp>");
-    }
-
-    private void assertRecordRouteHeader(final RecordRouteHeader route, final String user, final String host,
-            final String headerValue) {
-        assertThat(((SipURI) route.getAddress().getURI()).getHost().toString(), is(host));
-        assertThat(((SipURI) route.getAddress().getURI()).getUser().toString(), is(user));
-        assertThat(route.getValue().toString(), is(headerValue));
-        assertThat(route.toString(), is(RecordRouteHeader.NAME + ": " + headerValue));
-    }
-
-    /**
-     * It should not be possible to set a onHeader-function twice...
-     * @throws Exception
-     */
-    /*
-    @Test (expected = IllegalStateException.class)
-    public void testSetOnHeaderFunctionTwice() throws Exception {
-        parseMessage(RawData.sipInviteOneRecordRouteHeader).copy().onHeader(h -> null).onHeader(h -> null);
-    }
-    */
-
-    /**
-     * It should not be possible to set a filter-function twice...
-     * @throws Exception
-     */
-    /*
-    @Test (expected = IllegalStateException.class)
-    public void testSetFilterFunctionTwice() throws Exception {
-        parseMessage(RawData.sipInviteOneRecordRouteHeader).copy().filter(h -> true).filter(h -> true);
-    }
-    */
 
     /**
      *
@@ -402,6 +216,8 @@ public class SipMessageImplTest extends PktsTestBase {
         assertThat(msg.getAllHeaders().size(), is(11));
         assertThat(msg.toString().contains("Subject: Performance Test"), is(true));
         assertThat(msg.getHeader("Subject").get().getValue().toString(), is("Performance Test"));
+        System.err.println(msg);
+        System.err.println("============");
 
         msg = msg.copy().onHeader(h -> {
             // Drop the Subject header
@@ -412,6 +228,7 @@ public class SipMessageImplTest extends PktsTestBase {
             // all else, include as is...
             return h;
         }).build();
+        System.err.println(msg);
 
         assertThat(msg.getAllHeaders().size(), is(10));
         assertThat(msg.getHeader("Subject").isPresent(), is(false));

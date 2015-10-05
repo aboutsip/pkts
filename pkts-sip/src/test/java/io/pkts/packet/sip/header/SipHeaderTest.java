@@ -54,7 +54,7 @@ public class SipHeaderTest {
         // Route
         h1 = frame("Route: sip:alice@pkts.io");
         assertThat(h1.isRouteHeader(), is(true));
-        assertThat(h1.ensure().toRouterHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
+        assertThat(h1.ensure().toRouteHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
 
         // Record-Route
         h1 = frame("Record-Route: sip:alice@pkts.io");

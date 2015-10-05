@@ -4,7 +4,6 @@ import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipParseException;
-import io.pkts.packet.sip.SipResponse;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.CallIdHeader;
 import io.pkts.packet.sip.header.ContactHeader;
@@ -26,7 +25,7 @@ import java.util.Optional;
 /**
  * @author jonas@jonasborjesson.com
  */
-public class ImmutableSipMessage implements SipMessage {
+public abstract class ImmutableSipMessage implements SipMessage {
 
     private final Buffer message;
     private final SipInitialLine initialLine;
@@ -105,9 +104,8 @@ public class ImmutableSipMessage implements SipMessage {
         return initialLine.getBuffer();
     }
 
-    @Override
-    public SipResponse createResponse(final int responseCode, final Buffer content) throws SipParseException, ClassCastException {
-        return null;
+    protected SipInitialLine getInitialLineAsObject() {
+        return initialLine;
     }
 
     @Override
@@ -123,11 +121,6 @@ public class ImmutableSipMessage implements SipMessage {
     @Override
     public boolean hasContent() {
         return body != null;
-    }
-
-    @Override
-    public Buffer getMethod() throws SipParseException {
-        return null;
     }
 
     @Override
@@ -241,7 +234,7 @@ public class ImmutableSipMessage implements SipMessage {
     @Override
     public RouteHeader getRouteHeader() throws SipParseException {
         if (indexOfRoute != -1) {
-            return headers.get(indexOfRoute).ensure().toRouterHeader();
+            return headers.get(indexOfRoute).ensure().toRouteHeader();
         }
         return null;
     }
@@ -253,11 +246,11 @@ public class ImmutableSipMessage implements SipMessage {
         }
 
         final List<RouteHeader> routes = new ArrayList<>(5);
-        routes.add(headers.get(indexOfRoute).ensure().toRouterHeader());
+        routes.add(headers.get(indexOfRoute).ensure().toRouteHeader());
         for (int i = indexOfRoute + 1; i < headers.size(); ++i) {
             final SipHeader h = headers.get(i);
             if (h.isRouteHeader()) {
-                routes.add(h.ensure().toRouterHeader());
+                routes.add(h.ensure().toRouteHeader());
             }
         }
 

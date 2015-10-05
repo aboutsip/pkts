@@ -269,11 +269,6 @@ public interface SipHeader extends Cloneable {
         return false;
     }
 
-    default RouteHeader toRouterHeader() {
-        throw new ClassCastException("Cannot cast header of type " + getClass().getName()
-                + " to type " + RouteHeader.class.getName());
-    }
-
     default boolean isRecordRouteHeader() {
         final Buffer m = getName();
         if (m.getReadableBytes() == 12) {
@@ -292,6 +287,11 @@ public interface SipHeader extends Cloneable {
     default RecordRouteHeader toRecordRouteHeader() {
         throw new ClassCastException("Cannot cast header of type " + getClass().getName()
                 + " to type " + RecordRouteHeader.class.getName());
+    }
+
+    default RouteHeader toRouteHeader() {
+        throw new ClassCastException("Cannot cast header of type " + getClass().getName()
+                + " to type " + RouteHeader.class.getName());
     }
 
     default boolean isContentLengthHeader() {
@@ -429,7 +429,7 @@ public interface SipHeader extends Cloneable {
      *
      * @return
      */
-    Builder<? extends SipHeader> copy();
+    Builder copy();
 
     interface Builder<H extends SipHeader> {
 

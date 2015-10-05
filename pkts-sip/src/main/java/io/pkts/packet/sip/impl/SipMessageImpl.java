@@ -577,7 +577,7 @@ public abstract class SipMessageImpl implements SipMessage {
     }
 
     @Override
-    public SipResponse createResponse(final int responseCode, final Buffer content) throws SipParseException, ClassCastException {
+    public SipResponse.Builder createResponse(final int responseCode, final Buffer content) throws SipParseException, ClassCastException {
         throw new ClassCastException("Unable to cast this SipMessage into a SipRequest");
     }
 

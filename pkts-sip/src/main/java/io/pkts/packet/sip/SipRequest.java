@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package io.pkts.packet.sip;
 
@@ -7,24 +7,10 @@ import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.address.URI;
-import io.pkts.packet.sip.header.CSeqHeader;
-import io.pkts.packet.sip.header.CallIdHeader;
-import io.pkts.packet.sip.header.ContactHeader;
-import io.pkts.packet.sip.header.FromHeader;
-import io.pkts.packet.sip.header.MaxForwardsHeader;
 import io.pkts.packet.sip.header.RouteHeader;
-import io.pkts.packet.sip.header.SipHeader;
-import io.pkts.packet.sip.header.ToHeader;
-import io.pkts.packet.sip.header.ViaHeader;
-import io.pkts.packet.sip.impl.SipRequestImpl;
-import io.pkts.packet.sip.impl.SipRequestLine;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
-import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
+import io.pkts.packet.sip.impl.PreConditions;
+import io.pkts.packet.sip.impl.SipParser;
+import io.pkts.packet.sip.impl.SipRequestBuilder;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -46,7 +32,9 @@ public interface SipRequest extends SipMessage {
      * @return the top-most {@link RouteHeader} or null if this {@link SipRequest} contained no
      *         {@link RouteHeader}s.
      */
-    RouteHeader popRouteHeader();
+    default RouteHeader popRouteHeader() {
+        throw new RuntimeException("No longer allowed because I'm immutable");
+    }
 
     @Override
     SipRequest clone();
@@ -59,35 +47,119 @@ public interface SipRequest extends SipMessage {
      * @throws SipParseException in case the request uri cannot be parsed
      */
     static Builder invite(final String requestURI) throws SipParseException {
-        return request(Builder.INVITE, requestURI);
+        return withMethod(SipParser.INVITE).withRequestURI(requestURI);
     }
 
     static Builder invite(final URI requestURI) throws SipParseException {
-        return request(Builder.INVITE, requestURI);
+        return withMethod(SipParser.INVITE).withRequestURI(requestURI);
     }
 
     static Builder ack(final String requestURI) throws SipParseException {
-        return request(Builder.ACK, requestURI);
+        return withMethod(SipParser.ACK).withRequestURI(requestURI);
     }
 
     static Builder ack(final URI requestURI) throws SipParseException {
-        return request(Builder.ACK, requestURI);
+        return withMethod(SipParser.ACK).withRequestURI(requestURI);
     }
 
     static Builder cancel(final SipURI requestURI) throws SipParseException {
-        assertNotNull(requestURI, "RequestURI canot be null or the empty string");
-        return new Builder(Builder.CANCEL, requestURI);
+        return withMethod(SipParser.CANCEL).withRequestURI(requestURI);
     }
 
     static Builder cancel(final String requestURI) throws SipParseException {
-        return request(Builder.CANCEL, requestURI);
+        return withMethod(SipParser.CANCEL).withRequestURI(requestURI);
+    }
+
+    static Builder bye(final String requestURI) throws SipParseException {
+        return withMethod(SipParser.BYE).withRequestURI(requestURI);
     }
 
     static Builder bye(final URI requestURI) throws SipParseException {
-        return request(Builder.BYE, requestURI);
+        return withMethod(SipParser.BYE).withRequestURI(requestURI);
+    }
+
+    static Builder register(final String requestURI) throws SipParseException {
+        return withMethod(SipParser.REGISTER).withRequestURI(requestURI);
+    }
+
+    static Builder register(final URI requestURI) throws SipParseException {
+        return withMethod(SipParser.REGISTER).withRequestURI(requestURI);
+    }
+
+    static Builder update(final String requestURI) throws SipParseException {
+        return withMethod(SipParser.UPDATE).withRequestURI(requestURI);
+    }
+
+    static Builder update(final URI requestURI) throws SipParseException {
+        return withMethod(SipParser.UPDATE).withRequestURI(requestURI);
+    }
+
+    static Builder subscribe(final String requestURI) throws SipParseException {
+        return withMethod(SipParser.SUBSCRIBE).withRequestURI(requestURI);
+    }
+
+    static Builder subscribe(final URI requestURI) throws SipParseException {
+        return withMethod(SipParser.SUBSCRIBE).withRequestURI(requestURI);
+    }
+
+    static Builder notify(final String requestURI) throws SipParseException {
+        return withMethod(SipParser.NOTIFY).withRequestURI(requestURI);
+    }
+
+    static Builder notify(final URI requestURI) throws SipParseException {
+        return withMethod(SipParser.NOTIFY).withRequestURI(requestURI);
+    }
+
+    static Builder publish(final String requestURI) throws SipParseException {
+        return withMethod(SipParser.PUBLISH).withRequestURI(requestURI);
+    }
+
+    static Builder publish(final URI requestURI) throws SipParseException {
+        return withMethod(SipParser.PUBLISH).withRequestURI(requestURI);
+    }
+
+    static Builder info(final String requestURI) throws SipParseException {
+        return withMethod(SipParser.INFO).withRequestURI(requestURI);
+    }
+
+    static Builder info(final URI requestURI) throws SipParseException {
+        return withMethod(SipParser.INFO).withRequestURI(requestURI);
+    }
+
+    static Builder options(final String requestURI) throws SipParseException {
+        return withMethod(SipParser.OPTIONS).withRequestURI(requestURI);
+    }
+
+    static Builder options(final URI requestURI) throws SipParseException {
+        return withMethod(SipParser.OPTIONS).withRequestURI(requestURI);
+    }
+
+    static Builder prack(final String requestURI) throws SipParseException {
+        return withMethod(SipParser.PRACK).withRequestURI(requestURI);
+    }
+
+    static Builder prack(final URI requestURI) throws SipParseException {
+        return withMethod(SipParser.PRACK).withRequestURI(requestURI);
+    }
+
+    static Builder refer(final String requestURI) throws SipParseException {
+        return withMethod(SipParser.REFER).withRequestURI(requestURI);
+    }
+
+    static Builder refer(final URI requestURI) throws SipParseException {
+        return withMethod(SipParser.REFER).withRequestURI(requestURI);
+    }
+
+    static Builder message(final String requestURI) throws SipParseException {
+        return withMethod(SipParser.MESSAGE).withRequestURI(requestURI);
+    }
+
+    static Builder message(final URI requestURI) throws SipParseException {
+        return withMethod(SipParser.MESSAGE).withRequestURI(requestURI);
     }
 
     static Builder request(final Buffer method, final String requestURI) throws SipParseException {
+        /*
         assertNotEmpty(requestURI, "RequestURI canot be null or the empty string");
         try {
             final SipURI uri = SipURI.frame(Buffers.wrap(requestURI));
@@ -95,207 +167,42 @@ public interface SipRequest extends SipMessage {
         } catch (IndexOutOfBoundsException | IOException e) {
             throw new SipParseException(0, "Unable to parse the request-uri", e);
         }
+        */
+        return null;
     }
 
     static Builder request(final Buffer method, final URI requestURI) throws SipParseException {
         // TODO since URI is mutable we have to make a copy so for now just delegate to string method
-        return request(method, requestURI.toString());
+        // return request(method, requestURI.toString());
+        return null;
     }
 
-    class Builder {
-
-        private static final Buffer INVITE = Buffers.wrap("INVITE");
-        private static final Buffer ACK = Buffers.wrap("ACK");
-        private static final Buffer CANCEL = Buffers.wrap("CANCEL");
-        private static final Buffer BYE = Buffers.wrap("BYE");
-
-        private final Buffer method;
-
-        private final SipURI requestURI;
-
-        private ToHeader to;
-        private FromHeader from;
-        private ContactHeader contact;
-        private CSeqHeader cseq;
-        private MaxForwardsHeader maxForwards;
-        private CallIdHeader callId;
-        private ViaHeader via;
-        private List<ViaHeader> vias; // after the first one, we will add Via headers to this list
-        private List<SipHeader> headers;
-        private Buffer rawContent;
-
-        /**
-         * 
-         */
-        private Builder(final Buffer method, final SipURI requestURI) {
-            this.requestURI = requestURI;
-            this.method = method;
-        }
-
-        public SipURI requestURI() {
-            return requestURI;
-        }
-
-        public Buffer method() {
-            return method;
-        }
-
-        public ToHeader to() {
-            return to;
-        }
-
-        public Builder to(final ToHeader to) {
-            this.to = assertNotNull(to, "The To-header cannot be null");
-            return this;
-        }
-
-        public FromHeader from() {
-            return from;
-        }
-
-        public Builder from(final FromHeader from) {
-            this.from = assertNotNull(from, "The From-header cannot be null");
-            return this;
-        }
-
-        public Builder callId(final CallIdHeader callId) {
-            this.callId = assertNotNull(callId, "The Call-ID header cannot be null");
-            return this;
-        }
-
-        public Builder contact(final ContactHeader contact) {
-            this.contact = assertNotNull(contact, "The Contact-header cannot be null");
-            return this;
-        }
-
-        public Builder cseq(final CSeqHeader cseq) {
-            this.cseq = assertNotNull(cseq, "The CSeq-header cannot be null");
-            return this;
-        }
-
-        /**
-         * Add a via header to this request. Multiple via headers are allowed so calling this method
-         * multiple times will result in all of those {@link ViaHeader}s being added to this
-         * request.
-         * 
-         * @param via
-         * @return
-         */
-        public Builder via(final ViaHeader via) {
-            assertNotNull(via, "The Via-header cannot be null");
-            if (this.via == null) {
-                this.via = via;
-            } else {
-                ensureViaList().add(via);
-            }
-            return this;
-        }
-
-        public Builder header(final SipHeader header) {
-            assertNotNull(header, "The header cannot be null");
-            ensureHeaders().add(header);
-            return this;
-        }
-
-        public Builder content(final Buffer rawContent) {
-            this.rawContent = rawContent;
-            return this;
-        }
-
-        /**
-         * Build a new {@link SipRequest}. The only mandatory value is the request-uri and the
-         * From-address. The following headers will be generated with default values unless
-         * specified:
-         * 
-         * <ul>
-         * <li><code>To</code> will be based off of the request-uri (user and host)</li>
-         * <li><code>CSeq</code> will be set to 0 METHOD, e.g. 0 INVITE</li>
-         * <li><code>Max-Forwards</code> will be set to 70</li>
-         * <li><code>Call-ID</code> will automatically be generated</li>
-         * </ul>
-         * 
-         * NOTE: no {@link ContactHeader} will automatically be generated since it is impossible to
-         * figure out a default value that actually will work. If you are building your own SIP
-         * stack you should set the {@link ContactHeader} in the transport layer before you send it
-         * off.
-         * 
-         * @return
-         * @throws SipParseException
-         */
-        public SipRequest build() throws SipParseException {
-            assertNotNull(from, "The From-header has not been specified");
-            final SipRequestLine initialLine = new SipRequestLine(method, requestURI);
-            final SipRequest request = new SipRequestImpl(initialLine, null, rawContent);
-            request.setHeader(getToHeader());
-            request.setHeader(from);
-            request.setHeader(getCSeq());
-            request.setHeader(getCallId());
-            request.setHeader(getMaxForwards());
-            if (via != null) {
-                request.addHeader(via);
-                if (this.vias != null) {
-                    vias.forEach(request::addHeader);
-                }
-            }
-            if (contact != null) {
-                request.setHeader(contact);
-            }
-            if (headers != null) {
-                headers.forEach(request::addHeader);
-            }
-            return request;
-        }
-
-        private MaxForwardsHeader getMaxForwards() {
-            if (this.maxForwards == null) {
-                this.maxForwards = MaxForwardsHeader.create();
-            }
-            return this.maxForwards;
-        }
-
-        private CallIdHeader getCallId() {
-            if (this.callId == null) {
-                this.callId = CallIdHeader.create();
-            }
-            return this.callId;
-        }
-
-        private CSeqHeader getCSeq() {
-            if (this.cseq == null) {
-                this.cseq = CSeqHeader.withMethod(method).build();
-            }
-            return this.cseq;
-        }
-
-
-        /**
-         * Get the To-header but if the user hasn't explicitly specified one then base it off of the
-         * request uri.
-         * 
-         * @return
-         */
-        private ToHeader getToHeader() {
-            if (this.to == null) {
-                final Buffer user = this.requestURI.getUser();
-                final Buffer host = this.requestURI.getHost();
-                this.to = ToHeader.withHost(host).withUser(user).build();
-            }
-            return this.to;
-        }
-
-        private List<ViaHeader> ensureViaList() {
-            if (vias == null) {
-                this.vias = new ArrayList<>(2);
-            }
-            return this.vias;
-        }
-
-        private List<SipHeader> ensureHeaders() {
-            if (headers == null) {
-                this.headers = new ArrayList<>(8);
-            }
-            return this.headers;
-        }
+    static Builder withMethod(final Buffer method) throws SipParseException {
+        PreConditions.assertNotEmpty(method, "The method cannot be empty or null");
+        return new SipRequestBuilder(method);
     }
+
+    static Builder withMethod(final String method) throws SipParseException {
+        PreConditions.assertNotEmpty(method, "The method cannot be empty or null");
+        return new SipRequestBuilder(Buffers.wrap(method));
+    }
+
+    interface Builder extends SipMessage.Builder<SipRequest> {
+
+
+        /**
+         *
+         * @param uri
+         * @return
+         * @throws SipParseException in case the request uri is null
+         */
+        Builder withRequestURI(URI uri) throws SipParseException;
+
+        Builder withRequestURI(String uri) throws SipParseException;
+
+        @Override
+        SipRequest build();
+    }
+
 
 }

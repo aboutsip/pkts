@@ -41,8 +41,8 @@ public class SipRequestTest extends PktsTestBase {
      */
     @Test
     public void testCreateInvite() throws Exception {
-        final SipRequest invite = SipRequest.invite("sip:alice@example.com").from(this.from).build();
-        assertThat(invite.getToHeader().toString(), is("To: <sip:alice@example.com>"));
+        final SipRequest invite = SipRequest.invite("sip:alice@example.com").withFromHeader(this.from).build();
+        assertThat(invite.getToHeader().toString(), is("To: sip:alice@example.com"));
 
         final CSeqHeader cseq = invite.getCSeqHeader();
         assertThat(cseq.getSeqNumber(), is(0L));
@@ -54,7 +54,7 @@ public class SipRequestTest extends PktsTestBase {
         final MaxForwardsHeader max = invite.getMaxForwards();
         assertThat(max.getMaxForwards(), is(70));
 
-        assertThat(invite.getFromHeader().toString(), is("From: <sip:bob@somewhere.com>"));
+        assertThat(invite.getFromHeader().toString(), is("From: sip:bob@somewhere.com"));
     }
 
     /**
@@ -66,7 +66,7 @@ public class SipRequestTest extends PktsTestBase {
     @Test
     public void testCreateInviteWithContactHeader() throws Exception {
         final ContactHeader contact = ContactHeader.with().withHost("12.13.14.15").withPort(1234).transportTCP().build();
-        final SipRequest invite = SipRequest.invite("sip:alice@example.com").from(this.from).contact(contact).build();
+        final SipRequest invite = SipRequest.invite("sip:alice@example.com").withFromHeader(this.from).withContactHeader(contact).build();
         final SipURI contactURI = (SipURI) invite.getContactHeader().getAddress().getURI();
         assertThat(contactURI.getPort(), is(1234));
         assertThat(contactURI.getHost().toString(), is("12.13.14.15"));
@@ -77,7 +77,7 @@ public class SipRequestTest extends PktsTestBase {
     public void testCreateInviteWithViaHeaders() throws Exception {
         final ViaHeader via =
                 ViaHeader.withHost("127.0.0.1").withPort(9898).withTransportUdp().withBranch(ViaHeader.generateBranch()).build();
-        SipRequest invite = SipRequest.invite("sip:alice@example.com").from(this.from).via(via).build();
+        SipRequest invite = SipRequest.invite("sip:alice@example.com").withFromHeader(this.from).withViaHeader(via).build();
 
         // since there is only one via header, getting the "top-most" via header should
         // be the same as getting the first via off of the list.
@@ -91,7 +91,7 @@ public class SipRequestTest extends PktsTestBase {
         // two via headers
         final ViaHeader via2 =
                 ViaHeader.withHost("192.168.0.100").withTransportTCP().withBranch(ViaHeader.generateBranch()).build();
-        invite = SipRequest.invite("sip:alice@example.com").from(this.from).via(via).via(via2).build();
+        invite = SipRequest.invite("sip:alice@example.com").withFromHeader(this.from).withViaHeaders(via, via2).build();
         assertThat(invite.getViaHeaders().size(), is(2));
 
         // the top-most via should be the one we added first.

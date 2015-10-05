@@ -59,7 +59,7 @@ public interface RouteHeader extends AddressParametersHeader {
     }
 
     @Override
-    default RouteHeader toRouterHeader() {
+    default RouteHeader toRouteHeader() {
         return this;
     }
 

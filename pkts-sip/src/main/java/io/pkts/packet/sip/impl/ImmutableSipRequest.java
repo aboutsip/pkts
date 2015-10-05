@@ -3,9 +3,14 @@ package io.pkts.packet.sip.impl;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.SipRequest;
+import io.pkts.packet.sip.SipResponse;
 import io.pkts.packet.sip.address.URI;
-import io.pkts.packet.sip.header.RouteHeader;
+import io.pkts.packet.sip.header.CSeqHeader;
+import io.pkts.packet.sip.header.CallIdHeader;
+import io.pkts.packet.sip.header.FromHeader;
+import io.pkts.packet.sip.header.MaxForwardsHeader;
 import io.pkts.packet.sip.header.SipHeader;
+import io.pkts.packet.sip.header.ToHeader;
 
 import java.util.List;
 
@@ -13,6 +18,7 @@ import java.util.List;
  * @author jonas@jonasborjesson.com
  */
 public class ImmutableSipRequest extends ImmutableSipMessage implements SipRequest {
+
 
     /**
      * @param message            the full immutable buffer which has the entire SIP message in it, including all headers, body
@@ -51,13 +57,48 @@ public class ImmutableSipRequest extends ImmutableSipMessage implements SipReque
 
     @Override
     public URI getRequestUri() throws SipParseException {
-        throw new RuntimeException("not implemented yet");
+        return getInitialLineAsObject().toRequestLine().getRequestUri();
     }
 
     @Override
-    public RouteHeader popRouteHeader() {
-        throw new RuntimeException("No longer allowed");
+    public Buffer getMethod() throws SipParseException {
+        return getInitialLineAsObject().toRequestLine().getMethod();
     }
+
+    @Override
+    public SipRequest.Builder copy() {
+        final SipRequest.Builder builder = SipRequest.withMethod(getMethod()).withRequestURI(getRequestUri());
+        builder.withHeaders(getAllHeaders());
+        builder.withBody(getRawContent());
+        return builder;
+    }
+
+    @Override
+    public SipResponse.Builder createResponse(final int responseCode, final Buffer content) throws SipParseException, ClassCastException {
+        final CallIdHeader callID = getCallIDHeader();
+        final FromHeader from = getFromHeader();
+        final ToHeader to = getToHeader();
+        final CSeqHeader cseq = getCSeqHeader();
+        final MaxForwardsHeader max = getMaxForwards();
+
+        final SipResponse.Builder builder = SipResponse.withStatusCode(responseCode);
+        builder.withFromHeader(from);
+        builder.withToHeader(to);
+        builder.withCSeqHeader(cseq);
+        builder.withMaxForwardsHeader(max);
+        builder.withCallIdHeader(callID);
+
+        builder.withViaHeaders(getViaHeaders());
+
+        // TODO: allow for a List of RR headers
+        builder.withRecordRouteHeaders(getRecordRouteHeaders());
+
+        // TODO: allow for a list of route headers
+        // builder.withRouteHeaders(getRouteheaders());
+
+        return builder;
+    }
+
 
     @Override
     final public SipRequest clone() {

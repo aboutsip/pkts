@@ -41,7 +41,7 @@ public class SipMessageFactoryImplTest extends PktsTestBase {
     @Test
     public void testCreateResponseBasedOnRequest() throws Exception {
         final SipRequest req = (SipRequest) parseMessage(RawData.sipInvite);
-        final SipResponse resp = req.createResponse(200);
+        final SipResponse resp = req.createResponse(200).build();
         System.out.println(resp);
         assertThat(resp.getStatus(), is(200));
         assertThat(resp.getFromHeader().getValue().toString(), is("sipp <sip:sipp@127.0.1.1:5060>;tag=16732SIPpTag001"));

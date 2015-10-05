@@ -69,6 +69,16 @@ public interface RecordRouteHeader extends AddressParametersHeader {
         return this;
     }
 
+    static Builder withUser(final Buffer user) {
+        final Builder b = new Builder();
+        b.withUser(user);
+        return b;
+    }
+
+    static Builder withUser(final String user) {
+        return withUser(Buffers.wrap(user));
+    }
+
     static Builder withHost(final Buffer host) {
         final Builder b = new Builder();
         b.withHost(host);

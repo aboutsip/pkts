@@ -31,7 +31,7 @@ public final class SipResponseImpl extends SipMessageImpl implements SipResponse
             final Buffer payload) {
         super(initialLine, headers, payload);
     }
-    
+
     @Override
     public Buffer getReasonPhrase() {
         return getResponseLine().getReason().slice();

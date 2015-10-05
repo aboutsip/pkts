@@ -5,6 +5,7 @@ package io.pkts.packet.sip;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.header.ViaHeader;
+import io.pkts.packet.sip.impl.SipResponseBuilder;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -13,14 +14,14 @@ public interface SipResponse extends SipMessage {
 
     /**
      * Get the status code of this SIP response
-     * 
+     *
      * @return
      */
     int getStatus();
-    
+
     /**
      * Get the reason phrase of this {@link SipResponse}
-     * 
+     *
      * @return
      */
     Buffer getReasonPhrase();
@@ -118,6 +119,10 @@ public interface SipResponse extends SipMessage {
         return getStatus() == 180 || getStatus() == 183;
     }
 
+    static Builder withStatusCode(final int statusCode) {
+        return new SipResponseBuilder(statusCode);
+    }
+
     /**
      * Convenience method for checking whether this is a 480 Timeout response or
      * not.
@@ -135,15 +140,28 @@ public interface SipResponse extends SipMessage {
 
     /**
      * Pop the top-most {@link ViaHeader}.
-     * 
+     * <p/>
      * This is a convenience method for calling {@link SipMessage#popHeader(Buffer)}.
-     * 
+     *
      * @return the top-most {@link ViaHeader} or null if this {@link SipResponse} contained no
-     *         {@link ViaHeader}s.
+     * {@link ViaHeader}s.
      */
-    ViaHeader popViaHeader() throws SipParseException;
+    default ViaHeader popViaHeader() throws SipParseException {
+        throw new RuntimeException("No longer allowed because I'm immutable");
+    }
 
     @Override
     SipResponse clone();
+
+    interface Builder extends SipMessage.Builder<SipResponse> {
+
+        Builder withReasonPhrase(String reason);
+
+        Builder withReasonPhrase(Buffer reason);
+
+        @Override
+        SipResponse build();
+
+    }
 
 }

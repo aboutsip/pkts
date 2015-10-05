@@ -5,11 +5,9 @@ package io.pkts.packet.sip.impl;
 
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
-import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipRequest;
 import io.pkts.packet.sip.SipResponse;
-import io.pkts.packet.sip.header.impl.SipHeaderImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,58 +71,8 @@ public class SipRequestTest extends PktsTestBase {
     
     private void assertReasonPhrase(int statusCode, String expectedReason) throws Exception {
         final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader);
-        final SipResponse response = msg.createResponse(statusCode);
+        final SipResponse response = msg.createResponse(statusCode).build();
         assertThat(response.getReasonPhrase().toString(), is(expectedReason));
     }
 
-    /**
-     * Make sure that when we clone a request that the clone and the original
-     * indeed are truly separated.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testClone() throws Exception {
-        final SipRequest req = (SipRequest) parseMessage(RawData.sipInvite);
-        final SipRequest clone = req.clone();
-        assertThat(req.toString(), is(clone.toString()));
-        assertThat(req.toBuffer(), is(clone.toBuffer()));
-        req.addHeader(new SipHeaderImpl(Buffers.wrap("Hello"), Buffers.wrap("world")));
-
-        assertThat(req.toString().contains("Hello: world"), is(true));
-        assertThat(clone.toString().contains("Hello: world"), is(false));
-
-        // TODO: has to be fixed once the sip request stuff has been modified.
-        // ((SipURI) req.getRequestUri()).setPort(7777);
-        // ((SipURI) clone.getRequestUri()).setPort(8888);
-
-        // assertThat(req.toString().contains("sip:service@127.0.0.1:7777"), is(true));
-        // assertThat(clone.toString().contains("sip:service@127.0.0.1:8888"), is(true));
-    }
-
-    @Test
-    public void testCloneAfterManipulation() throws Exception {
-        final SipRequest req = (SipRequest) parseMessage(RawData.sipInvite);
-        req.getCallIDHeader();
-        System.err.println(req.getHeader("Content-Length"));
-        req.getContentTypeHeader();
-        System.err.println(req.getContent());
-        final SipRequest clone = req.clone();
-        System.err.println(clone);
-        // assertThat(req.toString(), is(clone.toString()));
-        assertThat(req.toBuffer(), is(clone.toBuffer()));
-        req.addHeader(new SipHeaderImpl(Buffers.wrap("Hello"), Buffers.wrap("world")));
-
-        System.err.println(clone);
-
-        assertThat(req.toString().contains("Hello: world"), is(true));
-        assertThat(clone.toString().contains("Hello: world"), is(false));
-
-        // TODO: has to be fixed once the sip request stuff has been modified.
-        // ((SipURI) req.getRequestUri()).setPort(7777);
-        // ((SipURI) clone.getRequestUri()).setPort(8888);
-
-        // assertThat(req.toString().contains("sip:service@127.0.0.1:7777"), is(true));
-        // assertThat(clone.toString().contains("sip:service@127.0.0.1:8888"), is(true));
-    }
 }
