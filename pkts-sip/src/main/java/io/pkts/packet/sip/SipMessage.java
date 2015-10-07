@@ -94,7 +94,7 @@ public interface SipMessage extends Cloneable {
      * <li>{@link FromHeader}</li>
      * <li>{@link CallIdHeader}.</li>
      * <li>{@link CSeqHeader}</li>
-     * <li>{@link MaxForwardsHeader}</li>
+     * <li>{@link ViaHeader}</li>
      * </ul>
      * 
      * @param statusCode
@@ -317,6 +317,20 @@ public interface SipMessage extends Cloneable {
      * @throws SipParseException
      */
     ContentTypeHeader getContentTypeHeader() throws SipParseException;
+
+    /**
+     * Return the content length. If the header isn't present then zero will
+     * be returned which DOES NOT mean that there isn't a body. Remember,
+     * this API doesn't enforce any rules regarding what headers you must/must not
+     * include in the message, this have to be enforced by business logic.
+     *
+     * @return the value of the Content-Length header if present or zero if
+     * there was no such header (or of course if the Content-Length header was
+     * present but actually had the value of zero)
+     *
+     * @throws SipParseException
+     */
+    int getContentLength() throws SipParseException;
 
     /**
      * Convenience method for fetching the call-id-header
@@ -664,14 +678,16 @@ public interface SipMessage extends Cloneable {
     interface Builder<T extends SipMessage> {
 
         /**
-         * By default, the following headers will automatically be generated if not explicitly provided:
+         * By default, the following headers will automatically be generated if not
+         * explicitly provided (note: there is a slight difference between request/response):
          *
          * <ul>
-         *     <li>{@link ToHeader} - the request-uri will be used to construct the to-header</li>
+         *     <li>{@link ToHeader} - the request-uri will be used to construct the to-header
+         *     in the case of a request. For a response you have to supply it</li>
          *     <li>{@link CSeqHeader} - a new CSeq header will be added where the
          *     method is the same as this message and the sequence number is set to 1</li>
          *     <li>{@link CallIdHeader} - a new random call-id will be added</li>
-         *     <li>{@link MaxForwardsHeader} - a max forwards of 70 will be added</li>
+         *     <li>{@link MaxForwardsHeader} - if we are building a request, a max forwards of 70 will be added</li>
          *     <li>{@link ContentLengthHeader} - Will be added if there is a body
          *     on the message and the length set to the correct length.</li>
          * </ul>

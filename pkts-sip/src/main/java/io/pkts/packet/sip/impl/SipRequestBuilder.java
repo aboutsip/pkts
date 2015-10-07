@@ -45,6 +45,11 @@ public class SipRequestBuilder extends SipMessageBuilder<SipRequest> implements 
     }
 
     @Override
+    final protected boolean isBuildingRequest() {
+        return true;
+    }
+
+    @Override
     protected SipInitialLine buildInitialLine() throws SipParseException {
         PreConditions.assertNotNull(requestURI, "You must specify the request URI");
         return new SipRequestLine(method, requestURI);

@@ -53,6 +53,8 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
 
     private Consumer<AddressParametersHeader.Builder<FromHeader>> onFromBuilder;
 
+    private Consumer<AddressParametersHeader.Builder<ContactHeader>> onContactBuilder;
+
     private List<ViaHeader> viaHeaders;
     private Consumer<SipHeader.Builder<ViaHeader>> onTopMostViaBuilder;
     private Consumer<SipHeader.Builder<ViaHeader>> onViaBuilder;
@@ -231,6 +233,11 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
 
     @Override
     public SipMessage.Builder<T> onContactHeader(final Consumer<AddressParametersHeader.Builder<ContactHeader>> f) {
+        if (this.onContactBuilder != null) {
+            this.onContactBuilder = this.onContactBuilder.andThen(f);
+        } else {
+            this.onContactBuilder = f;
+        }
         return this;
     }
 
@@ -493,7 +500,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
      *     <li>{@link CSeqHeader} - a new CSeq header will be added where the
      *     method is the same as this message and the sequence number is set to 1</li>
      *     <li>{@link CallIdHeader} - a new random call-id will be added</li>
-     *     <li>{@link MaxForwardsHeader} - a max forwards of 70 will be added</li>
+     *     <li>{@link MaxForwardsHeader} - if we are building a request, then a max forwards of 70 will be added</li>
      *     <li>{@link ContentLengthHeader} - Will be added if there is a body
      *     on the message and the length set to the correct length.</li>
      * </ul>
@@ -504,7 +511,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
             withToHeader(generateDefaultToHeader());
         }
 
-        if (indexOfMaxForwards == -1) {
+        if (isBuildingRequest() && indexOfMaxForwards == -1) {
             withMaxForwardsHeader(MaxForwardsHeader.create());
         }
 
@@ -517,6 +524,25 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         }
     }
 
+    /**
+     * Indicates whether or not we are building a request. Must be overridden by
+     * the request builder. Used for e.g. {@link SipHeaderBuilderWrapper#enforceDefaults()}
+     *
+     * @return
+     */
+    protected boolean isBuildingRequest() {
+        return false;
+    }
+
+    /**
+     * Indicates whether or not we are building a response. Must be overridden by
+     * the response builder. Used for e.g. {@link SipHeaderBuilderWrapper#enforceDefaults()}
+     *
+     * @return
+     */
+    protected boolean isBuildingResponse() {
+        return false;
+    }
 
     protected abstract ToHeader generateDefaultToHeader();
 
@@ -598,7 +624,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         // if we are to use defaults then we will adjust the value
         // of the Content-Length header. If not, then the CL will be
         // whatever the user decided it should be.
-        if (useDefaults) {
+        if (isBuildingRequest() && useDefaults) {
             contentLengthHeader = ContentLengthHeader.create(body == null ? 0 : body.capacity());
         }
 
@@ -671,7 +697,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
 
         if (header.isContactHeader()) {
             indexOfContact = index;
-            finalHeader = header.ensure().toContactHeader();
+            finalHeader = invokeContactHeaderFunction(header.ensure().toContactHeader());
         } else if (header.isCSeqHeader()) {
             indexOfCSeq = index;
             finalHeader = header.ensure().toCSeqHeader();
@@ -730,6 +756,15 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
             return b.build();
         }
         return to;
+    }
+
+    private ContactHeader invokeContactHeaderFunction(final ContactHeader contact) {
+        if (contact != null && onContactBuilder != null) {
+            final AddressParametersHeader.Builder<ContactHeader> b = contact.copy();
+            onContactBuilder.accept(b);
+            return b.build();
+        }
+        return contact;
     }
 
     private FromHeader invokeFromHeaderFunction(final FromHeader from) {

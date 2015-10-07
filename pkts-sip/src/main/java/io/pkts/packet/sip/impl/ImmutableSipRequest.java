@@ -5,12 +5,7 @@ import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.SipRequest;
 import io.pkts.packet.sip.SipResponse;
 import io.pkts.packet.sip.address.URI;
-import io.pkts.packet.sip.header.CSeqHeader;
-import io.pkts.packet.sip.header.CallIdHeader;
-import io.pkts.packet.sip.header.FromHeader;
-import io.pkts.packet.sip.header.MaxForwardsHeader;
 import io.pkts.packet.sip.header.SipHeader;
-import io.pkts.packet.sip.header.ToHeader;
 
 import java.util.List;
 
@@ -75,27 +70,12 @@ public class ImmutableSipRequest extends ImmutableSipMessage implements SipReque
 
     @Override
     public SipResponse.Builder createResponse(final int responseCode, final Buffer content) throws SipParseException, ClassCastException {
-        final CallIdHeader callID = getCallIDHeader();
-        final FromHeader from = getFromHeader();
-        final ToHeader to = getToHeader();
-        final CSeqHeader cseq = getCSeqHeader();
-        final MaxForwardsHeader max = getMaxForwards();
-
         final SipResponse.Builder builder = SipResponse.withStatusCode(responseCode);
-        builder.withFromHeader(from);
-        builder.withToHeader(to);
-        builder.withCSeqHeader(cseq);
-        builder.withMaxForwardsHeader(max);
-        builder.withCallIdHeader(callID);
-
+        builder.withFromHeader(getFromHeader());
+        builder.withToHeader(getToHeader());
+        builder.withCSeqHeader(getCSeqHeader());
+        builder.withCallIdHeader(getCallIDHeader());
         builder.withViaHeaders(getViaHeaders());
-
-        // TODO: allow for a List of RR headers
-        builder.withRecordRouteHeaders(getRecordRouteHeaders());
-
-        // TODO: allow for a list of route headers
-        // builder.withRouteHeaders(getRouteheaders());
-
         return builder;
     }
 

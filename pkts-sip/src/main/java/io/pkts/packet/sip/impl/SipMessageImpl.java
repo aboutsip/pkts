@@ -180,6 +180,10 @@ public abstract class SipMessageImpl implements SipMessage {
         return getHeaderInternal(name, true);
     }
 
+    public int getContentLength() throws SipParseException {
+        throw new RuntimeException("im killing this class soon...");
+    }
+
     /**
      * 
      * @param headerName

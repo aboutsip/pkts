@@ -4,6 +4,7 @@
 package io.pkts.packet.sip;
 
 import io.pkts.PktsTestBase;
+import io.pkts.RawData;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.CallIdHeader;
@@ -30,6 +31,37 @@ public class SipRequestTest extends PktsTestBase {
     public void setUp() throws Exception {
         super.setUp();
         this.from = FromHeader.builder().withUser("bob").withHost("somewhere.com").build();
+    }
+
+    /**
+     * Simple test for making sure that the payload makes it into the toString
+     * stuff.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testToString() throws Exception {
+        final SipRequest req = (SipRequest) parseMessage(RawData.sipInvite);
+        assertThat(req.toString().contains("o=user1 53655765 2353687637 IN IP4 127.0.1.1"), is(true));
+    }
+
+    @Test
+    public void testCreateResponse() throws Exception {
+        assertReasonPhrase(100, "Trying");
+        assertReasonPhrase(180, "Ringing");
+        assertReasonPhrase(200, "OK");
+        assertReasonPhrase(202, "Accepted");
+        assertReasonPhrase(302, "Moved Temporarily");
+        assertReasonPhrase(400, "Bad Request");
+        assertReasonPhrase(500, "Server Internal Error");
+        assertReasonPhrase(600, "Busy Everywhere");
+        assertReasonPhrase(603, "Decline");
+    }
+
+    private void assertReasonPhrase(int statusCode, String expectedReason) throws Exception {
+        final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader);
+        final SipResponse response = msg.createResponse(statusCode).build();
+        assertThat(response.getReasonPhrase().toString(), is(expectedReason));
     }
 
 

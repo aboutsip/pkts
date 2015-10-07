@@ -120,6 +120,11 @@ public final class SipResponseBuilder extends SipMessageBuilder<SipResponse> imp
     }
 
     @Override
+    final protected boolean isBuildingResponse() {
+        return true;
+    }
+
+    @Override
     protected ToHeader generateDefaultToHeader() {
         throw new SipParseException("Not implemented yet and also not sure what a default To-header would be for a response");
     }

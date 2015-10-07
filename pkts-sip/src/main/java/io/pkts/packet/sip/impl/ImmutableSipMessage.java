@@ -7,6 +7,7 @@ import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.CallIdHeader;
 import io.pkts.packet.sip.header.ContactHeader;
+import io.pkts.packet.sip.header.ContentLengthHeader;
 import io.pkts.packet.sip.header.ContentTypeHeader;
 import io.pkts.packet.sip.header.ExpiresHeader;
 import io.pkts.packet.sip.header.FromHeader;
@@ -283,6 +284,16 @@ public abstract class ImmutableSipMessage implements SipMessage {
         }
 
         return header.ensure().toContentTypeHeader();
+    }
+
+    @Override
+    public int getContentLength() throws SipParseException {
+        final SipHeader header = findHeader(ContentLengthHeader.NAME);
+        if (header == null) {
+            return 0;
+        }
+
+        return header.ensure().toContentLengthHeader().getContentLength();
     }
 
     @Override
