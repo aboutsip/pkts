@@ -2016,9 +2016,11 @@ public class SipParser {
         }
 
         if (SipInitialLine.isResponseLine(rawInitialLine)) {
-            return new SipResponseImpl(rawInitialLine, headers, payload);
+            throw new RuntimeException("No longer using the old mutable sip messages");
+            // return new SipResponseImpl(rawInitialLine, headers, payload);
         } else {
-            return new SipRequestImpl(rawInitialLine, headers, payload);
+            throw new RuntimeException("No longer using the old mutable sip messages");
+            // return new SipRequestImpl(rawInitialLine, headers, payload);
         }
     }
 

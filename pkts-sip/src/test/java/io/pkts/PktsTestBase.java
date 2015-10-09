@@ -6,10 +6,16 @@ package io.pkts;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.impl.SipParser;
-
 import org.junit.After;
 import org.junit.Before;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -63,5 +69,18 @@ public class PktsTestBase {
     public SipMessage parseMessage(final String msg) throws Exception {
         return parseMessage(Buffers.wrap(msg));
     }
+
+    protected void assertHeaderNotPresent(final List<? extends SipHeader> headers) {
+        assertThat("Did not expect that header(s) to be present", headers == null || headers.isEmpty(), is(true));
+    }
+
+    protected void assertHeaderNotPresent(final SipHeader optional) {
+        assertThat("Did not expect that header to be present", optional, is((SipHeader) null));
+    }
+
+    protected void assertHeaderNotPresent(final Optional<SipHeader> optional) {
+        assertThat("Did not expect that header to be present", optional.isPresent(), is(false));
+    }
+
 
 }
