@@ -6,6 +6,7 @@ package io.pkts;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipMessage;
+import io.pkts.packet.sip.SipResponse;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.impl.SipParser;
 import org.junit.After;
@@ -68,6 +69,22 @@ public class PktsTestBase {
 
     public SipMessage parseMessage(final String msg) throws Exception {
         return parseMessage(Buffers.wrap(msg));
+    }
+
+    /**
+     * Assert the value of the header.
+     *
+     * @param header
+     * @param expectedValue
+     */
+    protected void assertHeader(final SipHeader header, final String expectedValue) {
+        assertThat(header.getValue().toString(), is(expectedValue));
+    }
+
+    protected void assertReasonPhrase(int statusCode, String expectedReason) throws Exception {
+        final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader);
+        final SipResponse response = msg.createResponse(statusCode).build();
+        assertThat(response.getReasonPhrase().toString(), is(expectedReason));
     }
 
     protected void assertHeaderNotPresent(final List<? extends SipHeader> headers) {

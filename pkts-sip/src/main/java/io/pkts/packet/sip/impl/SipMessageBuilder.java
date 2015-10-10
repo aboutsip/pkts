@@ -27,7 +27,7 @@ import java.util.function.Predicate;
 /**
  * @author jonas@jonasborjesson.com
  */
-public abstract class SipMessageBuilder<T extends SipMessage> implements SipMessageImpl.Builder<T> {
+public abstract class SipMessageBuilder<T extends SipMessage> implements SipMessage.Builder<T> {
 
     /**
      * These are all the headers that the user has added to this builder.
@@ -56,8 +56,8 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
     private Consumer<AddressParametersHeader.Builder<ContactHeader>> onContactBuilder;
 
     private List<ViaHeader> viaHeaders;
-    private Consumer<SipHeader.Builder<ViaHeader>> onTopMostViaBuilder;
-    private Consumer<SipHeader.Builder<ViaHeader>> onViaBuilder;
+    private Consumer<ViaHeader.Builder> onTopMostViaBuilder;
+    private Consumer<ViaHeader.Builder> onViaBuilder;
 
     private List<RecordRouteHeader> recordRouteHeaders;
     private Consumer<AddressParametersHeader.Builder<RecordRouteHeader>> onTopMostRecordRouteBuilder;
@@ -286,13 +286,13 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
     }
 
     @Override
-    public SipMessage.Builder<T> onTopMostViaHeader(Consumer<SipHeader.Builder<ViaHeader>> f) {
+    public SipMessage.Builder<T> onTopMostViaHeader(Consumer<ViaHeader.Builder> f) {
         this.onTopMostViaBuilder = chainConsumers(this.onTopMostViaBuilder, f);
         return this;
     }
 
     @Override
-    public SipMessage.Builder<T> onViaHeader(Consumer<SipHeader.Builder<ViaHeader>> f) {
+    public SipMessage.Builder<T> onViaHeader(Consumer<ViaHeader.Builder> f) {
         this.onViaBuilder = chainConsumers(this.onViaBuilder, f);
         return this;
     }
@@ -448,7 +448,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
     }
 
     @Override
-    public SipMessage.Builder<T> pushViaHeader(final ViaHeader via) {
+    public SipMessage.Builder<T> withTopMostViaHeader(final ViaHeader via) {
         if (via != null) {
             this.viaHeaders = ensureList(this.viaHeaders);
             this.viaHeaders.add(0, via);
@@ -579,8 +579,8 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
             } else if (i == indexOfVia){
                 if (this.viaHeaders != null) {
                     for (int j = 0; j < this.viaHeaders.size(); ++j) {
-                        final Consumer<SipHeader.Builder<ViaHeader>> f = j == 0 ? this.onTopMostViaBuilder : this.onViaBuilder;
-                        final ViaHeader finalVia = invokeSipHeaderBuilderFunction(f, this.viaHeaders.get(j).ensure().toViaHeader());
+                        final Consumer<ViaHeader.Builder> f = j == 0 ? this.onTopMostViaBuilder : this.onViaBuilder;
+                        final ViaHeader finalVia = invokeViaBuilderFunction(f, this.viaHeaders.get(j).ensure().toViaHeader());
                         msgSize += finalVia.getBufferSize() + 2;
                         if (j == 0) {
                             this.indexOfVia = (short)finalHeaders.size();
@@ -724,6 +724,15 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
                                                                                final T header) {
         if (header != null && f != null) {
             final SipHeader.Builder<T> b = header.copy();
+            f.accept(b);
+            return b.build();
+        }
+        return header;
+    }
+
+    private ViaHeader invokeViaBuilderFunction(final Consumer<ViaHeader.Builder> f, final ViaHeader header) {
+        if (header != null && f != null) {
+            final ViaHeader.Builder b = header.copy();
             f.accept(b);
             return b.build();
         }

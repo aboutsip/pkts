@@ -2021,7 +2021,7 @@ public class SipParser {
         } else {
             throw new RuntimeException("No longer using the old mutable sip messages");
             // return new SipRequestImpl(rawInitialLine, headers, payload);
-        }
+         }
     }
 
     public static SipMessage frame2(final Buffer buffer) throws IOException {

@@ -5,10 +5,12 @@ package io.pkts.packet.sip;
 
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
+import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.ContactHeader;
 import io.pkts.packet.sip.header.ContentTypeHeader;
 import io.pkts.packet.sip.header.SipHeader;
+import io.pkts.packet.sip.header.ViaHeader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -91,6 +93,54 @@ public class SipResponseTest extends PktsTestBase {
     }
 
     /**
+     * By default via headers are pushed onto the response simply because the most common use
+     * case for a "real" sip stack is to indeed copy-paste the Via-headers from the
+     * request onto the response so therefore this is the default behavior.
+     *
+     * That the via-header is actually pushed is already tested but a common scenario
+     * is to also add parameters to the via so let's make sure that we can do that.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testCreateResponseFromRequestAddViaHeaders() throws Exception {
+        SipRequest req = (SipRequest) parseMessage(RawData.sipInviteOneRouteHeader);
+
+        SipResponse resp = req.createResponse(200)
+                .onTopMostViaHeader(via -> via.withReceived("65.66.67.68").withRPort(3456))
+                .build();
+
+        // ensure that the original Via didn't have any received or rport
+        assertThat(req.getViaHeader().getReceived(), is((Buffer)null));
+        assertThat(req.getViaHeader().getRPort(), is(-1));
+        assertThat(req.getViaHeader().hasRPort(), is(false));
+
+        assertThat(resp.getViaHeader().getReceived().toString(), is("65.66.67.68"));
+        assertThat(resp.getViaHeader().getRPort(), is(3456));
+        assertThat(resp.getViaHeader().hasRPort(), is(true));
+        assertThat(resp.getViaHeaders().size(), is(1));
+
+        // now, ensure that you can actually push more Via-headers
+        // onto the response. Not something you normally would do
+        // (you push on requests) but you should be allowed to.
+        resp = req.createResponse(200)
+                .withTopMostViaHeader(ViaHeader.withHost("12.23.34.45").withBranch(ViaHeader.generateBranch()).build())
+                .onTopMostViaHeader(via -> via.withReceived("65.66.67.68").withRPort(3456))
+                .build();
+
+        assertThat(resp.getViaHeader().getReceived().toString(), is("65.66.67.68"));
+        assertThat(resp.getViaHeader().getRPort(), is(3456));
+        assertThat(resp.getViaHeader().hasRPort(), is(true));
+
+        // and this is the Via that already was on the request and as such
+        // would have been added to the response by default. Note that
+        // we only manipulated the top-most via so this one should have
+        // been left as is.
+        assertThat(resp.getViaHeaders().size(), is(2));
+        assertThat(resp.getViaHeaders().get(1).getValue(), is(req.getViaHeader().getValue()));
+    }
+
+    /**
      * By default, no route headers are pushed onto the response so ensure that
      * and then ensure that we can add them and the appropriate functions are called etc.
      *
@@ -150,9 +200,6 @@ public class SipResponseTest extends PktsTestBase {
         final SipMessage msg = parseMessage(RawData.sipInviteOneRouteHeader);
         final SipResponse resp = msg.createResponse(200).build();
 
-        System.out.println(msg);
-        System.out.println(resp);
-
         assertThat(resp.getStatus(), is(200));
 
         // the only headers that should be copied are
@@ -180,16 +227,6 @@ public class SipResponseTest extends PktsTestBase {
         assertThat(resp.getContentTypeHeader(), is((ContentTypeHeader)null));
         assertThat(resp.hasContent(), is(false));
         assertThat(resp.getContent(), is((Object)null));
-    }
-
-    /**
-     * Assert the value of the header.
-     *
-     * @param header
-     * @param expectedValue
-     */
-    private void assertHeader(final SipHeader header, final String expectedValue) {
-        assertThat(header.getValue().toString(), is(expectedValue));
     }
 
     /**

@@ -108,7 +108,6 @@ public interface SipMessage extends Cloneable {
         return createResponse(responseCode, null);
     }
 
-
     default SipResponse.Builder createResponse(int responseCode, Buffer content) throws SipParseException, ClassCastException {
         throw new ClassCastException("Unable to cast this SipMessage into a SipRequest");
     }
@@ -947,7 +946,7 @@ public interface SipMessage extends Cloneable {
          * @param f
          * @return
          */
-        Builder<T> onTopMostViaHeader(Consumer<SipHeader.Builder<ViaHeader>> f);
+        Builder<T> onTopMostViaHeader(Consumer<ViaHeader.Builder> f);
 
         /**
          * Called when a Via header is processed (except for the top-most one,
@@ -957,14 +956,14 @@ public interface SipMessage extends Cloneable {
          * @param f
          * @return
          */
-        Builder<T> onViaHeader(Consumer<SipHeader.Builder<ViaHeader>> f);
+        Builder<T> onViaHeader(Consumer<ViaHeader.Builder> f);
 
         /**
          * Add a Via header to be used on the message that is being built. This will
          * replace any previously set Via headers. If you wish to add a number of
          * Via headers, use {@link io.pkts.packet.sip.SipMessage.Builder#withViaHeaders(ViaHeader...)}.
          * If you want to push a Via header to a potentially already existing list
-         * of Via headers, then use {@link io.pkts.packet.sip.SipMessage.Builder#pushViaHeader(ViaHeader)}.
+         * of Via headers, then use {@link io.pkts.packet.sip.SipMessage.Builder#withTopMostViaHeader(ViaHeader)}.
          *
          * @param recordRoute
          * @return
@@ -996,7 +995,7 @@ public interface SipMessage extends Cloneable {
          * @param recordRoute
          * @return
          */
-        Builder<T> pushViaHeader(ViaHeader via);
+        Builder<T> withTopMostViaHeader(ViaHeader via);
 
         Builder<T> withBody(Buffer body);
 

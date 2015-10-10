@@ -58,13 +58,6 @@ public class SipRequestTest extends PktsTestBase {
         assertReasonPhrase(603, "Decline");
     }
 
-    private void assertReasonPhrase(int statusCode, String expectedReason) throws Exception {
-        final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader);
-        final SipResponse response = msg.createResponse(statusCode).build();
-        assertThat(response.getReasonPhrase().toString(), is(expectedReason));
-    }
-
-
     /**
      * Test to create a new INVITE request and check all the headers that are supposed to be created
      * by default when not specified indeed are created with the correct values.
