@@ -130,7 +130,7 @@ public interface FromHeader extends AddressParametersHeader {
     }
 
     static AddressParametersHeader.Builder<FromHeader> withAddress(final Address address) throws SipParseException {
-        return builder().address(address);
+        return builder().withAddress(address);
     }
 
     @Override

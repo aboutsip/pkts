@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -186,6 +187,17 @@ public interface SipMessage extends Cloneable {
      * @throws SipParseException
      */
     Optional<SipHeader> getHeader(String headerName) throws SipParseException;
+
+    /**
+     * Get all headers with the given name.
+     *
+     * @param headerName
+     * @return a list of all headers or an empty list if none is found.
+     * @throws SipParseException
+     */
+    List<SipHeader> getHeaders(String headerName) throws SipParseException;
+
+    List<SipHeader> getHeaders(Buffer headerName) throws SipParseException;
 
     void addHeader(SipHeader header) throws SipParseException;
 
@@ -604,11 +616,7 @@ public interface SipMessage extends Cloneable {
         return new ArrayList<>();
     }
 
-    default Builder<? extends SipMessage> copy() {
-        // final SipRequestBuilder builder = new SipRequestBuilder()
-        // return new SipMessageBuilder(this);
-        return null;
-    }
+    Builder<? extends SipMessage> copy();
 
     /**
      * Whenever you create a new {@link SipMessage} you will end up with a {@link Builder}.
@@ -843,7 +851,7 @@ public interface SipMessage extends Cloneable {
          * replace any previously set Route headers. If you wish to add a number of
          * Route headers, use {@link io.pkts.packet.sip.SipMessage.Builder#withRouteHeaders(RouteHeader...)}.
          * If you want to push a Route header to a potentially already existing list
-         * of Record Route headers, then use {@link io.pkts.packet.sip.SipMessage.Builder#pushRouteHeader(RouteHeader)}
+         * of Record Route headers, then use {@link io.pkts.packet.sip.SipMessage.Builder#withTopMostRouteHeader(RouteHeader)}
          *
          * @param route
          * @return
@@ -868,7 +876,20 @@ public interface SipMessage extends Cloneable {
          * @param recordRoute
          * @return
          */
-        Builder<T> pushRouteHeader(RouteHeader route);
+        Builder<T> withTopMostRouteHeader(RouteHeader route);
+
+        /**
+         * Pop the top-most route. Note, if you e.g. add a {@link RouteHeader} via the method
+         * {@link io.pkts.packet.sip.SipMessage.Builder#withTopMostRouteHeader(RouteHeader)} followed
+         * by this method, then the route you just added will be removed again. Order is important!
+         *
+         * Note: if you actually wanted to know the value of that {@link RouteHeader} then you should
+         * really have checked it on the {@link SipMessage} you received and not on the builder
+         * object.
+         *
+         * @return
+         */
+        Builder<T> withPoppedRoute();
 
         // TODO: CSeq, MaxForwards
 
@@ -922,7 +943,7 @@ public interface SipMessage extends Cloneable {
          * @param recordRoute
          * @return
          */
-        Builder<T> pushRecordRouteHeader(RecordRouteHeader recordRoute);
+        Builder<T> withTopMostRecordRouteHeader(RecordRouteHeader recordRoute);
 
         /**
          *
@@ -949,14 +970,40 @@ public interface SipMessage extends Cloneable {
         Builder<T> onTopMostViaHeader(Consumer<ViaHeader.Builder> f);
 
         /**
-         * Called when a Via header is processed (except for the top-most one,
-         * then {@link io.pkts.packet.sip.SipMessage.Builder#onTopMostViaHeader(Consumer)}
-         * is called instead)
+         * Called when a Via header is processed and the first argument is the
+         * index of the Via being processed. The top-most Via header will NEVER
+         * be passed to this registered function but rather to the one explicitly
+         * meant for processing the top-most via (see {@link Builder#onTopMostViaHeader(Consumer)}.
+         *
+         * I.e., Let's say you have the following message (request or response, same same):
+         *
+         * <code>
+         *     ...
+         *     Via: SIP/2.0/TCP 12.13.14.15;branch=z9hG4bK-asdf
+         *     Via: SIP/2.0/UDP 60.61.62.63;branch=z9hG4bK-1234
+         *     Via: SIP/2.0/UDP 96.97.98.99;branch=z9hG4bK-wxyz
+         *     ...
+         * </code>
+         *
+         * <ul>
+         *     <li>When the top-most via header (12.13.14.15) is processed, the function registered with
+         *         {@link Builder#onTopMostViaHeader(Consumer)} will be called.
+         *     </li>
+         *     <li>When the second via is processed (60.61.62.63), the function registered with
+         *         {@link Builder#onViaHeader(BiConsumer)} will be called where the index will
+         *         be '1' since this is the second via on the list and we of course start counting
+         *         at zero.
+         *     </li>
+         *     <li>When the third via is processed (96.97.98.99), the function registered with
+         *         {@link Builder#onViaHeader(BiConsumer)} will be called where the index will
+         *         be '2' since this is the third via on the list and so on...
+         *     </li>
+         * </ul>
          *
          * @param f
          * @return
          */
-        Builder<T> onViaHeader(Consumer<ViaHeader.Builder> f);
+        Builder<T> onViaHeader(BiConsumer<Integer, ViaHeader.Builder> f);
 
         /**
          * Add a Via header to be used on the message that is being built. This will
@@ -996,6 +1043,19 @@ public interface SipMessage extends Cloneable {
          * @return
          */
         Builder<T> withTopMostViaHeader(ViaHeader via);
+
+        /**
+         * Pop the top-most via. Note, if you e.g. add a {@link ViaHeader} through the method
+         * {@link io.pkts.packet.sip.SipMessage.Builder#withTopMostViaHeader(ViaHeader)} followed
+         * by this method, then the Via you just added will be removed again. Order is important!
+         *
+         * Note: if you actually wanted to know the value of that {@link ViaHeader} then you should
+         * really have checked it on the {@link SipMessage} you received and not on the builder
+         * object.
+         *
+         * @return
+         */
+        Builder<T> withPoppedVia();
 
         Builder<T> withBody(Buffer body);
 

@@ -20,6 +20,7 @@ import io.pkts.packet.sip.header.ViaHeader;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -57,7 +58,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
 
     private List<ViaHeader> viaHeaders;
     private Consumer<ViaHeader.Builder> onTopMostViaBuilder;
-    private Consumer<ViaHeader.Builder> onViaBuilder;
+    private BiConsumer<Integer, ViaHeader.Builder> onViaBuilder;
 
     private List<RecordRouteHeader> recordRouteHeaders;
     private Consumer<AddressParametersHeader.Builder<RecordRouteHeader>> onTopMostRecordRouteBuilder;
@@ -292,11 +293,10 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
     }
 
     @Override
-    public SipMessage.Builder<T> onViaHeader(Consumer<ViaHeader.Builder> f) {
+    public SipMessage.Builder<T> onViaHeader(BiConsumer<Integer, ViaHeader.Builder> f) {
         this.onViaBuilder = chainConsumers(this.onViaBuilder, f);
         return this;
     }
-
 
     @Override
     public SipMessage.Builder<T> onTopMostRouteHeader(final Consumer<AddressParametersHeader.Builder<RouteHeader>> f) {
@@ -346,11 +346,19 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
     }
 
     @Override
-    public SipMessage.Builder<T> pushRouteHeader(final RouteHeader route) {
+    public SipMessage.Builder<T> withTopMostRouteHeader(final RouteHeader route) {
         if (route != null) {
             this.routeHeaders = ensureList(this.routeHeaders);
             this.routeHeaders.add(0, route);
             indexOfRoute = addTrackedListHeader(indexOfRoute);
+        }
+        return this;
+    }
+
+    @Override
+    public SipMessage.Builder<T> withPoppedRoute() {
+        if (this.routeHeaders != null) {
+            this.routeHeaders.remove(0);
         }
         return this;
     }
@@ -403,7 +411,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
     }
 
     @Override
-    public SipMessage.Builder<T> pushRecordRouteHeader(final RecordRouteHeader recordRoute) {
+    public SipMessage.Builder<T> withTopMostRecordRouteHeader(final RecordRouteHeader recordRoute) {
         if (recordRoute != null) {
             this.recordRouteHeaders = ensureList(this.recordRouteHeaders);
             this.recordRouteHeaders.add(0, recordRoute);
@@ -455,6 +463,14 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
             indexOfVia = addTrackedListHeader(indexOfVia);
         }
         return this;
+    }
+
+    @Override
+    public SipMessage.Builder<T> withPoppedVia() {
+        if (this.viaHeaders != null) {
+            this.viaHeaders.remove(0);
+        }
+        return null;
     }
 
     private <T> List<T> ensureList(List<T> list) {
@@ -579,8 +595,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
             } else if (i == indexOfVia){
                 if (this.viaHeaders != null) {
                     for (int j = 0; j < this.viaHeaders.size(); ++j) {
-                        final Consumer<ViaHeader.Builder> f = j == 0 ? this.onTopMostViaBuilder : this.onViaBuilder;
-                        final ViaHeader finalVia = invokeViaBuilderFunction(f, this.viaHeaders.get(j).ensure().toViaHeader());
+                        final ViaHeader finalVia = processVia(j, this.viaHeaders.get(j).ensure().toViaHeader());
                         msgSize += finalVia.getBufferSize() + 2;
                         if (j == 0) {
                             this.indexOfVia = (short)finalHeaders.size();
@@ -676,6 +691,14 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
                 body);
     }
 
+    private ViaHeader processVia(final int index, final ViaHeader via) {
+        if (index == 0) {
+            return invokeViaBuilderFunction(this.onTopMostViaBuilder, via);
+        }
+
+        return invokeViaBuilderFunction(this.onViaBuilder, index, via);
+    }
+
     protected abstract SipInitialLine buildInitialLine() throws SipParseException;
 
     protected abstract T internalBuild(final Buffer message,
@@ -734,6 +757,17 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         if (header != null && f != null) {
             final ViaHeader.Builder b = header.copy();
             f.accept(b);
+            return b.build();
+        }
+        return header;
+    }
+
+    private ViaHeader invokeViaBuilderFunction(final BiConsumer<Integer, ViaHeader.Builder> f,
+                                               final int index,
+                                               final ViaHeader header) {
+        if (header != null && f != null) {
+            final ViaHeader.Builder b = header.copy();
+            f.accept(index, b);
             return b.build();
         }
         return header;
@@ -809,6 +843,14 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
      * @return the chained consumer (or the new consumer if there previously wasn't one around)
      */
     private <T> Consumer<T> chainConsumers(final Consumer<T> currentConsumer, final Consumer<T> consumer) {
+        if (currentConsumer != null) {
+            return currentConsumer.andThen(consumer);
+        }
+
+        return consumer;
+    }
+
+    private <T, S> BiConsumer<T, S> chainConsumers(final BiConsumer<T, S> currentConsumer, final BiConsumer<T, S> consumer) {
         if (currentConsumer != null) {
             return currentConsumer.andThen(consumer);
         }

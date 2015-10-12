@@ -600,6 +600,11 @@ public interface SipURI extends URI {
             return this;
         }
 
+        public Builder useWSS() {
+            this.paramSupport.setParameter(SipParser.TRANSPORT, SipParser.WSS);
+            return this;
+        }
+
         public boolean hasParameters() {
             return this.paramSupport.hasParameters();
         }

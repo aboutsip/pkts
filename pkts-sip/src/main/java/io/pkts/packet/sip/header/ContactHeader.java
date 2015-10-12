@@ -25,7 +25,7 @@ public interface ContactHeader extends AddressParametersHeader {
 
     static Builder withAddress(final Address address) throws SipParseException {
         final Builder builder = new Builder();
-        builder.address(address);
+        builder.withAddress(address);
         return builder;
     }
 
@@ -44,7 +44,7 @@ public interface ContactHeader extends AddressParametersHeader {
     static Builder withSipURI(final SipURI uri) throws SipParseException {
         final Builder builder = new Builder();
         final Address address = Address.withURI(uri).build();
-        builder.address(address);
+        builder.withAddress(address);
         return builder;
     }
 

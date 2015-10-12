@@ -91,7 +91,7 @@ public interface RecordRouteHeader extends AddressParametersHeader {
 
     static Builder withAddress(final Address address) throws SipParseException {
         final Builder builder = new Builder();
-        builder.address(address);
+        builder.withAddress(address);
         return builder;
     }
 

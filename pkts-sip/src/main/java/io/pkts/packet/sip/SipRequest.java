@@ -39,6 +39,10 @@ public interface SipRequest extends SipMessage {
     @Override
     SipRequest clone();
 
+    @Override
+    default SipRequest toRequest() throws ClassCastException {
+        return this;
+    }
     /**
      * Factory method for creating a new INVITE request builder.
      * 
@@ -170,6 +174,9 @@ public interface SipRequest extends SipMessage {
         */
         return null;
     }
+
+    @Override
+    Builder copy();
 
     static Builder request(final Buffer method, final URI requestURI) throws SipParseException {
         // TODO since URI is mutable we have to make a copy so for now just delegate to string method

@@ -75,7 +75,7 @@ public abstract class AddressParameterHeadersTestBase {
         assertThat(to.toString(), is(method + ": sip:hello.com"));
         assertThat(to.getAddress().getURI().toString(), is("sip:hello.com"));
 
-        final AddressParametersHeader t2 = to.copy().uriParameter("foo", "woo").build();
+        final AddressParametersHeader t2 = to.copy().withUriParameter("foo", "woo").build();
         assertThat(t2.toString(), is(method + ": <sip:hello.com;foo=woo>"));
 
         final AddressParametersHeader t3 = to.copy().withParameter("nisse", "kalle").withPort(9999).build();
@@ -172,7 +172,7 @@ public abstract class AddressParameterHeadersTestBase {
         assertThat(h1.getValue().toString(), is("sip:alice@example.com;hello=world"));
         assertThat(h2.getValue().toString(), is("sip:alice@pkts.io;hello=world"));
 
-        final AddressParametersHeader h3 = h1.copy().uriParameter("apa", "monkey").withPort(7654)
+        final AddressParametersHeader h3 = h1.copy().withUriParameter("apa", "monkey").withPort(7654)
                 .withDisplayName("Apa").withNoParameters().withParameter("nisse", "kalle").build();
         assertThat(h3.getValue().toString(), is("Apa <sip:alice@example.com:7654;apa=monkey>;nisse=kalle"));
 

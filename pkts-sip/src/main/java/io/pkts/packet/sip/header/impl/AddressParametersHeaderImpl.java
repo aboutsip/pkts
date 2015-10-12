@@ -44,7 +44,7 @@ public class AddressParametersHeaderImpl extends ParametersImpl implements Addre
     public AddressParametersHeader.Builder copy() {
         AddressParametersHeader.Builder b = AddressParametersHeader.with(getName());
         b.withParameters(getRawParams());
-        b.address(address);
+        b.withAddress(address);
         return b;
     }
 

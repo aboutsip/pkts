@@ -61,14 +61,6 @@ public class ImmutableSipRequest extends ImmutableSipMessage implements SipReque
     }
 
     @Override
-    public SipRequest.Builder copy() {
-        final SipRequest.Builder builder = SipRequest.withMethod(getMethod()).withRequestURI(getRequestUri());
-        builder.withHeaders(getAllHeaders());
-        builder.withBody(getRawContent());
-        return builder;
-    }
-
-    @Override
     public SipResponse.Builder createResponse(final int responseCode, final Buffer content) throws SipParseException, ClassCastException {
         final SipResponse.Builder builder = SipResponse.withStatusCode(responseCode);
         builder.withFromHeader(getFromHeader());
@@ -76,6 +68,14 @@ public class ImmutableSipRequest extends ImmutableSipMessage implements SipReque
         builder.withCSeqHeader(getCSeqHeader());
         builder.withCallIdHeader(getCallIDHeader());
         builder.withViaHeaders(getViaHeaders());
+        return builder;
+    }
+
+    @Override
+    public SipRequest.Builder copy() {
+        final SipRequest.Builder builder = SipRequest.withMethod(getMethod()).withRequestURI(getRequestUri());
+        builder.withHeaders(getAllHeaders());
+        builder.withBody(getRawContent());
         return builder;
     }
 

@@ -182,6 +182,8 @@ public class SipParser {
 
     public static final Buffer WS = Buffers.wrap("ws");
 
+    public static final Buffer WSS = Buffers.wrap("wss");
+
     public static final Map<Buffer, Function<SipHeader, ? extends SipHeader>> framers = new HashMap<>();
 
     static {

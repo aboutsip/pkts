@@ -232,7 +232,7 @@ public class RecordRouteAndRouteSipMessageTest extends PktsTestBase {
     /**
      * When the original template contains many Record-Route headers we have to
      * watch out so we either keep them all or wipe them all out depending on
-     * whether we use {@link SipMessageBuilder#pushRecordRouteHeader(RecordRouteHeader)}
+     * whether we use {@link SipMessageBuilder#withTopMostRecordRouteHeader(RecordRouteHeader)}
      * or {@link SipMessageBuilder#withRecordRouteHeader(RecordRouteHeader)}.
      *
      * @throws Exception
@@ -251,7 +251,7 @@ public class RecordRouteAndRouteSipMessageTest extends PktsTestBase {
         // but when we use the push method then we should preserve any
         // already existing RR headers and add the pushed one to the top...
         msg = parseMessage(RawData.sipInviteThreeRecordRoutes).copy()
-                .pushRecordRouteHeader(RecordRouteHeader.withHost("pkts.io").build()).build();
+                .withTopMostRecordRouteHeader(RecordRouteHeader.withHost("pkts.io").build()).build();
         // top most one should be the one we pushed.
         assertThat(msg.getRecordRouteHeader().getValue().toString(), is("sip:pkts.io"));
 
@@ -270,8 +270,8 @@ public class RecordRouteAndRouteSipMessageTest extends PktsTestBase {
         msg = msg.copy()
                 .onTopMostRecordRouteHeader(rr -> rr.withUser("bob0-manipulated"))
                 .onRecordRouteHeader(rr -> rr.withParameter("not-on-top", "true"))
-                .pushRecordRouteHeader(RecordRouteHeader.withUser("bob1").withHost("pkts.io").build())
-                .pushRecordRouteHeader(RecordRouteHeader.withUser("bob0").withHost("pkts.io").build()).build();
+                .withTopMostRecordRouteHeader(RecordRouteHeader.withUser("bob1").withHost("pkts.io").build())
+                .withTopMostRecordRouteHeader(RecordRouteHeader.withUser("bob0").withHost("pkts.io").build()).build();
 
         rrs = msg.getRecordRouteHeaders();
         assertThat(rrs.size(), is(6));

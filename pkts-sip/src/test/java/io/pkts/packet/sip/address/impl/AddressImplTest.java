@@ -35,6 +35,24 @@ public class AddressImplTest {
     public void tearDown() throws Exception {
     }
 
+    @Test
+    public void testTransportParam() throws Exception {
+        Address address = Address.frame(Buffers.wrap("sip:alice@pkts.io")).copy().withTransportTLS().build();
+        assertThat(address.getURI().toSipURI().getTransportParam().toString(), is("tls"));
+
+        address = Address.frame(Buffers.wrap("sip:alice@pkts.io")).copy().withTransportWS().build();
+        assertThat(address.getURI().toSipURI().getTransportParam().toString(), is("ws"));
+
+        address = Address.frame(Buffers.wrap("sip:alice@pkts.io")).copy().withTransportWSS().build();
+        assertThat(address.getURI().toSipURI().getTransportParam().toString(), is("wss"));
+
+        address = Address.frame(Buffers.wrap("sip:alice@pkts.io")).copy().withTransportTCP().build();
+        assertThat(address.getURI().toSipURI().getTransportParam().toString(), is("tcp"));
+
+        address = Address.frame(Buffers.wrap("sip:alice@pkts.io")).copy().withTransportUDP().build();
+        assertThat(address.getURI().toSipURI().getTransportParam().toString(), is("udp"));
+    }
+
     /**
      * Make sure that when we parse something that we actually spit out the
      * EXACT same format again. E.g., the following address

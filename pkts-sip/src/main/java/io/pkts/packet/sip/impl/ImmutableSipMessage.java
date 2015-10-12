@@ -130,6 +130,28 @@ public abstract class ImmutableSipMessage implements SipMessage {
     }
 
     @Override
+    public List<SipHeader> getHeaders(final Buffer headerName) throws SipParseException {
+        PreConditions.assertNotEmpty(headerName, "The name of the header cannot be null or the empty buffer");
+        return getHeadersInternal(headerName);
+    }
+
+    @Override
+    public List<SipHeader> getHeaders(final String headerName) throws SipParseException {
+        PreConditions.assertNotEmpty(headerName, "The name of the header cannot be null or the empty string");
+        return getHeadersInternal(Buffers.wrap(headerName));
+    }
+
+    private List<SipHeader> getHeadersInternal(final Buffer headerName) {
+        final List<SipHeader> headers = new ArrayList<>(3);
+        for (final SipHeader header : this.headers) {
+            if (headerName.equals(header.getName())) {
+                headers.add(header);
+            }
+        }
+        return headers;
+    }
+
+    @Override
     public Optional<SipHeader> getHeader(final String headerName) throws SipParseException {
         return Optional.ofNullable(findHeader(Buffers.wrap(headerName)));
     }

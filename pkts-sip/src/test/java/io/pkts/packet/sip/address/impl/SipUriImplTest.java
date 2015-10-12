@@ -26,6 +26,20 @@ public class SipUriImplTest {
     }
 
     @Test
+    public void testSipURITransportTLS() throws Exception {
+        final SipURI uri = SipURI.withHost("pkts.io").withTransport("tls").build();
+        assertThat(uri.getTransportParam().toString(), is("tls"));
+        assertThat(uri.toString(), is("sip:pkts.io;transport=tls"));
+    }
+
+    @Test
+    public void testSipURITransportWS() throws Exception {
+        final SipURI uri = SipURI.withHost("pkts.io").withTransport("ws").build();
+        assertThat(uri.getTransportParam().toString(), is("ws"));
+        assertThat(uri.toString(), is("sip:pkts.io;transport=ws"));
+    }
+
+    @Test
     public void testSipURIImmutability() throws Exception {
         final SipURI uri1 = SipURI.frame("sip:hello@pkts.io");
         final SipURI uri2 = uri1.copy().withParameter("transport", "tcp").withPort(8765).build();

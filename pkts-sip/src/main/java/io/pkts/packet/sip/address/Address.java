@@ -285,7 +285,7 @@ public interface Address {
          *
          * @return
          */
-        public Builder useUDP() {
+        public Builder withTransportUDP() {
             ensureURIBuilder().useUDP();
             return this;
         }
@@ -296,7 +296,7 @@ public interface Address {
          *
          * @return
          */
-        public Builder useTCP() {
+        public Builder withTransportTCP() {
             ensureURIBuilder().useTCP();
             return this;
         }
@@ -307,7 +307,7 @@ public interface Address {
          *
          * @return
          */
-        public Builder useTLS() {
+        public Builder withTransportTLS() {
             ensureURIBuilder().useTLS();
             return this;
         }
@@ -318,7 +318,7 @@ public interface Address {
          *
          * @return
          */
-        public Builder useSCTP() {
+        public Builder withTransportSCTP() {
             ensureURIBuilder().useSCTP();
             return this;
         }
@@ -329,8 +329,19 @@ public interface Address {
          *
          * @return
          */
-        public Builder useWS() {
+        public Builder withTransportWS() {
             ensureURIBuilder().useWS();
+            return this;
+        }
+
+        /**
+         * Set WSS as the transport on the wrapped SIP URI (assuming this is a SIP URI that this
+         * {@link Address} object is indeed wrapping).
+         *
+         * @return
+         */
+        public Builder withTransportWSS() {
+            ensureURIBuilder().useWSS();
             return this;
         }
 

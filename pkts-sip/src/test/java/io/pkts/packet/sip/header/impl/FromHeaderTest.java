@@ -41,7 +41,7 @@ public class FromHeaderTest extends AddressParameterHeadersTestBase {
         assertThat(from.toString(), is("From: sip:hello.com"));
         assertThat(from.getAddress().getURI().toString(), is("sip:hello.com"));
 
-        final FromHeader f2 = from.copy().uriParameter("foo", "woo").build();
+        final FromHeader f2 = from.copy().withUriParameter("foo", "woo").build();
         assertThat(f2.toString(), is("From: <sip:hello.com;foo=woo>"));
 
         final FromHeader f3 = from.copy().withParameter("nisse", "kalle").withPort(9999).build();

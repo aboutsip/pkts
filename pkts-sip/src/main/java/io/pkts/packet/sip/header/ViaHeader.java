@@ -338,6 +338,17 @@ public interface ViaHeader extends Parameters, SipHeader {
             return this;
         }
 
+        /**
+         * Convenience method for generating a default branch.
+         * Same as calling: {@link ViaHeader#generateBranch()} and pass that into
+         * {@link io.pkts.packet.sip.header.ViaHeader.Builder#withBranch(Buffer)}
+         *
+         * @return
+         */
+        public Builder withBranch() {
+            return withBranch(ViaHeader.generateBranch());
+        }
+
         public Builder withBranch(final Buffer branch) {
             assertNotEmpty(branch, "Branch cannot be empty or null.");
             if (this.indexOfBranch == -1) {
