@@ -891,6 +891,18 @@ public interface SipMessage extends Cloneable {
          */
         Builder<T> withPoppedRoute();
 
+        /**
+         * Sometimes you may want to just wipe out all the potential {@link RouteHeader}s
+         * that e.g. were automatically copied from another {@link SipRequest} that was
+         * used as a template. A common scenario is that you are building a B2BUA acting
+         * as the border police to your network and you simply cannot trust incoming requests
+         * and as such, you should not honor externally pushed routes, since if you did, an
+         * attacker could by-pass your next hop by forcing the request to go to somewhere else.
+         *
+         * @return
+         */
+        Builder<T> withNoRoutes();
+
         // TODO: CSeq, MaxForwards
 
         /**
@@ -1043,6 +1055,23 @@ public interface SipMessage extends Cloneable {
          * @return
          */
         Builder<T> withTopMostViaHeader(ViaHeader via);
+
+        /**
+         * Typically the {@link ViaHeader} will have to be filled out by the stack at some
+         * later point, which is when the message is about to be sent, so when you create
+         * the message you don't have all the details just yet. However, just to create
+         * a new Via with bogus information only to be re-written later by registering
+         * a function with {@link Builder#onTopMostViaHeader(Consumer)} is rather silly
+         * so therefore you can just indicate that you want a new top-most via header
+         * but you will fill out all details later.
+         *
+         * NOTE: if you do NOT register a function to handle this "empty" Via-header
+         * through the method {@link Builder#onTopMostViaHeader(Consumer)} things will
+         * blow up later with you try to build this message.
+         *
+         * @return
+         */
+        Builder<T> withTopMostViaHeader();
 
         /**
          * Pop the top-most via. Note, if you e.g. add a {@link ViaHeader} through the method

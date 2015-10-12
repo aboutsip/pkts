@@ -10,8 +10,10 @@ import io.pkts.packet.sip.address.Address;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.header.impl.AddressParametersHeaderImpl;
 import io.pkts.packet.sip.header.impl.ParametersSupport;
+import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
 import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
@@ -157,6 +159,63 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
         }
 
         /**
+         * Convenience method for removing the tag paramter.
+         *
+         * @return
+         * @throws SipParseException
+         * @throws IllegalArgumentException
+         */
+        public Builder<T> withNoTag() throws SipParseException,
+                IllegalArgumentException {
+            this.paramSupport.removeParameter(SipParser.TAG);
+            return this;
+        }
+
+        /**
+         * Convenience method for setting the tag parameter.
+         *
+         * @param value
+         * @return
+         * @throws SipParseException
+         * @throws IllegalArgumentException
+         */
+        public Builder<T> withTag(final Buffer value) throws SipParseException,
+                IllegalArgumentException {
+            assertNotEmpty(value, "The value of the tag parameter cannot be null or the empty buffer");
+            this.paramSupport.setParameter(SipParser.TAG, value);
+            return this;
+        }
+
+        /**
+         * Convenience method for setting the tag parameter.
+         *
+         * @param value
+         * @return
+         * @throws SipParseException
+         * @throws IllegalArgumentException
+         */
+        public Builder<T> withTag(final String value) throws SipParseException,
+                IllegalArgumentException {
+            assertNotEmpty(value, "The value of the tag parameter cannot be null or the empty string");
+            this.paramSupport.setParameter(SipParser.TAG, Buffers.wrap(value));
+            return this;
+        }
+
+        /**
+         * Convenience method for setting the value of the tag parameter to a default
+         * generated value.
+         *
+         * @return
+         * @throws SipParseException
+         * @throws IllegalArgumentException
+         */
+        public Builder<T> withDefaultTag() throws SipParseException,
+                IllegalArgumentException {
+            this.paramSupport.setParameter(SipParser.TAG, Buffers.wrap(UUID.randomUUID().toString()));
+            return this;
+        }
+
+        /**
          * Set a parameter on the header.
          * 
          * NOTE: if you want to set a parameter on the URI you need to use the method
@@ -286,6 +345,11 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
          */
         public Builder<T> withTransportWS() throws SipParseException {
             ensureBuilder().withTransportWS();
+            return this;
+        }
+
+        public Builder<T> withTransportWSS() throws SipParseException {
+            ensureBuilder().withTransportWSS();
             return this;
         }
 

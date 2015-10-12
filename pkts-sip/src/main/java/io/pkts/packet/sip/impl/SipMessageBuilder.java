@@ -364,6 +364,14 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
     }
 
     @Override
+    public SipMessage.Builder<T> withNoRoutes() {
+        if (this.routeHeaders != null) {
+            this.routeHeaders.clear();
+        }
+        return this;
+    }
+
+    @Override
     public SipMessage.Builder<T> onTopMostRecordRouteHeader(final Consumer<AddressParametersHeader.Builder<RecordRouteHeader>> f) {
         this.onTopMostRecordRouteBuilder = chainConsumers(this.onTopMostRecordRouteBuilder, f);
         return this;
@@ -462,6 +470,14 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
             this.viaHeaders.add(0, via);
             indexOfVia = addTrackedListHeader(indexOfVia);
         }
+        return this;
+    }
+
+    @Override
+    public SipMessage.Builder<T> withTopMostViaHeader() {
+        this.viaHeaders = ensureList(this.viaHeaders);
+        this.viaHeaders.add(0, null);
+        indexOfVia = addTrackedListHeader(indexOfVia);
         return this;
     }
 
@@ -595,7 +611,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
             } else if (i == indexOfVia){
                 if (this.viaHeaders != null) {
                     for (int j = 0; j < this.viaHeaders.size(); ++j) {
-                        final ViaHeader finalVia = processVia(j, this.viaHeaders.get(j).ensure().toViaHeader());
+                        final ViaHeader finalVia = processVia(j, this.viaHeaders.get(j));
                         msgSize += finalVia.getBufferSize() + 2;
                         if (j == 0) {
                             this.indexOfVia = (short)finalHeaders.size();
@@ -670,11 +686,9 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         msg.write(SipParser.CR);
         msg.write(SipParser.LF);
 
-
-        // final Buffer body = template.getRawContent();
-        // if (body != null) {
-            // body.getBytes(msg);
-        // }
+        if (body != null) {
+            body.getBytes(msg);
+        }
 
         return internalBuild(msg,
                 initialLine,
@@ -691,12 +705,32 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
                 body);
     }
 
-    private ViaHeader processVia(final int index, final ViaHeader via) {
-        if (index == 0) {
-            return invokeViaBuilderFunction(this.onTopMostViaBuilder, via);
+    private ViaHeader processVia(final int index, final SipHeader header) throws SipParseException {
+        if (index > 0 && this.onViaBuilder == null) {
+            if (header == null) {
+                throw new SipParseException("You cannot register an empty Via-header and "
+                        + "then not also register a function for that via. Please refer to javadoc");
+            }
+            return header.ensure().toViaHeader();
         }
 
-        return invokeViaBuilderFunction(this.onViaBuilder, index, via);
+        if (index == 0 && this.onTopMostViaBuilder == null) {
+            if (header == null) {
+                throw new SipParseException("You cannot register an empty top-most Via-header and "
+                        + "then not also register a function for that top-most via. Please refer to the javadoc");
+            }
+            return header.ensure().toViaHeader();
+        }
+
+
+        final ViaHeader.Builder builder = header == null ? ViaHeader.builder() : header.ensure().toViaHeader().copy();
+        if (index == 0) {
+            this.onTopMostViaBuilder.accept(builder);
+        } else {
+            this.onViaBuilder.accept(index, builder);
+        }
+
+        return builder.build();
     }
 
     protected abstract SipInitialLine buildInitialLine() throws SipParseException;
@@ -748,26 +782,6 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         if (header != null && f != null) {
             final SipHeader.Builder<T> b = header.copy();
             f.accept(b);
-            return b.build();
-        }
-        return header;
-    }
-
-    private ViaHeader invokeViaBuilderFunction(final Consumer<ViaHeader.Builder> f, final ViaHeader header) {
-        if (header != null && f != null) {
-            final ViaHeader.Builder b = header.copy();
-            f.accept(b);
-            return b.build();
-        }
-        return header;
-    }
-
-    private ViaHeader invokeViaBuilderFunction(final BiConsumer<Integer, ViaHeader.Builder> f,
-                                               final int index,
-                                               final ViaHeader header) {
-        if (header != null && f != null) {
-            final ViaHeader.Builder b = header.copy();
-            f.accept(index, b);
             return b.build();
         }
         return header;

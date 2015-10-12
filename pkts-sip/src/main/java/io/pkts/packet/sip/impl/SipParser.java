@@ -77,6 +77,8 @@ public class SipParser {
     public static final Buffer MESSAGE = Buffers.wrap("MESSAGE");
     public static final Buffer UPDATE = Buffers.wrap("UPDATE");
 
+    public static final Buffer TAG = Buffers.wrap("tag");
+
     public static final Buffer USER = Buffers.wrap("user");
 
     public static final Buffer TTL = Buffers.wrap("ttl");

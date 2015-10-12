@@ -237,6 +237,7 @@ public interface ViaHeader extends Parameters, SipHeader {
         private static final Buffer tls = Buffers.wrap("TLS");
         private static final Buffer sctp = Buffers.wrap("SCTP");
         private static final Buffer ws = Buffers.wrap("WS");
+        private static final Buffer wss = Buffers.wrap("WSS");
 
         private static final Buffer BRANCH = Buffers.wrap("branch");
         private static final Buffer RECEIVED = Buffers.wrap("received");
@@ -420,6 +421,11 @@ public interface ViaHeader extends Parameters, SipHeader {
 
         public Builder withTransportWS() {
             this.transport = ws.clone();
+            return this;
+        }
+
+        public Builder withTransportWSS() {
+            this.transport = wss.clone();
             return this;
         }
 

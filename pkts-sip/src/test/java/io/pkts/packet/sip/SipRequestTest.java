@@ -19,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -48,6 +49,96 @@ public class SipRequestTest extends PktsTestBase {
     public void testToString() throws Exception {
         final SipRequest req = (SipRequest) parseMessage(RawData.sipInvite);
         assertThat(req.toString().contains("o=user1 53655765 2353687637 IN IP4 127.0.1.1"), is(true));
+    }
+
+    /**
+     * You have the ability to specify an empty Via-header since you may not have all the information
+     * at hand right now so you rather fill out the Via through the
+     * {@link SipMessage.Builder#onTopMostViaHeader(Consumer)} but if you don't register that function
+     * we should blow up on a {@link SipParseException}.
+     *
+     * @throws Exception
+     */
+    @Test(expected = SipParseException.class )
+    public void testBlowUpOnNoFunctionToHandleEmptyTopMostVia() throws Exception {
+        parseMessage(RawData.sipInviteOneRecordRouteHeader)
+                .copy()
+                .withTopMostViaHeader()
+                .build();
+    }
+
+    /**
+     * Same as the {@link SipRequestTest#testBlowUpOnNoFunctionToHandleEmptyTopMostVia()} but we
+     * can also register an empty Via-header for the "non top-most" case by
+     * calling {@link SipMessage.Builder#withTopMostViaHeader(ViaHeader)}
+     * several times.
+     *
+     * @throws Exception
+     */
+    @Test(expected = SipParseException.class )
+    public void testBlowUpOnNoFunctionToHandleEmptyVia() throws Exception {
+        parseMessage(RawData.sipInviteOneRecordRouteHeader)
+                .copy()
+                .withTopMostViaHeader()
+                .withTopMostViaHeader(ViaHeader.withHost("10.11.12.13").withBranch().build())
+                .build();
+    }
+
+    /**
+     * A common scenario for any real application is to create a b2bua application
+     * which receives a request, creates a completely new request using the received
+     * request as a template but will have its own dialog etc.
+     *
+     * Test that we can create such a b2bua-request.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testCreateB2BUARequest() throws Exception {
+        final SipRequest req = parseMessage(RawData.sipInviteThreeRouteHeaders).toRequest();
+        System.err.println(req);
+        System.err.println("========================");
+        final SipRequest b2bua = req.copy()
+                .withTopMostViaHeader()
+                .onTopMostViaHeader(via -> via.withHost("12.34.56.78").withBranch().withTransportWSS().withPort(443))
+                .withTopMostRecordRouteHeader(RecordRouteHeader.withHost("12.34.56.78").withTransportWS().build())
+                .withNoRoutes() // wipe out any routes that existed on the incoming request. We don't trust them
+                .withRouteHeader(RouteHeader.withHost("192.168.0.100").withPort(5070).withTransportUDP().build())
+                .withCallIdHeader(CallIdHeader.create())
+                .onFromHeader(from -> from.withDefaultTag()) // set a new tag since this is a b2bua request
+                .onToHeader(to -> to.withNoTag()) // ensure there is no tag param on the To.
+                .build();
+
+        System.err.println(b2bua);
+
+        // ensure the Vias are correct. We pushed one, which should be at the top
+        // and the one that came in on the original request should be un-touched.
+        assertThat(b2bua.getViaHeaders().size(), is(2));
+        assertViaHeader(b2bua.getViaHeader(), "12.34.56.78", "wss", 443);
+        assertHeader(b2bua.getViaHeaders().get(1), "SIP/2.0/UDP 192.168.8.110:5060;branch=z9hG4bK-18844-1-0");
+
+        // the incoming request had three route headers already but we wiped
+        // them out and only added one of our own...
+        assertThat(b2bua.getRouteHeaders().size(), is(1));
+        assertHeader(b2bua.getRouteHeader(), "<sip:192.168.0.100:5070;transport=udp>");
+
+        // make sure the body is left intact as well.
+        final String expectedContent =
+                "v=0\r\n"
+                + "o=user1 53655765 2353687637 IN IP4 192.168.8.110\r\n"
+                + "s=-\r\n"
+                + "c=IN IP4 192.168.8.110\r\n"
+                + "t=0 0\r\n"
+                + "m=audio 6000 RTP/AVP 0\r\n"
+                + "a=rtpmap:0 PCMU/8000\r\n";
+
+        assertThat(b2bua.getRawContent().toString(), is(expectedContent));
+
+        // and make sure that it actually shows up when we write the message
+        // to stream
+        assertThat("The actual body was not preserved in the raw message output",
+                b2bua.toString().contains(expectedContent), is(true));
+
     }
 
     /**

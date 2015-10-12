@@ -152,6 +152,12 @@ public final class ParametersSupport {
         }
     }
 
+    public void removeParameter(final Buffer name) {
+        if (this.paramMap != null) {
+            this.paramMap.remove(name);
+        }
+    }
+
     public Buffer getParameter(final String name) throws SipParseException {
         return getParameter(Buffers.wrap(name));
     }

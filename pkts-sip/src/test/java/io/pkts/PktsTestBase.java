@@ -11,6 +11,7 @@ import io.pkts.packet.sip.address.Address;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.header.AddressParametersHeader;
 import io.pkts.packet.sip.header.SipHeader;
+import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.packet.sip.impl.SipParser;
 import org.junit.After;
 import org.junit.Before;
@@ -72,6 +73,23 @@ public class PktsTestBase {
 
     public SipMessage parseMessage(final String msg) throws Exception {
         return parseMessage(Buffers.wrap(msg));
+    }
+
+    /**
+     * Helper method for verifying parts of the {@link ViaHeader}
+     *
+     * @param via
+     * @param host
+     * @param transport
+     * @param port
+     */
+    protected void assertViaHeader(final ViaHeader via,
+                                       final String host,
+                                       final String transport,
+                                       final int port) {
+        assertThat(via.getHost().toString(), is(host));
+        assertThat(via.getTransport().toString(), is(transport.toUpperCase()));
+        assertThat(via.getPort(), is(port));
     }
 
     /**
