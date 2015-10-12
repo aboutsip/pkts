@@ -90,7 +90,7 @@ public interface SipHeader extends Cloneable {
 
     default int getBufferSize() {
         // TODO: shouldn't be a default value. Each header should know
-        return getName().capacity() + 2 + getValue().capacity();
+        return getName().capacity() + 2 + getValue().getReadableBytes();
     }
 
 

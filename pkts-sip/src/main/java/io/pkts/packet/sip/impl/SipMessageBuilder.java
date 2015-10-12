@@ -667,7 +667,11 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         // TODO: not correct but will do for now...
         final SipInitialLine initialLine = buildInitialLine();
         final Buffer initialLineBuffer = initialLine.getBuffer();
-        msgSize += initialLineBuffer.capacity() + 2;
+        msgSize += initialLineBuffer.getReadableBytes() + 2;
+
+        if (body != null) {
+            msgSize += body.getReadableBytes();
+        }
 
         // TODO: instead of copying over the bytes like this create
         // a composite buffer...
