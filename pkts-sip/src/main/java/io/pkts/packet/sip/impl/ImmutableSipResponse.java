@@ -60,6 +60,16 @@ public class ImmutableSipResponse extends ImmutableSipMessage implements SipResp
     }
 
     @Override
+    public SipResponse.Builder copy() {
+        final SipResponseLine responseLine = getInitialLineAsObject().toResponseLine();
+        final SipResponse.Builder builder = SipResponse.withStatusCode(responseLine.getStatusCode());
+        builder.withReasonPhrase(responseLine.getReason());
+        builder.withHeaders(this.getAllHeaders());
+        return builder;
+    }
+
+
+    @Override
     public int getStatus() {
         return getInitialLineAsObject().toResponseLine().getStatusCode();
     }

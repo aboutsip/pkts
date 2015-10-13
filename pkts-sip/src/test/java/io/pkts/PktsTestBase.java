@@ -127,7 +127,7 @@ public class PktsTestBase {
         if (transport == null) {
             assertThat(actualTransport, is((Buffer)null));
         } else {
-            assertThat(actualTransport.toString(), is(transport));
+            assertThat(actualTransport.toString().toLowerCase(), is(transport.toLowerCase()));
         }
 
         assertThat(uri.getPort(), is(port));

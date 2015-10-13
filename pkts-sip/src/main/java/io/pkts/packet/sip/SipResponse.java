@@ -151,9 +151,7 @@ public interface SipResponse extends SipMessage {
     }
 
     @Override
-    default Builder copy() {
-        throw new RuntimeException("not implemented yet");
-    }
+    Builder copy();
 
     @Override
     SipResponse clone();

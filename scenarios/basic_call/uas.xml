@@ -80,7 +80,7 @@
       [last_Call-ID:]
       [last_CSeq:]
       Contact: <sip:[local_ip]:[local_port];transport=[transport]>
-      Content-Type: io.sipstack.application.application/sdp
+      Content-Type: application/sdp
       Content-Length: [len]
 
       v=0

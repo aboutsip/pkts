@@ -486,7 +486,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         if (this.viaHeaders != null) {
             this.viaHeaders.remove(0);
         }
-        return null;
+        return this;
     }
 
     private <T> List<T> ensureList(List<T> list) {
@@ -584,6 +584,10 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
     public T build() {
         int msgSize = 2;
 
+        short currentIndexOfVia = indexOfVia;
+        short currentIndexOfRoute = indexOfRoute;
+        short currentIndexOfRecordRoute = indexOfRecordRoute;
+
         final int headerCount = this.headers.size() + sizeOf(viaHeaders) + sizeOf(recordRouteHeaders) + sizeOf(routeHeaders);
         final List<SipHeader> finalHeaders = new ArrayList<>(headerCount);
 
@@ -593,10 +597,21 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
             enforceDefaults();
         }
 
+        // TODO: redo this, it's ugly. Bloody side effect programming & ugly ugly copy-paste crap
+        indexOfTo = -1;
+        indexOfFrom = -1;
+        indexOfCSeq = -1;
+        indexOfCallId = -1;
+        indexOfMaxForwards = -1;
+        indexOfVia = -1;
+        indexOfRoute = -1;
+        indexOfRecordRoute = -1;
+        indexOfContact = -1;
+
         for (int i = 0; i < this.headers.size(); ++i) {
             final SipHeader header = this.headers.get(i);
             if (header != null) {
-                final SipHeader finalHeader = processFinalHeader((short)i, header);
+                final SipHeader finalHeader = processFinalHeader((short)finalHeaders.size(), header);
                 if (finalHeader != null) {
                     if (finalHeader.isContentLengthHeader()) {
                         // not that it actually matters but pretty much
@@ -608,7 +623,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
                         finalHeaders.add(finalHeader);
                     }
                 }
-            } else if (i == indexOfVia){
+            } else if (i == currentIndexOfVia){
                 if (this.viaHeaders != null) {
                     for (int j = 0; j < this.viaHeaders.size(); ++j) {
                         final ViaHeader finalVia = processVia(j, this.viaHeaders.get(j));
@@ -619,7 +634,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
                         finalHeaders.add(finalVia);
                     }
                 }
-            } else if (i == indexOfRecordRoute){
+            } else if (i == currentIndexOfRecordRoute){
                 if (this.recordRouteHeaders != null) {
                     for (int j = 0; j < this.recordRouteHeaders.size(); ++j) {
                         final Consumer<AddressParametersHeader.Builder<RecordRouteHeader>> f =
@@ -632,7 +647,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
                         finalHeaders.add(finalRR);
                     }
                 }
-            } else if (i == indexOfRoute){
+            } else if (i == currentIndexOfRoute){
                 if (this.routeHeaders != null) {
                     for (int j = 0; j < this.routeHeaders.size(); ++j) {
                         final Consumer<AddressParametersHeader.Builder<RouteHeader>> f =
@@ -874,55 +889,6 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         }
 
         return consumer;
-    }
-
-    private interface SipHeaderProducer {
-        SipHeader onHeader(Function<SipHeader, SipHeader.Builder> f, Consumer<SipHeader.Builder> f2);
-
-        static SipHeaderProducer create(final SipHeader header) {
-            return new SipHeaderWrapper(header);
-        }
-
-        static SipHeaderProducer create(final SipHeader.Builder builder) {
-            return new SipHeaderBuilderWrapper(builder);
-        }
-    }
-
-    private static class SipHeaderWrapper implements SipHeaderProducer {
-
-        private final SipHeader header;
-
-        private SipHeaderWrapper(final SipHeader header) {
-            this.header = header;
-        }
-
-        @Override
-        public SipHeader onHeader(final Function<SipHeader, SipHeader.Builder> f, final Consumer<SipHeader.Builder> f2) {
-            if (f != null) {
-                final SipHeader.Builder builder = f.apply(header);
-                if (builder != null) {
-                    return builder.build();
-                }
-            }
-            return header;
-        }
-    }
-
-    private static class SipHeaderBuilderWrapper implements SipHeaderProducer {
-
-        private final SipHeader.Builder builder;
-
-        private SipHeaderBuilderWrapper(final SipHeader.Builder builder) {
-            this.builder = builder;
-        }
-
-        @Override
-        public SipHeader onHeader(final Function<SipHeader, SipHeader.Builder> f, final Consumer<SipHeader.Builder> f2) {
-            if (f2 != null) {
-                f2.accept(builder);
-            }
-            return builder.build();
-        }
     }
 
 }
