@@ -93,6 +93,16 @@ public class ViaHeaderImplTest {
     }
 
     @Test
+    public void testSetRPortAsFlagParameter() throws Exception {
+        final ViaHeader via = ViaHeader.withHost("aboutsip.com")
+                .withTransportTCP()
+                .withBranch()
+                .withRPortFlag().build();
+        assertThat(via.getRPort(), is(-1));
+        assertThat(via.hasRPort(), is(true));
+    }
+
+    @Test
     public void testSetBranch() throws Exception {
         final Buffer buf = Buffers.wrap("SIP/2.0/TCP aboutsip.com;branch=asdf;hello=world");
         ViaHeader via = ViaHeader.frame(buf);
@@ -132,6 +142,8 @@ public class ViaHeaderImplTest {
         assertThat(via.getRPort(), is(port));
         assertThat(via.toString().contains("rport=" + Buffers.wrap(port).toString()), is(true));
     }
+
+
 
     private void assertViaReceived(final String toParse, final String received) throws Exception {
         final Buffer buffer = Buffers.wrap(received);

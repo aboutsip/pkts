@@ -113,6 +113,10 @@ public final class ByteBuffer extends AbstractBuffer {
         return array;
     }
 
+    public byte[] getRawArray() {
+        return this.buffer;
+    }
+
     /**
      * {@inheritDoc}
      */

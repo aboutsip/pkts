@@ -26,6 +26,11 @@ public interface SipResponse extends SipMessage {
      */
     Buffer getReasonPhrase();
 
+    @Override
+    default boolean isResponse() {
+        return true;
+    }
+
     /**
      * Convenience method for checking whether this response is >= 400.
      *
@@ -157,6 +162,16 @@ public interface SipResponse extends SipMessage {
     SipResponse clone();
 
     interface Builder extends SipMessage.Builder<SipResponse> {
+
+        @Override
+        default SipMessage.Builder<SipResponse> toSipResponseBuilder() {
+            return this;
+        }
+
+        @Override
+        default boolean isSipResponseBuilder() {
+            return true;
+        }
 
         Builder withReasonPhrase(String reason);
 

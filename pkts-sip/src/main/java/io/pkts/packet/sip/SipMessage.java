@@ -128,7 +128,7 @@ public interface SipMessage extends Cloneable {
      * @return
      */
     default boolean isRequest() {
-        return true;
+        return false;
     }
 
     /**
@@ -683,6 +683,22 @@ public interface SipMessage extends Cloneable {
      *
      */
     interface Builder<T extends SipMessage> {
+
+        default boolean isSipRequestBuilder() {
+            return false;
+        }
+
+        default boolean isSipResponseBuilder() {
+            return false;
+        }
+
+        default SipMessage.Builder<SipRequest> toSipRequestBuilder() {
+            throw new ClassCastException("Cannot cast " + getClass().getName() + " into a SipRequest builder");
+        }
+
+        default SipMessage.Builder<SipResponse> toSipResponseBuilder() {
+            throw new ClassCastException("Cannot cast " + getClass().getName() + " into a SipResponse builder");
+        }
 
         /**
          * By default, the following headers will automatically be generated if not

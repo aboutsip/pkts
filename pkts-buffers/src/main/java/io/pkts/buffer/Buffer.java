@@ -115,6 +115,10 @@ public interface Buffer extends Cloneable {
      */
     byte[] getArray();
 
+    default byte[] getRawArray() {
+        return getArray();
+    }
+
     /**
      * Same as {@link #readUntil(4096, 'b')}
      *

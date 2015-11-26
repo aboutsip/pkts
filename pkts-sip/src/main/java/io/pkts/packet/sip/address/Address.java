@@ -163,6 +163,11 @@ public interface Address {
         return builder.withHost(assertNotNull(host, "host cannot be null"));
     }
 
+    static Builder withHost(final String host) {
+        final Builder builder = new Builder();
+        return builder.withHost(assertNotNull(host, "host cannot be null"));
+    }
+
     static Builder withURI(final URI uri) {
         final Builder builder = new Builder();
         builder.withURI(uri);

@@ -96,8 +96,7 @@ public class SipRequestTest extends PktsTestBase {
     @Test
     public void testCreateB2BUARequest() throws Exception {
         final SipRequest req = parseMessage(RawData.sipInviteThreeRouteHeaders).toRequest();
-        System.err.println(req);
-        System.err.println("========================");
+
         final SipRequest b2bua = req.copy()
                 .withTopMostViaHeader()
                 .onTopMostViaHeader(via -> via.withHost("12.34.56.78").withBranch().withTransportWSS().withPort(443))
@@ -108,8 +107,6 @@ public class SipRequestTest extends PktsTestBase {
                 .onFromHeader(from -> from.withDefaultTag()) // set a new tag since this is a b2bua request
                 .onToHeader(to -> to.withNoTag()) // ensure there is no tag param on the To.
                 .build();
-
-        System.err.println(b2bua);
 
         // ensure the Vias are correct. We pushed one, which should be at the top
         // and the one that came in on the original request should be un-touched.
@@ -338,6 +335,34 @@ public class SipRequestTest extends PktsTestBase {
         assertThat(
                 invite.getViaHeaders().get(1).toString().startsWith("Via: SIP/2.0/TCP 192.168.0.100;branch=z9hG4bK"),
                 is(true));
+    }
+
+    /**
+     * Ensure that two copies are not actually affecting each other since if they did
+     * we wouldn't have a immutability.
+     *
+     * There was an issue with the internal list of parameters in the Via-header where the
+     * reference of the list was copied, which then obviously was shared between
+     * instances...
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testCreateTwoCopies() throws Exception {
+        final SipRequest invite = parseMessage(RawData.sipInviteOneRecordRouteHeader).toRequest();
+        final SipRequest withRport = invite.copy().onTopMostViaHeader(v -> v.withRPortFlag()).build();
+
+        final ViaHeader via = withRport.getViaHeader();
+        assertThat(via.hasRPort(), is(true));
+        assertThat(via.getRPort(), is(-1));
+        assertThat(via.toString().contains("rport"), is(true));
+
+        final SipRequest noRport = invite.copy().onTopMostViaHeader(v -> v.withHost("hello.com").withParameter("hello", "world")).build();
+        final ViaHeader via2 = noRport.getViaHeader();
+        assertThat(via2.hasRPort(), is(false));
+        assertThat(via2.getRPort(), is(-1));
+        assertThat(via2.toString().contains("rport"), is(false));
+
     }
 
 }

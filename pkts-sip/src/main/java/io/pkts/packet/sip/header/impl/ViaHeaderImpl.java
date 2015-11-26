@@ -12,6 +12,8 @@ import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -76,7 +78,7 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
         this.transport = transport;
         this.host = host;
         this.port = port;
-        this.params = params;
+        this.params = Collections.unmodifiableList(params);
         this.indexOfBranch = indexOfBranch;
         this.indexOfReceived = indexOfReceived;
         this.indexOfRPort = indexOfRPort;
@@ -259,7 +261,7 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
 
     @Override
     public ViaHeader.Builder copy() {
-        return new ViaHeader.Builder(transport, host, port, params, indexOfBranch, indexOfReceived, indexOfRPort);
+        return new ViaHeader.Builder(transport, host, port, new ArrayList<>(params), indexOfBranch, indexOfReceived, indexOfRPort);
     }
 
 }

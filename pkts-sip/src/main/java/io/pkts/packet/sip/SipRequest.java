@@ -43,6 +43,12 @@ public interface SipRequest extends SipMessage {
     default SipRequest toRequest() throws ClassCastException {
         return this;
     }
+
+    @Override
+    default boolean isRequest() {
+        return true;
+    }
+
     /**
      * Factory method for creating a new INVITE request builder.
      * 
@@ -196,6 +202,15 @@ public interface SipRequest extends SipMessage {
 
     interface Builder extends SipMessage.Builder<SipRequest> {
 
+        @Override
+        default SipMessage.Builder<SipRequest> toSipRequestBuilder() {
+            return this;
+        }
+
+        @Override
+        default boolean isSipRequestBuilder() {
+            return true;
+        }
 
         /**
          *

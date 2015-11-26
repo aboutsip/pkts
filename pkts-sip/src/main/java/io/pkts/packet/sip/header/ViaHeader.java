@@ -279,6 +279,11 @@ public interface ViaHeader extends Parameters, SipHeader {
             this.indexOfBranch = indexOfBranch;
             this.indexOfReceived = indexOfReceived;
             this.indexOfRPort = indexOfRPort;
+            if (this.params.size() == 2) {
+                System.err.println("In the fucking builder");
+                System.err.println(params.get(1)[0]);
+                System.err.println(params.get(1)[1]);
+            }
         }
 
         public Builder(final Buffer buffer) throws IOException {
@@ -370,18 +375,54 @@ public interface ViaHeader extends Parameters, SipHeader {
             return this;
         }
 
+        /**
+         * When you send out a request you typically want to add rport as a flag parameter
+         * to indicate to the downstream element that it should fill it out.
+         * @return
+         */
+        public Builder withRPortFlag() {
+            return setRPort(-1);
+        }
+
+        /**
+         * Check to see if this via we are building as the rport
+         * parameter on it.
+         *
+         * @return
+         */
+        public boolean hasRPort() {
+            if (this.indexOfRPort != -1) {
+                return true;
+            }
+
+            this.indexOfRPort = findParameter(RPORT);
+            if (this.indexOfRPort != -1) {
+                return true;
+            }
+
+            return false;
+        }
+
         public Builder withRPort(final int rport) {
+            return setRPort(rport);
+        }
+
+        private Builder setRPort(final int rport) {
             if (this.indexOfRPort == -1) {
                 this.indexOfRPort = findParameter(RPORT);
             }
+
+            final Buffer rportBuffer = rport == -1 ? null : Buffers.wrap(rport);
+
             if (this.indexOfRPort == -1) {
                 this.indexOfRPort = this.params.size();
-                this.params.add(new Buffer[] { RPORT, Buffers.wrap(rport) });
+                this.params.add(new Buffer[] { RPORT, rportBuffer });
             } else {
-                this.params.get(this.indexOfRPort)[1] = Buffers.wrap(rport);
+                this.params.get(this.indexOfRPort)[1] = rportBuffer;
             }
             return this;
         }
+
         public Builder withReceived(final String received) {
             return withReceived(Buffers.wrap(received));
         }
