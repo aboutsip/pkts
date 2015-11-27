@@ -328,6 +328,16 @@ public interface Address {
             return this;
         }
 
+        public Builder withTransport(final Buffer transport) throws SipParseException {
+            ensureURIBuilder().withTransport(transport);
+            return this;
+        }
+
+        public Builder withTransport(final String transport) throws SipParseException {
+            ensureURIBuilder().withTransport(transport);
+            return this;
+        }
+
         /**
          * Set WS as the transport on the wrapped SIP URI (assuming this is a SIP URI that this
          * {@link Address} object is indeed wrapping).

@@ -293,6 +293,16 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
             return this;
         }
 
+        public Builder<T> withTransport(final Buffer transport) throws SipParseException {
+            ensureBuilder().withTransport(transport);
+            return this;
+        }
+
+        public Builder<T> withTransport(final String transport) throws SipParseException {
+            ensureBuilder().withTransport(transport);
+            return this;
+        }
+
         /**
          * Set the transport parameter on the underlying {@link SipURI} to be "tcp".
          * 
