@@ -87,8 +87,6 @@ public class DefaultStreamHandlerTest extends StreamsTestBase {
         assertThat(streamCounter.endCount, is(5));
 
         // the following values have been verified using wireshark
-        final Stream<SipPacket> stream1 = streamCounter.streams.get(0);
-        System.err.println(stream1.getStreamIdentifier());
         assertStream(streamCounter.streams.get(0), 408, 1002719);
         assertStream(streamCounter.streams.get(1), 400, 1003484);
         assertStream(streamCounter.streams.get(2), 315, 1002358);

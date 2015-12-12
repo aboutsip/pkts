@@ -244,10 +244,6 @@ public final class InputStreamBuffer extends AbstractBuffer {
                 actual = this.is.read(bb.array(), localIndex, readAtMost);
             } catch (final Exception e) {
                 e.printStackTrace();
-                System.err.println("Got the stupid exception again");
-                System.err.println("LocalIndex: " + localIndex);
-                System.err.println("ReadAtMost: " + readAtMost);
-                System.exit(1);
             }
             if (actual > 0) {
                 this.upperBoundary += actual;

@@ -62,9 +62,6 @@ public class SipStreamHandler {
         try {
             return new BufferStreamId(msg.getCallIDHeader().getValue());
         } catch (final NullPointerException e) {
-            System.err.println("============= holy shit, we blew up =================");
-            System.err.println(msg);
-            System.err.println("============= holy shit, we blew up =================");
             throw e;
 
         }

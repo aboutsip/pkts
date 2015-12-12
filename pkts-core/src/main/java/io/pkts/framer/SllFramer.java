@@ -123,7 +123,6 @@ public class SllFramer implements Framer<PCapPacket> {
             final byte b15 = test.getByte(15);
             return validatePacketType(b1, b2) && isKnownEtherType(b14, b15);
         } catch (final IndexOutOfBoundsException e) {
-            System.err.println("Strange, we are blowing up all the time...");
             return false;
         } finally {
             buffer.resetReaderIndex();

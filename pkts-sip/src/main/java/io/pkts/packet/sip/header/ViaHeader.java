@@ -279,11 +279,6 @@ public interface ViaHeader extends Parameters, SipHeader {
             this.indexOfBranch = indexOfBranch;
             this.indexOfReceived = indexOfReceived;
             this.indexOfRPort = indexOfRPort;
-            if (this.params.size() == 2) {
-                System.err.println("In the fucking builder");
-                System.err.println(params.get(1)[0]);
-                System.err.println(params.get(1)[1]);
-            }
         }
 
         public Builder(final Buffer buffer) throws IOException {

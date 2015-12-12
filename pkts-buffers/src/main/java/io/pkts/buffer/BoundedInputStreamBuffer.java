@@ -148,9 +148,6 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      * @return
      */
     private int getLocalWriterIndex() {
-        if (this.writerIndex < 0) {
-            System.err.println("Writer index is: " + writerIndex);
-        }
         return this.writerIndex % this.localCapacity;
     }
 
@@ -206,10 +203,6 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
                 actual = this.is.read(this.buffer, localIndex, readAtMost);
             } catch (final Exception e) {
                 e.printStackTrace();
-                System.err.println("Got the stupid exception again");
-                System.err.println("LocalIndex: " + localIndex);
-                System.err.println("ReadAtMost: " + readAtMost);
-                System.exit(1);
             }
             if (actual > 0) {
                 this.upperBoundary += actual;
