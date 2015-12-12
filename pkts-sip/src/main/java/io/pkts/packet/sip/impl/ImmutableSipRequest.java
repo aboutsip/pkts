@@ -75,7 +75,7 @@ public class ImmutableSipRequest extends ImmutableSipMessage implements SipReque
     public SipRequest.Builder copy() {
         final SipRequest.Builder builder = SipRequest.withMethod(getMethod()).withRequestURI(getRequestUri());
         builder.withHeaders(getAllHeaders());
-        builder.withBody(getRawContent());
+        builder.withBody(getContent());
         return builder;
     }
 

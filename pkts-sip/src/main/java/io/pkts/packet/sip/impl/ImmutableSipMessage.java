@@ -17,6 +17,8 @@ import io.pkts.packet.sip.header.RouteHeader;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
+import io.pkts.sdp.SDPFactory;
+import io.pkts.sdp.SdpException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,12 +112,7 @@ public abstract class ImmutableSipMessage implements SipMessage {
     }
 
     @Override
-    public Object getContent() throws SipParseException {
-        return null;
-    }
-
-    @Override
-    public Buffer getRawContent() {
+    public Buffer getContent() {
         return body;
     }
 
@@ -336,7 +333,8 @@ public abstract class ImmutableSipMessage implements SipMessage {
 
     @Override
     public boolean isInitial() throws SipParseException {
-        return false;
+        final ToHeader to = getToHeader();
+        return to.getTag() == null;
     }
 
     @Override

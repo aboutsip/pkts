@@ -132,25 +132,11 @@ public interface SipMessage extends Cloneable {
     }
 
     /**
-     * Returns the content (payload) of the {@link SipMessage} as an
-     * {@link Object}. If the {@link ContentTypeHeader} indicates a content type
-     * that is known (such as an sdp) then an attempt to parse the content into
-     * that type is made. If the payload is unknown then a {@link Buffer}
-     * representing the payload will be returned.
-     * 
-     * @return
-     * @throws SipParseException
-     *             in case anything goes wrong when trying to frame the content
-     *             in any way.
-     */
-    Object getContent() throws SipParseException;
-
-    /**
      * Get the content as a {@link Buffer}.
-     * 
+     *
      * @return
      */
-    Buffer getRawContent();
+    Buffer getContent();
 
     /**
      * Checks whether this {@link SipMessage} is carrying anything in its

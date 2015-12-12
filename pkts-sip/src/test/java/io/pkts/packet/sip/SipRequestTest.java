@@ -129,7 +129,7 @@ public class SipRequestTest extends PktsTestBase {
                 + "m=audio 6000 RTP/AVP 0\r\n"
                 + "a=rtpmap:0 PCMU/8000\r\n";
 
-        assertThat(b2bua.getRawContent().toString(), is(expectedContent));
+        assertThat(b2bua.getContent().toString(), is(expectedContent));
 
         // and make sure that it actually shows up when we write the message
         // to stream

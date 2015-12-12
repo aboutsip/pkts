@@ -6,6 +6,7 @@ package io.pkts;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
@@ -34,8 +35,8 @@ public class PcapOutputStreamTest extends PktsTestBase {
     public void testWritePacketsToFile() throws Exception {
         final InputStream stream = PktsTestBase.class.getResourceAsStream("sipp.pcap");
         final Pcap pcap = Pcap.openStream(stream);
-        // final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final FileOutputStream out = new FileOutputStream("target/hello.pcap");
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        // final FileOutputStream out = new FileOutputStream("target/hello.pcap");
         final PcapOutputStream pcapStream = pcap.createOutputStream(out);
         final TestWriteStreamHandler handler = new TestWriteStreamHandler(pcapStream);
         pcap.loop(handler);
