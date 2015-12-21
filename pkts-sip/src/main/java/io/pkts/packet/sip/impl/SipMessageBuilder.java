@@ -215,6 +215,11 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
     }
 
     @Override
+    public SipMessage.Builder<T> withFromHeader(final String from) {
+        return withFromHeader(FromHeader.frame(Buffers.wrap(from)));
+    }
+
+    @Override
     public SipMessage.Builder<T> onToHeader(final Consumer<AddressParametersHeader.Builder<ToHeader>> f) {
         if (this.onToBuilder != null) {
             this.onToBuilder = this.onToBuilder.andThen(f);
@@ -230,6 +235,11 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
             indexOfTo = addTrackedHeader(indexOfTo, to);
         }
         return this;
+    }
+
+    @Override
+    public SipMessage.Builder<T> withToHeader(final String to) {
+        return withToHeader(ToHeader.frame(Buffers.wrap(to)));
     }
 
     @Override

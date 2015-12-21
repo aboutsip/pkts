@@ -592,6 +592,11 @@ public interface SipMessage extends Cloneable {
         return SipParser.frame(Buffers.wrap(buffer));
     }
 
+    static SipMessage frame(final byte[] buffer) throws SipParseException, IOException {
+        assertNotNull(buffer, "Byte-array cannot be null");
+        return SipParser.frame(Buffers.wrap(buffer));
+    }
+
 
     default int countNoOfHeaders() {
         return getAllHeaders().size();
@@ -813,9 +818,11 @@ public interface SipMessage extends Cloneable {
          * @return
          */
         Builder<T> withFromHeader(FromHeader from);
+        Builder<T> withFromHeader(String from);
 
         Builder<T> onToHeader(Consumer<AddressParametersHeader.Builder<ToHeader>> f);
         Builder<T> withToHeader(ToHeader to);
+        Builder<T> withToHeader(String to);
 
         Builder<T> onContactHeader(Consumer<AddressParametersHeader.Builder<ContactHeader>> f);
         Builder<T> withContactHeader(ContactHeader contact);
