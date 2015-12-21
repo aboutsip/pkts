@@ -4,8 +4,6 @@
 package io.pkts.packet.sip.header.impl;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.buffer.Buffers;
-import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.Address;
 import io.pkts.packet.sip.header.RecordRouteHeader;
 
@@ -20,19 +18,8 @@ public class RecordRouteHeaderImpl extends AddressParametersHeaderImpl implement
      * @param address
      * @param params
      */
-    public RecordRouteHeaderImpl(final Address address, final Buffer params) {
-        super(RecordRouteHeader.NAME, address, params);
-    }
-
-    @Override
-    public RecordRouteHeader clone() {
-        final Buffer buffer = Buffers.createBuffer(1024);
-        transferValue(buffer);
-        try {
-            return RecordRouteHeader.frame(buffer);
-        } catch (final SipParseException e) {
-            throw new RuntimeException("Unable to clone the RecordRoute-header", e);
-        }
+    public RecordRouteHeaderImpl(final Buffer value, final Address address, final Buffer params) {
+        super(RecordRouteHeader.NAME, value, address, params);
     }
 
     @Override
@@ -40,4 +27,19 @@ public class RecordRouteHeaderImpl extends AddressParametersHeaderImpl implement
         return this;
     }
 
+    @Override
+    public RecordRouteHeader clone() {
+        final Buffer value = getValue();
+        final Address address = getAddress();
+        final Buffer params = getRawParams();
+        // TODO: once Buffer is truly immutable we don't actually have to clone, like we don't have to do for Address anymore
+        return new RecordRouteHeaderImpl(value.clone(), address, params.clone());
+    }
+
+    @Override
+    public RecordRouteHeader.Builder copy() {
+        final RecordRouteHeader.Builder builder = RecordRouteHeader.withAddress(getAddress());
+        builder.withParameters(getRawParams().slice());
+        return builder;
+    }
 }

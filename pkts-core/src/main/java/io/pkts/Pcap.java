@@ -70,10 +70,12 @@ public class Pcap {
     public void loop(final PacketHandler callback) throws IOException {
         final ByteOrder byteOrder = this.header.getByteOrder();
         final PcapFramer framer = new PcapFramer(this.header, this.framerManager);
+        int count = 1;
 
         Packet packet = null;
         while ((packet = framer.frame(null, this.buffer)) != null) {
             try {
+                // System.out.println(" - " + (count++));
                 final long time = packet.getArrivalTime();
                 this.framerManager.tick(time);
                 if (this.filter == null) {

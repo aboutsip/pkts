@@ -4,7 +4,6 @@
 package io.pkts.packet.sip.header.impl;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.impl.SipParser;
@@ -29,6 +28,11 @@ public class SipHeaderImpl implements SipHeader {
         this.value = value;
     }
 
+    @Override
+    public SipHeader.Builder<? extends SipHeader> copy() {
+        return new SipHeaderBuilder(name, value);
+    }
+
     /**
      * Subclasses may override this one and are in fact encourage to do so
      * 
@@ -44,7 +48,7 @@ public class SipHeaderImpl implements SipHeader {
      */
     @Override
     public Buffer getValue() {
-        return this.value;
+        return this.value.slice();
     }
 
     @Override
@@ -57,11 +61,12 @@ public class SipHeaderImpl implements SipHeader {
         // by default, everything is assumed to be correct.
         // Subclasses should override this method and
         // check that everything is ok...
-
     }
 
     /**
-     * If this method actually gets called it means that we are the {@inheritDoc}
+     * If this method actually gets called it means that we are the {@link SipHeaderImpl} itself
+     * and that we need to frame it further. Subclasses MUST override this method and simply return
+     * 'this'.
      */
     @Override
     public SipHeader ensure() {
@@ -93,9 +98,11 @@ public class SipHeaderImpl implements SipHeader {
 
     @Override
     public SipHeader clone() {
-        final Buffer buffer = Buffers.createBuffer(1024);
-        transferValue(buffer);
-        return new SipHeaderImpl(this.name.clone(), buffer);
+        // TODO: this will be easier once everything is immutable since you just have to clone the
+        // value buffer and that is it. No need to transfer the value etc.
+        // final Buffer buffer = Buffers.createBuffer(1024);
+        // transferValue(buffer);
+        return new SipHeaderImpl(this.name.clone(), value.clone());
     }
 
 }

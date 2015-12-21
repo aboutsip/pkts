@@ -69,7 +69,7 @@ public interface FragmentListener {
      *         will then be processed like any other frame which then most
      *         likely will end up in registered {@link StreamListener}s. Hence,
      *         even though it is possible to simply just return whatever the
-     *         listener received, the application must then be prepared to
+     *         listener received, the io.sipstack.application.application must then be prepared to
      *         receive fragmented frames.
      */
     IPPacket handleFragment(IPPacket ipPacket);

@@ -5,7 +5,6 @@ package io.pkts.packet.sip.header.impl;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
-import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.CallIdHeader;
 
 import java.util.UUID;
@@ -28,6 +27,10 @@ public final class CallIdHeaderImpl extends SipHeaderImpl implements CallIdHeade
         super(compactForm ? CallIdHeader.COMPACT_NAME : CallIdHeader.NAME, value);
     }
 
+    private CallIdHeaderImpl(final Buffer name, final Buffer value) {
+        super(name, value);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -38,16 +41,18 @@ public final class CallIdHeaderImpl extends SipHeaderImpl implements CallIdHeade
 
     @Override
     public CallIdHeader clone() {
-        try {
-            return CallIdHeader.frame(getValue().clone());
-        } catch (final SipParseException e) {
-            throw new RuntimeException("Unable to clone the CallId-header", e);
-        }
+        final Buffer value = getValue();
+        return new CallIdHeaderImpl(getName(), value);
     }
 
     private static final Buffer generateCallId() {
         // TODO: implement something else...
         return Buffers.wrap(UUID.randomUUID().toString());
+    }
+
+    @Override
+    public CallIdHeader ensure() {
+        return this;
     }
 
     /**
@@ -89,9 +94,5 @@ public final class CallIdHeaderImpl extends SipHeaderImpl implements CallIdHeade
         return true;
     }
 
-    @Override
-    public CallIdHeader ensure() {
-        return this;
-    }
 
 }

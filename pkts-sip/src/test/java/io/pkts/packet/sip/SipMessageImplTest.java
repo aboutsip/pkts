@@ -3,20 +3,20 @@
  */
 package io.pkts.packet.sip;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.ViaHeader;
-
-import java.util.List;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.*;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -171,36 +171,17 @@ public class SipMessageImplTest extends PktsTestBase {
         assertThat(cseq.getMethod().toString(), is("INVITE"));
     }
 
-    /**
-     * Make sure that all our Via-headers can be modified the way we need it.
-     */
-    @Test
-    public void testViaHeaderManipulation() throws Exception {
-        final SipRequest request = (SipRequest) parseMessage(RawData.sipInvite);
-        final ViaHeader topMostVia = request.getViaHeader();
-        assertThat(topMostVia.getBranch().toString(), is("z9hG4bK-16732-1-0"));
-        assertThat(topMostVia.getHost().toString(), is("127.0.1.1"));
-        assertThat(topMostVia.getPort(), is(5060));
-
-        assertTopMostVia(request, "192.168.0.100", 6789, "TCP");
-        assertTopMostVia(request, "192.168.0.101", 1111, "UDP");
-        final String str = request.toString();
-        assertThat(str.contains("Via: SIP/2.0/TCP 192.168.0.100:6789"), is(true));
-        assertThat(str.contains("Via: SIP/2.0/UDP 192.168.0.101:1111"), is(true));
-    }
-
     private void assertTopMostVia(final SipMessage msg, final String host, final int port, final String transport)
             throws Exception {
 
         final ViaHeader via =
-                ViaHeader.with().host(host).port(port).branch(ViaHeader.generateBranch()).transport(transport).build();
+                ViaHeader.withHost(host).withPort(port).withBranch(ViaHeader.generateBranch()).withTransport(transport).build();
         msg.addHeaderFirst(via);
         final ViaHeader topMostVia = msg.getViaHeader();
         assertThat(topMostVia.getBranch(), not((Buffer) null));
         assertThat(topMostVia.getHost().toString(), is(host));
         assertThat(topMostVia.getPort(), is(port));
         assertThat(topMostVia.getTransport().toString(), is(transport));
-
     }
 
 }

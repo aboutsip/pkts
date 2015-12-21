@@ -3,13 +3,14 @@
  */
 package io.pkts.packet.sip.header;
 
-import static io.pkts.packet.sip.impl.PreConditions.assertArgument;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.impl.MaxForwardsHeaderImpl;
 
 import java.io.IOException;
+
+import static io.pkts.packet.sip.impl.PreConditions.assertArgument;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -21,15 +22,7 @@ public interface MaxForwardsHeader extends SipHeader {
 
     int getMaxForwards();
 
-    void setMaxForwards(int value);
-
-    /**
-     * Decrement the value by one. Note, there is no check whether or not the
-     * value goes to zero or even below it.
-     */
-    void decrement();
-
-    public static MaxForwardsHeader frame(final Buffer buffer) throws SipParseException {
+    static MaxForwardsHeader frame(final Buffer buffer) throws SipParseException {
         try {
             final int value = buffer.parseToInt();
             return new MaxForwardsHeaderImpl(value);
@@ -45,6 +38,16 @@ public interface MaxForwardsHeader extends SipHeader {
     @Override
     MaxForwardsHeader clone();
 
+    @Override
+    default boolean isMaxForwardsHeader() {
+        return true;
+    }
+
+    @Override
+    default MaxForwardsHeader toMaxForwardsHeader() {
+        return this;
+    }
+
     static MaxForwardsHeader create(final int max) {
         assertArgument(max >= 0, "The value must be greater or equal to zero");
         return new MaxForwardsHeaderImpl(max);
@@ -57,6 +60,51 @@ public interface MaxForwardsHeader extends SipHeader {
      */
     static MaxForwardsHeader create() {
         return new MaxForwardsHeaderImpl(70);
+    }
+
+    @Override
+    Builder copy();
+
+    class Builder implements SipHeader.Builder<MaxForwardsHeader> {
+
+        private int value;
+
+        public Builder() {
+            this(70);
+        }
+
+        public Builder(final int value) {
+            this.value = value;
+        }
+
+        public Builder withValue(final int value) {
+            this.value = value;
+            return this;
+        }
+
+        public Builder decrement() {
+            --this.value;
+            return this;
+        }
+
+        @Override
+        public SipHeader.Builder<MaxForwardsHeader> withValue(final Buffer value) {
+            try {
+                this.value = value.parseToInt();
+            } catch (final IOException e) {
+                // This shouldn't really be able to happen once
+                // buffers have been re-written to be immutable as well
+                throw new RuntimeException("Unable to extract out the value from the buffer due to IOException");
+            }
+
+            return this;
+        }
+
+        @Override
+        public MaxForwardsHeader build() throws SipParseException {
+            assertArgument(this.value >= 0, "The value must be greater or equal to zero");
+            return new MaxForwardsHeaderImpl(this.value);
+        }
     }
 
 }

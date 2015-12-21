@@ -65,24 +65,29 @@ public final class SIPFramer implements Framer<TransportPacket> {
      * @return
      */
     public static boolean couldBeSipMessage(final Buffer data) throws IOException {
+        if (data.getReadableBytes() < 4) {
+            return false;
+        }
+
         final byte a = data.getByte(0);
         final byte b = data.getByte(1);
         final byte c = data.getByte(2);
-        return a == 'S' && b == 'I' && c == 'P' || // response
-                a == 'I' && b == 'N' && c == 'V' || // INVITE
-                a == 'A' && b == 'C' && c == 'K' || // ACK
-                a == 'B' && b == 'Y' && c == 'E' || // BYE
-                a == 'O' && b == 'P' && c == 'T' || // OPTIONS
-                a == 'C' && b == 'A' && c == 'N' || // CANCEL
-                a == 'M' && b == 'E' && c == 'S' || // MESSAGE
-                a == 'R' && b == 'E' && c == 'G' || // REGISTER
-                a == 'I' && b == 'N' && c == 'F' || // INFO
-                a == 'P' && b == 'R' && c == 'A' || // PRACK
-                a == 'S' && b == 'U' && c == 'B' || // SUBSCRIBE
-                a == 'N' && b == 'O' && c == 'T' || // NOTIFY
-                a == 'U' && b == 'P' && c == 'D' || // UPDATE
-                a == 'R' && b == 'E' && c == 'F' || // REFER
-                a == 'P' && b == 'U' && c == 'B'; // PUBLISH
+        final byte d = data.getByte(3);
+        return a == 'S' && b == 'I' && c == 'P'              || // response
+               a == 'I' && b == 'N' && c == 'V' && d == 'I' || // INVITE
+               a == 'A' && b == 'C' && c == 'K'             || // ACK
+               a == 'B' && b == 'Y' && c == 'E'             || // BYE
+               a == 'O' && b == 'P' && c == 'T' && d == 'I' || // OPTIONS
+               a == 'C' && b == 'A' && c == 'N' && d == 'C' || // CANCEL
+               a == 'M' && b == 'E' && c == 'S' && d == 'S' || // MESSAGE
+               a == 'R' && b == 'E' && c == 'G' && d == 'I' || // REGISTER
+               a == 'I' && b == 'N' && c == 'F' && d == 'O' || // INFO
+               a == 'P' && b == 'R' && c == 'A' && d == 'C' || // PRACK
+               a == 'S' && b == 'U' && c == 'B' && d == 'S' || // SUBSCRIBE
+               a == 'N' && b == 'O' && c == 'T' && d == 'I' || // NOTIFY
+               a == 'U' && b == 'P' && c == 'D' && d == 'A' || // UPDATE
+               a == 'R' && b == 'E' && c == 'F' && d == 'E' || // REFER
+               a == 'P' && b == 'U' && c == 'B' && d == 'L' ; // PUBLISH
 
     }
 

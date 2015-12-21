@@ -93,11 +93,11 @@ public final class PcapRecordHeader {
      * @return
      */
     public long getTotalLength() {
-        return PcapGlobalHeader.getUnsignedInt(8, this.body.getArray(), this.byteOrder);
+        return PcapGlobalHeader.getUnsignedInt(12, this.body.getArray(), this.byteOrder);
     }
 
     public void setTotalLength(final long length) {
-        this.body.setUnsignedInt(8, length);
+        this.body.setUnsignedInt(12, length);
     }
 
     /**
@@ -106,11 +106,11 @@ public final class PcapRecordHeader {
      * @return the length in bytes
      */
     public long getCapturedLength() {
-        return PcapGlobalHeader.getUnsignedInt(12, this.body.getArray(), this.byteOrder);
+        return PcapGlobalHeader.getUnsignedInt(8, this.body.getArray(), this.byteOrder);
     }
 
     public void setCapturedLength(final long length) {
-        this.body.setUnsignedInt(12, length);
+        this.body.setUnsignedInt(8, length);
     }
 
     public void write(final OutputStream out) throws IOException {

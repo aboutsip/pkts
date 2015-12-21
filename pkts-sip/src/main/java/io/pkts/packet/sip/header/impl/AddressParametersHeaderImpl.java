@@ -13,7 +13,7 @@ import io.pkts.packet.sip.header.ToHeader;
 
 
 /**
- * A base class for all headers that implmenets both the {@link Address} and {@link Parameters}
+ * A base class for all headers that implements both the {@link Address} and {@link Parameters}
  * interfaces, such as the {@link ToHeader} and {@link FromHeader}. However, users must be able to
  * create to create other {@link AddressParametersHeader}s that are unknown to this implementation
  * so they can either extend this base class or simply just create a new
@@ -31,8 +31,8 @@ public class AddressParametersHeaderImpl extends ParametersImpl implements Addre
      * @param name
      * @param params
      */
-    public AddressParametersHeaderImpl(final Buffer name, final Address address, final Buffer params) {
-        super(name, params);
+    public AddressParametersHeaderImpl(final Buffer name, final Buffer value, final Address address, final Buffer params) {
+        super(name, value, params);
         this.address = address;
     }
 
@@ -41,33 +41,17 @@ public class AddressParametersHeaderImpl extends ParametersImpl implements Addre
         return this.address;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Buffer getValue() {
-        // TODO: create a composite buffer instead of this crap
-        final StringBuilder sb = new StringBuilder();
-        sb.append(this.address.toString());
-        final Buffer superValue = super.getValue();
-        if (superValue != null) {
-            sb.append(superValue.toString());
-        }
-        return Buffers.wrap(sb.toString());
-    }
-
-
-    @Override
-    protected void transferValue(final Buffer dst) {
-        this.address.getBytes(dst);
-        super.transferValue(dst);
+    public AddressParametersHeader.Builder copy() {
+        AddressParametersHeader.Builder b = AddressParametersHeader.with(getName());
+        b.withParameters(getRawParams());
+        b.withAddress(address);
+        return b;
     }
 
     @Override
     public AddressParametersHeader ensure() {
         return this;
     }
-
 
     /**
      * {@inheritDoc}

@@ -4,9 +4,7 @@
 package io.pkts.packet.sip.header.impl;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.header.MediaTypeHeader;
-import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
 
@@ -26,8 +24,8 @@ public abstract class MediaTypeHeaderImpl extends ParametersImpl implements Medi
      * @param name
      * @param params
      */
-    public MediaTypeHeaderImpl(final Buffer name, final Buffer mType, final Buffer subType, final Buffer params) {
-        super(name, params);
+    public MediaTypeHeaderImpl(final Buffer value, final Buffer name, final Buffer mType, final Buffer subType, final Buffer params) {
+        super(value, name, params);
         this.mType = mType;
         this.subType = subType;
     }
@@ -93,25 +91,6 @@ public abstract class MediaTypeHeaderImpl extends ParametersImpl implements Medi
             throw new RuntimeException("Strange, IOException when accessing the subtype", e);
         }
 
-    }
-
-    /**
-     * 
-     */
-    @Override
-    public Buffer getValue() {
-        // TODO: really need to create composite buffers
-        final StringBuilder sb = new StringBuilder();
-        sb.append(this.mType.toString());
-        sb.append((char) SipParser.SLASH);
-        sb.append(this.subType.toString());
-
-        final Buffer params = super.getValue();
-        if (params != null && !params.isEmpty()) {
-            sb.append(params.toString());
-        }
-
-        return Buffers.wrap(sb.toString());
     }
 
     @Override

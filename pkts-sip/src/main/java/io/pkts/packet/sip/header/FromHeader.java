@@ -68,6 +68,8 @@ public interface FromHeader extends AddressParametersHeader {
 
     Buffer NAME = Buffers.wrap("From");
 
+    Buffer COMPACT_NAME = Buffers.wrap("f");
+
     /**
      * Get the tag parameter.
      * 
@@ -80,6 +82,15 @@ public interface FromHeader extends AddressParametersHeader {
     @Override
     FromHeader clone();
 
+    @Override
+    default boolean isFromHeader() {
+        return true;
+    }
+
+    @Override
+    default FromHeader toFromHeader() {
+        return this;
+    }
 
     /**
      * Frame the value as a {@link FromHeader}.
@@ -88,9 +99,10 @@ public interface FromHeader extends AddressParametersHeader {
      * @return
      * @throws SipParseException in case anything goes wrong while parsing.
      */
-    public static FromHeader frame(final Buffer buffer) throws SipParseException {
+    static FromHeader frame(final Buffer buffer) throws SipParseException {
+        final Buffer original = buffer.slice();
         final Object[] result = AddressParametersHeader.frame(buffer);
-        return new FromHeaderImpl((Address) result[0], (Buffer) result[1]);
+        return new FromHeaderImpl(original, (Address) result[0], (Buffer) result[1]);
     }
 
     /**
@@ -105,25 +117,34 @@ public interface FromHeader extends AddressParametersHeader {
         return Buffers.wrap(Integer.toHexString(new Random().nextInt()));
     }
 
-    static Builder with() {
+    static AddressParametersHeader.Builder<FromHeader> builder() {
         return new Builder();
     }
 
-    static Builder with(final Address address) throws SipParseException {
-        final Builder builder = new Builder();
-        builder.address(address);
-        return builder;
+    static AddressParametersHeader.Builder<FromHeader> withHost(final Buffer host) throws SipParseException {
+        return builder().withHost(host);
     }
 
-    static class Builder extends AddressParametersHeader.Builder<FromHeader> {
+    static AddressParametersHeader.Builder<FromHeader> withHost(final String host) throws SipParseException {
+        return builder().withHost(host);
+    }
+
+    static AddressParametersHeader.Builder<FromHeader> withAddress(final Address address) throws SipParseException {
+        return builder().withAddress(address);
+    }
+
+    @Override
+    AddressParametersHeader.Builder<FromHeader> copy();
+
+    class Builder extends AddressParametersHeader.Builder<FromHeader> {
 
         private Builder() {
             super(NAME);
         }
 
         @Override
-        public FromHeader internalBuild(final Address address, final Buffer params) throws SipParseException {
-            return new FromHeaderImpl(address, params);
+        public FromHeader internalBuild(final Buffer rawValue, final Address address, final Buffer params) throws SipParseException {
+            return new FromHeaderImpl(rawValue, address, params);
         }
     }
 

@@ -440,15 +440,6 @@ public final class SimpleCallStateMachine {
         if (logger.isInfoEnabled()) {
             logger.info("[{}] {} -> {} Event: {}", this.callId, previousState, this.currentState, msg.getInitialLine());
         }
-        try {
-            final String c = msg.getCallIDHeader().getValue().toString();
-            if (c.equals("1259106501_15347925@4.55.2.35")) {
-                logger.error("[{}] {} -> {} Event: {}", this.callId, previousState, this.currentState, msg
-                        .getInitialLine());
-            }
-        } catch (final Exception e) {
-            e.printStackTrace();
-        }
     }
 
     /**

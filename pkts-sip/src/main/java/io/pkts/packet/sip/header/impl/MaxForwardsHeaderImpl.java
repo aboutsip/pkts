@@ -3,7 +3,6 @@
  */
 package io.pkts.packet.sip.header.impl;
 
-import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.header.MaxForwardsHeader;
 
@@ -13,10 +12,10 @@ import io.pkts.packet.sip.header.MaxForwardsHeader;
  */
 public class MaxForwardsHeaderImpl extends SipHeaderImpl implements MaxForwardsHeader {
 
-    private int maxForwards;
+    private final int maxForwards;
 
     public MaxForwardsHeaderImpl(final int value) {
-        super(MaxForwardsHeader.NAME, null);
+        super(MaxForwardsHeader.NAME, Buffers.wrap(value));
         this.maxForwards = value;
     }
 
@@ -29,23 +28,13 @@ public class MaxForwardsHeaderImpl extends SipHeaderImpl implements MaxForwardsH
     }
 
     @Override
-    public Buffer getValue() {
-        return Buffers.wrap(this.maxForwards);
-    }
-
-    @Override
     public MaxForwardsHeader clone() {
         return new MaxForwardsHeaderImpl(this.maxForwards);
     }
 
     @Override
-    public void setMaxForwards(final int value) {
-        this.maxForwards = value;
-    }
-
-    @Override
-    public void decrement() {
-        --this.maxForwards;
+    public MaxForwardsHeader.Builder copy() {
+        return new MaxForwardsHeader.Builder(this.maxForwards);
     }
 
     @Override

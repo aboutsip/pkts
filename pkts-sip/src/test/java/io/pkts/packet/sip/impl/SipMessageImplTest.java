@@ -1,27 +1,26 @@
 package io.pkts.packet.sip.impl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipRequest;
-import io.pkts.packet.sip.address.SipURI;
-import io.pkts.packet.sip.address.URI;
 import io.pkts.packet.sip.header.ContentTypeHeader;
 import io.pkts.packet.sip.header.ExpiresHeader;
+import io.pkts.packet.sip.header.FromHeader;
 import io.pkts.packet.sip.header.RecordRouteHeader;
 import io.pkts.packet.sip.header.RouteHeader;
 import io.pkts.packet.sip.header.SipHeader;
+import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
-
-import java.util.List;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Optional;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
 
 public class SipMessageImplTest extends PktsTestBase {
 
@@ -31,16 +30,6 @@ public class SipMessageImplTest extends PktsTestBase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-
-        // the boundaries between headers and payload has been checked
-        // with wireshark...
-        // final Buffer line = this.sipFrameBuffer.readLine();
-        // final Buffer headers = this.sipFrameBuffer.readBytes(331);
-        // final Buffer payload = this.sipFrameBuffer.slice();
-
-        // final SipInitialLine initialLine = SipInitialLine.parse(line);
-        // assertThat(initialLine.isRequestLine(), is(true));
-
         this.request = (SipRequest) parseMessage(this.sipFrameBuffer);
     }
 
@@ -51,148 +40,213 @@ public class SipMessageImplTest extends PktsTestBase {
     }
 
     /**
-     * If there are no route headers present, we should return an empty list.
-     * Make sure we do!
-     * 
+     *
+     * A user can specify a function to be called when a non-system header is about
+     * to be added to the message under construction via the onHeader-method. Make sure
+     * that NO system headers are actually showing up. In the message below, the
+     * following headers exists on the message:
+     *
+     * <ul>
+     *    <li>Via</li>
+     *    <li>From</li>
+     *    <li>To</li>
+     *    <li>Call-ID</li>
+     *    <li>CSeq</li>
+     *    <li>Contact</li>
+     *    <li>Max-Forwards</li>
+     *    <li>Subject</li>
+     *    <li>Content-Type</li>
+     *    <li>Record-Route</li>
+     *    <li>Content-Length</li>
+     * </ul>
+     *
+     *
      * @throws Exception
      */
     @Test
-    public void testGetRouteHeadersNoRoute() throws Exception {
-        final SipMessage msg = parseMessage(RawData.sipInvite);
-        assertThat(msg.getRouteHeader(), is((RouteHeader) null));
-        assertThat(msg.getRouteHeaders().size(), is(0));
-    }
-
-    /**
-     * Make sure we can extract out all Route-headers as expected.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetRouteHeadersOneRoute() throws Exception {
-        SipMessage msg = parseMessage(RawData.sipInviteOneRouteHeader);
-        final RouteHeader route = msg.getRouteHeader();
-        assertRouteHeader(route, "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-
-        msg = parseMessage(RawData.sipInviteOneRouteHeader);
-        final List<RouteHeader> routes = msg.getRouteHeaders();
-        assertThat(routes.size(), is(1));
-        assertRouteHeader(routes.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-    }
-
-    /**
-     * Make sure we can extract two route headers.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetRouteHeadersTwoRoutes() throws Exception {
-        SipMessage msg = parseMessage(RawData.sipInviteTwoRouteHeaders);
-
-        final RouteHeader route = msg.getRouteHeader();
-        assertRouteHeader(route, "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-
-        List<RouteHeader> routes = msg.getRouteHeaders();
-        assertThat(routes.size(), is(2));
-        assertRouteHeader(routes.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-        assertRouteHeader(routes.get(1), "two", "aboutsip.com", "<sip:two@aboutsip.com;transport=tcp>");
-
-        // also make sure that we get the same result after we have asked for all routes up front
-        msg = parseMessage(RawData.sipInviteTwoRouteHeaders);
-        routes = msg.getRouteHeaders();
-        assertThat(routes.size(), is(2));
-        assertRouteHeader(routes.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-        assertRouteHeader(routes.get(1), "two", "aboutsip.com", "<sip:two@aboutsip.com;transport=tcp>");
-    }
-
-    /**
-     * Make sure we can extract three route headers and where the 3rd header is
-     * NOT directly following the other two headers.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetRouteHeadersThreeRoutes() throws Exception {
-        SipMessage msg = parseMessage(RawData.sipInviteThreeRouteHeaders);
-
-        final RouteHeader route = msg.getRouteHeader();
-        assertRouteHeader(route, "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-
-        List<RouteHeader> routes = msg.getRouteHeaders();
-        assertThat(routes.size(), is(3));
-        assertRouteHeader(routes.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-        assertRouteHeader(routes.get(1), "two", "aboutsip.com", "<sip:two@aboutsip.com;transport=tcp>");
-        assertRouteHeader(routes.get(2), "three", "aboutsip.com", "<sip:three@aboutsip.com;transport=tcp>");
-
-        // also make sure that we get the same result after we have asked for all routes up front
-        msg = parseMessage(RawData.sipInviteThreeRouteHeaders);
-        routes = msg.getRouteHeaders();
-        assertThat(routes.size(), is(3));
-        assertRouteHeader(routes.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-        assertRouteHeader(routes.get(1), "two", "aboutsip.com", "<sip:two@aboutsip.com;transport=tcp>");
-        assertRouteHeader(routes.get(2), "three", "aboutsip.com", "<sip:three@aboutsip.com;transport=tcp>");
-    }
-
-    private void assertRouteHeader(final RouteHeader route, final String user, final String host,
-            final String headerValue) {
-        assertThat(((SipURI) route.getAddress().getURI()).getHost().toString(), is(host));
-        assertThat(((SipURI) route.getAddress().getURI()).getUser().toString(), is(user));
-        assertThat(route.getValue().toString(), is(headerValue));
-        assertThat(route.toString(), is(RouteHeader.NAME + ": " + headerValue));
-    }
-
-    /**
-     * Record-Route headers are typically handled a little differently since
-     * they actually are ordered. These tests focuses on making sure that we
-     * maintain the order of the RR headers as found in the original request.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testGetRecordRouteHeaders() throws Exception {
+    public void testNoSystemHeadersInOnHeaderFunction() throws Exception {
         final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader);
-        final RecordRouteHeader rr = msg.getRecordRouteHeader();
-        assertThat(rr, not((RecordRouteHeader) null));
-        assertThat(rr.toString(), is("Record-Route: <sip:one@aboutsip.com;transport=udp>"));
-        assertThat(rr.getValue().toString(), is("<sip:one@aboutsip.com;transport=udp>"));
-        assertThat(rr.getAddress().getDisplayName().isEmpty(), is(true));
-        final URI uri = rr.getAddress().getURI();
-        assertThat(uri.isSipURI(), is(true));
-        final SipURI sipUri = (SipURI) uri;
-        assertThat(sipUri.getHost().toString(), is("aboutsip.com"));
+        msg.copy().onHeader(h -> {
+            final String failMsg = "A system header showed up in the onHeader-function. Not allowed! Header was: " + h;
+            assertThat(failMsg, h.isSystemHeader(), is(false));
+            return h;
+        });
     }
 
     /**
-     * Make sure that we can parse multiple Record-Route headers.
-     * 
+     * For any of the system headers, if you specify it through its corresponding
+     * withXXXX method, such as {@link io.pkts.packet.sip.SipMessage.Builder#withFromHeader(FromHeader)}
+     * then it will take precedence over any other way you may have specified that header.
+     *
      * @throws Exception
      */
     @Test
-    public void testGetRecordRouteHeadersThreeRRs() throws Exception {
-        final SipMessage msg = parseMessage(RawData.sipInviteThreeRecordRoutes);
-        final List<RecordRouteHeader> headers = msg.getRecordRouteHeaders();
-        assertThat(headers.size(), is(3));
-        assertRecordRouteHeader(headers.get(0), "one", "aboutsip.com", "<sip:one@aboutsip.com;transport=udp>");
-        assertRecordRouteHeader(headers.get(1), "two", "aboutsip.com", "<sip:two@aboutsip.com;transport=tcp>");
-        assertRecordRouteHeader(headers.get(2), "three", "aboutsip.com", "<sip:three@aboutsip.com;transport=tcp>");
+    public void testSpecifyFromHeader() throws Exception {
+        SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader);
+        assertThat(msg.getFromHeader().getValue().toString(), is("sipp <sip:sipp@127.0.0.1:5060>;tag=5647SIPpTag001"));
+
+
+        msg = msg.copy().withFromHeader(FromHeader.withHost("pkts.io").withUser("hello").build()).build();
+        assertThat(msg.getFromHeader().getValue().toString(), is("sip:hello@pkts.io"));
+
+        // also make sure you can still manipulate it
+        msg = msg.copy()
+                .withFromHeader(FromHeader.withHost("aboutsip.com").withUser("hello").build())
+                .onFromHeader(f -> f.withPort(6789).withDisplayName("Alice"))
+                .build();
+        assertThat(msg.getFromHeader().getValue().toString(), is("Alice <sip:hello@aboutsip.com:6789>"));
+
+        // you should be able to specify any System header through the withHeader-generic way
+        msg = msg.copy()
+                .withHeader(SipHeader.create("From", "sip:bob@foo.com"))
+                .onFromHeader(f -> f.withDisplayName("BOB"))
+                .build();
+        assertThat(msg.getFromHeader().getValue().toString(), is("BOB <sip:bob@foo.com>"));
     }
 
-    private void assertRecordRouteHeader(final RecordRouteHeader route, final String user, final String host,
-            final String headerValue) {
-        assertThat(((SipURI) route.getAddress().getURI()).getHost().toString(), is(host));
-        assertThat(((SipURI) route.getAddress().getURI()).getUser().toString(), is(user));
-        assertThat(route.getValue().toString(), is(headerValue));
-        assertThat(route.toString(), is(RecordRouteHeader.NAME + ": " + headerValue));
+    /**
+     * Make sure that we can manipulate the from-header. Also make sure that we can
+     * register multiple functions that will get called in a chain...
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testManipulateFromHeader() throws Exception {
+        SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader);
+
+        assertThat(msg.getFromHeader().getAddress().getDisplayName().toString(), is("sipp"));
+        assertThat(msg.getFromHeader().getValue().toString(), is("sipp <sip:sipp@127.0.0.1:5060>;tag=5647SIPpTag001"));
+
+        // the mere act of specifying a function on the onFromHeader indicates
+        // that you wish to change it so therefore you will be getting
+        // a builder object right away. This is true for all system
+        // headers.
+        msg = msg.copy().onFromHeader(from -> from.withDisplayName("Nisse")).build();
+        assertThat(msg.getFromHeader().getAddress().getDisplayName().toString(), is("Nisse"));
+        assertThat(msg.getFromHeader().getValue().toString(), is("Nisse <sip:sipp@127.0.0.1:5060>;tag=5647SIPpTag001"));
+
+        // now, make sure that you can specify multiple functions that will be called in a chain...
+        // Those should be called in the same order they were registered so since both
+        // of them manipulates the display name, the last transformation "wins"
+        msg = msg.copy().onFromHeader(from -> from.withDisplayName("Apa")).onFromHeader(from -> from.withDisplayName("Kalle")).build();
+        assertThat(msg.getFromHeader().getAddress().getDisplayName().toString(), is("Kalle"));
+        assertThat(msg.getFromHeader().getValue().toString(), is("Kalle <sip:sipp@127.0.0.1:5060>;tag=5647SIPpTag001"));
+
+        // in this test, there are still two functions chained together but since they
+        // are changing different things both of the changes will make it into the
+        // final value
+        msg = msg.copy().onFromHeader(from -> from.withUser("alice")).onFromHeader(from -> from.withHost("pkts.io")).build();
+        assertThat(msg.getFromHeader().getAddress().getDisplayName().toString(), is("Kalle"));
+        assertThat(msg.getFromHeader().getValue().toString(), is("Kalle <sip:alice@pkts.io:5060>;tag=5647SIPpTag001"));
+    }
+
+    /**
+     * See {@link SipMessageImplTest#testSpecifyFromHeader()}
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSpecifyToHeader() throws Exception {
+        SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader);
+        assertThat(msg.getToHeader().getValue().toString(), is("sut <sip:service@127.0.0.1:6060>"));
+
+        msg = msg.copy().withToHeader(ToHeader.withHost("pkts.io").withUser("hello").build()).build();
+        assertThat(msg.getToHeader().getValue().toString(), is("sip:hello@pkts.io"));
+
+        // also make sure you can still manipulate it
+        msg = msg.copy()
+                .withToHeader(ToHeader.withHost("aboutsip.com").withUser("hello").build())
+                .onToHeader(f -> f.withPort(6789).withDisplayName("Alice"))
+                .build();
+        assertThat(msg.getToHeader().getValue().toString(), is("Alice <sip:hello@aboutsip.com:6789>"));
+
+        // you should be able to specify any System header through the withHeader-generic way
+        msg = msg.copy()
+                .withHeader(SipHeader.create("To", "sip:bob@foo.com"))
+                .onToHeader(f -> f.withDisplayName("BOB"))
+                .build();
+        assertThat(msg.getToHeader().getValue().toString(), is("BOB <sip:bob@foo.com>"));
+    }
+
+    /**
+     * Make sure that we can manipulate the to-header. Also make sure that we can
+     * register multiple functions that will get called in a chain...
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testManipulateToHeader() throws Exception {
+        SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader);
+
+        assertThat(msg.getToHeader().getAddress().getDisplayName().toString(), is("sut"));
+        assertThat(msg.getToHeader().getValue().toString(), is("sut <sip:service@127.0.0.1:6060>"));
+
+        // the mere act of specifying a function on the onFromHeader indicates
+        // that you wish to change it so therefore you will be getting
+        // a builder object right away. This is true for all system
+        // headers.
+        msg = msg.copy().onToHeader(to -> to.withDisplayName("Nisse")).build();
+        assertThat(msg.getToHeader().getAddress().getDisplayName().toString(), is("Nisse"));
+        assertThat(msg.getToHeader().getValue().toString(), is("Nisse <sip:service@127.0.0.1:6060>"));
+
+        // now, make sure that you can specify multiple functions that will be called in a chain...
+        // Those should be called in the same order they were registered so since both
+        // of them manipulates the display name, the last transformation "wins"
+        msg = msg.copy().onToHeader(to -> to.withDisplayName("Apa")).onToHeader(to -> to.withDisplayName("Kalle")).build();
+        assertThat(msg.getToHeader().getAddress().getDisplayName().toString(), is("Kalle"));
+        assertThat(msg.getToHeader().getValue().toString(), is("Kalle <sip:service@127.0.0.1:6060>"));
+
+        // in this test, there are still two functions chained together but since they
+        // are changing different things both of the changes will make it into the
+        // final value
+        msg = msg.copy().onToHeader(to -> to.withUser("alice")).onToHeader(to -> to.withHost("pkts.io")).build();
+        assertThat(msg.getToHeader().getAddress().getDisplayName().toString(), is("Kalle"));
+        assertThat(msg.getToHeader().getValue().toString(), is("Kalle <sip:alice@pkts.io:6060>"));
+    }
+
+    /**
+     * Ensure so that we can drop a header from the message we use a copy/template.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testDropHeader() throws Exception {
+        SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader);
+
+        assertThat(msg.getAllHeaders().size(), is(11));
+        assertThat(msg.toString().contains("Subject: Performance Test"), is(true));
+        assertThat(msg.getHeader("Subject").get().getValue().toString(), is("Performance Test"));
+        System.err.println(msg);
+        System.err.println("============");
+
+        msg = msg.copy().onHeader(h -> {
+            // Drop the Subject header
+            if (h.getNameStr().equals("Subject")) {
+                return null;
+            }
+
+            // all else, include as is...
+            return h;
+        }).build();
+        System.err.println(msg);
+
+        assertThat(msg.getAllHeaders().size(), is(10));
+        assertThat(msg.getHeader("Subject").isPresent(), is(false));
+        assertThat(msg.toString().contains("Subject: Performance Test"), is(false));
+
     }
 
     @Test
     public void testSetMaxForwardsHeader() throws Exception {
-        final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader);
+        SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader);
         assertThat(msg.toString().contains("Max-Forwards: 70"), is(true));
-        msg.getMaxForwards().setMaxForwards(55);
+
+        msg = msg.copy().onMaxForwardsHeader(max -> max.withValue(55)).build();
+
         assertThat(msg.toString().contains("Max-Forwards: 55"), is(true));
-        msg.getMaxForwards().setMaxForwards(32);
-        assertThat(msg.toBuffer().toString().contains("Max-Forwards: 32"), is(true));
+
+        msg = msg.copy().onMaxForwardsHeader(max -> max.withValue(32)).build();
+        assertThat(msg.toString().contains("Max-Forwards: 32"), is(true));
     }
 
     @Test
@@ -222,23 +276,23 @@ public class SipMessageImplTest extends PktsTestBase {
         assertThat(from.getValue(), is(Buffers.wrap("sipp <sip:sipp@127.0.1.1:5060>;tag=16732SIPpTag001")));
 
         // should also be able to do like so
-        from = this.request.getHeader(Buffers.wrap("From"));
+        from = this.request.getHeader(Buffers.wrap("From")).get();
         assertThat(from.getName(), is(Buffers.wrap("From")));
         assertThat(from.getValue(), is(Buffers.wrap("sipp <sip:sipp@127.0.1.1:5060>;tag=16732SIPpTag001")));
 
         // Grab the Via header
-        final SipHeader via = this.request.getHeader(Buffers.wrap("Via"));
+        final SipHeader via = this.request.getHeader(Buffers.wrap("Via")).get();
         assertThat(via.getName(), is(Buffers.wrap("Via")));
         assertThat(via.getValue(), is(Buffers.wrap("SIP/2.0/UDP 127.0.1.1:5060;branch=z9hG4bK-16732-1-0")));
 
         // Lets skip a few headers. The contact header comes further
         // into the message
-        final SipHeader contact = this.request.getHeader(Buffers.wrap("Contact"));
+        final SipHeader contact = this.request.getHeader(Buffers.wrap("Contact")).get();
         assertThat(contact.getName(), is(Buffers.wrap("Contact")));
         assertThat(contact.getValue(), is(Buffers.wrap("sip:sipp@127.0.1.1:5060")));
 
         // fetch a header that doesn't exist.
-        assertThat(this.request.getHeader("Whatever"), is((SipHeader) null));
+        assertThat(this.request.getHeader("Whatever").isPresent(), is(false));
 
         // this message does not have a Record-Route header
         final RecordRouteHeader rr = this.request.getRecordRouteHeader();
@@ -251,26 +305,26 @@ public class SipMessageImplTest extends PktsTestBase {
         // and the purpose with that is that now that we ask for a header that
         // appear before the contact, we should actually find it in the internal
         // parsed storage
-        final SipHeader callId = this.request.getHeader(Buffers.wrap("Call-ID"));
+        final SipHeader callId = this.request.getHeader(Buffers.wrap("Call-ID")).get();
         assertThat(callId.getName(), is(Buffers.wrap("Call-ID")));
         assertThat(callId.getValue(), is(Buffers.wrap("1-16732@127.0.1.1")));
 
         // ask for something that doesn't exist...
         // which would have caused us to go through everything
         // in the headers buffer...
-        assertThat(this.request.getHeader(Buffers.wrap("Whatever")), is((SipHeader) null));
+        assertThat(this.request.getHeader(Buffers.wrap("Whatever")), is(Optional.empty()));
 
         // but of course, we should still be able to ask
         // for anything we want
-        final SipHeader maxForwards = this.request.getHeader(Buffers.wrap("Max-Forwards"));
+        final SipHeader maxForwards = this.request.getHeader(Buffers.wrap("Max-Forwards")).get();
         assertThat(maxForwards.getName(), is(Buffers.wrap("Max-Forwards")));
         assertThat(maxForwards.getValue(), is(Buffers.wrap("70")));
 
-        final SipHeader contentLength = this.request.getHeader(Buffers.wrap("Content-Length"));
+        final SipHeader contentLength = this.request.getHeader(Buffers.wrap("Content-Length")).get();
         assertThat(contentLength.getName(), is(Buffers.wrap("Content-Length")));
         assertThat(contentLength.getValue(), is(Buffers.wrap("129")));
 
-        final SipHeader contentType = this.request.getHeader(Buffers.wrap("Content-Type"));
+        final SipHeader contentType = this.request.getHeader(Buffers.wrap("Content-Type")).get();
         assertThat(contentType.getName(), is(Buffers.wrap("Content-Type")));
         assertThat(contentType.getValue(), is(Buffers.wrap("application/sdp")));
 
@@ -338,14 +392,9 @@ public class SipMessageImplTest extends PktsTestBase {
         sb.append("Expires: 3600\r\n");
         sb.append("Content-Length: 0\r\n");
 
-        final SipMessageImpl register = (SipMessageImpl) SipMessage.frame(sb.toString());
-        final ExpiresHeader expires = (ExpiresHeader) register.getSipHeader(ExpiresHeader.NAME);
+        final SipMessage register = SipMessage.frame(sb.toString());
+        final ExpiresHeader expires = (ExpiresHeader) register.getHeader(ExpiresHeader.NAME).get().ensure();
         assertThat(expires.getExpires(), is(3600));
-
-        // make sure we do not re-frame it, hence, we should be getting back the VERY
-        // SAME REFERENCE as the header above.
-        final ExpiresHeader expires2 = (ExpiresHeader) register.getSipHeader(ExpiresHeader.NAME);
-        assertThat(expires == expires2, is(true));
     }
 
 }

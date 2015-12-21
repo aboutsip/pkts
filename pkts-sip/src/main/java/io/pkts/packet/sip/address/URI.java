@@ -37,6 +37,11 @@ public interface URI {
      */
     void getBytes(Buffer dst);
 
+    default SipURI toSipURI() {
+        throw new ClassCastException("Unable to cast " + this.getClass().getName() + " into a " + SipURI.class.getName());
+    }
+
+
     /**
      * 
      * @param buffer
@@ -59,6 +64,23 @@ public interface URI {
     }
 
     URI clone();
+
+    /**
+     * All URIs are immutable so if you wish to change it you need to
+     * obtain a copy of it which will return a new builder that allows
+     * you to change and build a new URI.
+     *
+     * @return
+     */
+    Builder<? extends URI> copy();
+
+    class Builder<T extends URI> {
+
+        T build() {
+            return null;
+        }
+
+    }
 
 
 }

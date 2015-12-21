@@ -4,9 +4,7 @@
 package io.pkts.packet.sip.header.impl;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.header.CSeqHeader;
-import io.pkts.packet.sip.impl.SipParser;
 
 
 /**
@@ -35,6 +33,10 @@ public final class CSeqHeaderImpl extends SipHeaderImpl implements CSeqHeader {
         return this.method;
     }
 
+    @Override
+    public CSeqHeader.Builder copy() {
+        return CSeqHeader.withMethod(this.method).withCSeq(this.cseqNumber);
+    }
     /**
      * {@inheritDoc}
      */
@@ -43,22 +45,10 @@ public final class CSeqHeaderImpl extends SipHeaderImpl implements CSeqHeader {
         return this.cseqNumber;
     }
 
-    @Override
-    public Buffer getValue() {
-        if (super.getValue() != null) {
-            return super.getValue();
-        }
-
-        final int size = Buffers.stringSizeOf(this.cseqNumber);
-        final Buffer value = Buffers.createBuffer(size + 1 + this.method.getReadableBytes());
-        value.writeAsString(this.cseqNumber);
-        value.write(SipParser.SP);
-        this.method.getBytes(value);
-        return value;
-    }
 
     @Override
     public CSeqHeader clone() {
+        // TODO: no need to clone once the Buffer is truly immutable.
         return new CSeqHeaderImpl(this.cseqNumber, this.method.clone(), getValue().clone());
     }
 

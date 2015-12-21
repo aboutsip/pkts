@@ -35,7 +35,7 @@
       Max-Forwards: 70
       Subject: Performance Test
       X-Twilio-Token: asdfasdfasdf
-      Content-Type: application/sdp
+      Content-Type: io.sipstack.application.application/sdp
       Content-Length: [len]
 
       v=0

@@ -14,6 +14,8 @@ public interface ContactHeader extends AddressParametersHeader {
 
     Buffer NAME = Buffers.wrap("Contact");
 
+    Buffer COMPACT_NAME = Buffers.wrap("m");
+
     @Override
     ContactHeader clone();
 
@@ -21,16 +23,28 @@ public interface ContactHeader extends AddressParametersHeader {
         return new Builder();
     }
 
-    static Builder with(final Address address) throws SipParseException {
+    static Builder withAddress(final Address address) throws SipParseException {
         final Builder builder = new Builder();
-        builder.address(address);
+        builder.withAddress(address);
         return builder;
     }
 
-    static Builder with(final SipURI uri) throws SipParseException {
+    static Builder withHost(final Buffer host) throws SipParseException {
         final Builder builder = new Builder();
-        final Address address = Address.with(uri.clone()).build();
-        builder.address(address);
+        builder.withHost(host);
+        return builder;
+    }
+
+    static Builder withHost(final String host) throws SipParseException {
+        final Builder builder = new Builder();
+        builder.withHost(host);
+        return builder;
+    }
+
+    static Builder withSipURI(final SipURI uri) throws SipParseException {
+        final Builder builder = new Builder();
+        final Address address = Address.withURI(uri).build();
+        builder.withAddress(address);
         return builder;
     }
 
@@ -41,20 +55,34 @@ public interface ContactHeader extends AddressParametersHeader {
      * @return
      * @throws SipParseException in case anything goes wrong while parsing.
      */
-    public static ContactHeader frame(final Buffer buffer) throws SipParseException {
+    static ContactHeader frame(final Buffer buffer) throws SipParseException {
+        final Buffer original = buffer.slice();
         final Object[] result = AddressParametersHeader.frame(buffer);
-        return new ContactHeaderImpl((Address) result[0], (Buffer) result[1]);
+        return new ContactHeaderImpl(original, (Address) result[0], (Buffer) result[1]);
     }
 
-    static class Builder extends AddressParametersHeader.Builder<ContactHeader> {
+    @Override
+    Builder copy();
+
+    @Override
+    default boolean isContactHeader() {
+        return true;
+    }
+
+    @Override
+    default ContactHeader toContactHeader() {
+        return this;
+    }
+
+    class Builder extends AddressParametersHeader.Builder<ContactHeader> {
 
         private Builder() {
             super(NAME);
         }
 
         @Override
-        public ContactHeader internalBuild(final Address address, final Buffer params) throws SipParseException {
-            return new ContactHeaderImpl(address, params);
+        public ContactHeader internalBuild(final Buffer rawValue, final Address address, final Buffer params) throws SipParseException {
+            return new ContactHeaderImpl(rawValue, address, params);
         }
     }
 

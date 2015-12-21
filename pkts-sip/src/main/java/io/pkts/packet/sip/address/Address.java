@@ -3,16 +3,22 @@
  */
 package io.pkts.packet.sip.address;
 
-import static io.pkts.packet.sip.impl.PreConditions.assertArgument;
-import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
-import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
-import static io.pkts.packet.sip.impl.PreConditions.ifNull;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.buffer.ByteNotFoundException;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.impl.AddressImpl;
+import io.pkts.packet.sip.impl.SipParser;
+
+import java.io.IOException;
+
+import static io.pkts.packet.sip.impl.PreConditions.assertArgument;
+import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
+import static io.pkts.packet.sip.impl.PreConditions.ifNull;
 
 /**
+ * Represents an address and like everything else, it is an immutable class.
+ *
  * @author jonas@jonasborjesson.com
  */
 public interface Address {
@@ -42,58 +48,315 @@ public interface Address {
 
     void getBytes(Buffer dst);
 
-    static AddressBuilder with() {
-        return new AddressBuilder();
+    /**
+     * An {@link Address} is an immutable object so if you wish to change something
+     * you have to create a copy of it.
+     *
+     * @return
+     */
+    Builder copy();
+
+    static Address frame(final String buffer) throws SipParseException, IndexOutOfBoundsException, IOException {
+        return frame(Buffers.wrap(buffer));
     }
 
-    static AddressBuilder with(final URI uri) {
-        return new AddressBuilder(assertNotNull(uri, "URI cannot be null"));
-    }
+    /**
+     *
+     * Parses a SIP "name-addr" as defined by RFC3261 section 25.1:
+     *
+     * <pre>
+     * name-addr      =  [ display-name ] LAQUOT addr-spec RAQUOT
+     * addr-spec      =  SIP-URI / SIPS-URI / absoluteURI
+     * display-name   =  *(token LWS)/ quoted-string
+     * </pre>
+     *
+     * @param buffer
+     * @return
+     * @throws SipParseException
+     * @throws IOException
+     */
+    static Address frame(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
+            IOException {
+        SipParser.consumeWS(buffer);
+        final Buffer original = buffer.slice();
 
-    static class AddressBuilder {
-
-        private URI uri;
-        private Buffer displayName;
-
-        // the user may not want to first go off and create a SipURI
-        // only to pass it in here, it is annoying and the most common
-        // use case is to create an address with a SipURI "in" it. Hence,
-        // the user should be able to do so without having to call
-        // a gazzilion other crap just to make that use case happen.
-        private Buffer user;
-        private Buffer host;
-        private int port = -1;
-
-        private AddressBuilder() {
-            // left empty intentionally
+        boolean doubleQuote = false;
+        if (buffer.peekByte() == SipParser.DQUOT) {
+            doubleQuote = true;
         }
 
-        private AddressBuilder(final URI uri) {
-            this.uri = uri;
+        final Buffer displayName = SipParser.consumeDisplayName(buffer);
+        boolean leftAngleBracket = true;
+
+        // handle the case of an address that looks like:
+        // "" <sip:alice@example.com>
+        // where the two double quotes is the ones that
+        // caused a problem. This checks for that case and
+        // consumes any potential white space that is left
+        // after the consumption of that weird display name
+        if (doubleQuote && displayName.isEmpty()) {
+            SipParser.consumeWS(buffer);
+        }
+
+        // if no display name, then there may be a '<' present
+        // and if so, consume it.
+        if (displayName.isEmpty() && buffer.peekByte() == SipParser.LAQUOT) {
+            buffer.readByte();
+        } else if (!displayName.isEmpty()) {
+            // if display name, we DO expect a '<'. Note, there may or may
+            // not be white space before the <
+            SipParser.consumeWS(buffer);
+            SipParser.expect(buffer, SipParser.LAQUOT);
+        } else {
+            leftAngleBracket = false;
+        }
+
+        // if there is no angle bracket then we are not protected
+        // by the '<' '>' construct so then we must actually break
+        // when we hit a ';' or a '?' since those would then be part
+        // of the header and not the URI
+        Buffer addrSpec = null;
+        if (!leftAngleBracket) {
+            try {
+                final int index = buffer.indexOf(1024, SipParser.SEMI, SipParser.QUESTIONMARK, SipParser.CR,
+                        SipParser.LF);
+
+                if (index >= 0) {
+                    final Buffer temp = buffer.readBytes(index - buffer.getReaderIndex());
+                    addrSpec = SipParser.consumeAddressSpec(temp);
+                } else {
+                    // none of the bytes we were looking for was found
+                    // so we will just consume the entire buffer
+                    addrSpec = SipParser.consumeAddressSpec(buffer);
+                }
+
+            } catch (final ByteNotFoundException e) {
+                throw new SipParseException(buffer.getReaderIndex(),
+                        "Unable to parse the uri (addr-spec) portion of the address");
+            }
+        } else {
+            addrSpec = SipParser.consumeAddressSpec(buffer);
+        }
+
+        if (addrSpec == null) {
+            throw new SipParseException(buffer.getReaderIndex(), "Unable to find the name-addr portion");
+        }
+
+        if (displayName.isEmpty() && buffer.hasReadableBytes() && buffer.peekByte() == SipParser.RAQUOT) {
+            buffer.readByte();
+        } else if (!displayName.isEmpty()) {
+            // if display name, we DO expect a '>'
+            SipParser.expect(buffer, SipParser.RAQUOT);
+        }
+
+        final URI uri = URI.frame(addrSpec);
+
+        return new AddressImpl(original, displayName, uri);
+    }
+
+    static Builder builder() {
+        return new Builder();
+    }
+
+    static Builder withHost(final Buffer host) {
+        final Builder builder = new Builder();
+        return builder.withHost(assertNotNull(host, "host cannot be null"));
+    }
+
+    static Builder withHost(final String host) {
+        final Builder builder = new Builder();
+        return builder.withHost(assertNotNull(host, "host cannot be null"));
+    }
+
+    static Builder withURI(final URI uri) {
+        final Builder builder = new Builder();
+        builder.withURI(uri);
+        return builder;
+    }
+
+    class Builder {
+
+        private SipURI.Builder uriBuilder;
+        private Buffer displayName;
+
+        private Builder() {
+            // left empty intentionally
         }
 
         /**
          * Use this user for the {@link SipURI} that will be part of this {@link Address}. See
-         * {@link #host(Buffer)} for more information.
+         * {@link #withHost(Buffer)} for more information.
          * 
          * @param user
          * @return
          */
-        public AddressBuilder user(final Buffer user) {
-            this.user = user;
+        public Builder withUser(final Buffer user) {
+            ensureURIBuilder().withUser(user);
+            return this;
+        }
+
+        public Builder withUser(final String user) {
+            ensureURIBuilder().withUser(user);
             return this;
         }
 
         /**
          * Use this port for the {@link SipURI} that will be part of this {@link Address}. See
-         * {@link #host(Buffer)} for more information.
+         * {@link #withHost(Buffer)} for more information.
          * 
          * @param port
          * @return
          */
-        public AddressBuilder port(final int port) {
-            assertArgument(port > 0 || port == -1, "Port must be greater than zero or negative one (use default)");
-            this.port = port;
+        public Builder withPort(final int port) {
+            ensureURIBuilder().withPort(port);
+            return this;
+        }
+
+        /**
+         * Set a parameter on the URI within the {@link Address} object.
+         *
+         * @param name
+         * @param value
+         * @return
+         * @throws SipParseException
+         * @throws IllegalArgumentException
+         */
+        public Builder withURIParameter(final Buffer name, final Buffer value) throws SipParseException,
+                IllegalArgumentException {
+            ensureURIBuilder().withParameter(name, value);
+            return this;
+        }
+
+        /**
+         * Set a parameter on the URI within the {@link Address} object.
+         *
+         * @param name
+         * @param value
+         * @return
+         * @throws SipParseException
+         * @throws IllegalArgumentException
+         */
+        public Builder withURIParameter(final String name, final String value) throws SipParseException,
+                IllegalArgumentException {
+            ensureURIBuilder().withParameter(name, value);
+            return this;
+        }
+
+        /**
+         * Set a parameter on the URI within the {@link Address} object.
+         *
+         * @param name
+         * @param value
+         * @return
+         * @throws SipParseException
+         * @throws IllegalArgumentException
+         */
+        public Builder withURIParameter(final String name, final int value) throws SipParseException,
+                IllegalArgumentException {
+            ensureURIBuilder().withParameter(name, value);
+            return this;
+        }
+
+        /**
+         * Set a parameter on the URI within the {@link Address} object.
+         *
+         * @param name
+         * @param value
+         * @return
+         * @throws SipParseException
+         * @throws IllegalArgumentException
+         */
+        public Builder withURIParameter(final Buffer name, final int value) throws SipParseException,
+                IllegalArgumentException {
+            ensureURIBuilder().withParameter(name, value);
+            return this;
+        }
+
+        /**
+         * Wipe out all parameters on the URI within the {@link Address} object.
+         *
+         * Useful if you e.g. create a copy of a SipURI but you want to remove any potential parameters that may be on the SIP URI.
+         *
+         * @return
+         */
+        public Builder withNoParameters() {
+            ensureURIBuilder().withNoParameters();
+            return this;
+        }
+
+        /**
+         * Set UDP as the transport on the wrapped SIP URI (assuming this is a SIP URI that this
+         * {@link Address} object is indeed wrapping).
+         *
+         * @return
+         */
+        public Builder withTransportUDP() {
+            ensureURIBuilder().useUDP();
+            return this;
+        }
+
+        /**
+         * Set TCP as the transport on the wrapped SIP URI (assuming this is a SIP URI that this
+         * {@link Address} object is indeed wrapping).
+         *
+         * @return
+         */
+        public Builder withTransportTCP() {
+            ensureURIBuilder().useTCP();
+            return this;
+        }
+
+        /**
+         * Set TLS as the transport on the wrapped SIP URI (assuming this is a SIP URI that this
+         * {@link Address} object is indeed wrapping).
+         *
+         * @return
+         */
+        public Builder withTransportTLS() {
+            ensureURIBuilder().useTLS();
+            return this;
+        }
+
+        /**
+         * Set SCTP as the transport on the wrapped SIP URI (assuming this is a SIP URI that this
+         * {@link Address} object is indeed wrapping).
+         *
+         * @return
+         */
+        public Builder withTransportSCTP() {
+            ensureURIBuilder().useSCTP();
+            return this;
+        }
+
+        public Builder withTransport(final Buffer transport) throws SipParseException {
+            ensureURIBuilder().withTransport(transport);
+            return this;
+        }
+
+        public Builder withTransport(final String transport) throws SipParseException {
+            ensureURIBuilder().withTransport(transport);
+            return this;
+        }
+
+        /**
+         * Set WS as the transport on the wrapped SIP URI (assuming this is a SIP URI that this
+         * {@link Address} object is indeed wrapping).
+         *
+         * @return
+         */
+        public Builder withTransportWS() {
+            ensureURIBuilder().useWS();
+            return this;
+        }
+
+        /**
+         * Set WSS as the transport on the wrapped SIP URI (assuming this is a SIP URI that this
+         * {@link Address} object is indeed wrapping).
+         *
+         * @return
+         */
+        public Builder withTransportWSS() {
+            ensureURIBuilder().useWSS();
             return this;
         }
 
@@ -112,40 +375,94 @@ public interface Address {
          * @param host
          * @return
          */
-        public AddressBuilder host(final Buffer host) {
-            this.host = assertNotEmpty(host, "host cannot be empty or null");
+        public Builder withHost(final Buffer host) {
+            ensureURIBuilder().withHost(host);
             return this;
         }
 
-        public AddressBuilder displayName(final Buffer displayName) {
+        public Builder withHost(final String host) {
+            ensureURIBuilder().withHost(host);
+            return this;
+        }
+
+        public Builder withDisplayName(final Buffer displayName) {
             this.displayName = ifNull(displayName, Buffers.EMPTY_BUFFER);
             return this;
         }
 
-        public AddressBuilder displayName(final String displayName) {
+        public Builder withDisplayName(final String displayName) {
             this.displayName = Buffers.wrap(ifNull(displayName, ""));
             return this;
         }
 
-        public AddressBuilder uri(final URI uri) {
-            this.uri = assertNotNull(uri, "URI cannot be null");
+        private SipURI.Builder ensureURIBuilder() {
+            if (uriBuilder == null) {
+                uriBuilder = SipURI.builder();
+            }
+            return uriBuilder;
+        }
+
+        public Builder withURI(final URI uri) {
+            assertNotNull(uri, "URI cannot be null");
+            assertArgument(uri.isSipURI(), "Can only do SIP URIs right now");
+            uriBuilder = uri.toSipURI().copy();
             return this;
         }
 
         public Address build() throws SipParseException {
-            if (this.host != null && this.uri != null) {
-                throw new SipParseException("Both host and URI was specified. Not sure which to pick");
+            final SipURI uri = uriBuilder.build();
+            final Buffer uriBuffer = uri.toBuffer();
+            int size = uriBuffer.capacity();
+            boolean doubleQuoteIt = false;
+            final boolean yesDisplayName = displayName != null && !displayName.isEmpty();
+            if (yesDisplayName) {
+                size += displayName.capacity() + 1; // +1 for space
+                if (doubleQuoteIt(displayName)) {
+                    doubleQuoteIt = true;
+                    size += 2; // because we will surround the display name with double quotes.
+                }
             }
 
-            if (this.host == null && this.uri == null) {
-                throw new SipParseException("You must specify either a full address or a host");
+            // we will only add the angle brackets if there is a display name and/or there
+            // are parameters on the URI. See RFC3261 section
+            final boolean yesAngleQuoteIt = yesDisplayName || uriBuilder.hasParameters();
+            if (yesAngleQuoteIt) {
+                size += 2;
             }
 
-            URI uriToUse = this.uri;
-            if (this.host != null) {
-                uriToUse = SipURI.with().user(user).host(host).port(port).build();
+            final Buffer addressBuf = Buffers.createBuffer(size);
+            if (yesDisplayName) {
+                if (doubleQuoteIt) {
+                    addressBuf.write(SipParser.DOUBLE_QOUTE);
+                    displayName.getBytes(0, addressBuf);
+                    addressBuf.write(SipParser.DOUBLE_QOUTE);
+                } else {
+                    displayName.getBytes(0, addressBuf);
+                }
+                addressBuf.write(SipParser.SP);
             }
-            return new AddressImpl(this.displayName, uriToUse);
+
+            if (yesAngleQuoteIt) {
+                addressBuf.write(SipParser.LAQUOT);
+                uriBuffer.getBytes(0, addressBuf);
+                addressBuf.write(SipParser.RAQUOT);
+            } else {
+                uriBuffer.getBytes(0, addressBuf);
+            }
+
+            return new AddressImpl(addressBuf, this.displayName, uri);
+        }
+
+        private boolean doubleQuoteIt(final Buffer buffer) {
+            try {
+                // Don't think a display name would be longer than 1k but if
+                // it is and there is a space after that 1k then this fails...
+                return buffer.indexOf(1024, SipParser.SP, SipParser.HTAB) != -1
+                        && buffer.getByte(0) != SipParser.DOUBLE_QOUTE;
+            } catch (final IOException e) {
+                // ignore, can't happen
+                return false;
+            }
         }
 
     }

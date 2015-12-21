@@ -3,18 +3,17 @@
  */
 package io.pkts.packet.sip.header.impl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.ContentTypeHeader;
 import io.pkts.packet.sip.header.MediaTypeHeader;
 import io.pkts.packet.sip.header.Parameters;
-
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -28,6 +27,28 @@ public class ContentTypeHeaderTest {
     @Before
     public void setUp() throws Exception {
     }
+
+    @Test
+    public void testCopyConstructor() {
+        final ContentTypeHeader h1 = ContentTypeHeader.withType("application").withSubType("apa").build();
+        final ContentTypeHeader h2 = h1.copy().withSubType("nisse").build();
+        final ContentTypeHeader h3 = h2.copy().withSubType("nisse+json").withParameter("apa", "monkey").build();
+        final ContentTypeHeader h4 = h3.copy().withType("hello").build();
+        final ContentTypeHeader h5 = h3.copy().withNoParameters().build();
+
+        assertThat(h1.toString(), is("Content-Type: application/apa"));
+        assertThat(h2.toString(), is("Content-Type: application/nisse"));
+        assertThat(h3.toString(), is("Content-Type: application/nisse+json;apa=monkey"));
+        assertThat(h4.toString(), is("Content-Type: hello/nisse+json;apa=monkey"));
+        assertThat(h5.toString(), is("Content-Type: application/nisse+json"));
+
+        assertThat(h1.getValue().toString(), is("application/apa"));
+        assertThat(h2.getValue().toString(), is("application/nisse"));
+        assertThat(h3.getValue().toString(), is("application/nisse+json;apa=monkey"));
+        assertThat(h4.getValue().toString(), is("hello/nisse+json;apa=monkey"));
+        assertThat(h5.getValue().toString(), is("application/nisse+json"));
+    }
+
 
     /**
      * Just test a regular application/sdp media type and a few variants thereof
@@ -73,9 +94,8 @@ public class ContentTypeHeaderTest {
         ContentTypeHeader header = ContentTypeHeader.frame(Buffers.wrap("application/sdp"));
         assertThat(header.getValue().toString(), is("application/sdp"));
 
-        // spaces etc will get lost in translation and that's ok i think
         header = ContentTypeHeader.frame(Buffers.wrap("application  /   sdp"));
-        assertThat(header.getValue().toString(), is("application/sdp"));
+        assertThat(header.getValue().toString(), is("application  /   sdp"));
 
         header = ContentTypeHeader.frame(Buffers.wrap("hello/world;apa=monkey"));
         assertThat(header.getValue().toString(), is("hello/world;apa=monkey"));

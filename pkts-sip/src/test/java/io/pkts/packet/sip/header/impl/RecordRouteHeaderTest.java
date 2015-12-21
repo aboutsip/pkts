@@ -5,6 +5,7 @@ package io.pkts.packet.sip.header.impl;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.header.AddressParametersHeader;
 import io.pkts.packet.sip.header.RecordRouteHeader;
 
 import org.junit.After;
@@ -37,6 +38,11 @@ public class RecordRouteHeaderTest extends AddressParameterHeadersTestBase {
     @Override
     public AddressParametersHeaderImpl frameHeader(final Buffer buffer) throws SipParseException {
         return (RecordRouteHeaderImpl) RecordRouteHeader.frame(buffer);
+    }
+
+    @Override
+    public AddressParametersHeader.Builder withHost(final String host) {
+        return RecordRouteHeader.withHost(host);
     }
 
 }

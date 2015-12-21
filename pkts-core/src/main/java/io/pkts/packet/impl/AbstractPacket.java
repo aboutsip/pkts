@@ -110,8 +110,12 @@ public abstract class AbstractPacket implements Packet {
             return false;
         }
 
-        final Packet packet = getPacket(p);
-        return packet != null;
+        try {
+            final Packet packet = getPacket(p);
+            return packet != null;
+        } catch (final Exception e) {
+            return false;
+        }
     }
 
     /*

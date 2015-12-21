@@ -3,8 +3,6 @@
  */
 package io.pkts.packet.sip.header;
 
-import static io.pkts.packet.sip.impl.PreConditions.assertArgument;
-import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
@@ -12,6 +10,9 @@ import io.pkts.packet.sip.header.impl.CSeqHeaderImpl;
 import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
+
+import static io.pkts.packet.sip.impl.PreConditions.assertArgument;
+import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -27,6 +28,19 @@ public interface CSeqHeader extends SipHeader {
     @Override
     CSeqHeader clone();
 
+    @Override
+    Builder copy();
+
+    @Override
+    default boolean isCSeqHeader() {
+        return true;
+    }
+
+    @Override
+    default CSeqHeader toCSeqHeader() {
+        return this;
+    }
+
     /**
      * Parse the value as a cseq value. This method assumes that you have already parsed out the
      * actual header name "CSeq: "
@@ -35,7 +49,7 @@ public interface CSeqHeader extends SipHeader {
      * @return
      * @throws SipParseException
      */
-    public static CSeqHeader frame(final Buffer value) throws SipParseException {
+    static CSeqHeader frame(final Buffer value) throws SipParseException {
         try {
             final Buffer valueCopy = value.slice();
             final Buffer cseq = SipParser.expectDigit(value);
@@ -49,17 +63,21 @@ public interface CSeqHeader extends SipHeader {
         }
     }
 
-    static CSeqHeaderBuilder with() {
-        return new CSeqHeaderBuilder();
+    static Builder withMethod(final Buffer method) {
+        return new Builder(assertNotEmpty(method, "Method cannot be null or empty"));
     }
 
-    static class CSeqHeaderBuilder {
+    static Builder withMethod(final String method) {
+        return new Builder(Buffers.wrap(assertNotEmpty(method, "Method cannot be null or empty")));
+    }
+
+    class Builder implements SipHeader.Builder<CSeqHeader> {
 
         private long cseq;
         private Buffer method;
 
-        private CSeqHeaderBuilder() {
-            // left empty intentionally
+        private Builder(final Buffer method) {
+            this.method = method;
         }
 
         /**
@@ -68,25 +86,40 @@ public interface CSeqHeader extends SipHeader {
          * @return
          * @throws SipParseException in case the specified sequence number is less than zero.
          */
-        public CSeqHeaderBuilder cseq(final long cseq) throws SipParseException {
-            assertArgument(cseq >= 0, "Sequence number must be greater or equal to zer");
+        public Builder withCSeq(final long cseq) throws SipParseException {
+            assertArgument(cseq >= 0, "Sequence number must be greater or equal to zero");
             this.cseq = cseq;
             return this;
         }
 
-        public CSeqHeaderBuilder method(final Buffer method) throws SipParseException {
-            this.method = assertNotEmpty(method, "Method cannot be null or empty");
+        public Builder increment() {
+            ++cseq;
             return this;
         }
 
-        public CSeqHeaderBuilder method(final String method) throws SipParseException {
+        public Builder withMethod(final Buffer method) throws SipParseException {
+            assertNotEmpty(method, "Method cannot be null or empty");
+            this.method = method;
+            return this;
+        }
+
+        public Builder withMethod(final String method) throws SipParseException {
             this.method = Buffers.wrap(assertNotEmpty(method, "Method cannot be null or empty"));
             return this;
         }
 
+        @Override
+        public Builder withValue(Buffer value) {
+            throw new RuntimeException("Not implemented yet");
+        }
+
         public CSeqHeader build() {
-            assertNotEmpty(this.method, "Method cannot be null or empty");
-            return new CSeqHeaderImpl(cseq, method, null);
+            final int size = Buffers.stringSizeOf(this.cseq);
+            final Buffer value = Buffers.createBuffer(size + 1 + this.method.getReadableBytes());
+            value.writeAsString(this.cseq);
+            value.write(SipParser.SP);
+            this.method.getBytes(value);
+            return new CSeqHeaderImpl(cseq, method, value);
         }
 
     }

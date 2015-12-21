@@ -4,7 +4,7 @@
 package io.pkts.sdp;
 
 /**
- * TODO: need to add the profile as well. voice, video, application etc.
+ * TODO: need to add the profile as well. voice, video, io.sipstack.application.application etc.
  * 
  * @author jonas@jonasborjesson.com
  */

@@ -55,8 +55,6 @@ public final class RTCPFramer implements Framer<TransportPacket> {
                 }
             } catch (final IndexOutOfBoundsException e) {
                 // guess not...
-                // System.err.println("But still!!!");
-                // e.printStackTrace();
             }
             data.resetReaderIndex();
         }

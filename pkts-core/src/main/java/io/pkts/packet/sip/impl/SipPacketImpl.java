@@ -27,11 +27,14 @@ import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.protocol.Protocol;
 import io.pkts.sdp.SDP;
+import io.pkts.sdp.SDPFactory;
+import io.pkts.sdp.SdpException;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -339,17 +342,17 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      */
     @Override
     public Object getContent() throws SipParseException {
-        return this.msg.getContent();
+        return parseSipContent();
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see io.pkts.packet.sip.SipPacket#getRawContent()
+     * @see io.pkts.packet.sip.SipPacket#getContent()
      */
     @Override
     public Buffer getRawContent() {
-        return this.msg.getRawContent();
+        return this.msg.getContent();
     }
 
     /*
@@ -378,7 +381,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getHeader(io.pkts.buffer.Buffer)
      */
     @Override
-    public SipHeader getHeader(final Buffer headerName) throws SipParseException {
+    public Optional<SipHeader> getHeader(final Buffer headerName) throws SipParseException {
         return this.msg.getHeader(headerName);
     }
 
@@ -388,7 +391,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getHeader(java.lang.String)
      */
     @Override
-    public SipHeader getHeader(final String headerName) throws SipParseException {
+    public Optional<SipHeader> getHeader(final String headerName) throws SipParseException {
         return this.msg.getHeader(headerName);
     }
 
@@ -682,6 +685,20 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
         return 0;
     }
 
+    private Object parseSipContent() {
+        try {
+            final Buffer content = this.msg.getContent();
+            final ContentTypeHeader contentType = getContentTypeHeader();
+            if (content != null && contentType.isSDP()) {
+                return SDPFactory.getInstance().parse(content);
+            }
+        } catch (final SipParseException | SdpException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -689,21 +706,16 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      */
     @Override
     public Packet getNextPacket() throws IOException {
-        try {
-            final Object content = this.msg.getContent();
-            if (content instanceof SDP) {
-                return new SDPPacketImpl(this, (SDP) content);
-            }
-        } catch (final SipParseException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        final Object content = parseSipContent();
+        if (content instanceof SDP) {
+            return new SDPPacketImpl(this, (SDP)content);
         }
         return null;
     }
 
     @Override
     public Buffer getPayload() {
-        return this.msg.getRawContent();
+        return this.msg.getContent();
     }
 
     /*
