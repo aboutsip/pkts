@@ -179,6 +179,7 @@ public class SipRequestTest extends PktsTestBase {
         //    as for the Via-header.
         // 10. Finally, build it!
         SipRequest proxy = req.copy()
+                .onRequestURI(uri -> uri.copy().withHost("siplib.io").withUser("Kalle").build())
                 .withPoppedRoute()
                 .withTopMostViaHeader(ViaHeader.withHost("12.13.14.15").withBranch().build())
                 .withHeader(SipHeader.create("X-Company-Foo", "Important value"))
@@ -208,6 +209,11 @@ public class SipRequestTest extends PktsTestBase {
                 .build();
 
         // So, verify all of the above.
+
+        // We changed the Request-URI:
+        SipURI uri = proxy.getRequestUri().toSipURI();
+        assertThat(uri.getUser().toString(), is("Kalle"));
+        assertThat(uri.getHost().toString(), is("siplib.io"));
 
         // There should be two via headers. One from the incoming request
         // and one that we pushed. The one we pushed should be at the top.
@@ -310,7 +316,7 @@ public class SipRequestTest extends PktsTestBase {
     @Test
     public void testCreateInviteWithViaHeaders() throws Exception {
         final ViaHeader via =
-                ViaHeader.withHost("127.0.0.1").withPort(9898).withTransportUdp().withBranch(ViaHeader.generateBranch()).build();
+                ViaHeader.withHost("127.0.0.1").withPort(9898).withTransportUDP().withBranch(ViaHeader.generateBranch()).build();
         SipRequest invite = SipRequest.invite("sip:alice@example.com").withFromHeader(this.from).withViaHeader(via).build();
 
         // since there is only one via header, getting the "top-most" via header should

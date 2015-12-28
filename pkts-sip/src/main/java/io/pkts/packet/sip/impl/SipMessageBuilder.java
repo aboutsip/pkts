@@ -44,6 +44,8 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
      */
     private Predicate<SipHeader> filter;
 
+    private Function<SipURI, SipURI> onRequestURIFunction;
+
     private CSeqHeader cseq;
     private CSeqHeader.Builder cseqBuilder;
 
@@ -499,6 +501,10 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         return this;
     }
 
+    protected final Function<SipURI, SipURI> getRequestURIFunction() {
+        return this.onRequestURIFunction;
+    }
+
     private <T> List<T> ensureList(List<T> list) {
         if (list != null)  {
             return list;
@@ -511,6 +517,11 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
 
     @Override
     public SipMessage.Builder<T> onRequestURI(final Function<SipURI, SipURI> f) {
+        if (this.onRequestURIFunction == null) {
+            this.onRequestURIFunction = f;
+        } else {
+            this.onRequestURIFunction = this.onRequestURIFunction.andThen(f);
+        }
         return this;
     }
 

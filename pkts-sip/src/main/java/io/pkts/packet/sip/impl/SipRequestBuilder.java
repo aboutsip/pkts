@@ -12,6 +12,7 @@ import io.pkts.packet.sip.header.ToHeader;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -52,7 +53,17 @@ public class SipRequestBuilder extends SipMessageBuilder<SipRequest> implements 
     @Override
     protected SipInitialLine buildInitialLine() throws SipParseException {
         PreConditions.assertNotNull(requestURI, "You must specify the request URI");
-        return new SipRequestLine(method, requestURI);
+        final Function<SipURI, SipURI> f = getRequestURIFunction();
+        URI finalURI = requestURI;
+        if (finalURI.isSipURI() && f != null) {
+            try {
+                finalURI = f.apply(finalURI.toSipURI());
+            } catch (final Exception e) {
+                throw new SipParseException(0,
+                        "Unable to construct request URI due exception from registered function", e);
+            }
+        }
+        return new SipRequestLine(method, finalURI);
     }
 
     @Override

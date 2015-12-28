@@ -435,7 +435,7 @@ public interface ViaHeader extends Parameters, SipHeader {
             return this;
         }
 
-        public Builder withTransportUdp() {
+        public Builder withTransportUDP() {
             this.transport = udp.clone();
             return this;
         }

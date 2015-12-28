@@ -78,6 +78,28 @@ public interface SipHeader extends Cloneable {
     }
 
     /**
+     * Convenience method for checking the name of this header.
+     *
+     * @param name
+     * @return
+     */
+    default boolean is(final String name) {
+        if (name == null || name.isEmpty()) {
+            return false;
+        }
+
+        return Buffers.wrap(name).equals(getName());
+    }
+
+    default boolean is(final Buffer name) {
+        if (name == null) {
+            return false;
+        }
+
+        return name.equals(getName());
+    }
+
+    /**
      * Get the value of the buffer
      * 
      * @return
@@ -231,6 +253,20 @@ public interface SipHeader extends Cloneable {
     default ContactHeader toContactHeader() {
         throw new ClassCastException("Cannot cast header of type " + getClass().getName()
                 + " to type " + ContactHeader.class.getName());
+    }
+
+    default boolean isSubjectHeader() {
+        final Buffer m = getName();
+        try {
+            if (m.getReadableBytes() == 7) {
+                return m.getByte(0) == 'S' && m.getByte(1) == 'u' && m.getByte(2) == 'b'
+                        && m.getByte(3) == 'j' && m.getByte(4) == 'e' && m.getByte(5) == 'c'
+                        && m.getByte(6) == 't';
+            }
+        } catch (final IOException e) {
+            throw new SipParseException(0, "Unable to parse out the header name due to underlying IOException", e);
+        }
+        return false;
     }
 
     default boolean isCallIdHeader() {
