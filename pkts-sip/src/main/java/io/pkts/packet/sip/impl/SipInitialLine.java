@@ -54,6 +54,7 @@ public abstract class SipInitialLine extends SipParser {
         return a == 'S' && b == 'I' && c == 'P' && d == '/' && e == '2' && f == '.' && g == '0';
     }
 
+
     /**
      * Parse the buffer into a SIP initial line, which either can be a
      * {@link SipRequestLine} or a {@link SipResponseLine}.
@@ -100,6 +101,30 @@ public abstract class SipInitialLine extends SipParser {
             throw new SipParseException(index, "Wrong SIP version");
         } catch (final IOException e) {
             throw new SipParseException(buffer.getReaderIndex(), "could not read from stream", e);
+        }
+    }
+
+    public static final SipInitialLine parse(final Buffer part1, final Buffer part2, final Buffer part3) throws SipParseException {
+        try {
+            if (SipParser.SIP2_0.equals(part1)) {
+                final int statusCode = part2.parseToInt();
+                return new SipResponseLine(statusCode, part3);
+            }
+
+            // not a response so then the last part must be the SIP/2.0
+            // otherwise this is not a valid SIP initial line
+            expectSIP2_0(part3);
+
+            return new SipRequestLine(part1, part2);
+
+        } catch (final NumberFormatException e) {
+            throw new SipParseException(part1.capacity() + 1, "unable to parse the SIP response code as an integer");
+        } catch (final SipParseException e) {
+            // is only thrown by the expectSIP2_0. Calculate the correct
+            // index into the buffer
+            throw new SipParseException(part1.capacity() + 1 + part2.capacity() + 1, "Wrong SIP version");
+        } catch (final IOException e) {
+            throw new SipParseException(0, "could not read from stream", e);
         }
     }
 

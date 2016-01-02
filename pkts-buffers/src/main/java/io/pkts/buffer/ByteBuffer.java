@@ -114,6 +114,7 @@ public final class ByteBuffer extends AbstractBuffer {
         return array;
     }
 
+    @Override
     public byte[] getRawArray() {
         return this.buffer;
     }
@@ -336,11 +337,6 @@ public final class ByteBuffer extends AbstractBuffer {
         } catch (final UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public int getWriterIndex() {
-        return this.writerIndex;
     }
 
     @Override

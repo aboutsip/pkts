@@ -88,6 +88,31 @@ public class SipParserTest {
     }
 
     @Test
+    public void testGetNextHeaderNameButDontCheckHColon() throws Exception {
+
+        // space
+        Buffer buffer = Buffers.wrap("hello ");
+        assertThat(SipParser.nextHeaderNameDontCheckHColon(buffer).toString(), is("hello"));
+        assertThat(buffer.toString(), is(" "));
+
+        // htab
+        buffer = Buffers.wrap("hello\t");
+        assertThat(SipParser.nextHeaderNameDontCheckHColon(buffer).toString(), is("hello"));
+        assertThat(buffer.toString(), is("\t"));
+
+        // colon
+        buffer = Buffers.wrap("hello:");
+        assertThat(SipParser.nextHeaderNameDontCheckHColon(buffer).toString(), is("hello"));
+        assertThat(buffer.toString(), is(":"));
+
+        // if there is no space, htab or colon we should end up with nothing
+        // and the original buffer should be left unmodified.
+        buffer = Buffers.wrap("hello");
+        assertThat(SipParser.nextHeaderNameDontCheckHColon(buffer), is((Buffer)null));
+        assertThat(buffer.toString(), is("hello"));
+    }
+
+    @Test
     public void testConsumeUserInfoHostTest() throws Exception {
         assertConsumeUserInfoHost("127.0.0.1", null, "127.0.0.1", null, null);
         assertConsumeUserInfoHost("alice@example.com", "alice", "example.com", null, null);

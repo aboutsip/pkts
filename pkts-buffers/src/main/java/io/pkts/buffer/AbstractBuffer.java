@@ -72,6 +72,11 @@ public abstract class AbstractBuffer implements Buffer {
     }
 
     @Override
+    public void setWriterIndex(final int index) {
+        this.writerIndex = index;
+    }
+
+    @Override
     public void setReaderIndex(final int index) {
         this.readerIndex = index;
     }
@@ -149,9 +154,22 @@ public abstract class AbstractBuffer implements Buffer {
     @Override
     public Buffer readUntil(final int maxBytes, final byte... bytes) throws IOException, ByteNotFoundException,
             IllegalArgumentException {
+        final Buffer result = readUntilSafe(maxBytes, bytes);
+        if (result == null) {
+            throw new ByteNotFoundException(bytes);
+        }
+
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Buffer readUntilSafe(final int maxBytes, final byte... bytes) throws IOException, IllegalArgumentException {
         final int index = indexOf(maxBytes, bytes);
         if (index == -1) {
-            throw new ByteNotFoundException(bytes);
+            return null;
         }
 
         final int size = index - getReaderIndex();
@@ -239,6 +257,31 @@ public abstract class AbstractBuffer implements Buffer {
         }
 
         return slice(start, this.readerIndex);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Buffer readUntilSingleCRLF() throws IOException {
+        final int start = this.readerIndex;
+        int found = 0;
+        while (found < 2 && hasReadableBytes()) {
+            final byte b = readByte();
+            if (found == 0 && b == CR) {
+                ++found;
+            } else if (found == 1 && b == LF) {
+                ++found;
+            } else {
+                found = 0;
+            }
+        }
+        if (found == 2) {
+            return slice(start, this.readerIndex - 2);
+        } else {
+            this.readerIndex = start;
+            return null;
+        }
     }
 
     @Override
@@ -443,13 +486,14 @@ public abstract class AbstractBuffer implements Buffer {
         int result = 0;
         boolean negative = false;
         int i = this.readerIndex;
+
         final int max = getReadableBytes() + this.readerIndex;
         int limit;
         int multmin;
         int digit;
 
         if (max > 0) {
-            if (getByte(0) == (byte) '-') {
+            if (getByte(i) == (byte) '-') {
                 negative = true;
                 limit = Integer.MIN_VALUE;
                 i++;

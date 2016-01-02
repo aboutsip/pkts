@@ -3,6 +3,7 @@
  */
 package io.pkts.packet.sip.address.impl;
 
+import io.pkts.PktsTestBase;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
@@ -17,7 +18,7 @@ import static org.junit.Assert.*;
 /**
  * @author jonas@jonasborjesson.com
  */
-public class SipUriImplTest {
+public class SipUriImplTest extends PktsTestBase {
 
     /**
      * @throws java.lang.Exception
@@ -344,25 +345,6 @@ public class SipUriImplTest {
         if (equals && uriOne != null && uriTwo != null) {
             assertThat(one.hashCode() == two.hashCode(), is(equals));
         }
-    }
-
-    /**
-     * Helper method for ensuring that we parse SIP Uri's correctly
-     * 
-     * @param toParse
-     * @param expectedUser
-     * @param expectedHost
-     * @param expectedPort
-     * @throws Exception
-     */
-    private void assertSipUri(final String toParse, final String expectedUser, final String expectedHost,
-            final int expectedPort) throws Exception {
-        final Buffer buffer = Buffers.wrap(toParse);
-        final SipURI uri = SipURI.frame(buffer);
-        assertThat(uri.isSipURI(), is(true));
-        assertThat(uri.getUser().toString(), is(expectedUser));
-        assertThat(uri.getHost().toString(), is(expectedHost));
-        assertThat(uri.getPort(), is(expectedPort));
     }
 
 }

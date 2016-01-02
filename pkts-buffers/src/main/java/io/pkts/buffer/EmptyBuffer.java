@@ -45,6 +45,11 @@ public class EmptyBuffer implements Buffer {
     }
 
     @Override
+    public Buffer readUntilSingleCRLF() throws IOException {
+        throw new IndexOutOfBoundsException("Not enough readable bytes");
+    }
+
+    @Override
     public Buffer readUntilDoubleCRLF() throws IOException {
         throw new IndexOutOfBoundsException(NOT_ENOUGH_READABLE_BYTES);
     }
@@ -299,6 +304,14 @@ public class EmptyBuffer implements Buffer {
     }
 
     @Override
+    public Buffer readUntilSafe(final int maxBytes, final byte... bytes) throws IOException, IllegalArgumentException {
+        if (bytes.length == 0) {
+            return this;
+        }
+        throw new ByteNotFoundException(bytes[0]);
+    }
+
+    @Override
     public int indexOf(final int maxBytes, final byte... bytes) throws IOException, ByteNotFoundException,
     IllegalArgumentException {
         return -1;
@@ -353,6 +366,11 @@ public class EmptyBuffer implements Buffer {
     @Override
     public int getWriterIndex() {
         return -1;
+    }
+
+    @Override
+    public void setWriterIndex(int index) {
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
     }
 
     @Override
