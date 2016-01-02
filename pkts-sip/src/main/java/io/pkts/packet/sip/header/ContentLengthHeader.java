@@ -4,6 +4,7 @@ import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.impl.ContentLengthHeaderImpl;
+import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
 
@@ -27,6 +28,7 @@ public interface ContentLengthHeader extends SipHeader {
 
     static ContentLengthHeader frame(final Buffer buffer) throws SipParseException {
         try {
+            SipParser.consumeWS(buffer);
             final int value = buffer.parseToInt();
             return new ContentLengthHeaderImpl(value);
         } catch (final NumberFormatException e) {

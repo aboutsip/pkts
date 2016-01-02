@@ -167,5 +167,29 @@ public class PktsTestBase {
         assertThat("Did not expect that header to be present", optional.isPresent(), is(false));
     }
 
+    /**
+     * Helper method for ensuring that we parse SIP Uri's correctly
+     *
+     * @param toParse
+     * @param expectedUser
+     * @param expectedHost
+     * @param expectedPort
+     * @throws Exception
+     */
+    protected void assertSipUri(final String toParse, final String expectedUser, final String expectedHost,
+                                final int expectedPort) throws Exception {
+        final Buffer buffer = Buffers.wrap(toParse);
+        final SipURI uri = SipURI.frame(buffer);
+        assertSipUri(uri, expectedUser, expectedHost, expectedPort);
+    }
+
+    protected void assertSipUri(final SipURI uri, final String expectedUser, final String expectedHost,
+                                final int expectedPort) throws Exception {
+        assertThat(uri.isSipURI(), is(true));
+        assertThat(uri.getUser().toString(), is(expectedUser));
+        assertThat(uri.getHost().toString(), is(expectedHost));
+        assertThat(uri.getPort(), is(expectedPort));
+    }
+
 
 }

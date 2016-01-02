@@ -464,7 +464,7 @@ public class SipParser {
      */
     public static boolean isNext(final Buffer buffer, final byte b) throws IOException {
         if (buffer.hasReadableBytes()) {
-            final Byte actual = buffer.peekByte();
+            final byte actual = buffer.peekByte();
             return actual == b;
         }
 
@@ -475,7 +475,7 @@ public class SipParser {
      * Check whether the next byte is a digit or not
      * 
      * @param buffer
-     * @return
+     * @retur
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
@@ -531,21 +531,71 @@ public class SipParser {
      * See RFC3261 section 25.1 Basic Rules
      */
     public static int expectHCOLON(final Buffer buffer) throws SipParseException {
+        final int consumed = expectHCOLONStreamFriendly(buffer);
+        if (consumed == -1) {
+            // -1 means we ran out of bytes in the stream but in those
+            // cases where we are not really dealing with a stream we
+            // would expect an IndexOutOfBoundsException so let's make
+            // sure to still honor that...
+            throw new IndexOutOfBoundsException();
+        }
+        return consumed;
+    }
+
+    /**
+     * A problem with stream based protocols is that you don't have everything
+     * available right away so e.g. when expecting HCOLON you may consume white spaces
+     * but then you run out of bytes because you haven't received them yet
+     * so therefore the expect(buffer, COLON) will blow up for the wrong reasons.
+     * It may very well be that the next byte on the wire is indeed a ':' and as
+     * such you should rather signal that you didn't have enough bytes to do your
+     * job. This one does that.
+     *
+     * Note, still some issues with this one though. Let's say the header
+     * we are trying to parse is "X-Hello :    whatever" and we have
+     * only received "X-Hello :" so far. So first off we consume "X-Hello"
+     * then call this method, which will consume " :" but ideally we also
+     * want to consume the white space after the colon. I.e., when we
+     * go off and consume the value of this header we will end up with
+     * white space which normally should have been consumed by this method.
+     *
+     * Hence, whenever dealing with streams you will run into this issue
+     * and will have to keep extra state around to solve it. See the
+     * {@link SipMessageStreamBuilder} for how it is dealing with this.
+     *
+     * @param buffer
+     * @return
+     * @throws SipParseException
+     */
+    public static int expectHCOLONStreamFriendly(final Buffer buffer) throws SipParseException {
         try {
             int consumed = consumeWS(buffer);
-            expect(buffer, COLON);
-            ++consumed;
-            // Part of the fix for empty header values. Which based on the BNF I don't
-            // think is legal but it is certainly happening in the wild
-            // so need to accept it.
-            consumed += consumeWS(buffer);
-            if (!isNext(buffer, CR)) {
-                consumed += consumeSWS(buffer);
+            if (buffer.hasReadableBytes()) {
+                expect(buffer, COLON);
+            } else {
+                // normally the expect(buffer, COLON) would have thrown
+                // an IndexOutOfBoundsException but let's signal that as
+                // -1
+                return -1;
             }
+            ++consumed;
+            consumed += consumeSWSAfterHColon(buffer);
             return consumed;
         } catch (final IOException e) {
             throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
         }
+    }
+
+    public static int consumeSWSAfterHColon(final Buffer buffer) throws IOException {
+        // Part of the fix for empty header values. Which based on the BNF I don't
+        // think is legal but it is certainly happening in the wild
+        // so need to accept it.
+        int consumed = consumeWS(buffer);
+        if (!isNext(buffer, CR)) {
+            consumed += consumeSWS(buffer);
+        }
+
+        return consumed;
     }
 
     /**
@@ -1633,7 +1683,8 @@ public class SipParser {
      * Consume CR + LF
      * 
      * @param buffer
-     * @return true if we indeed did consume CRLF, false otherwise
+     * @return the number of bytes we consumed, which should be two
+     * if we indeed consumed CRLF or zero otherwise.
      */
     public static int consumeCRLF(final Buffer buffer) throws SipParseException {
         try {
@@ -1719,7 +1770,19 @@ public class SipParser {
         }
     }
 
-    public static Buffer nextHeaderName(final Buffer buffer) throws SipParseException {
+    /**
+     * Convenience method for slicing out the next header name but NOT checking
+     * if HCOLON shows up afterwards. This is useful when dealing with a stream
+     * of bytes coming in over the network, as in TCP, so you may actually find
+     * SP or HTAB but the COLON, and as such, the HCOLON, hasn't shown up yet
+     * so the method {@link #nextHeaderName(Buffer)} would blow up on no
+     * HCOLON, which is not what we want. Hence, use this method and then
+     * check HCOLON yourself.
+     *
+     * @param buffer
+     * @return
+     */
+    public static Buffer nextHeaderNameDontCheckHColon(final Buffer buffer) {
         try {
             final int startIndex = buffer.getReaderIndex();
             int nameIndex = 0;
@@ -1734,15 +1797,23 @@ public class SipParser {
             // Bad header! No HCOLON found! (or beginning thereof anyway)
             if (nameIndex == 0) {
                 // probably ran out of bytes to read so lets just return null
+                buffer.setReaderIndex(startIndex);
                 return null;
             }
 
-            final Buffer name = buffer.slice(startIndex, nameIndex);
-            expectHCOLON(buffer);
-            return name;
+            return buffer.slice(startIndex, nameIndex);
         } catch (final IOException e) {
             throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
         }
+
+    }
+
+    public static Buffer nextHeaderName(final Buffer buffer) throws SipParseException {
+        final Buffer name = nextHeaderNameDontCheckHColon(buffer);
+        if (name != null) {
+            expectHCOLON(buffer);
+        }
+        return name;
     }
 
     public static List<SipHeader> nextHeaders(final Buffer buffer) throws SipParseException {
@@ -1765,7 +1836,7 @@ public class SipParser {
 
             final Buffer name = buffer.slice(startIndex, nameIndex);
             expectHCOLON(buffer);
-            final List<Buffer> values = readHeaderValues(name, buffer);
+            final List<Buffer> values = readHeaderValues(name, buffer).values;
             final List<SipHeader> headers = new ArrayList<SipHeader>(values.size());
             for (final Buffer value : values) {
                 headers.add(new SipHeaderImpl(name, value));
@@ -1833,77 +1904,105 @@ public class SipParser {
         }
     }
 
-    private static List<Buffer> readHeaderValues(final Buffer headerName, final Buffer buffer) throws IOException {
-        final List<Buffer> values = new ArrayList<>(2);
-        int start = buffer.getReaderIndex();
-        int stop = -1;
-        boolean foundCR = false;
-        boolean foundLF = false;
-        boolean foundComma = false;
-        boolean insideQuotedString = false;
-        boolean done = false;
-        boolean foldedLine = false;
+    /**
+     * Because parsing streaming data where not everything has shown up yet we must remember
+     * the state of where we are in the "parse out header values".
+     */
+    public static final class HeaderValueState {
+        public List<Buffer> values = new ArrayList<>(2);
+        public int start;
+        public int stop = -1;
+        public boolean foundCR = false;
+        public boolean foundCRLF = false;
+        public boolean foundComma = false;
+        public boolean insideQuotedString = false;
+        public boolean done = false;
+        public boolean foldedLine = false;
 
-        while (buffer.hasReadableBytes() && !done) {
+        public HeaderValueState(final int readerIndex) {
+            start = readerIndex;
+        }
+
+        public void reset(final int readerIndex) {
+            start = readerIndex;
+            values = new ArrayList<>(2);
+            stop = -1;
+            foundCR = false;
+            foundCRLF = false;
+            foundComma = false;
+            insideQuotedString = false;
+            done = false;
+            foldedLine = false;
+        }
+
+    }
+
+    public static HeaderValueState readHeaderValues(final HeaderValueState state, final Buffer headerName, final Buffer buffer) throws IOException {
+        while (buffer.hasReadableBytes() && !state.done) {
             final byte b = buffer.readByte();
             switch (b) {
                 case DOUBLE_QOUTE:
-                    insideQuotedString = !insideQuotedString;
+                    state.insideQuotedString = !state.insideQuotedString;
                     break;
                 case LF:
-                    foundLF = true;
-                    stop = buffer.getReaderIndex() - 1;
+                    state.foundCRLF = state.foundCR;
+                    state.stop = buffer.getReaderIndex() - 2;
                     break;
                 case CR:
-                    foundCR = true;
-                    stop = buffer.getReaderIndex() - 1;
+                    state.foundCR = true;
+                    // state.stop = buffer.getReaderIndex() - 1;
                     break;
                 case COMMA:
                     // if we find a comma then we may have found the end of this
                     // header value depending whether or not the header we are
                     // framing actually allows multiple values on a single line
-                    if (!insideQuotedString && isHeaderAllowingMultipleValues(headerName)) {
-                        stop = buffer.getReaderIndex() - 1;
-                        buffer.setReaderIndex(stop);
+                    if (!state.insideQuotedString && isHeaderAllowingMultipleValues(headerName)) {
+                        state.stop = buffer.getReaderIndex() - 1;
+                        buffer.setReaderIndex(state.stop);
                         consumeCOMMA(buffer);
-                        foundComma = true;
-                        foundCR = true;
+                        state.foundComma = true;
+                        state.foundCRLF = true;
                     }
                     break;
                 default:
                     break;
             }
 
-            if (foundCR || foundLF) {
-                values.add(buffer.slice(start, stop));
-                if (isNext(buffer, LF)) {
-                    buffer.readByte();
-                }
+            if (state.foundCRLF) {
+                state.values.add(buffer.slice(state.start, state.stop));
+                // if (isNext(buffer, LF)) {
+                    // buffer.readByte();
+                // }
                 // Until we have implemented the CompositeBuffer I'm just going to cheat like this
                 // and yes, it is stupid but folded lines aren't that common so...
-                if (foldedLine) {
-                    final Buffer line2 = values.remove(values.size() - 1);
-                    final Buffer line1 = values.remove(values.size() - 1);
+                if (state.foldedLine) {
+                    final Buffer line2 = state.values.remove(state.values.size() - 1);
+                    final Buffer line1 = state.values.remove(state.values.size() - 1);
                     final Buffer folded = Buffers.wrap(line1 + " " + line2);
-                    values.add(folded);
-                    foldedLine = false;
+                    state.values.add(folded);
+                    state.foldedLine = false;
                 }
 
                 if (isNext(buffer, SP) || isNext(buffer, HTAB)) {
                     consumeWS(buffer);
-                    foldedLine = !foundComma;
-                } else if (!foundComma) {
-                    done = true;
+                    state.foldedLine = !state.foundComma;
+                } else if (!state.foundComma) {
+                    state.done = true;
                 }
 
-                foundCR = false;
-                foundLF = false;
-                foundComma = false;
-                start = buffer.getReaderIndex();
+                state.foundCR = false;
+                state.foundCRLF = false;
+                state.foundComma = false;
+                state.start = buffer.getReaderIndex();
             }
         }
 
-        return values;
+        return state;
+    }
+
+    public static HeaderValueState readHeaderValues(final Buffer headerName, final Buffer buffer) throws IOException {
+        final HeaderValueState state = new HeaderValueState(buffer.getReaderIndex());
+        return readHeaderValues(state, headerName, buffer);
     }
 
     /**
@@ -2028,6 +2127,12 @@ public class SipParser {
          }
     }
 
+    /**
+     *
+     * @param buffer
+     * @return
+     * @throws IOException
+     */
     public static SipMessage frame2(final Buffer buffer) throws IOException {
         if (!couldBeSipMessage(buffer)) {
             throw new SipParseException(0, "Cannot be a SIP message because is doesnt start with \"SIP\" "
@@ -2059,7 +2164,7 @@ public class SipParser {
         short indexOfContact = -1;
 
         while (consumeCRLF(buffer) != 2 && (headerName = SipParser.nextHeaderName(buffer)) != null ) {
-            final List<Buffer> values = readHeaderValues(headerName, buffer);
+            final List<Buffer> values = readHeaderValues(headerName, buffer).values;
             for (final Buffer value : values) {
                 SipHeader header = new SipHeaderImpl(headerName, value);
                 // The headers that are most commonly used will be fully
@@ -2155,6 +2260,10 @@ public class SipParser {
         final byte a = data.getByte(0);
         final byte b = data.getByte(1);
         final byte c = data.getByte(2);
+        return couldBeSipMessage(a, b, c);
+    }
+
+    public static boolean couldBeSipMessage(final byte a, final byte b, final byte c) throws IOException {
         return a == 'S' && b == 'I' && c == 'P' || // response
                 a == 'I' && b == 'N' && c == 'V' || // INVITE
                 a == 'A' && b == 'C' && c == 'K' || // ACK

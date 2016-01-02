@@ -66,6 +66,25 @@ public interface Buffer extends Cloneable {
     Buffer readLine() throws IOException;
 
     /**
+     * Read until we find a single CRLF. The single CRLF will NOT be part of the
+     * returned buffer but will be consumed.
+     *
+     * If we cannot find a single CRLF then null will be returned and the passed
+     * in buffer will be reset to the same reader index as when it was passed
+     * in.
+     *
+     * Note that this one is very similar to {@link Buffer#readLine()} but the
+     * readLine doesn't enforce the CRLF being present, which is typical for
+     * e.g. SIP and is important when reading bytes being streamed over e.g.
+     * a network connection
+     *
+     * @return the resulting buffer containing everything up until (but not
+     *         inclusive) the single-crlf or null if no single-crlf was not
+     *         found.
+     */
+    Buffer readUntilSingleCRLF() throws IOException;
+
+    /**
      * Read until we find a double CRLF. The double CRLF will NOT be part of the
      * returned buffer but they will be consumed.
      * 
@@ -177,6 +196,18 @@ public interface Buffer extends Cloneable {
      *             in no bytes to look for is specified.
      */
     Buffer readUntil(int maxBytes, byte... bytes) throws IOException, ByteNotFoundException, IllegalArgumentException;
+
+    /**
+     * Same as {@link #readUntil(int, byte...)} but will return null instead of
+     * throwing a {@link ByteNotFoundException}
+     *
+     * @param maxBytes
+     * @param bytes
+     * @return
+     * @throws IOException
+     * @throws IllegalArgumentException
+     */
+    Buffer readUntilSafe(int maxBytes, byte... bytes) throws IOException, IllegalArgumentException;
 
     /**
      * Same as {@link #readUntil(int, byte...)} but instead of returning the
@@ -418,6 +449,8 @@ public interface Buffer extends Cloneable {
      * @return
      */
     int getWriterIndex();
+
+    void setWriterIndex(int index);
 
     /**
      * Get the number of writable bytes.
