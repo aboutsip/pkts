@@ -281,7 +281,6 @@ public final class ByteBuffer extends AbstractBuffer {
                 return false;
             }
 
-
             final int length = getReadableBytes();
             for (int i = 0; i < length; ++i) {
                 final byte a1 = this.buffer[this.lowerBoundary + i];
@@ -415,14 +414,12 @@ public final class ByteBuffer extends AbstractBuffer {
 
     @Override
     public void setUnsignedInt(final int index, final long value) throws IndexOutOfBoundsException {
-        // setInt(index, (int) value);
         checkIndex(index);
         checkIndex(index + 3);
         this.buffer[this.lowerBoundary + index + 0] = (byte) value;
         this.buffer[this.lowerBoundary + index + 1] = (byte) (value >>> 8);
         this.buffer[this.lowerBoundary + index + 2] = (byte) (value >>> 16);
         this.buffer[this.lowerBoundary + index + 3] = (byte) (value >>> 24);
-
     }
 
     @Override

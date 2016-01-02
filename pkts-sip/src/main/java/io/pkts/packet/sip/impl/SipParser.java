@@ -1325,6 +1325,7 @@ public class SipParser {
         int indexOfLastColon = 0;
         int readerIndexOfLastColon = 0; // for reporting
 
+        consumeSWS(buffer);
         result[0] = consumeSentProtocol(buffer);
         consumeLWS(buffer);
 

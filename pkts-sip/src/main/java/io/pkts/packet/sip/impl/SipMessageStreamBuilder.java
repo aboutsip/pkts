@@ -137,22 +137,15 @@ public class SipMessageStreamBuilder {
         return sipMessage;
     }
 
-    /*
-    private boolean isCRLF() {
-        if (readerIndex == 0) {
-            return false;
-        }
-        return array[readerIndex - 1] == SipParser.CR && array[readerIndex] == SipParser.LF;
-    }
-    */
-
     public int getWriterIndex() {
         return buffer.getWriterIndex();
     }
 
+    public int getWritableBytes() {
+        return buffer.getWritableBytes();
+    }
 
     public boolean processNewData(final int newData) {
-
         buffer.setWriterIndex(buffer.getWriterIndex() + newData);
 
         boolean done = false;
@@ -374,7 +367,6 @@ public class SipMessageStreamBuilder {
      * @return
      */
     private final State onPayload(final Buffer buffer) {
-
         if (contentLength == 0) {
             return State.DONE;
         }
@@ -388,9 +380,7 @@ public class SipMessageStreamBuilder {
             return State.DONE;
         }
 
-
         return State.GET_PAYLOAD;
-
     }
 
 
@@ -411,7 +401,7 @@ public class SipMessageStreamBuilder {
      * e.g. jackson and yaml but I didn't want to have that dependency on this library
      * itself.
      */
-    interface Configuration {
+    public interface Configuration {
 
         /**
          * The maximum allowed initial line. If we pass this threshold we will drop
