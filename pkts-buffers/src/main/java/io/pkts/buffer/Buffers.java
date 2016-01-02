@@ -198,7 +198,7 @@ public final class Buffers {
      * 
      * Will fail if i == Integer.MIN_VALUE
      */
-    protected static void getBytes(int i, final int index, final byte[] buf) {
+    public static void getBytes(int i, final int index, final byte[] buf) {
         int q, r;
         int charPos = index;
         byte sign = 0;
@@ -245,7 +245,7 @@ public final class Buffers {
     }
 
     // Requires positive x
-    protected static int stringSize(final int x) {
+    public static int stringSize(final int x) {
         for (int i = 0;; i++) {
             if (x <= sizeTable[i]) {
                 return i + 1;
@@ -262,7 +262,7 @@ public final class Buffers {
      *
      * Will fail if i == Long.MIN_VALUE
      */
-    protected static void getBytes(long i, final int index, final byte[] buf) {
+    public static void getBytes(long i, final int index, final byte[] buf) {
         long q;
         int r;
         int charPos = index;
@@ -322,7 +322,7 @@ public final class Buffers {
     }
 
     // Requires positive x
-    protected static int stringSize(final long x) {
+    public static int stringSize(final long x) {
         long p = 10;
         for (int i = 1; i < 19; i++) {
             if (x < p) {

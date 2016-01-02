@@ -233,30 +233,30 @@ public abstract class AbstractBuffer implements Buffer {
      */
     @Override
     public Buffer readLine() throws IOException {
-        final int start = this.readerIndex;
+        final int start = getReaderIndex();
         boolean foundCR = false;
         while (hasReadableBytes()) {
             final byte b = readByte();
             switch (b) {
             case LF:
-                return slice(start, this.readerIndex - (foundCR ? 2 : 1));
+                return slice(start, getReaderIndex() - (foundCR ? 2 : 1));
             case CR:
                 foundCR = true;
                 break;
             default:
                 if (foundCR) {
-                    --this.readerIndex;
+                    setReaderIndex(getReaderIndex() - 1);
                     return slice(start, this.lowerBoundary + this.readerIndex - 1);
                 }
             }
         }
 
         // i guess there were nothing for us to read
-        if (start >= this.readerIndex) {
+        if (start >= getReaderIndex()) {
             return null;
         }
 
-        return slice(start, this.readerIndex);
+        return slice(start, getReaderIndex());
     }
 
     /**
@@ -264,7 +264,7 @@ public abstract class AbstractBuffer implements Buffer {
      */
     @Override
     public Buffer readUntilSingleCRLF() throws IOException {
-        final int start = this.readerIndex;
+        final int start = getReaderIndex();
         int found = 0;
         while (found < 2 && hasReadableBytes()) {
             final byte b = readByte();
@@ -277,16 +277,16 @@ public abstract class AbstractBuffer implements Buffer {
             }
         }
         if (found == 2) {
-            return slice(start, this.readerIndex - 2);
+            return slice(start, getReaderIndex() - 2);
         } else {
-            this.readerIndex = start;
+            setReaderIndex(start);
             return null;
         }
     }
 
     @Override
     public Buffer readUntilDoubleCRLF() throws IOException {
-        final int start = this.readerIndex;
+        final int start = getReaderIndex();
         int found = 0;
         while (found < 4 && hasReadableBytes()) {
             final byte b = readByte();
@@ -299,9 +299,9 @@ public abstract class AbstractBuffer implements Buffer {
             }
         }
         if (found == 4) {
-            return slice(start, this.readerIndex - 4);
+            return slice(start, getReaderIndex() - 4);
         } else {
-            this.readerIndex = start;
+            setReaderIndex(start);
             return null;
         }
     }

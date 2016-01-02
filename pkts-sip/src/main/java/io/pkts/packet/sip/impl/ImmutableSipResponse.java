@@ -65,6 +65,7 @@ public class ImmutableSipResponse extends ImmutableSipMessage implements SipResp
         final SipResponse.Builder builder = SipResponse.withStatusCode(responseLine.getStatusCode());
         builder.withReasonPhrase(responseLine.getReason());
         builder.withHeaders(this.getAllHeaders());
+        builder.withBody(this.getContent());
         return builder;
     }
 
