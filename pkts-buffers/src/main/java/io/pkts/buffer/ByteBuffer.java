@@ -102,6 +102,16 @@ public final class ByteBuffer extends AbstractBuffer {
         ++this.writerIndex;
     }
 
+    @Override
+    public void write(final byte[] bytes) throws IndexOutOfBoundsException {
+        if (!checkWritableBytesSafe(bytes.length)) {
+            throw new IndexOutOfBoundsException("Unable to write the entire String to this buffer. Nothing was written");
+        }
+
+        System.arraycopy(bytes, 0, this.buffer, this.writerIndex, bytes.length);
+        this.writerIndex += bytes.length;
+    }
+
     /**
      * {@inheritDoc}
      */
