@@ -2,6 +2,8 @@ package io.pkts.packet.sip.impl;
 
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
+import io.pkts.buffer.Buffer;
+import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipRequest;
 import io.pkts.packet.sip.SipResponse;
@@ -20,6 +22,45 @@ import static org.junit.Assert.fail;
  * @author jonas@jonasborjesson.com
  */
 public class SipMessageStreamBuilderTest extends PktsTestBase {
+
+    /**
+     * Verifier for RawData.twoHundredOkFourViaOnOneLine
+     */
+    final Consumer<SipMessage> twoHundredOkFourViaOnOneLineVerifier = msg -> {
+        final SipResponse response = msg.toResponse();
+
+        assertThat(response.getCallIDHeader().getValue().toString(), is("1-10091@127.0.1.1"));
+        assertThat(response.getCSeqHeader().getMethod().toString(), is("INVITE"));
+        assertThat(response.getCSeqHeader().getSeqNumber(), is(1L));
+
+        assertThat(response.getViaHeaders().size(), is(4));
+        assertViaHeader(response.getViaHeader(), "127.0.1.1", "UDP", 5061);
+        assertViaHeader(response.getViaHeaders().get(0), "127.0.1.1", "UDP", 5061);
+        assertViaHeader(response.getViaHeaders().get(1), "12.13.14.15", "WSS", 443);
+        assertViaHeader(response.getViaHeaders().get(2), "192.168.0.100", "TLS", 5061);
+        assertThat(response.getViaHeaders().get(3).getValue().toString(), is("SIP/2.0/UDP hello.com;branch=asdf-asdf-123-123-abc;received=68.67.66.65"));
+        assertThat(response.getContentLength(), is(129));
+    };
+
+    /**
+     * Verifier for RawData.inviteOneRouteHeader
+     */
+    final Consumer<SipMessage> inviteOneRouteHeaderVerifier = msg -> {
+        final SipRequest request = msg.toRequest();
+
+        assertThat(request.getRequestUri().toSipURI().toString(), is("sip:service@8.8.8.8:5060"));
+        assertThat(request.getRouteHeader().getValue().toString(), is("<sip:one@aboutsip.com;transport=udp>"));
+
+        assertThat(request.getCallIDHeader().getValue().toString(), is("1-17354@192.168.8.110"));
+        assertThat(request.getCSeqHeader().getMethod().toString(), is("INVITE"));
+        assertThat(request.getCSeqHeader().getSeqNumber(), is(1L));
+
+        assertThat(request.getViaHeaders().size(), is(1));
+        assertViaHeader(request.getViaHeader(), "192.168.8.110", "UDP", 5060);
+        assertThat(request.getContentLength(), is(137));
+    };
+
+
 
     @Test
     public void testBasicParsing001() throws Exception {
@@ -50,46 +91,15 @@ public class SipMessageStreamBuilderTest extends PktsTestBase {
 
     @Test
     public void testBasicParsing002() throws Exception {
-
-        final Consumer<SipMessage> verifier = msg -> {
-            final SipResponse response = msg.toResponse();
-
-            assertThat(response.getCallIDHeader().getValue().toString(), is("1-10091@127.0.1.1"));
-            assertThat(response.getCSeqHeader().getMethod().toString(), is("INVITE"));
-            assertThat(response.getCSeqHeader().getSeqNumber(), is(1L));
-
-            assertThat(response.getViaHeaders().size(), is(4));
-            assertViaHeader(response.getViaHeader(), "127.0.1.1", "UDP", 5061);
-            assertViaHeader(response.getViaHeaders().get(0), "127.0.1.1", "UDP", 5061);
-            assertViaHeader(response.getViaHeaders().get(1), "12.13.14.15", "WSS", 443);
-            assertViaHeader(response.getViaHeaders().get(2), "192.168.0.100", "TLS", 5061);
-            assertThat(response.getViaHeaders().get(3).getValue().toString(), is("SIP/2.0/UDP hello.com;branch=asdf-asdf-123-123-abc;received=68.67.66.65"));
-            assertThat(response.getContentLength(), is(129));
-        };
-
-        parseIt(RawData.twoHundredOkFourViaOnOneLine , verifier);
+        parseIt(RawData.twoHundredOkFourViaOnOneLine , twoHundredOkFourViaOnOneLineVerifier);
     }
 
     @Test
     public void testBasicParsing003() throws Exception {
 
-        final Consumer<SipMessage> verifier = msg -> {
-            final SipRequest request = msg.toRequest();
-
-            assertThat(request.getRequestUri().toSipURI().toString(), is("sip:service@8.8.8.8:5060"));
-            assertThat(request.getRouteHeader().getValue().toString(), is("<sip:one@aboutsip.com;transport=udp>"));
-
-            assertThat(request.getCallIDHeader().getValue().toString(), is("1-17354@192.168.8.110"));
-            assertThat(request.getCSeqHeader().getMethod().toString(), is("INVITE"));
-            assertThat(request.getCSeqHeader().getSeqNumber(), is(1L));
-
-            assertThat(request.getViaHeaders().size(), is(1));
-            assertViaHeader(request.getViaHeader(), "192.168.8.110", "UDP", 5060);
-            assertThat(request.getContentLength(), is(137));
-        };
 
         final byte[] msg = RawData.sipInviteOneRouteHeader;
-        parseIt(msg, verifier);
+        parseIt(msg, inviteOneRouteHeaderVerifier);
 
         // now, actually do the same but add some blank stuff in the beginning of
         // the stream. We should be able to by-pass it.
@@ -101,10 +111,53 @@ public class SipMessageStreamBuilderTest extends PktsTestBase {
         data[4] = SipParser.SP;
 
         System.arraycopy(msg, 0, data, 5, msg.length);
-        parseIt(data, verifier);
+        parseIt(data, msg, inviteOneRouteHeaderVerifier);
+    }
+
+    /**
+     * For TCP etc there is a possibility that multiple messages will show up
+     * in the same frame so we need to handle that case as well.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testParsingMultipleMessagesInOneStream001() throws Exception {
+
+        // concatenate two messages together with some stuff in between.
+        final byte[] msg1 = RawData.sipInviteOneRouteHeader;
+        final byte[] msg2 = RawData.twoHundredOkFourViaOnOneLine;
+        final byte[] data = new byte[msg1.length + 4 + msg2.length];
+        System.arraycopy(msg1, 0, data, 0, msg1.length);
+        System.arraycopy(msg2, 0, data, msg1.length + 4, msg2.length);
+        data[msg1.length + 0] = SipParser.CR;
+        data[msg1.length + 1] = SipParser.LF;
+        data[msg1.length + 2] = SipParser.CR;
+        data[msg1.length + 3] = SipParser.LF;
+
+        final Configuration config = new DefaultConfiguration();
+        final SipMessageStreamBuilder builder = new SipMessageStreamBuilder(config);
+
+        assertThat(builder.process(data), is(true));
+        final SipMessage invite = builder.build();
+        inviteOneRouteHeaderVerifier.accept(invite);
+        assertThat(invite.toString(), is(new String(msg1)));
+
+        // and there should be more data left to process
+        // and that data is actually an entire SIP message
+        // so we should be able to parse that out as well
+        // right away...
+        assertThat(builder.hasUnprocessData(), is(true));
+        assertThat(builder.process(), is(true));
+        final SipMessage twoHundred = builder.build();
+        twoHundredOkFourViaOnOneLineVerifier.accept(twoHundred);
+        assertThat(twoHundred.toString(), is(new String(msg2)));
     }
 
     private void parseIt(final byte[] data, final Consumer<SipMessage> verifyFunction) throws Exception {
+        parseIt(data, data, verifyFunction);
+    }
+
+    private void parseIt(final byte[] data, final byte[] rawExpectedMessage, final Consumer<SipMessage> verifyFunction) throws Exception {
         System.out.println("This we will receive over the wire ---->");
         System.out.print(new String(data));
         System.out.println("<----");
@@ -122,17 +175,16 @@ public class SipMessageStreamBuilderTest extends PktsTestBase {
 
             // make sure that it comes out the exact same way as the original
             // raw data
-            assertThat(new String(data), is(msg.toString()));
+            assertThat(msg.toString(), is(new String(rawExpectedMessage)));
         }
-
     }
 
     private SipMessage frameSipMessage(final SipMessageStreamBuilder builder, final byte[] data, final int chunkSize) {
-        final byte[] array = builder.getArray();
         while (builder.getWriterIndex() < data.length) {
-            final int copy = Math.min(chunkSize, data.length - builder.getWriterIndex());
-            System.arraycopy(data, builder.getWriterIndex(), array, builder.getWriterIndex(), copy);
-            if (builder.processNewData(copy)) {
+            final int noOfBytesToCopy = Math.min(chunkSize, data.length - builder.getWriterIndex());
+            final byte[] array = new byte[noOfBytesToCopy];
+            System.arraycopy(data, builder.getWriterIndex(), array, 0, array.length);
+            if (builder.process(array)) {
                 return builder.build();
             }
         }

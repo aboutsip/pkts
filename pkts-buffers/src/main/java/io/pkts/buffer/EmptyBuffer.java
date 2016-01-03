@@ -333,6 +333,11 @@ public class EmptyBuffer implements Buffer {
     }
 
     @Override
+    public void write(byte[] bytes) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+    }
+
+    @Override
     public void write(final String s) throws IndexOutOfBoundsException, WriteNotSupportedException {
         throw new WriteNotSupportedException(THIS_IS_AN_EMPTY_BUFFER_CANT_WRITE_TO_IT);
     }

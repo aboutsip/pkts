@@ -59,6 +59,14 @@
     <dependencies>
 
     <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-buffer</artifactId>
+      <version>4.1.0.Beta8</version>
+      <type>jar</type>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
       <groupId>io.pkts</groupId>
       <artifactId>pkts-buffers</artifactId>
       <version>${project.version}</version>

@@ -10,6 +10,7 @@ import io.pkts.packet.sip.header.impl.SipHeaderImpl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -25,7 +26,11 @@ public class SipMessageStreamBuilder {
 
     private State state = State.INIT;
 
-    private short start;
+    /**
+     * Because the beginning of the buffer could contain stuff we don't care
+     * about so we have to mask that away.
+     */
+    private int start;
 
     private SipInitialLine sipInitialLine;
     private Buffer buffer;
@@ -55,11 +60,9 @@ public class SipMessageStreamBuilder {
     public SipMessageStreamBuilder(final Configuration config) {
         this.config = config;
 
-        buffer = Buffers.createBuffer(config.getMaxAllowedInitialLineSize()
-                + config.getMaxAllowedHeadersSize()
-                + config.getMaxAllowedContentLength());
-
-        headerValueState = new SipParser.HeaderValueState(buffer.getReaderIndex());
+        resetBuffer();
+        reset();
+        headerValueState = new SipParser.HeaderValueState(0);
 
         actions[State.INIT.ordinal()] = this::onInit;
         actions[State.GET_INITIAL_LINE.ordinal()] = this::onInitialLine;
@@ -72,10 +75,14 @@ public class SipMessageStreamBuilder {
         actions[State.DONE.ordinal()] = this::onDone;
     }
 
+    private void resetBuffer() {
+        buffer = Buffers.createBuffer(config.getMaxAllowedInitialLineSize()
+                + config.getMaxAllowedHeadersSize()
+                + config.getMaxAllowedContentLength());
+    }
+
     private void reset() {
         state = State.INIT;
-        buffer.setReaderIndex(0);
-        buffer.setWriterIndex(0);
         payload = Buffers.EMPTY_BUFFER;
         sipInitialLine = null;
         start = 0;
@@ -101,10 +108,34 @@ public class SipMessageStreamBuilder {
             throw new IllegalStateException("We have not framed enough data for a complete message yet");
         }
 
-        final byte[] array = buffer.getRawArray();
-        final byte[] msgArray = new byte[buffer.getReaderIndex() - start];
-        System.arraycopy(array, start, msgArray, 0, msgArray.length);
-        final Buffer msg = Buffers.wrap(msgArray);
+        // final byte[] array = buffer.getRawArray();
+        // final byte[] msgArray = new byte[buffer.getReaderIndex() - start];
+        // System.arraycopy(array, start, msgArray, 0, msgArray.length);
+        // final Buffer msg = Buffers.wrap(msgArray);
+
+        // There may be extra data left after we have processed
+        // the one SIP message. If there is, we want to preserve that
+        // data by copying it over to the beginning of the next buffer
+        // so mark the start and stop, hide that portion to the old
+        // buffer and then copy it over to the new
+        final int extraDataStart = buffer.getReaderIndex();
+        final int length = buffer.getWriterIndex() - extraDataStart;
+
+        // hide in old. Remember that the 'start' value is
+        // were the data of this message actually starts as in
+        // there may have been empty spaces and what not in the beginning
+        // of the data and that has to be masked away, which is done by
+        // manipulating the reader index.
+        final Buffer msg = buffer;
+        msg.setWriterIndex(msg.getReaderIndex());
+        msg.setReaderIndex(start);
+
+        // reset and copy over
+        resetBuffer();
+        final byte[] oldData = msg.getRawArray();
+        final byte[] newData = buffer.getRawArray();
+        System.arraycopy(oldData, extraDataStart, newData, 0, length);
+        buffer.setWriterIndex(length);
 
         SipMessage sipMessage = null;
         if (sipInitialLine.isRequestLine()) {
@@ -145,8 +176,37 @@ public class SipMessageStreamBuilder {
         return buffer.getWritableBytes();
     }
 
-    public boolean processNewData(final int newData) {
-        buffer.setWriterIndex(buffer.getWriterIndex() + newData);
+    /**
+     * After you have actually constructed a new {@link SipMessage} there may
+     * be other messages behind it in the same stream, or parts of one. Therefore,
+     * after you have {@link #build()} a message you can check if there are still
+     * data available and if so, call {@link #process()} to kick off more
+     * processing.
+     *
+     * @return if there are more data available for processing
+     */
+    public boolean hasUnprocessData() {
+        return buffer.hasReadableBytes();
+    }
+
+    /**
+     *
+     * @return true if a message is ready to be built.
+     */
+    public boolean process() {
+        return process(null);
+    }
+
+    /**
+     * Process more incoming data.
+     *
+     * @param newData
+     * @return
+     */
+    public boolean process(final byte[] newData) {
+        if (newData != null) {
+            buffer.write(newData);
+        }
 
         boolean done = false;
         while (!done) {
@@ -159,6 +219,10 @@ public class SipMessageStreamBuilder {
         return state == State.DONE;
     }
 
+    public boolean isDone() {
+        return state == State.DONE;
+    }
+
     /**
      * Just so we don't have to check for null once we reach this state.
      *
@@ -168,6 +232,7 @@ public class SipMessageStreamBuilder {
     private final State onDone(final Buffer buffer) {
         return State.DONE;
     }
+
     /**
      * While in the INIT state, we are just consuming any empty space
      * before heading off to start parsing the initial line
@@ -181,6 +246,7 @@ public class SipMessageStreamBuilder {
                 if (b == SipParser.SP || b == SipParser.HTAB || b == SipParser.CR || b == SipParser.LF) {
                     buffer.readByte();
                 } else {
+                    start = buffer.getReaderIndex();
                     return State.GET_INITIAL_LINE;
                 }
             }

@@ -471,6 +471,11 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
         return false;
     }
 
+    @Override
+    public void write(byte[] bytes) throws IndexOutOfBoundsException, WriteNotSupportedException {
+        throw new WriteNotSupportedException("Cannot write to an InputStreamBuffer");
+    }
+
     public void getBytes() {
 
     }

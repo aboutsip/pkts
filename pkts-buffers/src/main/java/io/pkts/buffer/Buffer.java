@@ -493,6 +493,8 @@ public interface Buffer extends Cloneable {
      */
     void write(byte b) throws IndexOutOfBoundsException, WriteNotSupportedException;
 
+    void write(byte[] bytes) throws IndexOutOfBoundsException, WriteNotSupportedException;
+
     void write(int value) throws IndexOutOfBoundsException, WriteNotSupportedException;
 
     void write(long value) throws IndexOutOfBoundsException, WriteNotSupportedException;
