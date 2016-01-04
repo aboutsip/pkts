@@ -6,6 +6,7 @@ package io.pkts.packet.sip.address.impl;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.Transport;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.header.impl.ParametersSupport;
 import io.pkts.packet.sip.impl.SipParser;
@@ -13,6 +14,7 @@ import io.pkts.packet.sip.impl.SipParser;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -149,14 +151,14 @@ public class SipURIImpl extends URIImpl implements SipURI {
      * {@inheritDoc}
      */
     @Override
-    public Buffer getUser() {
+    public Optional<Buffer> getUser() {
         // TODO: this is not 100% correct since it may
         // actually contain a password as well.
         if (this.userInfo != null) {
-            return this.userInfo.slice();
+            return Optional.of(this.userInfo.slice());
         }
 
-        return Buffers.EMPTY_BUFFER;
+        return Optional.empty();
     }
 
     /**
@@ -202,38 +204,39 @@ public class SipURIImpl extends URIImpl implements SipURI {
     */
 
     @Override
-    public Buffer getTransportParam() throws SipParseException {
-        return getParameter(SipParser.TRANSPORT);
+    public Optional<Transport> getTransportParam() throws SipParseException {
+        try {
+            final Optional<Buffer> transport = getParameter(SipParser.TRANSPORT);
+            return transport.map(Transport::of);
+        } catch (final IllegalArgumentException e) {
+            throw new SipParseException(0, e.getMessage(), e);
+        }
     }
 
     @Override
-    public Buffer getUserParam() throws SipParseException {
+    public Optional<Buffer> getUserParam() throws SipParseException {
         return getParameter(SipParser.USER);
     }
 
     @Override
     public int getTTLParam() throws SipParseException {
-        final Buffer buffer = getParameter(SipParser.TTL);
-        if (buffer == null || buffer.isEmpty()) {
-            return -1;
-        }
+        final Optional<Buffer> buffer = getParameter(SipParser.TTL);
         try {
-            return buffer.parseToInt();
+            return buffer.orElse(Buffers.wrap("-1")).parseToInt();
         } catch (final IOException e) {
             throw new SipParseException(0, "Unable to parse buffer to an int", e);
         }
     }
 
     @Override
-    public Buffer getMAddrParam() throws SipParseException {
+    public Optional<Buffer> getMAddrParam() throws SipParseException {
         return getParameter(SipParser.MADDR);
     }
 
     @Override
-    public Buffer getMethodParam() throws SipParseException {
+    public Optional<Buffer> getMethodParam() throws SipParseException {
         return getParameter(SipParser.METHOD);
     }
-
 
     /**
      * Comparing two {@link SipURI}s aren't trivial and the full set of rules are described in
@@ -260,7 +263,7 @@ public class SipURIImpl extends URIImpl implements SipURI {
             // actually case sensitive. The rest isn't though.
             //
             // TODO: must handle escaped characters
-            if (!this.getUser().equals(o.getUser())) {
+            if (!this.getUser().orElse(Buffers.EMPTY_BUFFER).equals(o.getUser().orElse(Buffers.EMPTY_BUFFER))) {
                 return false;
             }
 
@@ -273,20 +276,20 @@ public class SipURIImpl extends URIImpl implements SipURI {
             }
 
             // the specification doesn't call out transport but their examples do
-            if (getTransportParam() == null ^ o.getTransportParam() == null) {
+            if (getTransportParam().orElse(null) == null ^ o.getTransportParam().orElse(null) == null) {
                 return false;
             }
 
-            if (getUserParam() == null ^ o.getUserParam() == null) {
+            if (getUserParam().orElse(null) == null ^ o.getUserParam().orElse(null) == null) {
                 return false;
             }
             if (getTTLParam() != o.getTTLParam()) {
                 return false;
             }
-            if (getMethodParam() == null ^ o.getMethodParam() == null) {
+            if (getMethodParam().orElse(null) == null ^ o.getMethodParam().orElse(null) == null) {
                 return false;
             }
-            if (getMAddrParam() == null ^ o.getMAddrParam() == null) {
+            if (getMAddrParam().orElse(null) == null ^ o.getMAddrParam().orElse(null) == null) {
                 return false;
             }
 
@@ -298,22 +301,19 @@ public class SipURIImpl extends URIImpl implements SipURI {
                         final Map.Entry<Buffer, Buffer> entry = it.next();
                         final Buffer key = entry.getKey();
                         final Buffer value = entry.getValue();
-                        final Buffer bValue = o.getParameter(key);
+                        final Optional<Buffer> bValue = o.getParameter(key);
                         if (o.paramsSupport.hasParameter(key)) {
                             if (value == null ^ bValue == null) {
                                 return false;
                             }
-                            if (!value.equalsIgnoreCase(bValue)) {
+                            if (!value.equalsIgnoreCase(bValue.orElse(null))) {
                                 return false;
                             }
                         }
                     };
                 }
             }
-
-
-
-        } catch (ClassCastException | NullPointerException e) {
+        } catch (final ClassCastException | NullPointerException e) {
             return false;
         }
 
@@ -349,39 +349,12 @@ public class SipURIImpl extends URIImpl implements SipURI {
 
 
     @Override
-    public Buffer getParameter(final Buffer name) throws SipParseException, IllegalArgumentException {
-        return this.paramsSupport.getParameter(name);
+    public Optional<Buffer> getParameter(final Buffer name) throws SipParseException, IllegalArgumentException {
+        return Optional.ofNullable(this.paramsSupport.getParameter(name));
     }
 
     @Override
-    public Buffer getParameter(final String name) throws SipParseException, IllegalArgumentException {
-        return this.paramsSupport.getParameter(name);
+    public Optional<Buffer> getParameter(final String name) throws SipParseException, IllegalArgumentException {
+        return Optional.ofNullable(this.paramsSupport.getParameter(name));
     }
-
-    /*
-    @Override
-    public void setParameter(final Buffer name, final Buffer value) throws SipParseException,
-    IllegalArgumentException {
-        this.isDirty = true;
-        this.paramsSupport.setParameter(name, value);
-    }
-
-    @Override
-    public void setParameter(final String name, final String value) throws SipParseException,
-    IllegalArgumentException {
-        this.isDirty = true;
-        this.paramsSupport.setParameter(name, value);
-    }
-
-
-    @Override
-    public void setParameter(final Buffer name, final int value) throws SipParseException, IllegalArgumentException {
-        setParameter(name, Buffers.wrap(value));
-    }
-
-    @Override
-    public void setParameter(final String name, final int value) throws SipParseException, IllegalArgumentException {
-        this.setParameter(Buffers.wrap(name), Buffers.wrap(value));
-    }
-    */
 }

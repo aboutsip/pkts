@@ -6,11 +6,13 @@ package io.pkts.packet.sip.address;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.Transport;
 import io.pkts.packet.sip.address.impl.SipURIImpl;
 import io.pkts.packet.sip.header.impl.ParametersSupport;
 import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import static io.pkts.packet.sip.impl.PreConditions.assertArgument;
 import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
@@ -26,10 +28,10 @@ public interface SipURI extends URI {
     /**
      * Get the user portion of this URI.
      * 
-     * @return the user portion of this URI or an empty buffer if there is no
+     * @return the user portion of this URI or an empty optional if there is no
      *         user portion
      */
-    Buffer getUser();
+    Optional<Buffer> getUser();
 
     /**
      * Get the host portion of this URI.
@@ -76,7 +78,7 @@ public interface SipURI extends URI {
      * @return
      * @throws SipParseException
      */
-    Buffer getTransportParam() throws SipParseException;
+    Optional<Transport> getTransportParam() throws SipParseException;
 
     /**
      * Get the user parameter. This is the same as {@link #getParameter("user")}
@@ -84,7 +86,7 @@ public interface SipURI extends URI {
      * @return
      * @throws SipParseException
      */
-    Buffer getUserParam() throws SipParseException;
+    Optional<Buffer> getUserParam() throws SipParseException;
 
     /**
      * Get the ttl parameter. This is the same as {@link #getParameter("ttl")}
@@ -100,7 +102,7 @@ public interface SipURI extends URI {
      * @return
      * @throws SipParseException
      */
-    Buffer getMAddrParam() throws SipParseException;
+    Optional<Buffer> getMAddrParam() throws SipParseException;
 
     /**
      * Get the method parameter. This is the same as {@link #getParameter("method")}
@@ -108,7 +110,7 @@ public interface SipURI extends URI {
      * @return
      * @throws SipParseException
      */
-    Buffer getMethodParam() throws SipParseException;
+    Optional<Buffer> getMethodParam() throws SipParseException;
 
     /**
      * Get the value of the named parameter. If the named parameter is a so-called flag parameter,
@@ -123,7 +125,7 @@ public interface SipURI extends URI {
      * @throws SipParseException in case anything goes wrong while extracting the parameter.
      * @throws IllegalArgumentException in case the name is null.
      */
-    Buffer getParameter(Buffer name) throws SipParseException, IllegalArgumentException;
+    Optional<Buffer> getParameter(Buffer name) throws SipParseException, IllegalArgumentException;
 
     /**
      * Same as {@link #getParameter(Buffer)}.
@@ -133,7 +135,7 @@ public interface SipURI extends URI {
      * @throws SipParseException in case anything goes wrong while extracting the parameter.
      * @throws IllegalArgumentException in case the name is null.
      */
-    Buffer getParameter(String name) throws SipParseException, IllegalArgumentException;
+    Optional<Buffer> getParameter(String name) throws SipParseException, IllegalArgumentException;
 
     /**
      * Sets the value of the specified parameter. If there already is a parameter with the same name
@@ -323,15 +325,11 @@ public interface SipURI extends URI {
      */
     static Builder withTemplate(final SipURI uri) {
         final Builder b = new Builder();
-        b.withUser(uri.getUser());
+        b.withUser(uri.getUser().orElse(null));
         b.withHost(uri.getHost());
         b.withPort(uri.getPort());
         b.withSecure(uri.isSecure());
-        final Buffer transport = uri.getTransportParam();
-        if (transport != null && !transport.isEmpty()) {
-            b.withParameter(SipParser.TRANSPORT, transport);
-        }
-
+        uri.getTransportParam().ifPresent(t -> b.withParameter(SipParser.TRANSPORT, t.toBuffer()));
         return b;
     }
 
@@ -367,7 +365,7 @@ public interface SipURI extends URI {
          * @return
          */
         public Builder withUser(final Buffer user) {
-            if (user != null) {
+            if (user != null && !user.isEmpty()) {
                 // note that we must subtract the previous capacity of the user portion.
                 // the +1 is for the '@' sign that we will write into the buffer if there
                 // indeed is a user portion in this URI.
@@ -410,14 +408,23 @@ public interface SipURI extends URI {
             return withHost(Buffers.wrap(host));
         }
 
+
+        public Builder withTransport(final Transport transport) throws SipParseException {
+            assertNotNull(transport, "Transport cannot be null or empty");
+            this.paramSupport.setParameter(SipParser.TRANSPORT, transport.toBuffer());
+            return this;
+        }
+
         public Builder withTransport(final Buffer transport) throws SipParseException {
-            assertNotEmpty(transport, "Transport cannot be null or empty");
+            // will check so that it is actually ok
+            Transport.of(transport);
             this.paramSupport.setParameter(SipParser.TRANSPORT, transport);
             return this;
         }
 
         public Builder withTransport(final String transport) throws SipParseException {
-            assertNotEmpty(transport, "Transport cannot be null or empty");
+            // will check so that it is actually ok
+            Transport.of(transport);
             this.paramSupport.setParameter(SipParser.TRANSPORT, Buffers.wrap(transport));
             return this;
         }

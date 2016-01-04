@@ -2,6 +2,7 @@ package io.pkts.packet.sip.impl;
 
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
+import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.address.URI;
@@ -140,7 +141,7 @@ public class RecordRouteAndRouteSipMessageTest extends PktsTestBase {
     private void assertRouteHeader(final RouteHeader route, final String user, final String host,
             final String headerValue) {
         assertThat(((SipURI) route.getAddress().getURI()).getHost().toString(), is(host));
-        assertThat(((SipURI) route.getAddress().getURI()).getUser().toString(), is(user));
+        assertThat(((SipURI) route.getAddress().getURI()).getUser().orElse(Buffers.EMPTY_BUFFER), is(Buffers.wrap(user)));
         assertThat(route.getValue().toString(), is(headerValue));
         assertThat(route.toString(), is(RouteHeader.NAME + ": " + headerValue));
     }
@@ -192,7 +193,7 @@ public class RecordRouteAndRouteSipMessageTest extends PktsTestBase {
     private void assertRecordRouteHeader(final RecordRouteHeader route, final String user, final String host,
             final String headerValue) {
         assertThat(((SipURI) route.getAddress().getURI()).getHost().toString(), is(host));
-        assertThat(((SipURI) route.getAddress().getURI()).getUser().toString(), is(user));
+        assertThat(((SipURI) route.getAddress().getURI()).getUser().orElse(Buffers.EMPTY_BUFFER), is(Buffers.wrap(user)));
         assertThat(route.getValue().toString(), is(headerValue));
         assertThat(route.toString(), is(RecordRouteHeader.NAME + ": " + headerValue));
     }

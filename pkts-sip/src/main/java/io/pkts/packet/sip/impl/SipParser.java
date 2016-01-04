@@ -292,6 +292,14 @@ public class SipParser {
         }
     }
 
+    public static boolean isWSS(final Buffer t) {
+        try {
+            return t.capacity() == 3 && t.getByte(0) == 'W' && t.getByte(1) == 'S' && t.getByte(2) == 'S';
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
     public static boolean isSCTP(final Buffer t) {
         try {
             return t.capacity() == 4 && t.getByte(0) == 'S' && t.getByte(1) == 'C' && t.getByte(2) == 'T'
@@ -338,6 +346,14 @@ public class SipParser {
     public static boolean isWSLower(final Buffer t) {
         try {
             return t.capacity() == 2 && t.getByte(0) == 'w' && t.getByte(1) == 's';
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
+    public static boolean isWSSLower(final Buffer t) {
+        try {
+            return t.capacity() == 3 && t.getByte(0) == 'w' && t.getByte(1) == 's' && t.getByte(2) == 's';
         } catch (final IOException e) {
             return false;
         }

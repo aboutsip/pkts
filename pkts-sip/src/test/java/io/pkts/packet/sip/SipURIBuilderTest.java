@@ -20,11 +20,11 @@ public class SipURIBuilderTest {
     public void testBasicBuild() throws Exception {
         SipURI sipURI = SipURI.withHost(this.host).build();
         assertThat(sipURI.getHost().toString(), is(this.host));
-        assertThat(sipURI.getUser().isEmpty(), is(true));
+        assertThat(sipURI.getUser().isPresent(), is(false));
         assertThat(sipURI.toBuffer().toString(), is("sip:example.com"));
 
         sipURI = SipURI.withUser("nisse").withPort(5098).withHost(this.host).build();
-        assertThat(sipURI.getUser().toString(), is("nisse"));
+        assertThat(sipURI.getUser().get().toString(), is("nisse"));
         assertThat(sipURI.getPort(), is(5098));
         assertThat(sipURI.toBuffer().toString(), is("sip:nisse@example.com:5098"));
 

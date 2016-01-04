@@ -39,7 +39,7 @@ public class SipRequestBuilder extends SipMessageBuilder<SipRequest> implements 
         PreConditions.assertNotNull(requestURI, "No request-uri has been specified so cannot generate a default To-header");
         if (requestURI.isSipURI()) {
             final SipURI sipURI = requestURI.toSipURI();
-            return ToHeader.withHost(sipURI.getHost()).withUser(sipURI.getUser()).build();
+            return ToHeader.withHost(sipURI.getHost()).withUser(sipURI.getUser().orElse(null)).build();
         } else {
             throw new SipParseException("Not sure how to generate a default To-header off of a " + requestURI.getClass());
         }
