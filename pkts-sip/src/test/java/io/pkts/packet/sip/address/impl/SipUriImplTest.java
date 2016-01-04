@@ -7,6 +7,7 @@ import io.pkts.PktsTestBase;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.Transport;
 import io.pkts.packet.sip.address.SipURI;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,14 +31,14 @@ public class SipUriImplTest extends PktsTestBase {
     @Test
     public void testSipURITransportTLS() throws Exception {
         final SipURI uri = SipURI.withHost("pkts.io").withTransport("tls").build();
-        assertThat(uri.getTransportParam().toString(), is("tls"));
+        assertThat(uri.getTransportParam().get(), is(Transport.tls));
         assertThat(uri.toString(), is("sip:pkts.io;transport=tls"));
     }
 
     @Test
     public void testSipURITransportWS() throws Exception {
         final SipURI uri = SipURI.withHost("pkts.io").withTransport("ws").build();
-        assertThat(uri.getTransportParam().toString(), is("ws"));
+        assertThat(uri.getTransportParam().get(), is(Transport.ws));
         assertThat(uri.toString(), is("sip:pkts.io;transport=ws"));
     }
 
@@ -61,19 +62,19 @@ public class SipUriImplTest extends PktsTestBase {
         assertThat(uri5, is(uri1));
 
         assertThat(uri1.getHost().toString(), is("pkts.io"));
-        assertThat(uri1.getUser().toString(), is("hello"));
+        assertThat(uri1.getUser().get().toString(), is("hello"));
         assertThat(uri1.getPort(), is(-1));
-        assertThat(uri1.getTransportParam(), is((Buffer)null));
+        assertThat(uri1.getTransportParam().isPresent(), is(false));
 
         assertThat(uri2.getHost().toString(), is("pkts.io"));
-        assertThat(uri2.getUser().toString(), is("hello"));
+        assertThat(uri2.getUser().get().toString(), is("hello"));
         assertThat(uri2.getPort(), is(8765));
-        assertThat(uri2.getTransportParam().toString(), is("tcp"));
+        assertThat(uri2.getTransportParam().get(), is(Transport.tcp));
 
         assertThat(uri3.getHost().toString(), is("pkts.io"));
-        assertThat(uri3.getUser().toString(), is("hello"));
+        assertThat(uri3.getUser().orElse(null), is(Buffers.wrap("hello")));
         assertThat(uri3.getPort(), is(-1));
-        assertThat(uri3.getTransportParam().toString(), is("tcp"));
+        assertThat(uri3.getTransportParam().get(), is(Transport.tcp));
 
     }
 
@@ -231,8 +232,8 @@ public class SipUriImplTest extends PktsTestBase {
 
         final SipURI clone = uri.clone();
         assertThat(clone.getPort(), is(51945));
-        assertThat(clone.getParameter("ob"), is(Buffers.EMPTY_BUFFER));
-        assertThat(clone.getParameter("expires").toString(), is("500"));
+        assertThat(clone.getParameter("ob").get(), is(Buffers.EMPTY_BUFFER));
+        assertThat(clone.getParameter("expires").get().toString(), is("500"));
     }
 
     /**
