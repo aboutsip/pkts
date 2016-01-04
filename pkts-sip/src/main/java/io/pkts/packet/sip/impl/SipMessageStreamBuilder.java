@@ -10,7 +10,6 @@ import io.pkts.packet.sip.header.impl.SipHeaderImpl;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -341,8 +340,6 @@ public class SipMessageStreamBuilder {
         }
     }
 
-
-
     private final State onHeaderValues(final Buffer buffer) {
         try {
 
@@ -511,6 +508,18 @@ public class SipMessageStreamBuilder {
         @Override
         public int getMaxAllowedContentLength() {
             return maxAllowedContentLength;
+        }
+
+        public void setMaxAllowedInitialLineSize(final int value) {
+            this.maxAllowedInitialLineSize = value;
+        }
+
+        public void setMaxAllowedHeadersSize(final int value) {
+            this.maxAllowedHeadersSize = value;
+        }
+
+        public void setMaxAllowedContentLength(final int value) {
+            this.maxAllowedContentLength = value;
         }
     }
 

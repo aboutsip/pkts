@@ -121,6 +121,16 @@ public class EmptyBuffer implements Buffer {
         return this;
     }
 
+    @Override
+    public int getLowerBoundary() {
+        return 0;
+    }
+
+    @Override
+    public int getUpperBoundary() {
+        return 0;
+    }
+
     /**
      * {@inheritDoc}
      */
