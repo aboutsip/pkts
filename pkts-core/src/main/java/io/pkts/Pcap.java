@@ -73,15 +73,16 @@ public class Pcap {
         int count = 1;
 
         Packet packet = null;
-        while ((packet = framer.frame(null, this.buffer)) != null) {
+        boolean processNext = true;
+        while ((packet = framer.frame(null, this.buffer)) != null && processNext) {
             try {
                 // System.out.println(" - " + (count++));
                 final long time = packet.getArrivalTime();
                 this.framerManager.tick(time);
                 if (this.filter == null) {
-                    callback.nextPacket(packet);
+                    processNext = callback.nextPacket(packet);
                 } else if (this.filter != null && this.filter.accept(packet)) {
-                    callback.nextPacket(packet);
+                    processNext = callback.nextPacket(packet);
                 }
             } catch (final FilterException e) {
                 // TODO: use the callback instead to signal

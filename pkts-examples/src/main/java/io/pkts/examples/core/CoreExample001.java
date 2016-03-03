@@ -33,7 +33,7 @@ public class CoreExample001 {
         //          simple interface with only a single method - nextPacket
         pcap.loop(new PacketHandler() {
             @Override
-            public void nextPacket(final Packet packet) throws IOException {
+            public boolean nextPacket(final Packet packet) throws IOException {
 
                 // Step 3 - For every new packet the PacketHandler will be 
                 //          called and you can examine this packet in a few
@@ -48,6 +48,8 @@ public class CoreExample001 {
                     //          doing below.
                     System.out.println(packet.getPacket(Protocol.UDP).getPayload());
                 }
+
+                return true;
             }
         });
     }

@@ -99,12 +99,14 @@ public class TransportPacketFactoryImplTest {
         final AtomicReference<TransportPacket> result = new AtomicReference<TransportPacket>();
         pcap.loop(new PacketHandler() {
             @Override
-            public void nextPacket(final Packet frame) throws IOException {
+            public boolean nextPacket(final Packet frame) throws IOException {
                 if (frame.hasProtocol(Protocol.UDP)) {
                     result.set((TransportPacket) frame.getPacket(Protocol.UDP));
                 } else if (frame.hasProtocol(Protocol.TCP)) {
                     result.set((TransportPacket) frame.getPacket(Protocol.TCP));
                 }
+
+                return true;
             }
         });
 

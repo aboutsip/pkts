@@ -20,7 +20,9 @@ public interface PacketHandler {
      * @param packet
      *            the new {@link Packet} as read off of the pcap stream.
      * @throws IOException
+     * @return true if this instance wants to handle subsequent packets, false
+     *          otherwise.
      */
-    void nextPacket(Packet packet) throws IOException;
+    boolean nextPacket(Packet packet) throws IOException;
 
 }

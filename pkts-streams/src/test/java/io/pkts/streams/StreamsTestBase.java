@@ -70,7 +70,7 @@ public class StreamsTestBase {
         pcap.loop(new PacketHandler() {
 
             @Override
-            public void nextPacket(final Packet pkt) {
+            public boolean nextPacket(final Packet pkt) {
                 try {
                     if (pkt.hasProtocol(Protocol.SIP)) {
                         final SipPacket msg = (SipPacket) pkt.getPacket(Protocol.SIP);
@@ -80,6 +80,8 @@ public class StreamsTestBase {
                     e.printStackTrace();
                     throw new RuntimeException("Couldn't load the messages from the stream");
                 }
+
+                return true;
             }
         });
         pcap.close();
