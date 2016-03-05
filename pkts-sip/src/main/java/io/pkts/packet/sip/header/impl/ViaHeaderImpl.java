@@ -6,6 +6,7 @@ package io.pkts.packet.sip.header.impl;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.Transport;
 import io.pkts.packet.sip.header.Parameters;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ViaHeader;
@@ -33,7 +34,7 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
      */
     private final Buffer original;
 
-    private final Buffer transport;
+    private final Transport transport;
 
     private final Buffer host;
 
@@ -67,7 +68,7 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
      * @param indexOfRPort the index of the rport parameter
      */
     public ViaHeaderImpl(final Buffer via,
-                         final Buffer transport,
+                         final Transport transport,
                          final Buffer host,
                          final int port,
                          final List<Buffer[]> params,
@@ -125,7 +126,7 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
 
     @Override
     public Buffer getTransport() {
-        return this.transport;
+        return this.transport.toUpperCaseBuffer();
     }
 
     @Override
@@ -207,22 +208,32 @@ public final class ViaHeaderImpl implements ViaHeader, SipHeader, Parameters {
 
     @Override
     public boolean isUDP() {
-        return SipParser.isUDP(this.transport);
+        return transport == Transport.udp;
     }
 
     @Override
     public boolean isTCP() {
-        return SipParser.isTCP(this.transport);
+        return transport == Transport.tcp;
     }
 
     @Override
     public boolean isTLS() {
-        return SipParser.isTLS(this.transport);
+        return transport == Transport.tls;
     }
 
     @Override
     public boolean isSCTP() {
-        return SipParser.isSCTP(this.transport);
+        return transport == Transport.sctp;
+    }
+
+    @Override
+    public boolean isWS() {
+        return transport == Transport.ws;
+    }
+
+    @Override
+    public boolean isWSS() {
+        return transport == Transport.wss;
     }
 
     /**
