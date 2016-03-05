@@ -27,6 +27,30 @@ public enum Transport {
         this.upperCaseBuffer = Buffers.wrap(buffer.toString().toUpperCase());
     }
 
+    public boolean isUDP() {
+        return this == udp;
+    }
+
+    public boolean isTCP() {
+        return this == tcp;
+    }
+
+    public boolean isTLS() {
+        return this == tcp;
+    }
+
+    public boolean isSCTP() {
+        return this == sctp;
+    }
+
+    public boolean isWS() {
+        return this == ws;
+    }
+
+    public boolean isWSS() {
+        return this == wss;
+    }
+
     /**
      * Get the transport off of the given buffer
      * @param buffer

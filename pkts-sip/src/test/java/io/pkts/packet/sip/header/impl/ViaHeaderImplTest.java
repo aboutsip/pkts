@@ -50,7 +50,6 @@ public class ViaHeaderImplTest {
     @Test
     public void testViaHeader() throws Exception {
         assertVia("SIP/2.0/UDP aboutsip.com;branch=45", "UDP", "aboutsip.com", -1, "45");
-        assertVia("SIP/2.0/APA aboutsip.com;branch=45", "APA", "aboutsip.com", -1, "45");
         assertVia("SIP/2.0/UDP aboutsip.com:5060;branch=45", "UDP", "aboutsip.com", 5060, "45");
         assertVia("SIP/2.0/UDP aboutsip.com:9;branch=45", "UDP", "aboutsip.com", 9, "45");
         assertVia("SIP/2.0/UDP aboutsip.com:9999;branch=z9klj-kljfljk-kjkjkj-ouklj", "UDP", "aboutsip.com", 9999,
