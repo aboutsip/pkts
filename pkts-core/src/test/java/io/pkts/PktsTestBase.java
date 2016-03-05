@@ -143,8 +143,9 @@ public class PktsTestBase {
         final List<Packet> packets = new ArrayList<Packet>();
         pcap.loop(new PacketHandler() {
             @Override
-            public void nextPacket(final Packet packet) {
+            public boolean nextPacket(final Packet packet) {
                 packets.add(packet);
+                return true;
             }
         });
         pcap.close();
@@ -173,7 +174,7 @@ public class PktsTestBase {
         public int cancel;
 
         @Override
-        public void nextPacket(final Packet packet) {
+        public boolean nextPacket(final Packet packet) {
             try {
                 final SipPacket msg = (SipPacket) packet.getPacket(Protocol.SIP);
                 ++this.total;
@@ -193,7 +194,7 @@ public class PktsTestBase {
             } catch (final PacketParseException e) {
                 fail("Got a PacketParseException in my test " + e.getMessage());
             }
-
+            return true;
         }
 
     }
@@ -216,7 +217,7 @@ public class PktsTestBase {
         }
 
         @Override
-        public void nextPacket(final Packet packet) {
+        public boolean nextPacket(final Packet packet) {
             try {
                 // only write out INVITE and BYE requests
                 final SipPacket msg = (SipPacket) packet.getPacket(Protocol.SIP);
@@ -231,6 +232,8 @@ public class PktsTestBase {
             } catch (final PacketParseException e) {
                 fail("Got a PacketParseException in my test " + e.getMessage());
             }
+
+            return true;
         }
     }
 

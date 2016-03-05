@@ -74,7 +74,7 @@ public final class DefaultStreamHandler implements StreamHandler {
      * {@inheritDoc}
      */
     @Override
-    public void nextPacket(Packet packet) {
+    public boolean nextPacket(Packet packet) {
 
         try {
             if (packet.hasProtocol(Protocol.IPv4)) {
@@ -82,7 +82,7 @@ public final class DefaultStreamHandler implements StreamHandler {
                 if (ip.isFragmented()) {
                     packet = handleFragmentation(ip);
                     if (packet == null) {
-                        return;
+                        return true;
                     }
                 }
             }
@@ -99,6 +99,8 @@ public final class DefaultStreamHandler implements StreamHandler {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
+        return true;
 
     }
 

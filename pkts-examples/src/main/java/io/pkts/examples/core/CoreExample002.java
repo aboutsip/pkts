@@ -60,7 +60,7 @@ public class CoreExample002 {
         //          simple interface with only a single method - nextPacket
         pcap.loop(new PacketHandler() {
             @Override
-            public void nextPacket(final Packet packet) throws IOException {
+            public boolean nextPacket(final Packet packet) throws IOException {
 
                 // Step 6 - In this example we assume SIP & RTP is both over UDP. For
                 //          RTP that will most likely always be true (even though you
@@ -95,6 +95,8 @@ public class CoreExample002 {
                         out.write(packet);
                     }
                 }
+
+                return true;
             }
         });
 

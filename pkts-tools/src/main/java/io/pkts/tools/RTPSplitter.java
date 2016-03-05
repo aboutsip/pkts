@@ -51,7 +51,7 @@ public class RTPSplitter {
         private final Map<String, SipFlow> sipFlows = new HashMap<String, SipFlow>();
 
         @Override
-        public void nextPacket(final Packet frame) {
+        public boolean nextPacket(final Packet frame) {
             try {
                 if (frame.hasProtocol(Protocol.SIP)) {
                     processSipFrame((SipPacket) frame.getPacket(Protocol.SIP));
@@ -65,6 +65,8 @@ public class RTPSplitter {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+
+            return true;
         }
 
         public void saveSipFlows(final Pcap pcap, final String prefix) throws IOException {

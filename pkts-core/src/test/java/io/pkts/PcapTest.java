@@ -42,7 +42,7 @@ public class PcapTest extends PktsTestBase {
         public int count;
 
         @Override
-        public void nextPacket(final Packet packet) {
+        public boolean nextPacket(final Packet packet) {
             try {
                 final SipPacket sip = (SipPacket) packet.getPacket(Protocol.SIP);
                 ++this.count;
@@ -50,6 +50,8 @@ public class PcapTest extends PktsTestBase {
                 e.printStackTrace();
                 fail("ooops");
             }
+
+            return true;
         }
     }
 
