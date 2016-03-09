@@ -47,7 +47,6 @@ public class IPv4Framer implements Framer<MACPacket> {
         // final int version = ((i >>> 28) & 0x0F);
         // final int length = ((i >>> 24) & 0x0F);
 
-        final int version = b >>> 5 & 0x0F;
         final int length = b & 0x0F;
 
         // byte 2 - dscp and ecn

@@ -98,9 +98,7 @@ public final class RTPFramer implements Framer<TransportPacket> {
             final int csrcCount = b & 0x0F;
 
             if (hasExtension) {
-                final short extensionHeaders = buffer.readShort();
                 final int length = buffer.readUnsignedShort();
-                final Buffer extensionData = buffer.readBytes(length);
             }
 
             if (hasPadding || hasExtension || csrcCount > 0) {

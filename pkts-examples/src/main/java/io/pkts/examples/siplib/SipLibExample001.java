@@ -43,16 +43,6 @@ public class SipLibExample001 {
         // Strings, Buffers and byte-arrays.
         final SipMessage msg = SipMessage.frame(rawMessage);
 
-        // Once the message has successfully been parsed you
-        // can access headers etc within the SIP message.
-        final FromHeader from = msg.getFromHeader();
-
-        // All headers that typically are needed for any application, and
-        // in particular for SIP stacks, have explicit methods and returns
-        // explicit objects. You may still use the generic getHeader but then
-        // you will get a generic SIP header back.
-        final ContactHeader contact = msg.getContactHeader();
-
         // Instead of having to do SipMessage.getMethod().equals("BYE") etc
         // the SIP message has many convenience methods for making the code
         // more readable, less error prone and less boiler place to write.

@@ -74,7 +74,6 @@ public class SDPWrapper implements SDP {
             throws SdpParseException {
         final Media m = md.getMedia();
         if ("RTP/AVP".equalsIgnoreCase(m.getProtocol())) {
-            final Connection c = md.getConnection() != null ? null : connection;
             return new RTPInfoImpl(connection, md);
         }
         return null;
