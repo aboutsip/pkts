@@ -50,8 +50,6 @@ public final class ParametersSupport {
      */
     private boolean isDirty;
 
-    private final int estimatedSize = 0;
-
     public ParametersSupport() {
         this(null);
     }

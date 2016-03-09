@@ -82,8 +82,6 @@ public interface AddressParametersHeader extends SipHeader, HeaderAddress, Param
 
         private Address.Builder addressBuilder;
 
-        private Buffer value;
-
         /**
          * Note these are the header parameters and are not to be confused with any URI parameters
          * that are "attached" to the URI within the address object.

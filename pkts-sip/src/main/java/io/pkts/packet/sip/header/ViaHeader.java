@@ -242,7 +242,6 @@ public interface ViaHeader extends Parameters, SipHeader {
         private static final Buffer BRANCH = Buffers.wrap("branch");
         private static final Buffer RECEIVED = Buffers.wrap("received");
         private static final Buffer RPORT = Buffers.wrap("rport");
-        private static final Buffer TTL = Buffers.wrap("ttl");
 
         private int indexOfBranch;
 
@@ -254,8 +253,6 @@ public interface ViaHeader extends Parameters, SipHeader {
         private Buffer host;
         private int port;
         private List<Buffer[]> params;
-
-        private Buffer branch;
 
         public Builder() {
             params = new ArrayList<>(3);
