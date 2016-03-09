@@ -228,7 +228,7 @@ public final class ParametersSupport {
      * 
      * @return
      */
-    private Buffer allcoateNewParamBuffer() {
+    private static Buffer allcoateNewParamBuffer() {
         // TODO: actually do what we claim that we are doing
         // and figure out how big of a buffer we need.
         return Buffers.createBuffer(256);

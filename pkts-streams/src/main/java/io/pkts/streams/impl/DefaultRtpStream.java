@@ -64,7 +64,7 @@ public final class DefaultRtpStream implements RtpStream {
      * command should take care of that and make sure that we merge things in the correct order so
      * therefore we dont care here...
      */
-    private void redrive() {
+    private static void redrive() {
         // TODO
         if (logger.isInfoEnabled()) {
             logger.info("Out-of-sequence event detected. Redriving all traffic.");

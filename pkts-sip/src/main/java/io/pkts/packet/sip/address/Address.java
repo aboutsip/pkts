@@ -453,7 +453,7 @@ public interface Address {
             return new AddressImpl(addressBuf, this.displayName, uri);
         }
 
-        private boolean doubleQuoteIt(final Buffer buffer) {
+        private static boolean doubleQuoteIt(final Buffer buffer) {
             try {
                 // Don't think a display name would be longer than 1k but if
                 // it is and there is a space after that 1k then this fails...

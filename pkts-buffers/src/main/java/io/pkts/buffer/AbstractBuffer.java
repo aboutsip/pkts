@@ -200,7 +200,7 @@ public abstract class AbstractBuffer implements Buffer {
         return index;
     }
 
-    private boolean isByteInArray(final byte b, final byte[] bytes) {
+    private static boolean isByteInArray(final byte b, final byte[] bytes) {
         for (final byte x : bytes) {
             if (x == b) {
                 return true;

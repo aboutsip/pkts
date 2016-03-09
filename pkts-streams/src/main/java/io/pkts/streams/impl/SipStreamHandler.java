@@ -58,7 +58,7 @@ public class SipStreamHandler {
         this.framerManager = framerManager;
     }
 
-    private StreamId getStreamId(final SipPacket msg) throws SipParseException {
+    private static StreamId getStreamId(final SipPacket msg) throws SipParseException {
         try {
             return new BufferStreamId(msg.getCallIDHeader().getValue());
         } catch (final NullPointerException e) {
@@ -140,7 +140,7 @@ public class SipStreamHandler {
      * 
      * @param msg
      */
-    private void checkMessageForContent(final SipPacket msg) {
+    private static void checkMessageForContent(final SipPacket msg) {
         if (!msg.hasContent()) {
             return;
         }
