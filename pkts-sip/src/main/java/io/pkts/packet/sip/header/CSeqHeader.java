@@ -19,6 +19,7 @@ import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
  */
 public interface CSeqHeader extends SipHeader {
 
+    public static final String METHOD_CANNOT_BE_NULL_OR_EMPTY = "Method cannot be null or empty";
     Buffer NAME = Buffers.wrap("CSeq");
 
     Buffer getMethod();
@@ -64,11 +65,11 @@ public interface CSeqHeader extends SipHeader {
     }
 
     static Builder withMethod(final Buffer method) {
-        return new Builder(assertNotEmpty(method, "Method cannot be null or empty"));
+        return new Builder(assertNotEmpty(method, METHOD_CANNOT_BE_NULL_OR_EMPTY));
     }
 
     static Builder withMethod(final String method) {
-        return new Builder(Buffers.wrap(assertNotEmpty(method, "Method cannot be null or empty")));
+        return new Builder(Buffers.wrap(assertNotEmpty(method, METHOD_CANNOT_BE_NULL_OR_EMPTY)));
     }
 
     class Builder implements SipHeader.Builder<CSeqHeader> {
@@ -98,13 +99,13 @@ public interface CSeqHeader extends SipHeader {
         }
 
         public Builder withMethod(final Buffer method) throws SipParseException {
-            assertNotEmpty(method, "Method cannot be null or empty");
+            assertNotEmpty(method, METHOD_CANNOT_BE_NULL_OR_EMPTY);
             this.method = method;
             return this;
         }
 
         public Builder withMethod(final String method) throws SipParseException {
-            this.method = Buffers.wrap(assertNotEmpty(method, "Method cannot be null or empty"));
+            this.method = Buffers.wrap(assertNotEmpty(method, METHOD_CANNOT_BE_NULL_OR_EMPTY));
             return this;
         }
 

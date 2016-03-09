@@ -38,6 +38,8 @@ import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
  */
 public interface SipMessage extends Cloneable {
 
+    public static final String UNABLE_TO_PARSE_OUT_THE_METHOD_DUE_TO_UNDERLYING_IO_EXCEPTION = "Unable to parse out the method due to underlying IOException";
+
     /**
      * The first line of a sip message, which is either a request or a response
      * line
@@ -363,7 +365,7 @@ public interface SipMessage extends Cloneable {
             return m.getByte(0) == 'I' && m.getByte(1) == 'N' && m.getByte(2) == 'V' && m.getByte(3) == 'I'
                     && m.getByte(4) == 'T' && m.getByte(5) == 'E';
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_METHOD_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
     }
 
@@ -380,7 +382,7 @@ public interface SipMessage extends Cloneable {
             return m.getByte(0) == 'R' && m.getByte(1) == 'E' && m.getByte(2) == 'G' && m.getByte(3) == 'I'
                     && m.getByte(4) == 'S' && m.getByte(5) == 'T' && m.getByte(6) == 'E' && m.getByte(7) == 'R';
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_METHOD_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
     }
 
@@ -397,7 +399,7 @@ public interface SipMessage extends Cloneable {
         try {
             return m.getByte(0) == 'B' && m.getByte(1) == 'Y' && m.getByte(2) == 'E';
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_METHOD_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
     }
 
@@ -416,7 +418,7 @@ public interface SipMessage extends Cloneable {
         try {
             return m.getByte(0) == 'A' && m.getByte(1) == 'C' && m.getByte(2) == 'K';
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_METHOD_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
     }
 
@@ -435,7 +437,7 @@ public interface SipMessage extends Cloneable {
             return m.getByte(0) == 'C' && m.getByte(1) == 'A' && m.getByte(2) == 'N' && m.getByte(3) == 'C'
                     && m.getByte(4) == 'E' && m.getByte(5) == 'L';
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_METHOD_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
     }
 
@@ -455,7 +457,7 @@ public interface SipMessage extends Cloneable {
             return m.getByte(0) == 'O' && m.getByte(1) == 'P' && m.getByte(2) == 'T' && m.getByte(3) == 'I'
                     && m.getByte(4) == 'O' && m.getByte(5) == 'N' && m.getByte(6) == 'S';
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_METHOD_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
     }
 
@@ -476,7 +478,7 @@ public interface SipMessage extends Cloneable {
             return m.getByte(0) == 'M' && m.getByte(1) == 'E' && m.getByte(2) == 'S' && m.getByte(3) == 'S'
                     && m.getByte(4) == 'A' && m.getByte(5) == 'G' && m.getByte(6) == 'E';
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_METHOD_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
     }
 
@@ -495,7 +497,7 @@ public interface SipMessage extends Cloneable {
         try {
             return m.getByte(0) == 'I' && m.getByte(1) == 'N' && m.getByte(2) == 'F' && m.getByte(3) == 'O';
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the method due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_METHOD_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
     }
 

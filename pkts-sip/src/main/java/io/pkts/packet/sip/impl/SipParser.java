@@ -54,6 +54,8 @@ import java.util.function.Function;
  */
 public class SipParser {
 
+    private static final String UNABLE_TO_READ_FROM_STREAM = "Unable to read from stream";
+
     /**
      * There are many situations where you are looking to frame something but
      * you cannot find the terminating condition. Since an attacker could easily
@@ -544,7 +546,7 @@ public class SipParser {
             }
             return consumed;
         } catch (final IOException e) {
-            throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
+            throw new SipParseException(buffer.getReaderIndex(), UNABLE_TO_READ_FROM_STREAM, e);
         }
     }
 
@@ -610,7 +612,7 @@ public class SipParser {
                         "Expected WS but nothing more to read in the buffer");
             }
         } catch (final IOException e) {
-            throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
+            throw new SipParseException(buffer.getReaderIndex(), UNABLE_TO_READ_FROM_STREAM, e);
         }
         return consumed;
     }
@@ -1646,7 +1648,7 @@ public class SipParser {
         } catch (final IndexOutOfBoundsException e) {
             // fall through
         } catch (final IOException e) {
-            throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
+            throw new SipParseException(buffer.getReaderIndex(), UNABLE_TO_READ_FROM_STREAM, e);
         }
         buffer.resetReaderIndex();
         return 0;
@@ -1693,7 +1695,7 @@ public class SipParser {
             }
             return count;
         } catch (final IOException e) {
-            throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
+            throw new SipParseException(buffer.getReaderIndex(), UNABLE_TO_READ_FROM_STREAM, e);
         }
     }
 
@@ -1715,7 +1717,7 @@ public class SipParser {
                 throw new SipParseException(buffer.getReaderIndex(), "Expected '" + ch + "' got '" + i + "'");
             }
         } catch (final IOException e) {
-            throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
+            throw new SipParseException(buffer.getReaderIndex(), UNABLE_TO_READ_FROM_STREAM, e);
         }
     }
 
@@ -1741,7 +1743,7 @@ public class SipParser {
             expectHCOLON(buffer);
             return name;
         } catch (final IOException e) {
-            throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
+            throw new SipParseException(buffer.getReaderIndex(), UNABLE_TO_READ_FROM_STREAM, e);
         }
     }
 
@@ -1772,7 +1774,7 @@ public class SipParser {
             }
             return headers;
         } catch (final IOException e) {
-            throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
+            throw new SipParseException(buffer.getReaderIndex(), UNABLE_TO_READ_FROM_STREAM, e);
         }
     }
 
@@ -1976,7 +1978,7 @@ public class SipParser {
 
             return new SipHeaderImpl(name, valueBuffer);
         } catch (final IOException e) {
-            throw new SipParseException(buffer.getReaderIndex(), "Unable to read from stream", e);
+            throw new SipParseException(buffer.getReaderIndex(), UNABLE_TO_READ_FROM_STREAM, e);
         }
     }
 

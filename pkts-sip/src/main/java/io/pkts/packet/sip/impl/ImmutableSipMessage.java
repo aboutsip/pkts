@@ -30,6 +30,7 @@ import java.util.Optional;
  */
 public abstract class ImmutableSipMessage implements SipMessage {
 
+    private static final String I_AM_IMMUTABLE_NO_CAN_DO = "I am immutable, no can do";
     private final Buffer message;
     private final SipInitialLine initialLine;
     private final List<SipHeader> headers;
@@ -155,23 +156,23 @@ public abstract class ImmutableSipMessage implements SipMessage {
 
     @Override
     public void addHeader(final SipHeader header) throws SipParseException {
-        throw new RuntimeException("I am immutable, no can do");
+        throw new RuntimeException(I_AM_IMMUTABLE_NO_CAN_DO);
     }
 
     @Override
     public void addHeaderFirst(SipHeader header) throws SipParseException {
-        throw new RuntimeException("I am immutable, no can do");
+        throw new RuntimeException(I_AM_IMMUTABLE_NO_CAN_DO);
 
     }
 
     @Override
     public SipHeader popHeader(Buffer headerNme) throws SipParseException {
-        throw new RuntimeException("I am immutable, no can do");
+        throw new RuntimeException(I_AM_IMMUTABLE_NO_CAN_DO);
     }
 
     @Override
     public void setHeader(SipHeader header) throws SipParseException {
-        throw new RuntimeException("I am immutable, no can do");
+        throw new RuntimeException(I_AM_IMMUTABLE_NO_CAN_DO);
 
     }
 
