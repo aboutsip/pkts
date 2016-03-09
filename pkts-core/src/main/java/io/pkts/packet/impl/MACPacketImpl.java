@@ -122,8 +122,8 @@ public final class MACPacketImpl extends AbstractPacket implements MACPacket {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("Destination Mac Address: ").append(this.destinationMacAddress);
-        sb.append(" Source Mac Address: ").append(this.sourceMacAddress);
+        sb.append("Destination Mac Address: ").append(this.destinationMacAddress)
+          .append(" Source Mac Address: ").append(this.sourceMacAddress);
         return sb.toString();
     }
 

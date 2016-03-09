@@ -69,11 +69,11 @@ public final class PCapPacketImpl extends AbstractPacket implements PCapPacket {
         final StringBuilder sb = new StringBuilder();
         final SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss.SSS");
         final Date date = new Date(getArrivalTime() / 1000);
-        sb.append("Arrival Time: ").append(formatter.format(date));
-        sb.append(" Epoch Time: ").append(this.pcapHeader.getTimeStampSeconds()).append(".")
-                .append(this.pcapHeader.getTimeStampMicroSeconds());
-        sb.append(" Frame Length: ").append(getTotalLength());
-        sb.append(" Capture Length: ").append(getCapturedLength());
+        sb.append("Arrival Time: ").append(formatter.format(date))
+          .append(" Epoch Time: ").append(this.pcapHeader.getTimeStampSeconds()).append(".")
+          .append(this.pcapHeader.getTimeStampMicroSeconds())
+          .append(" Frame Length: ").append(getTotalLength())
+          .append(" Capture Length: ").append(getCapturedLength());
 
         return sb.toString();
     }

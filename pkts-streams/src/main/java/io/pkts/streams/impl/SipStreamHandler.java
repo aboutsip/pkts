@@ -277,16 +277,16 @@ public class SipStreamHandler {
         @Override
         public String dumpInfo() {
             final StringBuilder sb = new StringBuilder();
-            sb.append("Total: ").append(this.total);
-            sb.append("\nRequests");
-            sb.append("\n   INVITE: ").append(this.inviteRequests);
-            sb.append("\n   ACK: ").append(this.ackRequests);
-            sb.append("\n   OPTIONS: ").append(this.optionsRequests);
-            sb.append("\n   BYE: ").append(this.byeRequests);
-            sb.append("\n   MESSAGE: ").append(this.messageRequests);
-            sb.append("\n   CANCEL: ").append(this.cancelRequests);
-            sb.append("\n   INFO: ").append(this.infoRequests);
-            sb.append("\nResponses: ");
+            sb.append("Total: ").append(this.total)
+              .append("\nRequests")
+              .append("\n   INVITE: ").append(this.inviteRequests)
+              .append("\n   ACK: ").append(this.ackRequests)
+              .append("\n   OPTIONS: ").append(this.optionsRequests)
+              .append("\n   BYE: ").append(this.byeRequests)
+              .append("\n   MESSAGE: ").append(this.messageRequests)
+              .append("\n   CANCEL: ").append(this.cancelRequests)
+              .append("\n   INFO: ").append(this.infoRequests)
+              .append("\nResponses: ");
             for (int i = 0; i < this.responses.length; ++i) {
                 if (this.responses[i] > 0) {
                     sb.append("\n   ").append(i + 100).append(": ").append(this.responses[i]);

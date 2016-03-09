@@ -253,10 +253,10 @@ public final class RtpPacketImpl extends AbstractPacket implements RtpPacket {
     public String toString() {
         try {
             final StringBuilder sb = new StringBuilder();
-            sb.append("Seq=").append(getSeqNumber());
-            sb.append(" type=").append(getPayloadType());
-            sb.append(" src=").append(getSourceIP()).append(":").append(getSourcePort());
-            sb.append(" dst=").append(getDestinationIP()).append(":").append(getDestinationPort());
+            sb.append("Seq=").append(getSeqNumber())
+              .append(" type=").append(getPayloadType())
+              .append(" src=").append(getSourceIP()).append(":").append(getSourcePort())
+              .append(" dst=").append(getDestinationIP()).append(":").append(getDestinationPort());
             return sb.toString();
         } catch (final IOException e) {
             return super.toString();
