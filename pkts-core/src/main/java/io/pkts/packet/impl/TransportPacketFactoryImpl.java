@@ -24,7 +24,7 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
      * Raw Ethernet II frame with a source and destination mac address of
      * 00:00:00:00:00:00 and the type is set to IP (0800 - the last two bytes).
      */
-    private final byte[] ehternetII = new byte[] {
+    private static final byte[] ehternetII = new byte[] {
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
             (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x08, (byte) 0x00 };
 
@@ -33,7 +33,7 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
      * protocol for UDP. The length and checksums must be corrected when
      * generating a new packet based on this template.
      */
-    private final byte[] ipv4 = new byte[] {
+    private static final byte[] ipv4 = new byte[] {
             (byte) 0x45, (byte) 0x00, (byte) 0x01, (byte) 0xed, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
             (byte) 0x40, (byte) 0x11, (byte) 0x3a, (byte) 0xfe, (byte) 0x7f, (byte) 0x00, (byte) 0x00, (byte) 0x01,
             (byte) 0x7f, (byte) 0x00, (byte) 0x00, (byte) 0x01 };
@@ -44,13 +44,13 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
      * on your payload but you also need to re-calculate the checksum. And you
      * probably want to
      */
-    private final byte[] udp = new byte[] {
+    private static final byte[] udp = new byte[] {
             (byte) 0x13, (byte) 0xe2, (byte) 0x13, (byte) 0xc4, (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0xec };
 
     /**
      * The total size of an empty UDP packet.
      */
-    private final int udpLength = this.ehternetII.length + this.ipv4.length + this.udp.length;
+    private static final int udpLength = ehternetII.length + ipv4.length + udp.length;
 
     /**
      * A reference to the main {@link PacketFactory}
