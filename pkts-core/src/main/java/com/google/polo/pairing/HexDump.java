@@ -16,6 +16,8 @@
 
 package com.google.polo.pairing;
 
+import java.nio.charset.Charset;
+
 public class HexDump {
     private final static char[] HEX_DIGITS = {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
@@ -39,7 +41,7 @@ public class HexDump {
 
                 for (int j = 0; j < 16; j++) {
                     if ((line[j] > ' ') && (line[j] < '~')) {
-                        result.append(new String(line, j, 1));
+                        result.append(new String(line, j, 1, Charset.forName("UTF-8")));
                     } else {
                         result.append(".");
                     }
