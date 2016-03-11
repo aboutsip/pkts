@@ -3,6 +3,8 @@
  */
 package io.pkts.buffer;
 
+import java.util.Arrays;
+
 /**
  * Exception for readUntil-methods and the like
  * 
@@ -26,13 +28,13 @@ public class ByteNotFoundException extends BufferException {
     }
 
     public ByteNotFoundException(final byte... bytes) {
-        super("Unable to locate any of the bytes " + bytes);
+        super("Unable to locate any of the bytes " + Arrays.toString(bytes));
         this.bytes = bytes;
     }
 
     public ByteNotFoundException(final int maxBytes, final byte... bytes) {
         super("Gave up looking after reading " + maxBytes + " bytes. You asked me to find any of the following bytes: "
-                + bytes);
+                + Arrays.toString(bytes));
         this.bytes = bytes;
     }
 
