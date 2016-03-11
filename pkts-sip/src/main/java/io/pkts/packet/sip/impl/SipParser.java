@@ -23,6 +23,7 @@ import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.packet.sip.header.impl.SipHeaderImpl;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1666,7 +1667,7 @@ public class SipParser {
     public static void expect(final Buffer buffer, final byte expected) throws SipParseException, IOException {
         final byte actual = buffer.readByte();
         if (actual != expected) {
-            final String actualStr = new String(new byte[] { actual });
+            final String actualStr = new String(new byte[] { actual }, Charset.forName("UTF-8"));
             final String expectedStr = new String(new byte[] { expected });
             throw new SipParseException(buffer.getReaderIndex(), "Expected '" + expected + "' (" + expectedStr
                     + ") got '" + actual + "' (" + actualStr + ")");
@@ -1969,7 +1970,7 @@ public class SipParser {
                     for (final Buffer line : foldedLines) {
                         stupid += " " + line.toString();
                     }
-                    valueBuffer = Buffers.wrap(stupid.getBytes());
+                    valueBuffer = Buffers.wrap(stupid.getBytes(Charset.forName("UTF-8")));
                     consumeWS(valueBuffer);
                 }
             }

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 /**
  * A buffer directly backed by a byte-array
@@ -290,8 +291,8 @@ public final class ByteBuffer extends AbstractBuffer {
                         // lazy! Fix this and also this won't really work
                         // for UTF-8 I believe. Def not for UTF-16 but good
                         // enough for now.
-                        final String s1 = new String(new byte[] {a1});
-                        final String s2 = new String(new byte[] {b1});
+                        final String s1 = new String(new byte[] {a1}, Charset.forName("UTF-8"));
+                        final String s2 = new String(new byte[] {b1}, Charset.forName("UTF-8"));
                         if (s1.equalsIgnoreCase(s2)) {
                             continue;
                         }
