@@ -823,11 +823,11 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
         // final DateTimeFormatter formatter =
         // DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss.SSS");
         final Instant timestamp = Instant.ofEpochMilli(getArrivalTime() / 1000);
-        sb.append(timestamp.toString());
-        sb.append(" ").append(getSourceIP()).append(":").append(getSourcePort());
-        sb.append(" -> ").append(getDestinationIP()).append(":").append(getDestinationPort());
-        sb.append("\n");
-        sb.append(this.msg.toString());
+        sb.append(timestamp.toString())
+          .append(" ").append(getSourceIP()).append(":").append(getSourcePort())
+          .append(" -> ").append(getDestinationIP()).append(":").append(getDestinationPort())
+          .append("\n")
+          .append(this.msg.toString());
         return sb.toString();
     }
 

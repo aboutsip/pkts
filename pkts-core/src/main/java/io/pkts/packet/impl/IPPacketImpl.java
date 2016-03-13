@@ -383,11 +383,11 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("IPv4 ");
-        sb.append(" Total Length: ").append(getTotalLength());
-        sb.append(" ID: ").append(getIdentification());
-        sb.append(" DF: ").append(isDontFragmentSet() ? "Set" : "Not Set");
-        sb.append(" MF: ").append(isMoreFragmentsSet() ? "Set" : "Not Set");
-        sb.append(" Fragment Offset: ").append(getFragmentOffset());
+        sb.append(" Total Length: ").append(getTotalLength())
+          .append(" ID: ").append(getIdentification())
+          .append(" DF: ").append(isDontFragmentSet() ? "Set" : "Not Set")
+          .append(" MF: ").append(isMoreFragmentsSet() ? "Set" : "Not Set")
+          .append(" Fragment Offset: ").append(getFragmentOffset());
 
         return sb.toString();
     }

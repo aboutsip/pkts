@@ -243,11 +243,11 @@ public final class PcapGlobalHeader {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("Version: ").append(getMajorVersion()).append(".").append(getMinorVersion()).append("\n");
-        sb.append("TimeZone: ").append(getTimeZoneCorrection()).append("\n");
-        sb.append("Accuracy: ").append(getTimeAccuracy()).append("\n");
-        sb.append("SnapLength: ").append(getSnapLength()).append("\n");
-        sb.append("Network: ").append(getDataLinkType()).append("\n");
+        sb.append("Version: ").append(getMajorVersion()).append(".").append(getMinorVersion()).append("\n")
+          .append("TimeZone: ").append(getTimeZoneCorrection()).append("\n")
+          .append("Accuracy: ").append(getTimeAccuracy()).append("\n")
+          .append("SnapLength: ").append(getSnapLength()).append("\n")
+          .append("Network: ").append(getDataLinkType()).append("\n");
 
         return sb.toString();
     }

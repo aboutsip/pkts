@@ -122,10 +122,10 @@ public final class PcapRecordHeader {
         final StringBuilder sb = new StringBuilder();
         final long ts = getTimeStampSeconds();
         final long tsMicroSeconds = getTimeStampMicroSeconds();
-        sb.append("ts_s: ").append(ts).append("\n");
-        sb.append("ts_us: ").append(tsMicroSeconds).append("\n");
-        sb.append("octects: ").append(getTotalLength()).append("\n");
-        sb.append("length: ").append(getCapturedLength()).append("\n");
+        sb.append("ts_s: ").append(ts).append("\n")
+          .append("ts_us: ").append(tsMicroSeconds).append("\n")
+          .append("octects: ").append(getTotalLength()).append("\n")
+          .append("length: ").append(getCapturedLength()).append("\n");
 
         return sb.toString();
     }
