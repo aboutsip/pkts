@@ -33,21 +33,6 @@ public class SllFramer implements Framer<PCapPacket> {
     private static final byte LINUX_SLL_OUTGOING = (byte) 0x04;
 
     /**
-     * See pcap/sll.h for explanation of what this is. Also note that these
-     * values are actually two bytes starting with 0x00 but I left that out
-     * here.
-     * 
-     * Novell 802.3 frames without 802.2 LLC header
-     * 
-     */
-    private static final byte LINUX_SLL_P_802_3 = (byte) 0x01;
-
-    /**
-     * 802.2 frames (not D/I/X Ethernet)
-     */
-    private static final byte LINUX_SLL_P_802_2 = (byte) 0x04;
-
-    /**
      * 
      */
     public SllFramer() {

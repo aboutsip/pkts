@@ -25,8 +25,6 @@ import org.slf4j.LoggerFactory;
  */
 public class RtpStreamHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(RtpStreamHandler.class);
-
     private StreamListener<RtpPacket> rtpListener;
 
     private final Map<Long, DefaultRtpStream> streams = new HashMap<Long, DefaultRtpStream>();

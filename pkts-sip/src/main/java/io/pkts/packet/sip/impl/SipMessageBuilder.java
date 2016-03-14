@@ -38,18 +38,8 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
      */
     private final List<SipHeader> headers;
 
-    /**
-     * All headers added to this builder is subject
-     * to filtering.
-     */
-    private Predicate<SipHeader> filter;
-
     private Function<SipURI, SipURI> onRequestURIFunction;
 
-    private CSeqHeader cseq;
-    private CSeqHeader.Builder cseqBuilder;
-
-    private MaxForwardsHeader maxForwards;
     private Consumer<MaxForwardsHeader.Builder> onMaxForwardsBuilder;
 
     private Consumer<AddressParametersHeader.Builder<ToHeader>> onToBuilder;
