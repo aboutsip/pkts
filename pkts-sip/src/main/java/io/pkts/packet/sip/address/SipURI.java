@@ -9,6 +9,7 @@ import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.impl.SipURIImpl;
 import io.pkts.packet.sip.header.impl.ParametersSupport;
 import io.pkts.packet.sip.impl.SipParser;
+import io.pkts.packet.sip.impl.SipUserHostInfo;
 
 import java.io.IOException;
 
@@ -226,22 +227,8 @@ public interface SipURI extends URI {
     static SipURI frame(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException, IOException {
         final Buffer original = buffer.slice();
         final boolean isSips = SipParser.isSips(buffer);
-        final Buffer[] userHost = SipParser.consumeUserInfoHostPort(buffer);
-        final Buffer hostPort = userHost[1];
-        Buffer host = null;
-        Buffer port = null;
-        while (hostPort.hasReadableBytes() && host == null) {
-            final byte b = hostPort.readByte();
-            if (b == SipParser.COLON) {
-                final int index = hostPort.getReaderIndex();
-                host = hostPort.slice(0, index - 1); // skip the ':'
-                port = hostPort.slice();
-            }
-        }
-        if (host == null) {
-            hostPort.setReaderIndex(0);
-            host = hostPort;
-        }
+        final SipUserHostInfo userHost = SipParser.consumeUserInfoHostPort(buffer);
+        final Buffer port = userHost.getPort();
 
         if (port != null) {
             try {
@@ -251,7 +238,7 @@ public interface SipURI extends URI {
                         + "\"");
             }
         }
-        return new SipURIImpl(isSips, userHost[0], host, port, buffer, original);
+        return new SipURIImpl(isSips, userHost.getUser(), userHost.getHost(), port, buffer, original);
     }
 
     static SipURI frame(final String buffer) throws SipParseException, IndexOutOfBoundsException, IOException {

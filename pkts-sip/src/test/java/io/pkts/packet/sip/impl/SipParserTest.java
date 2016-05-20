@@ -88,29 +88,31 @@ public class SipParserTest {
 
     @Test
     public void testConsumeUserInfoHostTest() throws Exception {
-        assertConsumeUserInfoHost("alice@example.com", "alice", "example.com", null);
-        assertConsumeUserInfoHost("alice:secret@example.com", "alice:secret", "example.com", null);
-        assertConsumeUserInfoHost("alice@example.com:5090", "alice", "example.com:5090", null);
-        assertConsumeUserInfoHost("alice@example.com:5090;transport=tcp", "alice", "example.com:5090", ";transport=tcp");
-        assertConsumeUserInfoHost("example.com", null, "example.com", null);
-        assertConsumeUserInfoHost("example.com;transport=tcp", null, "example.com", ";transport=tcp");
-        assertConsumeUserInfoHost("example.com:9999;transport=tcp", null, "example.com:9999", ";transport=tcp");
-        assertConsumeUserInfoHost("ali;ce@example.com", "ali;ce", "example.com", null);
-        assertConsumeUserInfoHost("ali?ce@example.com", "ali?ce", "example.com", null);
-        assertConsumeUserInfoHost("ali?c;e@example.com", "ali?c;e", "example.com", null);
-        assertConsumeUserInfoHost("a$&li?c;e@example.com", "a$&li?c;e", "example.com", null);
-        assertConsumeUserInfoHost("ali;ce@example.com;transport=udp?apa=monkey", "ali;ce", "example.com",
+        assertConsumeUserInfoHost("127.0.0.1", null, "127.0.0.1", null, null);
+        assertConsumeUserInfoHost("alice@example.com", "alice", "example.com", null, null);
+        assertConsumeUserInfoHost("alice:secret@example.com", "alice:secret", "example.com", null, null);
+        assertConsumeUserInfoHost("alice@example.com:5090", "alice", "example.com", "5090", null);
+        assertConsumeUserInfoHost("alice@example.com:5090;transport=tcp", "alice", "example.com", "5090",
+                ";transport=tcp");
+        assertConsumeUserInfoHost("example.com", null, "example.com", null, null);
+        assertConsumeUserInfoHost("example.com;transport=tcp", null, "example.com", null, ";transport=tcp");
+        assertConsumeUserInfoHost("example.com:9999;transport=tcp", null, "example.com", "9999", ";transport=tcp");
+        assertConsumeUserInfoHost("ali;ce@example.com", "ali;ce", "example.com", null, null);
+        assertConsumeUserInfoHost("ali?ce@example.com", "ali?ce", "example.com", null, null);
+        assertConsumeUserInfoHost("ali?c;e@example.com", "ali?c;e", "example.com", null, null);
+        assertConsumeUserInfoHost("a$&li?c;e@example.com", "a$&li?c;e", "example.com", null, null);
+        assertConsumeUserInfoHost("ali;ce@example.com;transport=udp?apa=monkey", "ali;ce", "example.com", null,
                 ";transport=udp?apa=monkey");
-        assertConsumeUserInfoHost("example.com;transport=tcp?apa=monkey", null, "example.com",
+        assertConsumeUserInfoHost("example.com;transport=tcp?apa=monkey", null, "example.com", null,
                 ";transport=tcp?apa=monkey");
-        assertConsumeUserInfoHost("example.com?apa=monkey", null, "example.com", "?apa=monkey");
-        assertConsumeUserInfoHost("alice@example.com?apa=monkey", "alice", "example.com", "?apa=monkey");
-        assertConsumeUserInfoHost("al?ice@example.com?apa=monkey", "al?ice", "example.com", "?apa=monkey");
+        assertConsumeUserInfoHost("example.com?apa=monkey", null, "example.com", null, "?apa=monkey");
+        assertConsumeUserInfoHost("alice@example.com?apa=monkey", "alice", "example.com", null, "?apa=monkey");
+        assertConsumeUserInfoHost("al?ice@example.com?apa=monkey", "al?ice", "example.com", null, "?apa=monkey");
 
         // not very useful but we should parse it. Validation at a later step
         // has to determine whether this is ok or not. We are just framing
         // here...
-        assertConsumeUserInfoHost("a", null, "a", null);
+        assertConsumeUserInfoHost("a", null, "a", null, null);
 
     }
 
@@ -121,7 +123,33 @@ public class SipParserTest {
      */
     @Test(expected = SipParseException.class)
     public void testConsumeUserInfoHostNoUserPart() throws Exception {
-        assertConsumeUserInfoHost("@a.com", "", "a.com", null);
+        assertConsumeUserInfoHost("@a.com", "", "a.com", null, null);
+    }
+
+    /**
+     * Specifying invalid host characters should throw an exception
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testConsumeUserInfoHostInvalidHostChars() throws Exception {
+        assertConsumeUserInfoHostThrowsParseException("//127.0.0.1:5060");
+        assertConsumeUserInfoHostThrowsParseException("//app.example.com");
+        assertConsumeUserInfoHostThrowsParseException("app.example.com/");
+        assertConsumeUserInfoHostThrowsParseException("hostname/");
+        assertConsumeUserInfoHostThrowsParseException("");
+        assertConsumeUserInfoHostThrowsParseException("     ");
+        assertConsumeUserInfoHostThrowsParseException(".");
+        assertConsumeUserInfoHostThrowsParseException(".com");
+        assertConsumeUserInfoHostThrowsParseException("9");
+        assertConsumeUserInfoHostThrowsParseException("@:;");
+        assertConsumeUserInfoHostThrowsParseException("@ip.pbx.com");
+        assertConsumeUserInfoHostThrowsParseException("hello there!");
+        assertConsumeUserInfoHostThrowsParseException("customer.ip.pbx.com/");
+        assertConsumeUserInfoHostThrowsParseException("customer.ip.pbx.com/test");
+        assertConsumeUserInfoHostThrowsParseException("127:0:0:1");
+        assertConsumeUserInfoHostThrowsParseException("127.0.0.1:");
+        assertConsumeUserInfoHostThrowsParseException("127.0.0.1000");
     }
 
     /**
@@ -142,22 +170,39 @@ public class SipParserTest {
      * @throws Exception
      */
     private void assertConsumeUserInfoHost(final String toParse, final String expectedUser, final String expectedHost,
-            final String expectedLeftOver)
+            final String expectedPort, final String expectedLeftOver)
                     throws Exception {
         final Buffer buffer = Buffers.wrap(toParse);
-        final Buffer[] userHost = SipParser.consumeUserInfoHostPort(buffer);
+        final SipUserHostInfo userHost = SipParser.consumeUserInfoHostPort(buffer);
         if (expectedUser == null) {
-            assertThat(userHost[0], is((Buffer) null));
+            assertThat(userHost.getUser(), is((Buffer) null));
         } else {
-            assertThat(userHost[0].toString(), is(expectedUser));
+            assertThat(userHost.getUser().toString(), is(expectedUser));
         }
-        assertThat(userHost[1].toString(), is(expectedHost));
+        assertThat(userHost.getHost().toString(), is(expectedHost));
+        if (expectedPort == null) {
+            assertThat(userHost.getPort(), is((Buffer) null));
+        } else {
+            assertThat(userHost.getPort().toString(), is(expectedPort));
+        }
 
         if (expectedLeftOver == null) {
             assertThat(buffer.hasReadableBytes(), is(false));
         } else {
             assertThat(buffer.toString(), is(expectedLeftOver));
         }
+    }
+
+    private void assertConsumeUserInfoHostThrowsParseException(final String toParse) throws Exception {
+        final Buffer buffer = Buffers.wrap(toParse);
+
+        try {
+            final SipUserHostInfo userHost = SipParser.consumeUserInfoHostPort(buffer);
+        } catch (SipParseException ex) {
+            return;
+        }
+
+        fail("Expected SipParseException");
     }
 
     /**

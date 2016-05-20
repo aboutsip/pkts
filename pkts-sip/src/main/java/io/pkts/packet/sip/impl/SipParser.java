@@ -1071,81 +1071,8 @@ public class SipParser {
      * @param buffer
      * @return
      */
-    public static Buffer[] consumeUserInfoHostPort(final Buffer buffer) throws SipParseException, IOException {
-        int count = 0;
-        Buffer user = null;
-        Buffer host = null;
-        int indexSemi = 0;
-        int indexQuestion = 0;
-
-        // first, try and determine if there is a user portion
-        // present. If we can't find one within MAX_BYTES then assume
-        // there isn't one there. Note, the way this method is typically used
-        // is that you have already framed a buffer so it is very unlikely that
-        // a header will be this long so we will most often quite much
-        // earlier due to buffer.hasReadableBytes() return false
-        int index = buffer.getReaderIndex();
-        while (user == null && buffer.hasReadableBytes() && ++count < MAX_LOOK_AHEAD) {
-            final byte b = buffer.readByte();
-            if (b == SipParser.AT) {
-                buffer.setReaderIndex(index);
-                if (count - 1 == 0) {
-                    throw new SipParseException(count,
-                            "No user portion in URI despite the presence of a '@'. This is not legal");
-                }
-                user = buffer.readBytes(count - 1);
-                buffer.readByte(); // consume the '@' sign
-                // buffer.markReaderIndex();
-
-                // reset these since they were apparently part
-                // of the userinfo and they are legal there so...
-                indexSemi = 0;
-                indexQuestion = 0;
-            } else if (indexSemi == 0 && b == SipParser.SEMI) {
-                indexSemi = count;
-            } else if (indexQuestion == 0 && b == SipParser.QUESTIONMARK) {
-                indexQuestion = count;
-            }
-        }
-
-        if (user == null) {
-            buffer.setReaderIndex(index);
-        }
-
-        // no user portion so see if we have an index for
-        // a semi colon or a question mark since they signify
-        // the split between the hostport part and uri-parameters
-        // or headers.
-        if (user == null && (indexSemi != 0 || indexQuestion != 0)) {
-            if (indexQuestion != 0 && indexQuestion < indexSemi) {
-                throw new SipParseException(indexQuestion, "Headers specified before uri-parameters. Not allowed");
-            }
-            if (indexSemi > 0) {
-                host = buffer.readBytes(indexSemi - 1);
-            } else if (indexQuestion > 0) {
-                host = buffer.readBytes(indexQuestion - 1);
-            }
-        }
-
-        index = buffer.getReaderIndex();
-        count = 0;
-        while (host == null && buffer.hasReadableBytes() && ++count < MAX_LOOK_AHEAD) {
-            final byte b = buffer.readByte();
-            if (b == SipParser.SEMI || b == SipParser.QUESTIONMARK) {
-                buffer.setReaderIndex(index);
-                host = buffer.readBytes(count - 1);
-            }
-        }
-
-        if (!buffer.hasReadableBytes()) {
-            buffer.setReaderIndex(index);
-            host = buffer.readBytes(count);
-        } else if (count == MAX_LOOK_AHEAD) {
-            throw new SipParseException(count, "Was never able to find the end of the SIP URI. Gave up after " + count
-                    + " bytes");
-        }
-        return new Buffer[] {
-                user, host };
+    public static SipUserHostInfo consumeUserInfoHostPort(final Buffer buffer) throws SipParseException, IOException {
+        return SipUserHostInfo.frame(buffer);
     }
 
     /**
@@ -1583,6 +1510,23 @@ public class SipParser {
     }
 
     /**
+     * Checks whether the character could be part of the host portion of a SIP URI.
+     *
+     * This does not perform an entirely robust validation as it does not operate
+     * with the full context of the hostname.
+     *
+     * @param ch
+     * @return true if the character is valid in hostnames, false otherwise
+     */
+    public static boolean isHostPortCharacter(final char ch) {
+        return isAlphaNum(ch) || ch == DASH || ch == PERIOD || ch == COLON;
+    }
+
+    public static boolean isHostPortCharacter(final byte b) {
+        return isHostPortCharacter((char) b);
+    }
+
+    /**
      * Helper method for checking whether the supplied byte is a alphanumeric
      * character or not.
      * 
@@ -1604,6 +1548,14 @@ public class SipParser {
 
     public static boolean isDigit(final byte b) {
         return isDigit((char) b);
+    }
+
+    public static boolean isAlpha(final char ch) {
+        return ch >= 97 && ch <= 122 || ch >= 65 && ch <= 90;
+    }
+
+    public static boolean isAlpha(final byte b) {
+        return isAlpha((char) b);
     }
 
     /**
