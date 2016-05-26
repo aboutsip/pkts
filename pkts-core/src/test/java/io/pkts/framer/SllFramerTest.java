@@ -46,8 +46,8 @@ public class SllFramerTest extends PktsTestBase {
         assertThat(framer.accept(buffer), is(true));
 
         final MACPacket pkt = framer.frame(mock(PCapPacket.class), buffer);
-        assertThat(pkt.getDestinationMacAddress(), is("12:31:38:1B:7B:73"));
-        assertThat(pkt.getSourceMacAddress(), is("00:04:00:01:00:06"));
+        assertThat(pkt.getSourceMacAddress(), is("12:31:38:1B:7B:73"));
+        assertThat(pkt.getDestinationMacAddress(), is("00:04:00:01:00:06"));
 
         final Packet ipFrame = pkt.getNextPacket();
         assertThat(ipFrame.getProtocol(), is(Protocol.IPv4));
