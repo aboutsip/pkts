@@ -88,6 +88,7 @@ public class SipUserHostInfo {
      */
     private static class Parser {
         private final Buffer buffer;
+        private final int bufferStartIndex;
         private Buffer user;
         private Buffer host;
         private Buffer port;
@@ -99,7 +100,8 @@ public class SipUserHostInfo {
         private HostPortParseState parseState;
         private int stateStartIndex;
         private int stateCount;
-        private int hostPortEndIndex;
+        private int hostPortEndIndex; // Index where the host/port portion ends
+        private int errorIndex; // Index of character that caused error, or -1 if no specific character
 
         // Hostname parser
         private enum HostnameParseState {
@@ -118,6 +120,7 @@ public class SipUserHostInfo {
 
         private Parser(final Buffer buffer) {
             this.buffer = buffer;
+            this.bufferStartIndex = buffer.getReaderIndex();
         }
 
         /**
@@ -134,21 +137,21 @@ public class SipUserHostInfo {
             // is that you have already framed a buffer so it is very unlikely that
             // a header will be this long so we will most often quite much
             // earlier due to buffer.hasReadableBytes() return false
-            final int index = buffer.getReaderIndex();
-            int count = 0;
             resetHostPortParser();
 
             while (user == null && buffer.hasReadableBytes() && stateCount < SipParser.MAX_LOOK_AHEAD) {
                 final byte b = buffer.readByte();
-                count++;
 
                 if (b == SipParser.AT) {
-                    buffer.setReaderIndex(index);
-                    if (count - 1 == 0) {
-                        throw new SipParseException(count,
-                                "No user portion in URI despite the presence of a '@'. This is not legal");
+                    final int userCount = buffer.getReaderIndex() - bufferStartIndex;
+
+                    buffer.setReaderIndex(bufferStartIndex);
+
+                    if (userCount - 1 == 0) {
+                        throw new SipParseException(userCount - 1,
+                                "No user portion in URI despite the presence of a '@'");
                     }
-                    user = buffer.readBytes(count - 1);
+                    user = buffer.readBytes(userCount - 1);
                     buffer.readByte(); // consume the '@' sign
 
                     // Re-start parsing the remainder of the URI
@@ -167,23 +170,22 @@ public class SipUserHostInfo {
                 processHostPortCharacter(b);
             }
 
-            if (parseState == HostPortParseState.INVALID) {
-                throw new SipParseException("SIP URI is malformed");
-            } else if (parseState != HostPortParseState.END && buffer.hasReadableBytes()) {
-                throw new SipParseException(count, "Was never able to find the end of the SIP URI. Gave up after " + stateCount
-                        + " bytes");
+            if (parseState != HostPortParseState.END && parseState != HostPortParseState.INVALID && buffer.hasReadableBytes()) {
+                final int charsRead = buffer.getReaderIndex() - bufferStartIndex;
+                throw new SipParseException(charsRead, "Was never able to find the end of the SIP URI. Gave up after " +
+                        "%d characters");
             } else {
-                // Ran out of characters, i.e. we found the end
+                // Out of characters
+                processOutOfCharacters();
 
-                // Verify that we have a valid host
-                if (hostPortIsValid()) {
-                    // Finish out parsing the last segment
-                    enterHostPortParseState(HostPortParseState.OUT_OF_CHARS);
-
+                if (parseState == HostPortParseState.INVALID) {
+                    // Formatting error encountered along the way
+                    final int charsReadBeforeError = errorIndex - bufferStartIndex;
+                    throw new SipParseException(charsReadBeforeError,
+                            "The SIP URI does not specify a valid host. Error encountered after %d characters.");
+                } else {
                     // Leave the buffer at the end of the host
                     buffer.setReaderIndex(hostPortEndIndex);
-                } else {
-                    throw new SipParseException("The SIP URI does not specify a valid host");
                 }
             }
 
@@ -204,6 +206,7 @@ public class SipUserHostInfo {
             host = null;
             port = null;
             hostPortEndIndex = 0;
+            errorIndex = -1;
         }
 
         /**
@@ -219,7 +222,7 @@ public class SipUserHostInfo {
             final HostPortParseState oldState = parseState;
 
             final int separatorChars;
-            if (newState == HostPortParseState.OUT_OF_CHARS) {
+            if (newState == HostPortParseState.OUT_OF_CHARS || newState == HostPortParseState.INVALID) {
                 separatorChars = 0;
             } else {
                 separatorChars = 1;
@@ -242,6 +245,12 @@ public class SipUserHostInfo {
 
             // Consume the separators
             buffer.readBytes(separatorChars);
+
+            if (newState == HostPortParseState.INVALID && errorIndex < 0) {
+                errorIndex = stateStartIndex;
+            } else if (newState != HostPortParseState.INVALID) {
+                errorIndex = -1;
+            }
 
             // Set the new state and start index
             parseState = newState;
@@ -285,6 +294,7 @@ public class SipUserHostInfo {
                         enterHostPortParseState(HostPortParseState.INVALID);
                     }
                 } else if (!isDigit(b)) {
+                    errorIndex = buffer.getReaderIndex() - 1;
                     enterHostPortParseState(HostPortParseState.INVALID);
                 }
                 break;
@@ -307,6 +317,14 @@ public class SipUserHostInfo {
             }
         }
 
+        private void processOutOfCharacters() throws IOException {
+            if (hostPortIsValid()) {
+                enterHostPortParseState(HostPortParseState.OUT_OF_CHARS);
+            } else {
+                enterHostPortParseState(HostPortParseState.INVALID);
+            }
+        }
+
         /**
          * Advances the hostname parser using the given character
          *
@@ -325,7 +343,9 @@ public class SipUserHostInfo {
                 } else if (isDigit(b)) {
                     hostnameParseState = HostnameParseState.IN_LABEL;
                     hostnameValidTLD = false;
+                    errorIndex = buffer.getReaderIndex() - 1;
                 } else {
+                    errorIndex = buffer.getReaderIndex() - 1;
                     hostnameParseState = HostnameParseState.INVALID;
                 }
                 break;
@@ -336,6 +356,7 @@ public class SipUserHostInfo {
                 } else if (b == PERIOD) {
                     hostnameParseState = HostnameParseState.AT_SEPARATOR;
                 } else if (!isAlphaNum(b)) {
+                    errorIndex = buffer.getReaderIndex() - 1;
                     hostnameParseState = HostnameParseState.INVALID;
                 }
                 break;
@@ -346,6 +367,7 @@ public class SipUserHostInfo {
                 } else if (isAlphaNum(b)) {
                     hostnameParseState = HostnameParseState.IN_LABEL;
                 } else {
+                    errorIndex = buffer.getReaderIndex() - 1;
                     hostnameParseState = HostnameParseState.INVALID;
                 }
                 break;
@@ -385,6 +407,7 @@ public class SipUserHostInfo {
                     ipv4NumSegments++;
                     ipv4NumDigits = 1;
                 } else {
+                    errorIndex = buffer.getReaderIndex() - 1;
                     ipv4ParseState = IPv4ParseState.INVALID;
                 }
                 break;
@@ -392,6 +415,7 @@ public class SipUserHostInfo {
                 if (b == PERIOD) {
                     ipv4ParseState = IPv4ParseState.AT_SEPARATOR;
                 } else if (!isDigit(b) || ++ipv4NumDigits > 3) {
+                    errorIndex = buffer.getReaderIndex() - 1;
                     ipv4ParseState = IPv4ParseState.INVALID;
                 }
                 break;

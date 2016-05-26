@@ -12,10 +12,12 @@ public class SipParseException extends SipException {
     private static final long serialVersionUID = 7627471115511100108L;
 
     private final int errorOffset;
+    private final String template;
 
     public SipParseException(final int errorOffset, final String message) {
-        super(message);
+        super(String.format(message, errorOffset));
         this.errorOffset = errorOffset;
+        this.template = message;
     }
 
     public SipParseException(final String message) {
@@ -23,12 +25,16 @@ public class SipParseException extends SipException {
     }
 
     public SipParseException(final int errorOffset, final String message, final Exception cause) {
-        super(message, cause);
+        super(String.format(message, errorOffset), cause);
         this.errorOffset = errorOffset;
+        this.template = message;
     }
 
     public int getErrorOffset() {
         return this.errorOffset;
     }
 
+    public String getTemplate() {
+        return template;
+    }
 }

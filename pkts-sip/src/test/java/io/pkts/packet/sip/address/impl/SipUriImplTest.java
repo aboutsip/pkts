@@ -5,6 +5,7 @@ package io.pkts.packet.sip.address.impl;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.address.SipURI;
 import org.junit.Before;
 import org.junit.Test;
@@ -277,6 +278,30 @@ public class SipUriImplTest {
         assertSipUri("sip:alice@example.com;transport=udp", "alice", "example.com", -1);
         assertSipUri("sip:a@example.com;transport=udp", "a", "example.com", -1);
         assertSipUri("sip:alice@example.com:5555?hello=world", "alice", "example.com", 5555);
+    }
+
+    @Test
+    public void testFramingInvalidSipURI() throws Exception {
+        // Should get a meaningful message here
+        assertFramingThrowsException("http://customer.ip.pbx.com", 0);
+
+        // Exception should specify the right index in the context of the entire URI (as opposed to just
+        // the user-host portion)
+        assertFramingThrowsException("sip://customer.ip.pbx.com", 4);
+    }
+
+    private void assertFramingThrowsException(final String uri, final int expectedOffset) throws
+            Exception {
+        final Buffer buffer = Buffers.wrap(uri);
+
+        try {
+            SipURI.frame(uri);
+        } catch (SipParseException ex) {
+            assertEquals(ex.getErrorOffset(), expectedOffset);
+            return;
+        }
+
+        fail("Expected SipParseException");
     }
 
     /**
