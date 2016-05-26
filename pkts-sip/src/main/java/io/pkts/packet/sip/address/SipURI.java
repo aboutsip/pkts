@@ -226,18 +226,39 @@ public interface SipURI extends URI {
      */
     static SipURI frame(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException, IOException {
         final Buffer original = buffer.slice();
-        final boolean isSips = SipParser.isSips(buffer);
-        final SipUserHostInfo userHost = SipParser.consumeUserInfoHostPort(buffer);
-        final Buffer port = userHost.getPort();
+        final int originalIndex = buffer.getReaderIndex();
 
+        // Determine if the URI begins with sip: or sips:, or throw a meaningful error message if not
+        final boolean isSips;
+        try {
+            isSips = SipParser.isSips(buffer);
+        } catch (final SipParseException e) {
+            throw new SipParseException(e.getErrorOffset() - 1, "SIP URI must start with sip: or sips:");
+        }
+
+        // Parse and validate the user/host portion
+        final SipUserHostInfo userHost;
+        final int userHostStartIndex = buffer.getReaderIndex();
+        try {
+            userHost = SipParser.consumeUserInfoHostPort(buffer);
+        } catch (final SipParseException e) {
+            // Re-throw the exception with the same message, but index adjusted for its position within
+            // the entire URI.
+            throw new SipParseException(userHostStartIndex + e.getErrorOffset(), e.getTemplate(), e);
+        }
+
+
+        // Validate the port number
+        final Buffer port = userHost.getPort();
         if (port != null) {
             try {
                 port.parseToInt();
             } catch (final NumberFormatException e) {
-                throw new SipParseException(0, "The SipURI had a port but it was not an integer: \"" + port.toString()
+                throw new SipParseException(0, "The SIP URI had a port but it was not an integer: \"" + port.toString()
                         + "\"");
             }
         }
+
         return new SipURIImpl(isSips, userHost.getUser(), userHost.getHost(), port, buffer, original);
     }
 

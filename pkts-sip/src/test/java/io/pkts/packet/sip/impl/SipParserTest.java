@@ -4,6 +4,7 @@
 package io.pkts.packet.sip.impl;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import io.pkts.buffer.Buffer;
@@ -133,23 +134,33 @@ public class SipParserTest {
      */
     @Test
     public void testConsumeUserInfoHostInvalidHostChars() throws Exception {
-        assertConsumeUserInfoHostThrowsParseException("//127.0.0.1:5060");
-        assertConsumeUserInfoHostThrowsParseException("//app.example.com");
-        assertConsumeUserInfoHostThrowsParseException("app.example.com/");
-        assertConsumeUserInfoHostThrowsParseException("hostname/");
-        assertConsumeUserInfoHostThrowsParseException("");
-        assertConsumeUserInfoHostThrowsParseException("     ");
-        assertConsumeUserInfoHostThrowsParseException(".");
-        assertConsumeUserInfoHostThrowsParseException(".com");
-        assertConsumeUserInfoHostThrowsParseException("9");
-        assertConsumeUserInfoHostThrowsParseException("@:;");
-        assertConsumeUserInfoHostThrowsParseException("@ip.pbx.com");
-        assertConsumeUserInfoHostThrowsParseException("hello there!");
-        assertConsumeUserInfoHostThrowsParseException("customer.ip.pbx.com/");
-        assertConsumeUserInfoHostThrowsParseException("customer.ip.pbx.com/test");
-        assertConsumeUserInfoHostThrowsParseException("127:0:0:1");
-        assertConsumeUserInfoHostThrowsParseException("127.0.0.1:");
-        assertConsumeUserInfoHostThrowsParseException("127.0.0.1000");
+        assertConsumeUserInfoHostThrowsParseException("//customer.ip.pbx.com", 0);
+        assertConsumeUserInfoHostThrowsParseException("/customer.ip.pbx.com", 0);
+        assertConsumeUserInfoHostThrowsParseException("customer.ip.pbx.com/", 19);
+        assertConsumeUserInfoHostThrowsParseException("customer.ip.pbx.com/test", 19);
+
+        assertConsumeUserInfoHostThrowsParseException("", 0);
+        assertConsumeUserInfoHostThrowsParseException("    ", 0);
+        assertConsumeUserInfoHostThrowsParseException(".", 0);
+        assertConsumeUserInfoHostThrowsParseException(".com", 0);
+        assertConsumeUserInfoHostThrowsParseException("hello there!", 5);
+
+        // Fails at index 6 because could be a valid hostname up to the domain label that did not
+        // begin with a lowercase/capital letter
+        assertConsumeUserInfoHostThrowsParseException("127.0.0:5060", 6);
+
+        // Error at index 0 because entire "127" is treated as an invalid domain label
+        assertConsumeUserInfoHostThrowsParseException("127:0:0:1", 0);
+
+        assertConsumeUserInfoHostThrowsParseException("9", 0);
+
+        assertConsumeUserInfoHostThrowsParseException("customer.ip.pbx.com:", 20);
+        assertConsumeUserInfoHostThrowsParseException("customer.ip.pbx.com:/", 20);
+
+        assertConsumeUserInfoHostThrowsParseException("customer.ip.pbx.1com", 16);
+
+        assertConsumeUserInfoHostThrowsParseException("@:;", 0);
+        assertConsumeUserInfoHostThrowsParseException("@ip.pbx.com;", 0);
     }
 
     /**
@@ -193,12 +204,14 @@ public class SipParserTest {
         }
     }
 
-    private void assertConsumeUserInfoHostThrowsParseException(final String toParse) throws Exception {
+    private void assertConsumeUserInfoHostThrowsParseException(final String toParse, final int expectedOffset) throws
+            Exception {
         final Buffer buffer = Buffers.wrap(toParse);
 
         try {
             final SipUserHostInfo userHost = SipParser.consumeUserInfoHostPort(buffer);
         } catch (SipParseException ex) {
+            assertEquals(expectedOffset, ex.getErrorOffset());
             return;
         }
 
