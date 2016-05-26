@@ -59,6 +59,9 @@ import static io.pkts.packet.sip.impl.PreConditions.assertNotEmpty;
  */
 public interface SipHeader extends Cloneable {
 
+    public static final String CANNOT_CAST_HEADER_OF_TYPE = "Cannot cast header of type ";
+    public static final String UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION = "Unable to parse out the header name due to underlying IOException";
+
     /**
      * Get the name of the header
      * 
@@ -190,13 +193,13 @@ public interface SipHeader extends Cloneable {
                 return m.getByte(0) == 'f';
             }
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the header name due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
         return false;
     }
 
     default FromHeader toFromHeader() {
-        throw new ClassCastException("Cannot cast header of type " + getClass().getName()
+        throw new ClassCastException(CANNOT_CAST_HEADER_OF_TYPE + getClass().getName()
                 + " to type " + FromHeader.class.getName());
     }
 
@@ -209,13 +212,13 @@ public interface SipHeader extends Cloneable {
                 return m.getByte(0) == 't';
             }
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the header name due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
         return false;
     }
 
     default ToHeader toToHeader() {
-        throw new ClassCastException("Cannot cast header of type " + getClass().getName()
+        throw new ClassCastException(CANNOT_CAST_HEADER_OF_TYPE + getClass().getName()
                 + " to type " + ToHeader.class.getName());
     }
 
@@ -245,13 +248,13 @@ public interface SipHeader extends Cloneable {
                 return m.getByte(0) == 'm';
             }
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the header name due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
         return false;
     }
 
     default ContactHeader toContactHeader() {
-        throw new ClassCastException("Cannot cast header of type " + getClass().getName()
+        throw new ClassCastException(CANNOT_CAST_HEADER_OF_TYPE + getClass().getName()
                 + " to type " + ContactHeader.class.getName());
     }
 
@@ -264,7 +267,7 @@ public interface SipHeader extends Cloneable {
                         && m.getByte(6) == 't';
             }
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the header name due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
         return false;
     }
@@ -281,13 +284,13 @@ public interface SipHeader extends Cloneable {
                 return m.getByte(0) == 'i';
             }
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the header name due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
         return false;
     }
 
     default CallIdHeader toCallIdHeader() {
-        throw new ClassCastException("Cannot cast header of type " + getClass().getName()
+        throw new ClassCastException(CANNOT_CAST_HEADER_OF_TYPE + getClass().getName()
                 + " to type " + CallIdHeader.class.getName());
     }
 
@@ -299,7 +302,7 @@ public interface SipHeader extends Cloneable {
                 return m.getByte(0) == 'R' && m.getByte(1) == 'o' && m.getByte(2) == 'u'
                         && m.getByte(3) == 't' && m.getByte(4) == 'e';
             } catch (final IOException e) {
-                throw new SipParseException(0, "Unable to parse out the header name due to underlying IOException", e);
+                throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
             }
         }
         return false;
@@ -314,19 +317,19 @@ public interface SipHeader extends Cloneable {
                         && m.getByte(6) == '-' && m.getByte(7) == 'R' && m.getByte(8) == 'o'
                         && m.getByte(9) == 'u' && m.getByte(10) == 't' && m.getByte(11) == 'e';
             } catch (final IOException e) {
-                throw new SipParseException(0, "Unable to parse out the header name due to underlying IOException", e);
+                throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
             }
         }
         return false;
     }
 
     default RecordRouteHeader toRecordRouteHeader() {
-        throw new ClassCastException("Cannot cast header of type " + getClass().getName()
+        throw new ClassCastException(CANNOT_CAST_HEADER_OF_TYPE + getClass().getName()
                 + " to type " + RecordRouteHeader.class.getName());
     }
 
     default RouteHeader toRouteHeader() {
-        throw new ClassCastException("Cannot cast header of type " + getClass().getName()
+        throw new ClassCastException(CANNOT_CAST_HEADER_OF_TYPE + getClass().getName()
                 + " to type " + RouteHeader.class.getName());
     }
 
@@ -344,13 +347,13 @@ public interface SipHeader extends Cloneable {
 
             }
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the header name due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
         return false;
     }
 
     default ContentLengthHeader toContentLengthHeader() {
-        throw new ClassCastException("Cannot cast header of type " + getClass().getName()
+        throw new ClassCastException(CANNOT_CAST_HEADER_OF_TYPE + getClass().getName()
                 + " to type " + ContentLengthHeader.class.getName());
     }
 
@@ -366,13 +369,13 @@ public interface SipHeader extends Cloneable {
                 return m.getByte(0) == 'c';
             }
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the header name due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
         return false;
     }
 
     default ContentTypeHeader toContentTypeHeader() {
-        throw new ClassCastException("Cannot cast header of type " + getClass().getName()
+        throw new ClassCastException(CANNOT_CAST_HEADER_OF_TYPE + getClass().getName()
                 + " to type " + ContentTypeHeader.class.getName());
     }
 
@@ -385,13 +388,13 @@ public interface SipHeader extends Cloneable {
                         && m.getByte(6) == 's';
             }
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the header name due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
         return false;
     }
 
     default ExpiresHeader toExpiresHeader() {
-        throw new ClassCastException("Cannot cast header of type " + getClass().getName()
+        throw new ClassCastException(CANNOT_CAST_HEADER_OF_TYPE + getClass().getName()
                 + " to type " + ExpiresHeader.class.getName());
     }
 
@@ -403,13 +406,13 @@ public interface SipHeader extends Cloneable {
                         && m.getByte(3) == 'q';
             }
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the header name due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
         return false;
     }
 
     default CSeqHeader toCSeqHeader() {
-        throw new ClassCastException("Cannot cast header of type " + getClass().getName()
+        throw new ClassCastException(CANNOT_CAST_HEADER_OF_TYPE + getClass().getName()
                 + " to type " + CSeqHeader.class.getName());
     }
 
@@ -422,14 +425,14 @@ public interface SipHeader extends Cloneable {
                         && m.getByte(6) == 'r' && m.getByte(7) == 'w' && m.getByte(8) == 'a'
                         && m.getByte(9) == 'r' && m.getByte(10) == 'd' && m.getByte(11) == 's';
             } catch (final IOException e) {
-                throw new SipParseException(0, "Unable to parse out the header name due to underlying IOException", e);
+                throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
             }
         }
         return false;
     }
 
     default ViaHeader toViaHeader() {
-        throw new ClassCastException("Cannot cast header of type " + getClass().getName()
+        throw new ClassCastException(CANNOT_CAST_HEADER_OF_TYPE + getClass().getName()
                 + " to type " + ViaHeader.class.getName());
     }
 
@@ -443,18 +446,18 @@ public interface SipHeader extends Cloneable {
                 return m.getByte(0) == 'v';
             }
         } catch (final IOException e) {
-            throw new SipParseException(0, "Unable to parse out the header name due to underlying IOException", e);
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
         return false;
     }
 
     default MaxForwardsHeader toMaxForwardsHeader() {
-        throw new ClassCastException("Cannot cast header of type " + getClass().getName()
+        throw new ClassCastException(CANNOT_CAST_HEADER_OF_TYPE + getClass().getName()
                 + " to type " + MaxForwardsHeader.class.getName());
     }
 
     default AddressParametersHeader toAddressParametersHeader() throws ClassCastException {
-        throw new ClassCastException("Cannot cast header of type " + getClass().getName()
+        throw new ClassCastException(CANNOT_CAST_HEADER_OF_TYPE + getClass().getName()
                 + " to type " + AddressParametersHeader.class.getName());
     }
 

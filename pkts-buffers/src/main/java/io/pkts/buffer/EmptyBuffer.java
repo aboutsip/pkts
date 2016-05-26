@@ -13,6 +13,9 @@ import java.io.UnsupportedEncodingException;
  */
 public class EmptyBuffer implements Buffer {
 
+    private static final String THIS_IS_AN_EMPTY_BUFFER_CANT_WRITE_TO_IT = "This is an empty buffer. Cant write to it";
+    private static final String THIS_BUFFER_IS_EMPTY = "This buffer is empty";
+    private static final String NOT_ENOUGH_READABLE_BYTES = "Not enough readable bytes";
     private static final byte[] EMPTY = new byte[0];
 
     /**
@@ -30,7 +33,7 @@ public class EmptyBuffer implements Buffer {
         if (length == 0) {
             return this;
         }
-        throw new IndexOutOfBoundsException("Not enough readable bytes");
+        throw new IndexOutOfBoundsException(NOT_ENOUGH_READABLE_BYTES);
     }
 
     /**
@@ -38,12 +41,12 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public Buffer readLine() throws IOException {
-        throw new IndexOutOfBoundsException("Not enough readable bytes");
+        throw new IndexOutOfBoundsException(NOT_ENOUGH_READABLE_BYTES);
     }
 
     @Override
     public Buffer readUntilDoubleCRLF() throws IOException {
-        throw new IndexOutOfBoundsException("Not enough readable bytes");
+        throw new IndexOutOfBoundsException(NOT_ENOUGH_READABLE_BYTES);
     }
 
     /**
@@ -92,7 +95,7 @@ public class EmptyBuffer implements Buffer {
     @Override
     public Buffer slice(final int start, final int stop) {
         if (start != 0 && stop != 0) {
-            throw new IndexOutOfBoundsException("This buffer is empty");
+            throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
         }
         return this;
     }
@@ -103,7 +106,7 @@ public class EmptyBuffer implements Buffer {
     @Override
     public Buffer slice(final int stop) {
         if (stop != 0) {
-            throw new IndexOutOfBoundsException("This buffer is empty");
+            throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
         }
         return this;
     }
@@ -153,7 +156,7 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public byte getByte(final int index) throws IndexOutOfBoundsException, IOException {
-        throw new IndexOutOfBoundsException("This buffer is empty");
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
     /**
@@ -161,7 +164,7 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public byte readByte() throws IndexOutOfBoundsException, IOException {
-        throw new IndexOutOfBoundsException("This buffer is empty");
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
     /**
@@ -169,7 +172,7 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public long readUnsignedInt() throws IndexOutOfBoundsException {
-        throw new IndexOutOfBoundsException("This buffer is empty");
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
     /**
@@ -177,7 +180,7 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public int readInt() throws IndexOutOfBoundsException {
-        throw new IndexOutOfBoundsException("This buffer is empty");
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
     /**
@@ -185,7 +188,7 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public int getInt(final int index) throws IndexOutOfBoundsException {
-        throw new IndexOutOfBoundsException("This buffer is empty");
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
     /**
@@ -193,7 +196,7 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public short getShort(final int index) throws IndexOutOfBoundsException {
-        throw new IndexOutOfBoundsException("This buffer is empty");
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
     /**
@@ -201,7 +204,7 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public int readUnsignedShort() throws IndexOutOfBoundsException {
-        throw new IndexOutOfBoundsException("This buffer is empty");
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
     /**
@@ -209,7 +212,7 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public int getUnsignedShort(final int index) throws IndexOutOfBoundsException {
-        throw new IndexOutOfBoundsException("This buffer is empty");
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
     /**
@@ -217,7 +220,7 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public short readShort() throws IndexOutOfBoundsException {
-        throw new IndexOutOfBoundsException("This buffer is empty");
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
     /**
@@ -225,7 +228,7 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public short readUnsignedByte() throws IndexOutOfBoundsException, IOException {
-        throw new IndexOutOfBoundsException("This buffer is empty");
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
     /**
@@ -233,7 +236,7 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public short getUnsignedByte(final int index) throws IndexOutOfBoundsException {
-        throw new IndexOutOfBoundsException("This buffer is empty");
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
     /**
@@ -249,17 +252,17 @@ public class EmptyBuffer implements Buffer {
      */
     @Override
     public void setByte(final int index, final byte value) throws IndexOutOfBoundsException {
-        throw new IndexOutOfBoundsException("This buffer is empty");
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
     @Override
     public void setUnsignedByte(final int index, final short value) throws IndexOutOfBoundsException {
-        throw new IndexOutOfBoundsException("This buffer is empty");
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
     @Override
     public void setUnsignedShort(final int index, final int value) throws IndexOutOfBoundsException {
-        throw new IndexOutOfBoundsException("This buffer is empty");
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
     /**
@@ -283,7 +286,7 @@ public class EmptyBuffer implements Buffer {
 
     @Override
     public byte peekByte() throws IndexOutOfBoundsException, IOException {
-        throw new IndexOutOfBoundsException("Not enough readable bytes");
+        throw new IndexOutOfBoundsException(NOT_ENOUGH_READABLE_BYTES);
     }
 
     @Override
@@ -313,38 +316,38 @@ public class EmptyBuffer implements Buffer {
 
     @Override
     public void write(final byte b) throws IndexOutOfBoundsException {
-        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+        throw new WriteNotSupportedException(THIS_IS_AN_EMPTY_BUFFER_CANT_WRITE_TO_IT);
     }
 
     @Override
     public void write(final String s) throws IndexOutOfBoundsException, WriteNotSupportedException {
-        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+        throw new WriteNotSupportedException(THIS_IS_AN_EMPTY_BUFFER_CANT_WRITE_TO_IT);
     }
 
     @Override
     public void write(final String s, final String charset) throws IndexOutOfBoundsException,
     WriteNotSupportedException, UnsupportedEncodingException {
-        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+        throw new WriteNotSupportedException(THIS_IS_AN_EMPTY_BUFFER_CANT_WRITE_TO_IT);
     }
 
     @Override
     public void write(final int value) throws IndexOutOfBoundsException, WriteNotSupportedException {
-        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+        throw new WriteNotSupportedException(THIS_IS_AN_EMPTY_BUFFER_CANT_WRITE_TO_IT);
     }
 
     @Override
     public void write(final long value) throws IndexOutOfBoundsException, WriteNotSupportedException {
-        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+        throw new WriteNotSupportedException(THIS_IS_AN_EMPTY_BUFFER_CANT_WRITE_TO_IT);
     }
 
     @Override
     public void writeAsString(final int value) throws IndexOutOfBoundsException, WriteNotSupportedException {
-        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+        throw new WriteNotSupportedException(THIS_IS_AN_EMPTY_BUFFER_CANT_WRITE_TO_IT);
     }
 
     @Override
     public void writeAsString(final long value) throws IndexOutOfBoundsException, WriteNotSupportedException {
-        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+        throw new WriteNotSupportedException(THIS_IS_AN_EMPTY_BUFFER_CANT_WRITE_TO_IT);
     }
 
     @Override
@@ -402,7 +405,7 @@ public class EmptyBuffer implements Buffer {
 
     @Override
     public void setUnsignedInt(final int index, final long value) throws IndexOutOfBoundsException {
-        throw new IndexOutOfBoundsException("This buffer is empty");
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
     @Override

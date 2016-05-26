@@ -11,9 +11,10 @@ import java.io.UnsupportedEncodingException;
  */
 public abstract class AbstractBuffer implements Buffer {
 
+    private static final String FOR_INPUT_STRING = "For input string: \"";
     private static final byte LF = '\n';
     private static final byte CR = '\r';
-
+    private static final String EMPTY_BUFFER_CANT_WRITE = "This is an empty buffer. Cant write to it";
     /**
      * From where we will continue reading
      */
@@ -342,19 +343,19 @@ public abstract class AbstractBuffer implements Buffer {
 
     @Override
     public void write(final byte b) throws IndexOutOfBoundsException {
-        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+        throw new WriteNotSupportedException(EMPTY_BUFFER_CANT_WRITE);
     }
 
     @Override
     public void write(final String s) throws IndexOutOfBoundsException, WriteNotSupportedException,
             UnsupportedEncodingException {
-        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+        throw new WriteNotSupportedException(EMPTY_BUFFER_CANT_WRITE);
     }
 
     @Override
     public void write(final String s, final String charset) throws IndexOutOfBoundsException,
             WriteNotSupportedException, UnsupportedEncodingException {
-        throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
+        throw new WriteNotSupportedException(EMPTY_BUFFER_CANT_WRITE);
     }
 
     @Override
@@ -459,7 +460,7 @@ public abstract class AbstractBuffer implements Buffer {
             if (i < max) {
                 digit = Character.digit((char) getByte(i++), radix);
                 if (digit < 0) {
-                    throw new NumberFormatException("For input string: \"" + this + "\"");
+                    throw new NumberFormatException(FOR_INPUT_STRING + this + "\"");
                 } else {
                     result = -digit;
                 }
@@ -468,25 +469,25 @@ public abstract class AbstractBuffer implements Buffer {
                 // Accumulating negatively avoids surprises near MAX_VALUE
                 digit = Character.digit((char) getByte(i++), radix);
                 if (digit < 0) {
-                    throw new NumberFormatException("For input string: \"" + this + "\"");
+                    throw new NumberFormatException(FOR_INPUT_STRING + this + "\"");
                 }
                 if (result < multmin) {
-                    throw new NumberFormatException("For input string: \"" + this + "\"");
+                    throw new NumberFormatException(FOR_INPUT_STRING + this + "\"");
                 }
                 result *= radix;
                 if (result < limit + digit) {
-                    throw new NumberFormatException("For input string: \"" + this + "\"");
+                    throw new NumberFormatException(FOR_INPUT_STRING + this + "\"");
                 }
                 result -= digit;
             }
         } else {
-            throw new NumberFormatException("For input string: \"" + this + "\"");
+            throw new NumberFormatException(FOR_INPUT_STRING + this + "\"");
         }
         if (negative) {
             if (i > 1) {
                 return result;
             } else { /* Only got "-" */
-                throw new NumberFormatException("For input string: \"" + this + "\"");
+                throw new NumberFormatException(FOR_INPUT_STRING + this + "\"");
             }
         } else {
             return -result;

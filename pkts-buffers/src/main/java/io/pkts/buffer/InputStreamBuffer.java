@@ -14,6 +14,10 @@ import java.util.List;
  */
 public final class InputStreamBuffer extends AbstractBuffer {
 
+    private static final String CANNOT_WRITE_TO_AN_INPUT_STREAM_BUFFER = "Cannot write to an InputStreamBuffer";
+
+    private static final String NOT_IMPLEMENTED_JUST_YET = "Not implemented just yet";
+
     private final InputStream is;
 
     /**
@@ -517,42 +521,42 @@ public final class InputStreamBuffer extends AbstractBuffer {
 
     @Override
     public void getBytes(final Buffer dst) {
-        throw new RuntimeException("Not implemented just yet");
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     @Override
     public void getByes(final byte[] dst) throws IndexOutOfBoundsException {
-        throw new RuntimeException("Not implemented just yet");
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     @Override
     public void getBytes(final int index, final Buffer dst) throws IndexOutOfBoundsException {
-        throw new RuntimeException("Not implemented just yet");
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     @Override
     public void setInt(final int index, final int value) throws IndexOutOfBoundsException {
-        throw new RuntimeException("Not implemented just yet");
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     @Override
     public void write(final int value) throws IndexOutOfBoundsException, WriteNotSupportedException {
-        throw new WriteNotSupportedException("Cannot write to an InputStreamBuffer");
+        throw new WriteNotSupportedException(CANNOT_WRITE_TO_AN_INPUT_STREAM_BUFFER);
     }
 
     @Override
     public void write(final long value) throws IndexOutOfBoundsException, WriteNotSupportedException {
-        throw new WriteNotSupportedException("Cannot write to an InputStreamBuffer");
+        throw new WriteNotSupportedException(CANNOT_WRITE_TO_AN_INPUT_STREAM_BUFFER);
     }
 
     @Override
     public void writeAsString(final int value) throws IndexOutOfBoundsException, WriteNotSupportedException {
-        throw new WriteNotSupportedException("Cannot write to an InputStreamBuffer");
+        throw new WriteNotSupportedException(CANNOT_WRITE_TO_AN_INPUT_STREAM_BUFFER);
     }
 
     @Override
     public void writeAsString(final long value) throws IndexOutOfBoundsException, WriteNotSupportedException {
-        throw new WriteNotSupportedException("Cannot write to an InputStreamBuffer");
+        throw new WriteNotSupportedException(CANNOT_WRITE_TO_AN_INPUT_STREAM_BUFFER);
     }
 
     @Override
