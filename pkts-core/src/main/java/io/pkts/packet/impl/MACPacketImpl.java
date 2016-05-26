@@ -77,7 +77,7 @@ public final class MACPacketImpl extends AbstractPacket implements MACPacket {
         }
 
         try {
-            return toHexString(this.headers, 0, 6);
+            return toHexString(this.headers, 6, 6);
         } catch (final IOException e) {
             throw new RuntimeException("Unable to read data from the underlying Buffer.", e);
         }
@@ -105,7 +105,7 @@ public final class MACPacketImpl extends AbstractPacket implements MACPacket {
         }
 
         try {
-            return toHexString(this.headers, 6, 6);
+            return toHexString(this.headers, 0, 6);
         } catch (final IOException e) {
             throw new RuntimeException("Unable to read data from the underlying Buffer.", e);
         }
@@ -174,7 +174,7 @@ public final class MACPacketImpl extends AbstractPacket implements MACPacket {
             throw new IllegalArgumentException("Invalid MAC Address. Not enough segments");
         }
 
-        final int offset = setSourceMacAddress ? 0 : 6;
+        final int offset = setSourceMacAddress ? 6 : 0;
         for (int i = 0; i < 6; ++i) {
             final byte b = (byte) ((Character.digit(segments[i].charAt(0), 16) << 4) + Character.digit(segments[i]
                     .charAt(1), 16));
