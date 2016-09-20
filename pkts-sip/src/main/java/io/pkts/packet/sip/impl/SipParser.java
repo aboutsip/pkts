@@ -105,6 +105,10 @@ public class SipParser {
     public static final Buffer SCHEME_SIPS = Buffers.wrap("sips");
 
     public static final Buffer SCHEME_SIPS_COLON = Buffers.wrap("sips:");
+    
+    public static final Buffer SCHEME_TEL = Buffers.wrap("tel");
+    
+    public static final Buffer SCHEME_TEL_COLON = Buffers.wrap("tel:");
 
     public static final byte AT = '@';
 
@@ -353,6 +357,13 @@ public class SipParser {
         } catch (final IOException e) {
             return false;
         }
+    }
+    
+    public static void expectTel(final Buffer buffer) throws SipParseException, IOException {
+    	expect(buffer, 't');
+    	expect(buffer, 'e');
+    	expect(buffer, 'l');
+    	expect(buffer, SipParser.COLON);
     }
 
     public static boolean isSips(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException, IOException {

@@ -187,13 +187,6 @@ public interface SipURI extends URI {
     boolean equals(final Object o);
 
 
-    /**
-     * Get the entire content of the {@link SipURI} as a {@link Buffer}.
-     * 
-     * @return
-     */
-    Buffer toBuffer();
-
     @Override
     SipURI clone();
 

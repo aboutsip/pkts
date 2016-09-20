@@ -28,7 +28,18 @@ public interface URI {
      * 
      * @return true if this {@link URI} is a SIP URI, false otherwise.
      */
-    boolean isSipURI();
+    default boolean isSipURI() {
+    	return false;
+    }
+    
+    /**
+     * Check whether this {@link URI} is a "tel" URI.
+     * 
+     * @return true if this {@link URI} is a TEL URI, false otherwise.
+     */
+    default boolean isTelURI() {
+    	return false;
+    }
 
     /**
      * Write the bytes of this URI into the destination buffer
@@ -39,6 +50,10 @@ public interface URI {
 
     default SipURI toSipURI() {
         throw new ClassCastException("Unable to cast " + this.getClass().getName() + " into a " + SipURI.class.getName());
+    }
+    
+    default TelURI toTelURI() {
+        throw new ClassCastException("Unable to cast " + this.getClass().getName() + " into a " + TelURI.class.getName());
     }
 
 
@@ -58,10 +73,17 @@ public interface URI {
         if (b.getByte(0) == 's' && b.getByte(1) == 'i' && b.getByte(2) == 'p') {
             return SipURI.frame(buffer);
         } else if (b.getByte(0) == 't' && b.getByte(1) == 'e' && b.getByte(2) == 'l') {
-            throw new RuntimeException("Sorry, can't do Tel URIs right now. Haven't implemented it just yet...");
+        	 return TelURI.frame(buffer);
         }
-        throw new RuntimeException("Have only implemented SIP uri parsing right now. Sorry");
+        throw new RuntimeException("Have only implemented SIP and TEL uri parsing right now. Sorry");
     }
+    
+    /**
+     * Get the entire content of this {@link URI} as a {@link Buffer}.
+     * 
+     * @return
+     */
+    Buffer toBuffer();
 
     URI clone();
 
