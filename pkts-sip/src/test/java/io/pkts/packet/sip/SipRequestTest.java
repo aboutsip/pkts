@@ -371,4 +371,18 @@ public class SipRequestTest extends PktsTestBase {
 
     }
 
+    /**
+     * Tests that the parser handles a packet that's prematurely truncated.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testTruncatedPacket() throws Exception {
+        final int truncatedLength = RawData.sipInvite.length - 16;
+        final byte[] truncatedPacket = new byte[truncatedLength];
+        System.arraycopy(RawData.sipInvite, 0, truncatedPacket, 0, truncatedLength);
+        final SipRequest req = (SipRequest) parseMessage(truncatedPacket);
+        assertThat(req.toString().contains("o=user1 53655765 2353687637 IN IP4 127.0.1.1"), is(true));
+    }
+
 }
