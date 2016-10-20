@@ -2072,7 +2072,7 @@ public class SipParser {
         // final Buffer headers = buffer.slice(startHeaders, buffer.getReaderIndex());
         Buffer payload = null;
         if (contentLength > 0 && buffer.hasReadableBytes()) {
-            payload = buffer.readBytes(contentLength);
+            payload = buffer.readBytes(Math.min(contentLength, buffer.getReadableBytes()));
         } else {
             payload = Buffers.EMPTY_BUFFER;
         }
