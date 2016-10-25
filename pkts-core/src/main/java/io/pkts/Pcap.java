@@ -68,9 +68,7 @@ public class Pcap {
     }
 
     public void loop(final PacketHandler callback) throws IOException {
-        final ByteOrder byteOrder = this.header.getByteOrder();
         final PcapFramer framer = new PcapFramer(this.header, this.framerManager);
-        int count = 1;
 
         Packet packet = null;
         boolean processNext = true;

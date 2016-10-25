@@ -620,7 +620,6 @@ public interface SipURI extends URI {
         public SipURI build() throws SipParseException {
             assertNotEmpty(this.host, "Host cannot be empty");
 
-            final Buffer scheme = isSecure ? SipParser.SCHEME_SIPS_COLON : SipParser.SCHEME_SIP_COLON;
             final Buffer params = this.paramSupport.toBuffer();
             if (params != null) {
                 size += params.capacity();

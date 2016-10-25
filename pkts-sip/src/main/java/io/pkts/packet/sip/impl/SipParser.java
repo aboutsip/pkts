@@ -1979,7 +1979,6 @@ public class SipParser {
             // payload (or end of message)
         }
 
-        final Buffer headers = buffer.slice(startHeaders, buffer.getReaderIndex());
         Buffer payload = null;
         if (buffer.hasReadableBytes()) {
             payload = buffer.slice();
@@ -2003,10 +2002,6 @@ public class SipParser {
         final int startIndex = buffer.getReaderIndex();
 
         final SipInitialLine initialLine = SipInitialLine.parse(buffer.readLine());
-
-        // which means that the headers are about
-        // to start now.
-        final int startHeaders = buffer.getReaderIndex();
 
         // Move along as long as we actually can consume an header and
         Buffer headerName = null;
