@@ -505,7 +505,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         return this.onRequestURIFunction;
     }
 
-    private <T> List<T> ensureList(List<T> list) {
+    private static <T> List<T> ensureList(List<T> list) {
         if (list != null)  {
             return list;
         }
@@ -540,7 +540,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
      * @param list
      * @return
      */
-    private final int sizeOf(final List<?> list) {
+    private static final int sizeOf(final List<?> list) {
         return list == null ? 0 : list.size() - 1;
     }
 
@@ -896,7 +896,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
      * @param <T>
      * @return the chained consumer (or the new consumer if there previously wasn't one around)
      */
-    private <T> Consumer<T> chainConsumers(final Consumer<T> currentConsumer, final Consumer<T> consumer) {
+    private static <T> Consumer<T> chainConsumers(final Consumer<T> currentConsumer, final Consumer<T> consumer) {
         if (currentConsumer != null) {
             return currentConsumer.andThen(consumer);
         }
@@ -904,7 +904,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         return consumer;
     }
 
-    private <T, S> BiConsumer<T, S> chainConsumers(final BiConsumer<T, S> currentConsumer, final BiConsumer<T, S> consumer) {
+    private static <T, S> BiConsumer<T, S> chainConsumers(final BiConsumer<T, S> currentConsumer, final BiConsumer<T, S> consumer) {
         if (currentConsumer != null) {
             return currentConsumer.andThen(consumer);
         }

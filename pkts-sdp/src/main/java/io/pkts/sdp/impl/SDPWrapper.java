@@ -70,7 +70,7 @@ public class SDPWrapper implements SDP {
      *         of type "RTP/AVP", otherwise null.
      * @throws SdpParseException
      */
-    private RTPInfo processMediaDescription(final Connection connection, final MediaDescription md)
+    private static RTPInfo processMediaDescription(final Connection connection, final MediaDescription md)
             throws SdpParseException {
         final Media m = md.getMedia();
         if ("RTP/AVP".equalsIgnoreCase(m.getProtocol())) {

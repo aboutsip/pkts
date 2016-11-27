@@ -129,11 +129,11 @@ public class SllFramer implements Framer<PCapPacket> {
         }
     }
 
-    private boolean isKnownEtherType(final byte b1, final byte b2) {
+    private static boolean isKnownEtherType(final byte b1, final byte b2) {
         return EthernetFramer.getEtherTypeSafe(b1, b2) != null;
     }
 
-    private boolean validatePacketType(final byte b1, final byte b2) {
+    private static boolean validatePacketType(final byte b1, final byte b2) {
         if (b1 != (byte) 0x00) {
             return false;
         }

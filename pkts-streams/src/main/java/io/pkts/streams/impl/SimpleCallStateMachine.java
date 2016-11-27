@@ -378,7 +378,7 @@ public final class SimpleCallStateMachine {
      * @param status
      * @return
      */
-    private boolean isRejected(final int status) {
+    private static boolean isRejected(final int status) {
         return status == 401 || status == 403 || status == 404 || status == 407 || status == 480
                 || status == 486 || status == 603;
     }

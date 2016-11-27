@@ -175,7 +175,7 @@ public class BasicSipStream implements SipStream {
         return null;
     }
 
-    private SDP getSDPorNull(final SipPacket msg) throws SipParseException {
+    private static SDP getSDPorNull(final SipPacket msg) throws SipParseException {
         final Object content = msg.getContent();
         if (content instanceof SDP) {
             return (SDP) content;
