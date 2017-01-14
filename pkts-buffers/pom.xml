@@ -14,11 +14,6 @@
 
   <dependencies>
 
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-buffer</artifactId>
-    </dependency>
-
     <!-- Test Dependencies -->
     <dependency>
       <groupId>junit</groupId>
