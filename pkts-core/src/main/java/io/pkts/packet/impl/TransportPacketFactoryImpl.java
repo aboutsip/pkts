@@ -94,7 +94,7 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
         final MACPacket mac = MACPacketImpl.create(pkt, ethernet);
 
         final IPPacketImpl ipPacket = new IPPacketImpl(mac, ipv4, 0, null);
-        ipPacket.setTotalLength(ipv4.getReadableBytes());
+        ipPacket.setTotalLength(this.ipv4.length + this.udp.length + payloadSize);
 
         final UdpPacketImpl udp = new UdpPacketImpl(ipPacket, Buffers.wrap(new byte[8]), payload);
         udp.setLength(8 + payloadSize);
