@@ -30,4 +30,7 @@ public interface TCPPacket extends TransportPacket {
 
     boolean isCWR();
 
+    long getSequenceNumber();
+
+    long getAcknowledgementNumber();
 }
