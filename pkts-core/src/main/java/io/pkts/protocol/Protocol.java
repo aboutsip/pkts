@@ -15,9 +15,9 @@ public enum Protocol {
     SCTP("sctp", Layer.LAYER_4),
     SIP("sip", Layer.LAYER_7),
     SDP("sdp", Layer.LAYER_7),
-    ETHERNET_II("eth", Layer.LAYER_2, new byte[] {1,0,0,0}),
-    SLL("sll", Layer.LAYER_2, new byte[] {113,0,0,0}),
-    IPv4("ip", Layer.LAYER_3, new byte[] {101,0,0,0}),
+    ETHERNET_II("eth", Layer.LAYER_2, 1L),
+    SLL("sll", Layer.LAYER_2, 113L),
+    IPv4("ip", Layer.LAYER_3, 101L),
     PCAP("pcap", Layer.LAYER_1),
     RTP("rtp", Layer.LAYER_7),
     RTCP("rtcp", Layer.LAYER_7),
@@ -27,15 +27,15 @@ public enum Protocol {
 
     private final Layer layer;
 
-    /** 4 byte representation of the LINK-LAYER HEADER TYPE VALUES - see http://www.tcpdump.org/linktypes.html */
-    private byte[] linkType = null;
+    /** Nullable representation of the LINK-LAYER HEADER TYPE VALUES - see http://www.tcpdump.org/linktypes.html */
+    private Long linkType = null;
 
     private Protocol(final String name, final Layer layer) {
         this.name = name;
         this.layer = layer;
     }
 
-    private Protocol(final String name, final Layer layer, byte[] linkType) {
+    private Protocol(final String name, final Layer layer, Long linkType) {
         this.name = name;
         this.layer = layer;
         this.linkType = linkType;
@@ -97,7 +97,7 @@ public enum Protocol {
         }
     }
 
-    public byte[] getLinkType() {
+    public Long getLinkType() {
         return linkType;
     }
 
