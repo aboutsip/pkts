@@ -8,7 +8,7 @@ import io.pkts.buffer.Buffers;
 import io.pkts.framer.TCPFramer;
 import io.pkts.framer.UDPFramer;
 import io.pkts.packet.IPPacket;
-import io.pkts.packet.MACPacket;
+import io.pkts.packet.PCapPacket;
 import io.pkts.packet.Packet;
 import io.pkts.protocol.Protocol;
 
@@ -24,7 +24,7 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
 
     private static final TCPFramer tcpFramer = new TCPFramer();
 
-    private final MACPacket parent;
+    private final PCapPacket parent;
 
     private final Buffer headers;
 
@@ -33,7 +33,7 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
     /**
      * 
      */
-    public IPPacketImpl(final MACPacket parent, final Buffer headers, final int options, final Buffer payload) {
+    public IPPacketImpl(final PCapPacket parent, final Buffer headers, final int options, final Buffer payload) {
         super(Protocol.IPv4, parent, payload);
         assert parent != null;
         assert headers != null;
@@ -131,16 +131,6 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
     }
 
     @Override
-    public String getSourceMacAddress() {
-        return this.parent.getSourceMacAddress();
-    }
-
-    @Override
-    public String getDestinationMacAddress() {
-        return this.parent.getDestinationMacAddress();
-    }
-
-    @Override
     public void write(final OutputStream out, final Buffer payload) throws IOException {
         // Note, you need to set the total length before you merge the packets since
         // Buffers.wrap will copy the bytes.
@@ -159,22 +149,6 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
 
     public void setTotalLength(final int length) {
         this.headers.setUnsignedShort(2, length);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setSourceMacAddress(final String macAddress) {
-        this.parent.setSourceMacAddress(macAddress);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setDestinationMacAddress(final String macAddress) {
-        this.parent.setDestinationMacAddress(macAddress);
     }
 
     @Override
@@ -254,8 +228,8 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
 
     @Override
     public IPPacket clone() {
-        final MACPacket mac = this.parent.clone();
-        final IPPacket pkt = new IPPacketImpl(mac, this.headers.clone(), this.options, getPayload().clone());
+        final PCapPacket parent = this.parent.clone();
+        final IPPacket pkt = new IPPacketImpl(parent, this.headers.clone(), this.options, getPayload().clone());
         return pkt;
     }
 

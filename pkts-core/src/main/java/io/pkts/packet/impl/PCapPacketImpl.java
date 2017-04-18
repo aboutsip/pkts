@@ -4,8 +4,10 @@
 package io.pkts.packet.impl;
 
 import io.pkts.buffer.Buffer;
+import io.pkts.frame.PcapGlobalHeader;
 import io.pkts.frame.PcapRecordHeader;
 import io.pkts.framer.EthernetFramer;
+import io.pkts.framer.IPv4Framer;
 import io.pkts.framer.SllFramer;
 import io.pkts.packet.MACPacket;
 import io.pkts.packet.PCapPacket;
@@ -28,12 +30,24 @@ public final class PCapPacketImpl extends AbstractPacket implements PCapPacket {
 
     private static final SllFramer sllFramer = new SllFramer();
     private static final EthernetFramer ethernetFramer = new EthernetFramer();
+    private static final IPv4Framer ipFramer = new IPv4Framer();
+    private final PcapGlobalHeader pcapGlobalHeader;
 
     /**
-     * 
+     * Constructor which assumes an Ethernet link layer.
      */
     public PCapPacketImpl(final PcapRecordHeader header, final Buffer payload) {
         super(Protocol.PCAP, null, payload);
+        this.pcapGlobalHeader = PcapGlobalHeader.createDefaultHeader();
+        this.pcapHeader = header;
+    }
+
+    /**
+     * Constructor which uses the PCAP file's global header to support more than just Ethernet link layers
+     */
+    public PCapPacketImpl(PcapGlobalHeader pcapGlobalHeader, final PcapRecordHeader header, final Buffer payload) {
+        super(Protocol.PCAP, null, payload);
+        this.pcapGlobalHeader = pcapGlobalHeader;
         this.pcapHeader = header;
     }
 
@@ -93,17 +107,22 @@ public final class PCapPacketImpl extends AbstractPacket implements PCapPacket {
     }
 
     @Override
-    public MACPacket getNextPacket() throws IOException {
+    public PCapPacket getNextPacket() throws IOException {
         final Buffer payload = getPayload();
         if (payload == null) {
             return null;
         }
 
-        if (sllFramer.accept(payload)) {
-            return sllFramer.frame(this, payload);
+        switch(pcapGlobalHeader.getDataLinkType())
+        {
+            case 1:
+            default:
+                return ethernetFramer.frame(this, payload);
+            case 131:
+                return sllFramer.frame(this, payload);
+            case 101:
+                return ipFramer.frame(this, payload);
         }
-
-        return ethernetFramer.frame(this, payload);
     }
 
 }

@@ -228,46 +228,6 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
     /*
      * (non-Javadoc)
      * 
-     * @see io.pkts.packet.MACPacket#getSourceMacAddress()
-     */
-    @Override
-    public String getSourceMacAddress() {
-        return this.parent.getSourceMacAddress();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.MACPacket#setSourceMacAddress(java.lang.String)
-     */
-    @Override
-    public void setSourceMacAddress(final String macAddress) throws IllegalArgumentException {
-        this.parent.setSourceMacAddress(macAddress);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.MACPacket#getDestinationMacAddress()
-     */
-    @Override
-    public String getDestinationMacAddress() {
-        return this.parent.getDestinationMacAddress();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.MACPacket#setDestinationMacAddress(java.lang.String)
-     */
-    @Override
-    public void setDestinationMacAddress(final String macAddress) throws IllegalArgumentException {
-        this.parent.setDestinationMacAddress(macAddress);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see io.pkts.packet.Packet#getArrivalTime()
      */
     @Override

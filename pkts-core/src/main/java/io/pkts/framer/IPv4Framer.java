@@ -6,6 +6,8 @@ package io.pkts.framer;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.IPPacket;
 import io.pkts.packet.MACPacket;
+import io.pkts.packet.PCapPacket;
+import io.pkts.packet.Packet;
 import io.pkts.packet.impl.IPPacketImpl;
 import io.pkts.protocol.Protocol;
 
@@ -15,7 +17,7 @@ import java.io.IOException;
  * @author jonas@jonasborjesson.com
  * 
  */
-public class IPv4Framer implements Framer<MACPacket> {
+public class IPv4Framer implements Framer<PCapPacket> {
 
     public IPv4Framer() {
     }
@@ -32,7 +34,7 @@ public class IPv4Framer implements Framer<MACPacket> {
      * {@inheritDoc}
      */
     @Override
-    public IPPacket frame(final MACPacket parent, final Buffer payload) throws IOException {
+    public IPPacket frame(final PCapPacket parent, final Buffer payload) throws IOException {
 
         if (parent == null) {
             throw new IllegalArgumentException("The parent frame cannot be null");
