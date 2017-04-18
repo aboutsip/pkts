@@ -103,7 +103,7 @@ public final class PCapPacketImpl extends AbstractPacket implements PCapPacket {
 
     @Override
     public PCapPacket clone() {
-        throw new RuntimeException("not implemente yet");
+        throw new RuntimeException("not implemented yet");
     }
 
     @Override

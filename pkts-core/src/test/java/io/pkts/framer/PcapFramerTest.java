@@ -8,10 +8,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import io.pkts.PktsTestBase;
 import io.pkts.buffer.Buffer;
+import io.pkts.frame.PcapGlobalHeader;
+import io.pkts.frame.PcapRecordHeader;
+import io.pkts.packet.IPPacket;
 import io.pkts.packet.PCapPacket;
 
 import java.io.IOException;
 
+import io.pkts.packet.impl.PCapPacketImpl;
+import io.pkts.protocol.Protocol;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -77,4 +82,23 @@ public class PcapFramerTest extends PktsTestBase {
         assertThat(expectedLength, is(payload.capacity()));
     }
 
+    /**
+     * Populate a PCap packet with IP content (omitting the Ethernet layer) -
+     * ensure it can be parsed as LINKTYPE_RAW.
+     */
+    @Test
+    public void testRawLinktypeFraming() throws Exception {
+        IPPacket ipPacket = loadIPPackets("sipp.pcap").get(0);
+
+        PCapPacketImpl pcapPacket = new PCapPacketImpl(
+                PcapGlobalHeader.createDefaultHeader(Protocol.IPv4),
+                PcapRecordHeader.createDefaultHeader(1),
+                ipPacket.getParentPacket().getPayload());
+
+        IPPacket parsedIpPacket = (IPPacket) pcapPacket.getNextPacket();
+
+        assertThat(parsedIpPacket.getDestinationIP(), is(ipPacket.getDestinationIP()));
+        assertThat(parsedIpPacket.getSourceIP(), is(ipPacket.getSourceIP()));
+        assertThat(parsedIpPacket.getIpChecksum(), is(ipPacket.getIpChecksum()));
+    }
 }
