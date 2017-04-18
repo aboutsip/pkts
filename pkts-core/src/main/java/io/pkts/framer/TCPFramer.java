@@ -28,7 +28,7 @@ public final class TCPFramer implements Framer<IPPacket> {
      */
     @Override
     public Protocol getProtocol() {
-        return Protocol.UDP;
+        return Protocol.TCP;
     }
 
     /**

@@ -15,7 +15,7 @@ package io.pkts.packet;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface IPPacket extends MACPacket, Cloneable {
+public interface IPPacket extends PCapPacket, Cloneable {
 
     /**
      * Get the raw source ip.

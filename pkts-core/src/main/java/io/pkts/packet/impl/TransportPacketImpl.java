@@ -7,6 +7,7 @@ import io.pkts.buffer.Buffer;
 import io.pkts.framer.RTPFramer;
 import io.pkts.framer.SIPFramer;
 import io.pkts.packet.IPPacket;
+import io.pkts.packet.MACPacket;
 import io.pkts.packet.Packet;
 import io.pkts.packet.TransportPacket;
 import io.pkts.packet.rtp.RtpPacket;
@@ -118,34 +119,8 @@ public abstract class TransportPacketImpl extends AbstractPacket implements Tran
     }
 
     @Override
-    public final String getSourceMacAddress() {
-        return this.parent.getSourceMacAddress();
-    }
-
-    @Override
-    public final String getDestinationMacAddress() {
-        return this.parent.getDestinationMacAddress();
-    }
-
-    @Override
     public final long getTotalLength() {
         return this.parent.getTotalLength();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final void setSourceMacAddress(final String macAddress) {
-        this.parent.setSourceMacAddress(macAddress);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final void setDestinationMacAddress(final String macAddress) {
-        this.parent.setDestinationMacAddress(macAddress);
     }
 
     @Override

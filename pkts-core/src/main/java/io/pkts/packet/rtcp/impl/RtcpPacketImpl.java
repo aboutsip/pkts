@@ -222,38 +222,6 @@ public class RtcpPacketImpl extends AbstractPacket implements RtcpPacket {
      * {@inheritDoc}
      */
     @Override
-    public String getSourceMacAddress() {
-        return this.parent.getSourceMacAddress();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getDestinationMacAddress() {
-        return this.parent.getDestinationMacAddress();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setSourceMacAddress(final String macAddress) {
-        this.parent.setSourceMacAddress(macAddress);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setDestinationMacAddress(final String macAddress) {
-        this.parent.setDestinationMacAddress(macAddress);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void setSourceIP(final int a, final int b, final int c, final int d) {
         this.parent.setSourceIP(a, b, c, d);
     }

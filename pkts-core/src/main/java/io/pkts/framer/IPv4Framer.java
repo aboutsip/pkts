@@ -6,6 +6,8 @@ package io.pkts.framer;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.IPPacket;
 import io.pkts.packet.MACPacket;
+import io.pkts.packet.PCapPacket;
+import io.pkts.packet.Packet;
 import io.pkts.packet.impl.IPPacketImpl;
 import io.pkts.protocol.Protocol;
 
@@ -15,7 +17,7 @@ import java.io.IOException;
  * @author jonas@jonasborjesson.com
  * 
  */
-public class IPv4Framer implements Framer<MACPacket> {
+public class IPv4Framer implements Framer<PCapPacket> {
 
     public IPv4Framer() {
     }
@@ -32,7 +34,7 @@ public class IPv4Framer implements Framer<MACPacket> {
      * {@inheritDoc}
      */
     @Override
-    public IPPacket frame(final MACPacket parent, final Buffer payload) throws IOException {
+    public IPPacket frame(final PCapPacket parent, final Buffer payload) throws IOException {
 
         if (parent == null) {
             throw new IllegalArgumentException("The parent frame cannot be null");
@@ -43,21 +45,21 @@ public class IPv4Framer implements Framer<MACPacket> {
         final Buffer headers = payload.readBytes(20);
 
         // byte 1, contains the version and the length
-        final byte b = headers.getByte(0);
+        final byte b = headers.readByte();
         // final int version = ((i >>> 28) & 0x0F);
         // final int length = ((i >>> 24) & 0x0F);
 
         final int version = b >>> 5 & 0x0F;
-        final int length = b & 0x0F;
+        final int headerLength = b & 0x0F;
 
         // byte 2 - dscp and ecn
-        // final byte b2 = headers.readByte();
+        final byte tos = headers.readByte();
 
-        // final int dscp = ((b2 >>> 6) & 0x3B);
-        // final int ecn = (b2 & 0x03);
+        // final int dscp = ((tos >>> 6) & 0x3B);
+        // final int ecn = (tos & 0x03);
 
         // byte 3 - 4
-        // final int totalLength = headers.readUnsignedShort();
+        final int totalLength = headers.readUnsignedShort();
 
         // byte 5 - 6
         // final short id = headers.readShort();
@@ -85,13 +87,14 @@ public class IPv4Framer implements Framer<MACPacket> {
         // if the length is greater than 5, then the frame
         // contains extra options so read those as well
         int options = 0;
-        if (length > 5) {
+        if (headerLength > 5) {
             // remember, this may have to be treated as unsigned
             // final int options = headers.readInt();
             options = payload.readInt();
         }
 
-        final Buffer data = payload.slice();
+        //Trim off any padding from the upper layer, e.g. Ethernet padding for small packets.
+        final Buffer data = payload.slice(payload.getReaderIndex() + totalLength - (headerLength * 4));
         return new IPPacketImpl(parent, headers, options, data);
     }
 
