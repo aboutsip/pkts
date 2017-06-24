@@ -29,10 +29,10 @@ public class ContactHeaderTest extends AddressParameterHeadersTestBase {
         final Address address = contact.getAddress();
         assertThat(address.getDisplayName(), is(Buffers.EMPTY_BUFFER));
         final SipURI uri = (SipURI) address.getURI();
-        assertThat(uri.getUser().toString(), is("hello"));
+        assertThat(uri.getUser().get(), is(Buffers.wrap("hello")));
         assertThat(uri.getHost().toString(), is("10.0.1.5"));
         assertThat(uri.getPort(), is(51945));
-        assertThat(uri.getParameter("ob"), is(Buffers.EMPTY_BUFFER));
+        assertThat(uri.getParameter("ob").get(), is(Buffers.EMPTY_BUFFER));
 
 
         // note, asking for a parameter on the actual header is NOT the same

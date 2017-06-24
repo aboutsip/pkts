@@ -103,6 +103,22 @@ public class TCPFramerTest extends PktsTestBase {
         assertThat(getFrame(FragmentedTCPData.segmentThree).isCWR(), is(false));
     }
 
+    /**
+     * Ensures the sequence and acknowledgement numbers read from the TCP header match those from the corresponding TCP
+     * packets when shown in wireshark for "fragmented_tcp_sip.pcap"
+     */
+    @Test
+    public void testSeqAckNums() throws Exception {
+        assertThat(getFrame(FragmentedTCPData.segmentOne).getSequenceNumber(), is(2906855378L));
+        assertThat(getFrame(FragmentedTCPData.segmentOne).getAcknowledgementNumber(), is(2889966791L));
+
+        assertThat(getFrame(FragmentedTCPData.segmentTwo).getSequenceNumber(), is(2906856826L));
+        assertThat(getFrame(FragmentedTCPData.segmentTwo).getAcknowledgementNumber(), is(2889966791L));
+
+        assertThat(getFrame(FragmentedTCPData.segmentThree).getSequenceNumber(), is(2906858274L));
+        assertThat(getFrame(FragmentedTCPData.segmentThree).getAcknowledgementNumber(), is(2889966791L));
+    }
+
     private TCPPacket getFrame(final byte[] data) throws Exception {
         // final IPPacket ipFrame = mock(IPFrame.class);
         // final IPPacket ip = mock(IPPacket.class);

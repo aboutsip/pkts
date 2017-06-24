@@ -5,6 +5,7 @@ package io.pkts.packet.sip.address.impl;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.packet.sip.Transport;
 import io.pkts.packet.sip.address.Address;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.address.URI;
@@ -38,19 +39,19 @@ public class AddressImplTest {
     @Test
     public void testTransportParam() throws Exception {
         Address address = Address.frame(Buffers.wrap("sip:alice@pkts.io")).copy().withTransportTLS().build();
-        assertThat(address.getURI().toSipURI().getTransportParam().toString(), is("tls"));
+        assertThat(address.getURI().toSipURI().getTransportParam().get(), is(Transport.tls));
 
         address = Address.frame(Buffers.wrap("sip:alice@pkts.io")).copy().withTransportWS().build();
-        assertThat(address.getURI().toSipURI().getTransportParam().toString(), is("ws"));
+        assertThat(address.getURI().toSipURI().getTransportParam().get(), is(Transport.ws));
 
         address = Address.frame(Buffers.wrap("sip:alice@pkts.io")).copy().withTransportWSS().build();
-        assertThat(address.getURI().toSipURI().getTransportParam().toString(), is("wss"));
+        assertThat(address.getURI().toSipURI().getTransportParam().get(), is(Transport.wss));
 
         address = Address.frame(Buffers.wrap("sip:alice@pkts.io")).copy().withTransportTCP().build();
-        assertThat(address.getURI().toSipURI().getTransportParam().toString(), is("tcp"));
+        assertThat(address.getURI().toSipURI().getTransportParam().get(), is(Transport.tcp));
 
         address = Address.frame(Buffers.wrap("sip:alice@pkts.io")).copy().withTransportUDP().build();
-        assertThat(address.getURI().toSipURI().getTransportParam().toString(), is("udp"));
+        assertThat(address.getURI().toSipURI().getTransportParam().get(), is(Transport.udp));
     }
 
     /**
@@ -138,7 +139,7 @@ public class AddressImplTest {
         final SipURI sipURI = (SipURI) uri;
         assertThat(sipURI.toBuffer().toString(), is("sip:alice@example.com"));
         assertThat(sipURI.toString(), is("sip:alice@example.com"));
-        assertThat(sipURI.getUser().toString(), is("alice"));
+        assertThat(sipURI.getUser().get().toString(), is("alice"));
         assertThat(sipURI.getHost().toString(), is("example.com"));
 
         // no display name

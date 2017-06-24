@@ -1,6 +1,7 @@
 package io.pkts.frame;
 
 import io.pkts.buffer.Buffer;
+import io.pkts.buffer.Buffers;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
@@ -66,54 +67,35 @@ public final class PcapGlobalHeader {
         return createDefaultHeader(Protocol.ETHERNET_II);
     }
 
-    public static PcapGlobalHeader createDefaultHeader(final Protocol protocol) {
-        final byte[] body = new byte[20];
+    public static PcapGlobalHeader createDefaultHeader(Protocol protocol) {
+        Buffer body = Buffers.createBuffer(20);
 
         // major version number
-        body[1] = (byte) 0x00;
-        body[0] = (byte) 0x02;
-
+        body.setUnsignedByte(0, (short) 2);
         // minor version number
-        body[3] = (byte) 0x00;
-        body[2] = (byte) 0x04;
-
+        body.setUnsignedByte(2, (short) 4);
         // GMT to local correction - in practice always zero
-        body[4] = (byte) 0x00;
-        body[5] = (byte) 0x00;
-        body[6] = (byte) 0x00;
-        body[7] = (byte) 0x00;
-
+        body.setUnsignedInt(4, 0);
         // accuracy of timestamp - always zero.
-        body[8] = (byte) 0x00;
-        body[9] = (byte) 0x00;
-        body[10] = (byte) 0x00;
-        body[11] = (byte) 0x00;
-
+        body.setUnsignedInt(8, 0);
         // snaplength - typically 65535
-        body[12] = (byte) 0xFF;
-        body[13] = (byte) 0xFF;
-        body[14] = (byte) 0x00;
-        body[15] = (byte) 0x00;
+        body.setUnsignedInt(12, 65535);
 
         // data link type - default is ethernet
         // See http://www.tcpdump.org/linktypes.html for a complete list
-        if (protocol == null || protocol == Protocol.ETHERNET_II) {
-            body[16] = (byte) 0x01;
-            body[17] = (byte) 0x00;
-            body[18] = (byte) 0x00;
-            body[19] = (byte) 0x00;
-        } else if (protocol == null || protocol == Protocol.SLL) {
-            body[16] = (byte) 0x71;
-            body[17] = (byte) 0x00;
-            body[18] = (byte) 0x00;
-            body[19] = (byte) 0x00;
+        if (protocol == null) {
+            protocol = Protocol.ETHERNET_II;
+        }
+
+        Long linkType = protocol.getLinkType();
+        if (linkType != null) {
+            body.setUnsignedInt(16, linkType);
         } else {
             throw new IllegalArgumentException("Unknown protocol \"" + protocol
                     + "\". Not sure how to construct the global header. You probably need to add some code yourself");
         }
 
-        return new PcapGlobalHeader(ByteOrder.LITTLE_ENDIAN, body);
-
+        return new PcapGlobalHeader(ByteOrder.LITTLE_ENDIAN, body.getRawArray());
     }
 
     public PcapGlobalHeader(final ByteOrder byteOrder, final byte[] body) {

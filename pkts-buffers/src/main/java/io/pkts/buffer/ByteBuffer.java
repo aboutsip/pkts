@@ -103,6 +103,16 @@ public final class ByteBuffer extends AbstractBuffer {
         ++this.writerIndex;
     }
 
+    @Override
+    public void write(final byte[] bytes) throws IndexOutOfBoundsException {
+        if (!checkWritableBytesSafe(bytes.length)) {
+            throw new IndexOutOfBoundsException("Unable to write the entire String to this buffer. Nothing was written");
+        }
+
+        System.arraycopy(bytes, 0, this.buffer, this.writerIndex, bytes.length);
+        this.writerIndex += bytes.length;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -114,6 +124,7 @@ public final class ByteBuffer extends AbstractBuffer {
         return array;
     }
 
+    @Override
     public byte[] getRawArray() {
         return this.buffer;
     }
@@ -281,7 +292,6 @@ public final class ByteBuffer extends AbstractBuffer {
                 return false;
             }
 
-
             final int length = getReadableBytes();
             for (int i = 0; i < length; ++i) {
                 final byte a1 = this.buffer[this.lowerBoundary + i];
@@ -336,11 +346,6 @@ public final class ByteBuffer extends AbstractBuffer {
         } catch (final UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public int getWriterIndex() {
-        return this.writerIndex;
     }
 
     @Override
@@ -420,14 +425,12 @@ public final class ByteBuffer extends AbstractBuffer {
 
     @Override
     public void setUnsignedInt(final int index, final long value) throws IndexOutOfBoundsException {
-        // setInt(index, (int) value);
         checkIndex(index);
         checkIndex(index + 3);
         this.buffer[this.lowerBoundary + index + 0] = (byte) value;
         this.buffer[this.lowerBoundary + index + 1] = (byte) (value >>> 8);
         this.buffer[this.lowerBoundary + index + 2] = (byte) (value >>> 16);
         this.buffer[this.lowerBoundary + index + 3] = (byte) (value >>> 24);
-
     }
 
     @Override

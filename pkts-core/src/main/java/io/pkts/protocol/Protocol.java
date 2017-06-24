@@ -7,17 +7,38 @@ import io.pkts.framer.FramerManager;
  * @author jonas@jonasborjesson.com
  */
 public enum Protocol {
-    ICMP("icmp", Layer.LAYER_3), IGMP("igmp", Layer.LAYER_3), TLS("tcp", Layer.LAYER_7), TCP("tcp", Layer.LAYER_4), UDP(
-            "udp", Layer.LAYER_4), SCTP("sctp", Layer.LAYER_4), SIP("sip", Layer.LAYER_7), SDP("sdp", Layer.LAYER_7), ETHERNET_II(
-            "eth", Layer.LAYER_2), SLL("sll", Layer.LAYER_2), IPv4("ip", Layer.LAYER_3), PCAP("pcap", Layer.LAYER_1), RTP(
-            "rtp", Layer.LAYER_7), RTCP("rtcp", Layer.LAYER_7), UNKNOWN("unknown", null);
+    ICMP("icmp", Layer.LAYER_3),
+    IGMP("igmp", Layer.LAYER_3),
+    TLS("tcp", Layer.LAYER_7),
+    TCP("tcp", Layer.LAYER_4),
+    UDP("udp", Layer.LAYER_4),
+    SCTP("sctp", Layer.LAYER_4),
+    SIP("sip", Layer.LAYER_7),
+    SDP("sdp", Layer.LAYER_7),
+    ETHERNET_II("eth", Layer.LAYER_2, 1L),
+    SLL("sll", Layer.LAYER_2, 113L),
+    IPv4("ip", Layer.LAYER_3, 101L),
+    PCAP("pcap", Layer.LAYER_1),
+    RTP("rtp", Layer.LAYER_7),
+    RTCP("rtcp", Layer.LAYER_7),
+    UNKNOWN("unknown", null);
+
     private final String name;
 
     private final Layer layer;
 
+    /** Nullable representation of the LINK-LAYER HEADER TYPE VALUES - see http://www.tcpdump.org/linktypes.html */
+    private Long linkType = null;
+
     private Protocol(final String name, final Layer layer) {
         this.name = name;
         this.layer = layer;
+    }
+
+    private Protocol(final String name, final Layer layer, Long linkType) {
+        this.name = name;
+        this.layer = layer;
+        this.linkType = linkType;
     }
 
     /**
@@ -74,6 +95,10 @@ public enum Protocol {
             default:
                 return null;
         }
+    }
+
+    public Long getLinkType() {
+        return linkType;
     }
 
     public static enum Layer {

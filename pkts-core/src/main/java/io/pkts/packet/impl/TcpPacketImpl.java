@@ -143,6 +143,16 @@ public final class TcpPacketImpl extends TransportPacketImpl implements TCPPacke
     }
 
     @Override
+    public long getSequenceNumber() {
+        return this.headers.slice(4, 8).readUnsignedInt();
+    }
+
+    @Override
+    public long getAcknowledgementNumber() {
+        return this.headers.slice(8, 12).readUnsignedInt();
+    }
+
+    @Override
     public TransportPacket clone() {
         final IPPacket parent = getParent().clone();
         final Buffer options = this.options != null ? this.options.clone() : null;

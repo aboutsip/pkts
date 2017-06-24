@@ -6,6 +6,7 @@ package io.pkts.packet.sip.header;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.Transport;
 import io.pkts.packet.sip.header.impl.ViaHeaderImpl;
 import io.pkts.packet.sip.impl.SipParser;
 
@@ -175,6 +176,20 @@ public interface ViaHeader extends Parameters, SipHeader {
      */
     boolean isSCTP();
 
+    /**
+     * Convenience method for checking whether the protocol is WS or not.
+     *
+     * @return
+     */
+    boolean isWS();
+
+    /**
+     * Convenience method for checking whether the protocol is WSS or not.
+     *
+     * @return
+     */
+    boolean isWSS();
+
     @Override
     ViaHeader clone();
 
@@ -250,7 +265,7 @@ public interface ViaHeader extends Parameters, SipHeader {
 
         private int indexOfRPort;
 
-        private Buffer transport;
+        private Transport transport;
         private Buffer host;
         private int port;
         private List<Buffer[]> params;
@@ -265,7 +280,7 @@ public interface ViaHeader extends Parameters, SipHeader {
             this.indexOfRPort = -1;
         }
 
-        public Builder(final Buffer transport,
+        public Builder(final Transport transport,
                        final Buffer host,
                        final int port,
                        final List<Buffer[]> params,
@@ -284,7 +299,7 @@ public interface ViaHeader extends Parameters, SipHeader {
         public Builder(final Buffer buffer) throws IOException {
             try {
                 final Object[] result = SipParser.consumeVia(buffer);
-                this.transport = (Buffer) result[0];
+                this.transport = Transport.of((Buffer) result[0]);
                 this.host = (Buffer) result[1];
                 this.port = result[2] == null ? -1 : ((Buffer) result[2]).parseToInt();
                 this.params = (List<Buffer[]>) result[3];
@@ -436,32 +451,32 @@ public interface ViaHeader extends Parameters, SipHeader {
         }
 
         public Builder withTransportUDP() {
-            this.transport = udp.clone();
+            this.transport = Transport.udp;
             return this;
         }
 
         public Builder withTransportSCTP() {
-            this.transport = sctp.clone();
+            this.transport = Transport.sctp;
             return this;
         }
 
         public Builder withTransportTCP() {
-            this.transport = tcp.clone();
+            this.transport = Transport.tcp;
             return this;
         }
 
         public Builder withTransportTLS() {
-            this.transport = tls.clone();
+            this.transport = Transport.tls;
             return this;
         }
 
         public Builder withTransportWS() {
-            this.transport = ws.clone();
+            this.transport = Transport.ws;
             return this;
         }
 
         public Builder withTransportWSS() {
-            this.transport = wss.clone();
+            this.transport = Transport.wss;
             return this;
         }
 
@@ -474,18 +489,19 @@ public interface ViaHeader extends Parameters, SipHeader {
          * @throws SipParseException in case the transport is not any of UDP, TCP, TLS, SCTP or WS.
          */
         public Builder withTransport(final Buffer transport) throws SipParseException {
-            assertNotNull(transport);
-            if (SipParser.isUDP(transport) || SipParser.isTCP(transport) || SipParser.isTLS(transport)
-                    || SipParser.isWS(transport) || SipParser.isSCTP(transport)) {
-                this.transport = transport.clone();
-                return this;
-            }
+            this.transport = Transport.of(transport);
+            return this;
+        }
 
-            throw new SipParseException(0, "Illegal transport");
+        public Builder withTransport(final Transport transport) throws SipParseException {
+            assertNotNull(transport, "Illegal Transport - transport cannot be null");
+            this.transport = transport;
+            return this;
         }
 
         public Builder withTransport(final String transport) throws SipParseException {
-            return withTransport(Buffers.wrap(transport));
+            this.transport = Transport.of(transport);
+            return this;
         }
 
         @Override
@@ -501,7 +517,7 @@ public interface ViaHeader extends Parameters, SipHeader {
             }
 
             if (transport == null) {
-                transport = udp.clone();
+                transport = Transport.udp;
             }
 
             if (host == null) {
@@ -516,7 +532,7 @@ public interface ViaHeader extends Parameters, SipHeader {
 
         private void transferValue(final Buffer dst) {
             SipParser.SIP2_0_SLASH.getBytes(0, dst);
-            this.transport.getBytes(0, dst);
+            this.transport.toUpperCaseBuffer().getBytes(0, dst);
             dst.write(SipParser.SP);
             this.host.getBytes(0, dst);
             if (this.port != -1) {

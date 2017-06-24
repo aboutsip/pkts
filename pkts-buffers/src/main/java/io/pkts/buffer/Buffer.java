@@ -66,6 +66,25 @@ public interface Buffer extends Cloneable {
     Buffer readLine() throws IOException;
 
     /**
+     * Read until we find a single CRLF. The single CRLF will NOT be part of the
+     * returned buffer but will be consumed.
+     *
+     * If we cannot find a single CRLF then null will be returned and the passed
+     * in buffer will be reset to the same reader index as when it was passed
+     * in.
+     *
+     * Note that this one is very similar to {@link Buffer#readLine()} but the
+     * readLine doesn't enforce the CRLF being present, which is typical for
+     * e.g. SIP and is important when reading bytes being streamed over e.g.
+     * a network connection
+     *
+     * @return the resulting buffer containing everything up until (but not
+     *         inclusive) the single-crlf or null if no single-crlf was not
+     *         found.
+     */
+    Buffer readUntilSingleCRLF() throws IOException;
+
+    /**
      * Read until we find a double CRLF. The double CRLF will NOT be part of the
      * returned buffer but they will be consumed.
      * 
@@ -179,6 +198,18 @@ public interface Buffer extends Cloneable {
     Buffer readUntil(int maxBytes, byte... bytes) throws IOException, ByteNotFoundException, IllegalArgumentException;
 
     /**
+     * Same as {@link #readUntil(int, byte...)} but will return null instead of
+     * throwing a {@link ByteNotFoundException}
+     *
+     * @param maxBytes
+     * @param bytes
+     * @return
+     * @throws IOException
+     * @throws IllegalArgumentException
+     */
+    Buffer readUntilSafe(int maxBytes, byte... bytes) throws IOException, IllegalArgumentException;
+
+    /**
      * Same as {@link #readUntil(int, byte...)} but instead of returning the
      * buffer with everything up until the specified byte it returns the index
      * instead.
@@ -245,6 +276,26 @@ public interface Buffer extends Cloneable {
      * @return
      */
     Buffer slice();
+
+    /**
+     * If you access the {@link Buffer#getRawArray()} you will get just that. The raw
+     * un-guarded array, which may be useful but should be used with care since you
+     * now can do whatever you want with the data. However, if you do so and also
+     * want to know which 'slice' of that array this buffer is seeing, then you
+     * need to know the lower boundary as well since the array can e.g be 1k long
+     * but the data seen by this buffer starts at index 200.
+     *
+     * @return
+     */
+    int getLowerBoundary();
+
+    /**
+     * See explanation in {@link Buffer#getLowerBoundary()} since this is the same, just
+     * the upper limit of that raw array.
+     *
+     * @return
+     */
+    int getUpperBoundary();
 
     /**
      * The reader index
@@ -419,6 +470,8 @@ public interface Buffer extends Cloneable {
      */
     int getWriterIndex();
 
+    void setWriterIndex(int index);
+
     /**
      * Get the number of writable bytes.
      * 
@@ -459,6 +512,8 @@ public interface Buffer extends Cloneable {
      *             writes.
      */
     void write(byte b) throws IndexOutOfBoundsException, WriteNotSupportedException;
+
+    void write(byte[] bytes) throws IndexOutOfBoundsException, WriteNotSupportedException;
 
     void write(int value) throws IndexOutOfBoundsException, WriteNotSupportedException;
 

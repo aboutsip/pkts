@@ -5,6 +5,7 @@ package io.pkts.packet.impl;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.packet.MACPacket;
 import io.pkts.packet.TransportPacket;
 import io.pkts.protocol.Protocol;
 
@@ -177,42 +178,6 @@ public abstract class AbstractApplicationPacket extends AbstractPacket implement
     @Override
     public final boolean verifyIpChecksum() {
         return this.parent.verifyIpChecksum();
-    }
-
-    /**
-     * 
-     * {@inheritDoc}
-     */
-    @Override
-    public final String getSourceMacAddress() {
-        return this.parent.getSourceMacAddress();
-    }
-
-    /**
-     * 
-     * {@inheritDoc}
-     */
-    @Override
-    public final void setSourceMacAddress(final String macAddress) throws IllegalArgumentException {
-        this.parent.setSourceMacAddress(macAddress);
-    }
-
-    /**
-     * 
-     * {@inheritDoc}
-     */
-    @Override
-    public final String getDestinationMacAddress() {
-        return this.parent.getDestinationMacAddress();
-    }
-
-    /**
-     * 
-     * {@inheritDoc}
-     */
-    @Override
-    public final void setDestinationMacAddress(final String macAddress) throws IllegalArgumentException {
-        this.parent.setDestinationMacAddress(macAddress);
     }
 
     /**

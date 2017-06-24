@@ -74,6 +74,42 @@ public abstract class AbstractBufferTest {
     }
 
     /**
+     * Make sure that we can read the single-crlf sequence correctly.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testReadUntilSingleCRLF() throws Exception {
+
+        // no CRLF should lead to null...
+        Buffer buffer = createBuffer("hello");
+        assertThat(buffer.readUntilSingleCRLF(), is((Buffer)null));
+
+        // Only CR should also lead to null
+        buffer = createBuffer("hello\r");
+        assertThat(buffer.readUntilSingleCRLF(), is((Buffer)null));
+
+        // now we have two so that should yield a "hello" buffer back.
+        buffer = createBuffer("hello\r\n");
+        assertThat(buffer.readUntilSingleCRLF().toString(), is("hello"));
+
+        // One hello and then a null
+        buffer = createBuffer("hello\r\nworld");
+        assertThat(buffer.readUntilSingleCRLF().toString(), is("hello"));
+        assertThat(buffer.readUntilSingleCRLF(), is((Buffer)null));
+
+        // One hello and then world
+        buffer = createBuffer("hello\r\nworld\r\n");
+        assertThat(buffer.readUntilSingleCRLF().toString(), is("hello"));
+        assertThat(buffer.readUntilSingleCRLF().toString(), is("world"));
+
+        // One hello and then an empty buffer
+        buffer = createBuffer("hello\r\n\r\n");
+        assertThat(buffer.readUntilSingleCRLF().toString(), is("hello"));
+        assertThat(buffer.readUntilSingleCRLF().isEmpty(), is(true));
+    }
+
+    /**
      * Make sure that we can read the double-crlf sequence correctly.
      * 
      * @throws Exception

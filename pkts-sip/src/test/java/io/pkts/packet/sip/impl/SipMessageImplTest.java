@@ -216,8 +216,6 @@ public class SipMessageImplTest extends PktsTestBase {
         assertThat(msg.getAllHeaders().size(), is(11));
         assertThat(msg.toString().contains("Subject: Performance Test"), is(true));
         assertThat(msg.getHeader("Subject").get().getValue().toString(), is("Performance Test"));
-        System.err.println(msg);
-        System.err.println("============");
 
         msg = msg.copy().onHeader(h -> {
             // Drop the Subject header
@@ -228,7 +226,6 @@ public class SipMessageImplTest extends PktsTestBase {
             // all else, include as is...
             return h;
         }).build();
-        System.err.println(msg);
 
         assertThat(msg.getAllHeaders().size(), is(10));
         assertThat(msg.getHeader("Subject").isPresent(), is(false));

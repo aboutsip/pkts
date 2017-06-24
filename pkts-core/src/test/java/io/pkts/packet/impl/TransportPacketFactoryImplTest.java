@@ -12,11 +12,7 @@ import io.pkts.PcapOutputStream;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.frame.PcapGlobalHeader;
-import io.pkts.packet.Packet;
-import io.pkts.packet.PacketFactory;
-import io.pkts.packet.TransportPacket;
-import io.pkts.packet.TransportPacketFactory;
-import io.pkts.packet.UDPPacket;
+import io.pkts.packet.*;
 import io.pkts.protocol.Protocol;
 
 import java.io.ByteArrayInputStream;
@@ -62,8 +58,8 @@ public class TransportPacketFactoryImplTest {
     @Test
     public void testCreateDefaultUDPPacket() throws Exception {
         final UDPPacket pkt = this.factory.createUDP(Buffers.wrap("this is some random text"));
-        assertThat(pkt.getSourceMacAddress(), is("00:00:00:00:00:00"));
-        assertThat(pkt.getDestinationMacAddress(), is("00:00:00:00:00:00"));
+        assertThat(((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).getSourceMacAddress(), is("00:00:00:00:00:00"));
+        assertThat(((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).getDestinationMacAddress(), is("00:00:00:00:00:00"));
         assertThat(pkt.getSourceIP(), is("127.0.0.1"));
         assertThat(pkt.getSourcePort(), is(0));
         assertThat(pkt.getDestinationIP(), is("127.0.0.1"));
@@ -121,20 +117,20 @@ public class TransportPacketFactoryImplTest {
         final TransportPacket pkt = this.factory.create(Protocol.UDP, "10.36.10.10", 9999, "192.168.0.10", 7654,
                 buffer);
         assertThat(pkt, not((TransportPacket) null));
-        assertThat(pkt.getSourceMacAddress(), is("00:00:00:00:00:00"));
+        assertThat(((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).getSourceMacAddress(), is("00:00:00:00:00:00"));
         assertThat(pkt.getSourceIP(), is("10.36.10.10"));
         assertThat(pkt.getSourcePort(), is(9999));
         assertThat(pkt.getDestinationIP(), is("192.168.0.10"));
         assertThat(pkt.getDestinationPort(), is(7654));
-        assertThat(pkt.getDestinationMacAddress(), is("00:00:00:00:00:00"));
+        assertThat(((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).getDestinationMacAddress(), is("00:00:00:00:00:00"));
         assertPayload(pkt, payload);
 
         // change stuff
-        pkt.setSourceMacAddress("12:13:14:15:16:17");
-        assertThat(pkt.getSourceMacAddress(), is("12:13:14:15:16:17"));
+        ((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).setSourceMacAddress("12:13:14:15:16:17");
+        assertThat(((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).getSourceMacAddress(), is("12:13:14:15:16:17"));
 
-        pkt.setDestinationMacAddress("01:02:03:04:05:06");
-        assertThat(pkt.getDestinationMacAddress(), is("01:02:03:04:05:06"));
+        ((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).setDestinationMacAddress("01:02:03:04:05:06");
+        assertThat(((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).getDestinationMacAddress(), is("01:02:03:04:05:06"));
 
         pkt.setDestinationIP(10, 20, 30, 40);
         assertThat(pkt.getDestinationIP(), is("10.20.30.40"));
@@ -149,8 +145,8 @@ public class TransportPacketFactoryImplTest {
         assertThat(pkt.getSourceIP(), is("55.66.77.88"));
 
         final TransportPacket pkt2 = serializeAndDeserialize(pkt);
-        assertThat(pkt2.getSourceMacAddress(), is("12:13:14:15:16:17"));
-        assertThat(pkt2.getDestinationMacAddress(), is("01:02:03:04:05:06"));
+        assertThat(((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).getSourceMacAddress(), is("12:13:14:15:16:17"));
+        assertThat(((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).getDestinationMacAddress(), is("01:02:03:04:05:06"));
         assertThat(pkt2.getSourceIP(), is("55.66.77.88"));
         assertThat(pkt2.getDestinationIP(), is("50.60.70.80"));
         assertPayload(pkt2, payload);

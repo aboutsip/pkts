@@ -52,7 +52,7 @@ public class EthernetFramer implements Framer<PCapPacket> {
         try {
             getEtherType(b1, b2);
         } catch (final UnknownEtherType e) {
-            throw new RuntimeException("uknown ether type");
+            throw new RuntimeException("unknown ether type");
         }
 
         final Buffer payload = buffer.slice(buffer.capacity());

@@ -7,6 +7,7 @@ import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipResponse;
+import io.pkts.packet.sip.Transport;
 import io.pkts.packet.sip.address.Address;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.header.AddressParametersHeader;
@@ -114,20 +115,20 @@ public class PktsTestBase {
         }
 
         if (user == null) {
-            assertThat(uri.getUser().isEmpty(), is(true));
+            assertThat(uri.getUser().isPresent(), is(false));
         } else {
-            assertThat(uri.getUser().toString(), is(user));
+            assertThat(uri.getUser().orElse(null), is(Buffers.wrap(user)));
         }
 
         if (host != null) {
             assertThat(uri.getHost().toString(), is(host));
         }
 
-        final Buffer actualTransport = uri.getTransportParam();
+        final Optional<Transport> actualTransport = uri.getTransportParam();
         if (transport == null) {
-            assertThat(actualTransport, is((Buffer)null));
+            assertThat(actualTransport.isPresent(), is(false));
         } else {
-            assertThat(actualTransport.toString().toLowerCase(), is(transport.toLowerCase()));
+            assertThat(actualTransport.get(), is(Transport.of(transport)));
         }
 
         assertThat(uri.getPort(), is(port));
@@ -165,6 +166,30 @@ public class PktsTestBase {
 
     protected void assertHeaderNotPresent(final Optional<SipHeader> optional) {
         assertThat("Did not expect that header to be present", optional.isPresent(), is(false));
+    }
+
+    /**
+     * Helper method for ensuring that we parse SIP Uri's correctly
+     *
+     * @param toParse
+     * @param expectedUser
+     * @param expectedHost
+     * @param expectedPort
+     * @throws Exception
+     */
+    protected void assertSipUri(final String toParse, final String expectedUser, final String expectedHost,
+                                final int expectedPort) throws Exception {
+        final Buffer buffer = Buffers.wrap(toParse);
+        final SipURI uri = SipURI.frame(buffer);
+        assertSipUri(uri, expectedUser, expectedHost, expectedPort);
+    }
+
+    protected void assertSipUri(final SipURI uri, final String expectedUser, final String expectedHost,
+                                final int expectedPort) throws Exception {
+        assertThat(uri.isSipURI(), is(true));
+        assertThat(uri.getUser().orElse(Buffers.EMPTY_BUFFER), is(Buffers.wrap(expectedUser)));
+        assertThat(uri.getHost().toString(), is(expectedHost));
+        assertThat(uri.getPort(), is(expectedPort));
     }
 
 

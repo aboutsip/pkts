@@ -212,7 +212,7 @@ public class SipRequestTest extends PktsTestBase {
 
         // We changed the Request-URI:
         SipURI uri = proxy.getRequestUri().toSipURI();
-        assertThat(uri.getUser().toString(), is("Kalle"));
+        assertThat(uri.getUser().get().toString(), is("Kalle"));
         assertThat(uri.getHost().toString(), is("siplib.io"));
 
         // There should be two via headers. One from the incoming request
