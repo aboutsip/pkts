@@ -56,8 +56,11 @@ public final class RTPFramer implements Framer<TransportPacket> {
                 }
             } catch (final IndexOutOfBoundsException e) {
                 // guess not...
+                return false;
             }
-            data.resetReaderIndex();
+            finally {
+                data.resetReaderIndex();
+            }
         }
 
         // both RTP and RTCP has a 2 in this field

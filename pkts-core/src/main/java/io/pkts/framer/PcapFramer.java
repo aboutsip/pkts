@@ -60,7 +60,7 @@ public final class PcapFramer implements Framer<PCapPacket> {
         final int length = (int) header.getCapturedLength();
         final int total = (int) header.getTotalLength();
         final Buffer payload = buffer.readBytes(Math.min(length, total));
-        return new PCapPacketImpl(header, payload);
+        return new PCapPacketImpl(globalHeader, header, payload);
     }
 
     @Override
