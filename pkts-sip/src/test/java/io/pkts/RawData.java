@@ -809,6 +809,17 @@ public class RawData {
             (byte)0x61, (byte)0x70, (byte)0x3a, (byte)0x30, (byte)0x20, (byte)0x50, (byte)0x43, (byte)0x4d, (byte)0x55,
             (byte)0x2f, (byte)0x38, (byte)0x30, (byte)0x30, (byte)0x30, (byte)0x0d, (byte)0x0a};
 
+    public static final String sipBye = new StringBuilder("BYE sip:bob@siplib.io:5060 SIP/2.0\r\n")
+            .append("Via: SIP/2.0/UDP 192.168.0.100:5060;rport;branch=z9hG4bK-28976-1-7\r\n")
+            .append("From: alice <sip:alice@aboutsip.com>;tag=28976SIPpTag001\r\n")
+            .append("To: bob <sip:bob@siplib.io>;tag=28972SIPpTag011\r\n")
+            .append("Call-ID: 1-28976@127.0.1.1\r\n")
+            .append("CSeq: 2 BYE\r\n")
+            .append("Contact: sip:alice@192.168.0.100\r\n")
+            .append("Max-Forwards: 70\r\n")
+            .append("Subject: Example BYE Message\r\n")
+            .append("Content-Length: 0\r\n")
+            .append("\r\n").toString();
 
     /**
      * Default sip buffer containing a raw sip message

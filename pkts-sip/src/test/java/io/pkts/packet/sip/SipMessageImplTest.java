@@ -54,12 +54,48 @@ public class SipMessageImplTest extends PktsTestBase {
     }
 
     /**
+     * Ensure that we properly compare sip requests and responses.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testEquality() throws Exception {
+        final SipRequest req1a = (SipRequest) parseMessage(RawData.sipInvite);
+        final SipRequest req1b = (SipRequest) parseMessage(RawData.sipInvite);
+
+        assertThat(req1a, is(req1a));
+        assertThat(req1a, is(req1b));
+        assertThat(req1b, is(req1a));
+
+        final SipResponse res1a = req1a.createResponse(100).build();
+        final SipResponse res1b = req1a.createResponse(100).build();
+
+        assertThat(res1a, is(res1a));
+        assertThat(res1a, is(res1b));
+        assertThat(res1b, is(res1a));
+
+        // a 200 isn't the same as a 100 of course
+        final SipResponse res1c = req1a.createResponse(200).build();
+        assertThat(res1c, not(res1a));
+
+        // a request and response are never equal
+        assertThat(req1a, not(res1a));
+        assertThat(req1a, not(res1c));
+
+        // a BYE request isn't the same as a INVITE request (duh)
+        final SipRequest req2a = (SipRequest) parseMessage(RawData.sipBye);
+        assertThat(req2a, is(req2a));
+        assertThat(req2a, not(req1a));
+    }
+
+
+    /**
      * Helper method for building up a bunch of Via headers in a response. If
      * the supplied list of via headers start with the header name (Via:) then
      * they are added as their own headers. If they do not start with "Via" then
      * they are folded into the previous one.
      * 
-     * @param via
+     * @param vias
      * @return
      * @throws Exception
      */
