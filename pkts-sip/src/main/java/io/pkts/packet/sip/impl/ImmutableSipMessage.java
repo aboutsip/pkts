@@ -17,8 +17,6 @@ import io.pkts.packet.sip.header.RouteHeader;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
-import io.pkts.sdp.SDPFactory;
-import io.pkts.sdp.SdpException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -350,6 +348,26 @@ public abstract class ImmutableSipMessage implements SipMessage {
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        try {
+            final SipMessage other = (SipMessage)o;
+            if (!initialLine.equals(other.initialLine())) {
+                return false;
+            }
+
+            // TODO: lots more
+
+            return true;
+        } catch (final ClassCastException e) {
+            return false;
+        }
     }
 
     @Override

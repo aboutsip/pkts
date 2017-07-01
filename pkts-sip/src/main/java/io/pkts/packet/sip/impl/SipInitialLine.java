@@ -20,6 +20,20 @@ public abstract class SipInitialLine extends SipParser {
     }
 
     /**
+     * Two initial lines are considered equal if:
+     * <ul>
+     *     <li>They are both a request or response line</li>
+     *     <li>If response, their status codes are the same (the human readable
+     *     reason is ignored)</li>
+     *     <li>If request, the request-uri must be equal according to the rules
+     *     of URI equality</li>
+     * </ul>
+     * @param other
+     * @return
+     */
+    public abstract boolean equals(final Object other);
+
+    /**
      * The request initial line as a raw buffer.
      * 
      * @return

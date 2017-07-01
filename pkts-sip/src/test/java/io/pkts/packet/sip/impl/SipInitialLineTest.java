@@ -15,6 +15,7 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -120,10 +121,68 @@ public class SipInitialLineTest {
 
     }
 
+    /**
+     * sip request line equality is primarily yet another URI equality test but of course, it
+     * is comparing methods as well.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSipRequestLineEquality() throws Exception {
+        final String s1 = "INVITE sip:hello@aboutsip.com;transport=udp SIP/2.0";
+        final SipRequestLine line1a = parseRequestLine(s1);
+        final SipRequestLine line1b = parseRequestLine(s1);
+
+        assertThat(line1a, is(line1a));
+        assertThat(line1b, is(line1a));
+        assertThat(line1a, is(line1b));
+
+        final String s2 = "INVITE sip:hello@sipstack.io;transport=udp SIP/2.0";
+        final SipRequestLine line2a = parseRequestLine(s2);
+        assertThat(line1a, not(line2a));
+        assertThat(line2a, not(line1a));
+
+        // request uri same as s1 but different method
+        final String s3 = "BYE sip:hello@aboutsip.com;transport=udp SIP/2.0";
+        final SipRequestLine line3a = parseRequestLine(s3);
+        assertThat(line1a, not(line3a));
+
+        // this is really testing the URI equality more than the request line
+        // equality but just to make sure that the two request-uris aren't considered
+        // equal in this case.
+        final String s4 = "BYE sip:hello@aboutsip.com SIP/2.0";
+        final SipRequestLine line4a = parseRequestLine(s4);
+        assertThat(line4a, not(line1a));
+    }
+
     private SipRequestLine parseRequestLine(final String s) throws SipParseException {
         final Buffer buffer = Buffers.wrap(s);
         return (SipRequestLine) SipInitialLine.parse(buffer);
     }
+
+    @Test
+    public void testSipResponseLineEquality() throws Exception {
+        final String s1 = "SIP/2.0 200 OK";
+        final SipResponseLine line1a = parseResponseLine(s1);
+        final SipResponseLine line1b = parseResponseLine(s1);
+
+        assertThat(line1a, is(line1a));
+        assertThat(line1b, is(line1a));
+        assertThat(line1a, is(line1b));
+
+        // the human readable reason phrase isn't included in the
+        // equality comparison so this should be equal to s1 as well.
+        final String s2 = "SIP/2.0 200 Hello";
+        final SipResponseLine line2a = parseResponseLine(s2);
+        assertThat(line2a, is(line1a));
+
+        // but obviously, a different status code is different
+        final String s3 = "SIP/2.0 201 OK";
+        final SipResponseLine line3a = parseResponseLine(s3);
+        assertThat(line3a, not(line1a));
+        assertThat(line3a, not(line2a));
+    }
+
 
     /**
      * Basic response line test
@@ -145,6 +204,11 @@ public class SipInitialLineTest {
         final Buffer copy = Buffers.createBuffer(100);
         initialLine.getBytes(copy);
         assertThat(copy.toString(), is(s));
+    }
+
+    private SipResponseLine parseResponseLine(final String s) throws SipParseException {
+        final Buffer buffer = Buffers.wrap(s);
+        return SipInitialLine.parse(buffer).toResponseLine();
     }
 
     /**

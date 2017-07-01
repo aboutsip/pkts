@@ -51,6 +51,19 @@ public final class SipResponseLine extends SipInitialLine {
         return this.reason;
     }
 
+    @Override
+    public boolean equals(final Object o) {
+        if (o == this) {
+            return true;
+        }
+        try {
+            final SipResponseLine other = (SipResponseLine)o;
+            return statusCode == other.statusCode;
+        } catch (final ClassCastException e) {
+            return false;
+        }
+    }
+
     /**
      * {@inheritDoc}
      */

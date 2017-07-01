@@ -73,6 +73,31 @@ public final class SipRequestLine extends SipInitialLine {
     }
 
     /**
+     * Two {@link SipRequestLine}s are considered equal if:
+     * <ul>
+     *     <li>The methods are the same</li>
+     *     <li>The request-uri are considered equal</li>
+     * </ul>
+     * @param o
+     * @return
+     */
+    @Override
+    public boolean equals(final Object o) {
+        if (o == this) {
+            return true;
+        }
+        try {
+            final SipRequestLine other = (SipRequestLine)o;
+            if (!method.equals(other.method)) {
+                return false;
+            }
+            return getRequestUri().equals(other.getRequestUri());
+        } catch (final SipParseException | ClassCastException e) {
+            return false;
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

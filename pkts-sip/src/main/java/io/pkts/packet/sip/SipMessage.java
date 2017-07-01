@@ -7,6 +7,7 @@ import io.pkts.packet.sip.header.AddressParametersHeader;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.CallIdHeader;
 import io.pkts.packet.sip.header.ContactHeader;
+import io.pkts.packet.sip.header.ContentLengthHeader;
 import io.pkts.packet.sip.header.ContentTypeHeader;
 import io.pkts.packet.sip.header.ExpiresHeader;
 import io.pkts.packet.sip.header.FromHeader;
@@ -198,7 +199,7 @@ public interface SipMessage extends Cloneable {
      * @return the removed header or null if there was no such header.
      * @throws SipParseException
      */
-    SipHeader popHeader(Buffer headerNme) throws SipParseException;
+    SipHeader popHeader(Buffer headerName) throws SipParseException;
 
     /**
      * Set the specified header, which will replace the existing header of the
