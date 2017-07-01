@@ -153,28 +153,6 @@ public abstract class ImmutableSipMessage implements SipMessage {
     }
 
     @Override
-    public void addHeader(final SipHeader header) throws SipParseException {
-        throw new RuntimeException(I_AM_IMMUTABLE_NO_CAN_DO);
-    }
-
-    @Override
-    public void addHeaderFirst(SipHeader header) throws SipParseException {
-        throw new RuntimeException(I_AM_IMMUTABLE_NO_CAN_DO);
-
-    }
-
-    @Override
-    public SipHeader popHeader(Buffer headerNme) throws SipParseException {
-        throw new RuntimeException(I_AM_IMMUTABLE_NO_CAN_DO);
-    }
-
-    @Override
-    public void setHeader(SipHeader header) throws SipParseException {
-        throw new RuntimeException(I_AM_IMMUTABLE_NO_CAN_DO);
-
-    }
-
-    @Override
     public FromHeader getFromHeader() throws SipParseException {
         if (indexOfFrom != -1) {
             return headers.get(indexOfFrom).ensure().toFromHeader();

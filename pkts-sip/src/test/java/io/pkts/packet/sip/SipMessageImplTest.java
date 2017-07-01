@@ -212,7 +212,6 @@ public class SipMessageImplTest extends PktsTestBase {
 
         final ViaHeader via =
                 ViaHeader.withHost(host).withPort(port).withBranch(ViaHeader.generateBranch()).withTransport(transport).build();
-        msg.addHeaderFirst(via);
         final ViaHeader topMostVia = msg.getViaHeader();
         assertThat(topMostVia.getBranch(), not((Buffer) null));
         assertThat(topMostVia.getHost().toString(), is(host));

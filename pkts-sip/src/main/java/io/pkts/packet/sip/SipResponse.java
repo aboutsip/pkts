@@ -4,7 +4,6 @@
 package io.pkts.packet.sip;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.packet.sip.impl.SipResponseBuilder;
 
 /**
@@ -140,19 +139,6 @@ public interface SipResponse extends SipMessage {
 
     default SipResponse toResponse() throws ClassCastException {
         return this;
-    }
-
-
-    /**
-     * Pop the top-most {@link ViaHeader}.
-     * <p/>
-     * This is a convenience method for calling {@link SipMessage#popHeader(Buffer)}.
-     *
-     * @return the top-most {@link ViaHeader} or null if this {@link SipResponse} contained no
-     * {@link ViaHeader}s.
-     */
-    default ViaHeader popViaHeader() throws SipParseException {
-        throw new RuntimeException("No longer allowed because I'm immutable");
     }
 
     @Override

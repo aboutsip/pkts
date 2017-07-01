@@ -358,42 +358,6 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * io.pkts.packet.sip.SipPacket#addHeader(io.pkts.packet.sip.header.SipHeader
-     * )
-     */
-    @Override
-    public void addHeader(final SipHeader header) throws SipParseException {
-        this.msg.addHeader(header);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * io.pkts.packet.sip.SipPacket#addHeaderFirst(io.pkts.packet.sip.header
-     * .SipHeader)
-     */
-    @Override
-    public void addHeaderFirst(final SipHeader header) throws SipParseException {
-        this.msg.addHeaderFirst(header);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * io.pkts.packet.sip.SipPacket#setHeader(io.pkts.packet.sip.header.SipHeader
-     * )
-     */
-    @Override
-    public void setHeader(final SipHeader header) throws SipParseException {
-        this.msg.setHeader(header);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see io.pkts.packet.sip.SipPacket#getFromHeader()
      */
     @Override
