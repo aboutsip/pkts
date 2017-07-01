@@ -81,11 +81,6 @@ public class ImmutableSipResponse extends ImmutableSipMessage implements SipResp
     }
 
     @Override
-    public ViaHeader popViaHeader() throws SipParseException {
-        throw new RuntimeException("No longer allowed");
-    }
-
-    @Override
     final public SipResponse clone() {
         // everything is immutable so no real reason to actually clone
         // TODO: remove the clone method alltogether?

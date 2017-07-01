@@ -16,7 +16,7 @@ public class SipRequestPacketImpl extends SipPacketImpl implements SipRequestPac
 
     /**
      * @param transportPacket
-     * @param msg
+     * @param request
      */
     public SipRequestPacketImpl(final TransportPacket transportPacket, final SipRequest request) {
         super(transportPacket, request);

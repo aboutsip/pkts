@@ -188,28 +188,6 @@ public interface SipMessage extends Cloneable {
 
     List<SipHeader> getHeaders(Buffer headerName) throws SipParseException;
 
-    void addHeader(SipHeader header) throws SipParseException;
-
-    void addHeaderFirst(SipHeader header) throws SipParseException;
-
-    /**
-     * Remove and return the top-most header.
-     * 
-     * @param headerName the name of the header to pop.
-     * @return the removed header or null if there was no such header.
-     * @throws SipParseException
-     */
-    SipHeader popHeader(Buffer headerName) throws SipParseException;
-
-    /**
-     * Set the specified header, which will replace the existing header of the
-     * same name. If there are multiple headers of this header, then all "old"
-     * ones are removed.
-     * 
-     * @param header
-     */
-    void setHeader(SipHeader header) throws SipParseException;
-
     /**
      * Convenience method for fetching the from-header
      * 
