@@ -12,19 +12,25 @@ import io.pkts.packet.sip.impl.SipParser;
  * Created by jonas@jonasborjesson.com
  */
 public enum Transport {
-    udp(Buffers.wrap("udp")),
-    tcp(Buffers.wrap("tcp")),
-    tls(Buffers.wrap("tls")),
-    sctp(Buffers.wrap("sctp")),
-    ws(Buffers.wrap("ws")),
-    wss(Buffers.wrap("wss"));
+    udp(Buffers.wrap("udp"), false),
+    tcp(Buffers.wrap("tcp"), true),
+    tls(Buffers.wrap("tls"), true),
+    sctp(Buffers.wrap("sctp"), true),
+    ws(Buffers.wrap("ws"), true),
+    wss(Buffers.wrap("wss"), true);
 
     final Buffer buffer;
     final Buffer upperCaseBuffer;
+    final boolean isReliable;
 
-    Transport(final Buffer buffer) {
+    Transport(final Buffer buffer, final boolean isReliable) {
         this.buffer = buffer;
         this.upperCaseBuffer = Buffers.wrap(buffer.toString().toUpperCase());
+        this.isReliable = isReliable;
+    }
+
+    public boolean isReliable() {
+        return isReliable;
     }
 
     public boolean isUDP() {
