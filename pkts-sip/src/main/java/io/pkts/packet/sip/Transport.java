@@ -36,7 +36,7 @@ public enum Transport {
     }
 
     public boolean isTLS() {
-        return this == tcp;
+        return this == tls;
     }
 
     public boolean isSCTP() {

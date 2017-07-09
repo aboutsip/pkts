@@ -39,7 +39,7 @@ import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
  */
 public interface SipMessage extends Cloneable {
 
-    public static final String UNABLE_TO_PARSE_OUT_THE_METHOD_DUE_TO_UNDERLYING_IO_EXCEPTION = "Unable to parse out the method due to underlying IOException";
+    String UNABLE_TO_PARSE_OUT_THE_METHOD_DUE_TO_UNDERLYING_IO_EXCEPTION = "Unable to parse out the method due to underlying IOException";
 
     /**
      * The first line of a sip message, which is either a request or a response
@@ -49,10 +49,7 @@ public interface SipMessage extends Cloneable {
      */
     Buffer getInitialLine();
 
-    default SipInitialLine initialLine() {
-        // TODO: once refactoring is done, remove this default
-        return null;
-    }
+    SipInitialLine initialLine();
 
     /**
      * Got tired of casting the {@link SipMessage} into a {@link SipRequest} so
@@ -101,8 +98,7 @@ public interface SipMessage extends Cloneable {
      * <li>{@link ViaHeader}</li>
      * </ul>
      * 
-     * @param statusCode
-     * @param request
+     * @param responseCode
      * @return
      * @throws SipParseException
      *             in case anything goes wrong when parsing out headers from the
@@ -132,6 +128,146 @@ public interface SipMessage extends Cloneable {
      */
     default boolean isRequest() {
         return false;
+    }
+
+    default boolean isInviteRequest() {
+        return isRequest() && isInvite();
+    }
+
+    default boolean isByeRequest() {
+        return isRequest() && isBye();
+    }
+
+    default boolean isCancelRequest() {
+        return isRequest() && isCancel();
+    }
+
+    default boolean isRegisterRequest() {
+        return isRequest() && isRegister();
+    }
+
+    default boolean isOptionsRequest() {
+        return isRequest() && isOptions();
+    }
+
+    default boolean isInfoRequest() {
+        return isRequest() && isInfo();
+    }
+
+    default boolean isMessageRequest() {
+        return isRequest() && isMessage();
+    }
+
+    /**
+     * Convenience method for checking whether this an error response is >= 400.
+     *
+     * @return
+     */
+    default boolean isError() {
+        return isResponse() && toResponse().isError();
+    }
+
+    /**
+     * Convenience method for checking whether this is a 1xx response or not.
+     *
+     * @return
+     */
+    default boolean isProvisional() {
+        return isResponse() && toResponse().isProvisional();
+    }
+
+    /**
+     * Convenience method for checking whether this response is a final response, i.e. any response
+     * >= 200.
+     *
+     * @return
+     */
+    default boolean isFinal() {
+        return isResponse() && toResponse().isFinal();
+    }
+
+    /**
+     * Convenience method for checking whether this is a 2xx response or not.
+     *
+     * @return
+     */
+    default boolean isSuccess() {
+        return isResponse() && toResponse().isSuccess();
+    }
+
+    /**
+     * Convenience method for checking whether this is a 300 - 699. I.e. it's a final non-2xx response.
+     *
+     * @return
+     */
+    default boolean isFinalNon2xx() {
+        return isFinal() && !isSuccess();
+    }
+
+    /**
+     * Convenience method for checking whether this is a 3xx response or not.
+     *
+     * @return
+     */
+    default boolean isRedirect() {
+        return isResponse() && toResponse().isRedirect();
+    }
+
+    /**
+     * Convenience method for checking whether this is a 4xx response or not.
+     *
+     * @return
+     */
+    default boolean isClientError() {
+        return isResponse() && toResponse().isClientError();
+    }
+
+    /**
+     * Convenience method for checking whether this is a 5xx response or not.
+     *
+     * @return
+     */
+    default boolean isServerError() {
+        return isResponse() && toResponse().isServerError();
+    }
+
+    /**
+     * Convenience method for checking whether this is a 6xx response or not.
+     *
+     * @return
+     */
+    default boolean isGlobalError() {
+        return isResponse() && toResponse().isGlobalError();
+    }
+
+    /**
+     * Convenience method for checking whether this is a 100 Trying response or
+     * not.
+     *
+     * @return
+     */
+    default boolean is100Trying() {
+        return isResponse() && toResponse().is100Trying();
+    }
+
+    /**
+     * Convenience method for checking whether this is a 180 Ringing response or
+     * or a 183 Early Media response.
+     *
+     * @return true if this response is a 180 or a 183 response, false otherwise
+     */
+    default boolean isRinging() {
+        return isResponse() && toResponse().isRinging();
+    }
+
+    /**
+     * Convenience method for checking whether this is a 480 Timeout response or
+     * not.
+     *
+     * @return
+     */
+    default boolean isTimeout() {
+        return isResponse() && toResponse().isTimeout();
     }
 
     /**
@@ -852,7 +988,7 @@ public interface SipMessage extends Cloneable {
          * Set a list of Route headers. Any previously Route headers
          * will be replaced by this list.
          *
-         * @param route
+         * @param routes
          * @return
          */
         Builder<T> withRouteHeaders(RouteHeader ... routes);
@@ -863,7 +999,7 @@ public interface SipMessage extends Cloneable {
          * Push the given Route header to the top of the potential list of existing
          * Route headers.
          *
-         * @param recordRoute
+         * @param route
          * @return
          */
         Builder<T> withTopMostRouteHeader(RouteHeader route);
@@ -1014,7 +1150,7 @@ public interface SipMessage extends Cloneable {
          * If you want to push a Via header to a potentially already existing list
          * of Via headers, then use {@link io.pkts.packet.sip.SipMessage.Builder#withTopMostViaHeader(ViaHeader)}.
          *
-         * @param recordRoute
+         * @param via
          * @return
          */
         Builder<T> withViaHeader(ViaHeader via);
@@ -1023,7 +1159,7 @@ public interface SipMessage extends Cloneable {
          * Set a list of Via headers. Any previously Via headers
          * will be replaced by this list.
          *
-         * @param recordRoute
+         * @param vias
          * @return
          */
         Builder<T> withViaHeaders(ViaHeader ... vias);
@@ -1032,7 +1168,7 @@ public interface SipMessage extends Cloneable {
          * Set a list of Via headers. Any previously Via headers
          * will be replaced by this list.
          *
-         * @param recordRoute
+         * @param vias
          * @return
          */
         Builder<T> withViaHeaders(List<ViaHeader> vias);
@@ -1041,7 +1177,7 @@ public interface SipMessage extends Cloneable {
          * Push the given Via header to the top of the potential list of existing
          * Via headers.
          *
-         * @param recordRoute
+         * @param via
          * @return
          */
         Builder<T> withTopMostViaHeader(ViaHeader via);
