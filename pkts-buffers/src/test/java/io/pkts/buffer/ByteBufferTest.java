@@ -219,6 +219,30 @@ public class ByteBufferTest extends AbstractBufferTest {
         assertBufferEqualityIgnoreCase("123 abC !@#$", "123 ABc !@#$", true);
     }
 
+    @Test
+    public void testUtf8EqualsIgnoreCase() throws Exception {
+        // case-insensitive comparison looks only at the 5 least significant bits for characters
+        // that are in the 7-bit ASCII range.
+
+        // 1-byte UTF-8 characters
+        assertThat(createBuffer(new byte[] {0x40}).equalsIgnoreCase(createBuffer(new byte[] {0x40})), is(true));
+        assertThat(createBuffer(new byte[] {0x40}).equalsIgnoreCase(createBuffer(new byte[] {0x60})), is(false));
+        assertThat(createBuffer(new byte[] {0x41}).equalsIgnoreCase(createBuffer(new byte[] {0x41})), is(true));
+        assertThat(createBuffer(new byte[] {0x41}).equalsIgnoreCase(createBuffer(new byte[] {0x61})), is(true)); // 'A' and 'a'
+        assertThat(createBuffer(new byte[] {0x5a}).equalsIgnoreCase(createBuffer(new byte[] {0x5a})), is(true));
+        assertThat(createBuffer(new byte[] {0x5a}).equalsIgnoreCase(createBuffer(new byte[] {0x7a})), is(true)); // 'Z' and 'z'
+        assertThat(createBuffer(new byte[] {0x5b}).equalsIgnoreCase(createBuffer(new byte[] {0x5b})), is(true));
+        assertThat(createBuffer(new byte[] {0x5b}).equalsIgnoreCase(createBuffer(new byte[] {0x7b})), is(false));
+
+        // 2-byte UTF-8 characters. The second byte has the 5 least significant bits the same. In Java,
+        // bytes are signed, so we need to convert unsigned notation to signed for the compiler to take it.
+
+        assertThat(createBuffer(new byte[] {0xc0 - 256, 0x80 - 256}).equalsIgnoreCase(createBuffer(new byte[] {0xc0 - 256, 0x80 - 256})), is(true));
+        assertThat(createBuffer(new byte[] {0xc0 - 256, 0x80 - 256}).equalsIgnoreCase(createBuffer(new byte[] {0xc0 - 256, 0xa0 - 256})), is(false));
+        assertThat(createBuffer(new byte[] {0xc0 - 256, 0x8f - 256}).equalsIgnoreCase(createBuffer(new byte[] {0xc0 - 256, 0x8f - 256})), is(true));
+        assertThat(createBuffer(new byte[] {0xc0 - 256, 0x8f - 256}).equalsIgnoreCase(createBuffer(new byte[] {0xc0 - 256, 0xaf - 256})), is(false));
+    }
+
     private void assertBufferEqualityIgnoreCase(final String a, final String b, final boolean equals) {
         final Buffer bufA = createBuffer(a);
         final Buffer bufB = createBuffer(b);

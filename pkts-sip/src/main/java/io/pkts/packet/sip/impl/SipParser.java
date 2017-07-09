@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package io.pkts.packet.sip.impl;
 
@@ -35,7 +35,7 @@ import java.util.function.Function;
  * Basic sip parser that contains most (all?) of the different grammar rules for SIP as defined by
  * RFC 3261. View these various methods as building blocks for building up a complete SIP parser
  * (perhaps I should rename this class?).
- * 
+ *
  * All of these functions work in the following way:
  * <ul>
  * <li><b>consumeXXXX</b> - will (in general) simply try and consume whatever it is supposed to
@@ -50,7 +50,7 @@ import java.util.function.Function;
  * expect-functions will (if successful) move the reader index of the {@link Buffer}</li>
  * <li></li>
  * </ul>
- * 
+ *
  * @author jonas@jonasborjesson.com
  */
 public class SipParser {
@@ -105,9 +105,9 @@ public class SipParser {
     public static final Buffer SCHEME_SIPS = Buffers.wrap("sips");
 
     public static final Buffer SCHEME_SIPS_COLON = Buffers.wrap("sips:");
-    
+
     public static final Buffer SCHEME_TEL = Buffers.wrap("tel");
-    
+
     public static final Buffer SCHEME_TEL_COLON = Buffers.wrap("tel:");
 
     public static final byte AT = '@';
@@ -228,6 +228,24 @@ public class SipParser {
         framers.put(ViaHeader.COMPACT_NAME, header -> ViaHeader.frame(header.getValue()));
     }
 
+    /**
+     * For the given header name, return a function that will convert a generic header instance
+     * into one with the correct subtype.
+     */
+    public static Function<SipHeader, ? extends SipHeader> getFramer(final Buffer b) {
+        // For headers that have the expected capitilization, do a quick case-sensitive
+        // search. If that fails do a slower case-insensitive search.
+        final Function<SipHeader, ? extends SipHeader> framer = framers.get(b);
+        if (framer != null) {
+            return framer;
+        }
+        for (Map.Entry<Buffer, Function<SipHeader, ? extends SipHeader>> entry : framers.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(b)) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
 
     // ----------------------------------------------------------------------
     // ----------------------------------------------------------------------
@@ -239,7 +257,7 @@ public class SipParser {
     /**
      * Expect that the next set of bytes is "SIP/2.0" and if not then we will
      * throw a {@link SipParseException}
-     * 
+     *
      * @param buffer
      */
     public static void expectSIP2_0(final Buffer buffer) throws SipParseException {
@@ -253,7 +271,7 @@ public class SipParser {
     }
 
     /**
-     * 
+     *
      * @return
      */
     public static Buffer expectMethod(final Buffer buffer) {
@@ -263,7 +281,7 @@ public class SipParser {
 
     /**
      * Check whether the buffer is exactly three bytes long and has the bytes "UDP" in it.
-     * 
+     *
      * @param t
      * @return
      */
@@ -322,7 +340,7 @@ public class SipParser {
      * specified in a Via-header and a transport-param specified in a SIP URI.
      * One is upper case, one is lower case. Another really annoying thing
      * with SIP.
-     * 
+     *
      * @param t
      * @return
      */
@@ -374,12 +392,12 @@ public class SipParser {
             return false;
         }
     }
-    
+
     public static void expectTel(final Buffer buffer) throws SipParseException, IOException {
-    	expect(buffer, 't');
-    	expect(buffer, 'e');
-    	expect(buffer, 'l');
-    	expect(buffer, SipParser.COLON);
+        expect(buffer, 't');
+        expect(buffer, 'e');
+        expect(buffer, 'l');
+        expect(buffer, SipParser.COLON);
     }
 
     public static boolean isSips(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException, IOException {
@@ -406,26 +424,26 @@ public class SipParser {
      * to be consumed it will return an empty list. The list of generic-params
      * are found on many SIP headers such as the To, From etc. In general, the
      * BNF looks like so:
-     * 
-     * 
+     *
+     *
      * <pre>
      *  *( SEMI generic-param )
      * </pre>
-     * 
+     *
      * E.g. in To:
-     * 
+     *
      * <pre>
      * To        =  ( "To" / "t" ) HCOLON ( name-addr / addr-spec ) *( SEMI to-param )
      * to-param  =  tag-param / generic-param
      * </pre>
-     * 
+     *
      * @param buffer
      * @return
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
     public static List<Buffer[]> consumeGenericParams(final Buffer buffer) throws IndexOutOfBoundsException,
-    IOException {
+            IOException {
         final List<Buffer[]> params = new ArrayList<Buffer[]>();
         while (buffer.hasReadableBytes() && buffer.peekByte() == SEMI) {
             buffer.readByte(); // consume the SEMI
@@ -436,25 +454,25 @@ public class SipParser {
 
     /**
      * Consumes a generic param, which according to RFC 3261 section 25.1 is:
-     * 
+     *
      * <pre>
      * generic-param  =  token [ EQUAL gen-value ]
      * gen-value      =  token / host / quoted-string
      * </pre>
-     * 
+     *
      * The return value is two buffers returned as an array and if the second
      * element is null (so make sure you check it!) then there was no value for
      * this parameter.
-     * 
+     *
      * Also note that due to poor implementations out there, the following is
      * accepted as valid input:
-     * 
+     *
      * foo=
-     * 
+     *
      * I.e., foo is a flag parameter and as such there should not be an equal
      * sign following it but there are many servers out there that does this
      * anyway.
-     * 
+     *
      * @param buffer
      *            the buffer from which we will consume a generic-param
      * @return a buffer array of size two. The first element is the name of the
@@ -484,7 +502,7 @@ public class SipParser {
 
     /**
      * Will check whether the next readable byte in the buffer is a certain byte
-     * 
+     *
      * @param buffer
      *            the buffer to peek into
      * @param b
@@ -503,7 +521,7 @@ public class SipParser {
 
     /**
      * Check whether the next byte is a digit or not
-     * 
+     *
      * @param buffer
      * @retur
      * @throws IOException
@@ -521,7 +539,7 @@ public class SipParser {
     /**
      * Will expect at least 1 digit and will continue consuming bytes until a
      * non-digit is encountered
-     * 
+     *
      * @param buffer
      *            the buffer to consume the digits from
      * @return the buffer containing digits only
@@ -555,9 +573,9 @@ public class SipParser {
     /**
      * Convenience method for expecting (and consuming) a HCOLON, which is
      * defined as:
-     * 
+     *
      * HCOLON = *( SP / HTAB ) ":" SWS
-     * 
+     *
      * See RFC3261 section 25.1 Basic Rules
      */
     public static int expectHCOLON(final Buffer buffer) throws SipParseException {
@@ -631,10 +649,10 @@ public class SipParser {
     /**
      * Convenience method for expecting (and consuming) a SLASH, which is
      * defined as:
-     * 
-     * 
+     *
+     *
      * See RFC3261 section 25.1 Basic Rules
-     * 
+     *
      * @param buffer
      * @throws SipParseException
      */
@@ -655,22 +673,22 @@ public class SipParser {
     /**
      * Consume an slash (SLASH), which according to RFC3261 section 25.1 Basic
      * Rules is:
-     * 
+     *
      * SLASH = SWS "/" SWS ; slash
-     * 
+     *
      * @param buffer
      * @return true if we indeed did consume a SLASH
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
     public static int consumeSLASH(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-    IOException {
+            IOException {
         return consumeSeparator(buffer, SLASH);
     }
 
     /**
      * Expect the next byte to be a white space
-     * 
+     *
      * @param buffer
      */
     public static int expectWS(final Buffer buffer) throws SipParseException {
@@ -698,12 +716,12 @@ public class SipParser {
     /**
      * Consume sep (separating?) whitespace (LWS), which according to RFC3261
      * section 25.1 Basic Rules is:
-     * 
+     *
      * SWS = [LWS] ; sep whitespace
-     * 
+     *
      * "The SWS construct is used when linear white space is optional, generally
      * between tokens and separators." (RFC3261)
-     * 
+     *
      * @param buffer
      * @return
      */
@@ -723,25 +741,25 @@ public class SipParser {
     /**
      * Consume an asterisk/star (STAR), which according to RFC3261 section 25.1
      * Basic Rules is:
-     * 
+     *
      * STAR = SWS "*" SWS ; asterisk
-     * 
+     *
      * @param buffer
      * @return true if we indeed did consume a STAR
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
     public static int consumeSTAR(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-    IOException {
+            IOException {
         return consumeSeparator(buffer, STAR);
     }
 
     /**
      * Consume equal sign (EQUAL), which according to RFC3261 section 25.1 Basic
      * Rules is:
-     * 
+     *
      * EQUAL = SWS "=" SWS ; equal
-     * 
+     *
      * @param buffer
      * @return
      * @throws IOException
@@ -754,9 +772,9 @@ public class SipParser {
     /**
      * Consume left parenthesis (LPAREN), which according to RFC3261 section
      * 25.1 Basic Rules is:
-     * 
+     *
      * LPAREN = SWS "(" SWS ; left parenthesis
-     * 
+     *
      * @param buffer
      * @return
      * @throws IOException
@@ -769,9 +787,9 @@ public class SipParser {
     /**
      * Consume right parenthesis (RPAREN), which according to RFC3261 section
      * 25.1 Basic Rules is:
-     * 
+     *
      * RPAREN = SWS ")" SWS ; right parenthesis
-     * 
+     *
      * @param buffer
      * @return
      * @throws IOException
@@ -784,9 +802,9 @@ public class SipParser {
     /**
      * Consume right angle quote (RAQUOT), which according to RFC3261 section
      * 25.1 Basic Rules is:
-     * 
+     *
      * RAQUOT = SWS ">"; left angle quote
-     * 
+     *
      * @param buffer
      * @return
      * @throws IOException
@@ -799,9 +817,9 @@ public class SipParser {
     /**
      * Consume left angle quote (LAQUOT), which according to RFC3261 section
      * 25.1 Basic Rules is:
-     * 
+     *
      * LAQUOT  =  SWS "<"; left angle quote
-     * 
+     *
      * @param buffer
      * @return
      * @throws IOException
@@ -814,64 +832,64 @@ public class SipParser {
     /**
      * Consume comma (COMMA), which according to RFC3261 section 25.1 Basic
      * Rules is:
-     * 
+     *
      * COMMA = SWS "," SWS ; comma
-     * 
+     *
      * @param buffer
      * @return true if we indeed did consume a COMMA
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
     public static int consumeCOMMA(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-    IOException {
+            IOException {
         return consumeSeparator(buffer, COMMA);
     }
 
     /**
      * Consume semicolon (SEMI), which according to RFC3261 section 25.1 Basic
      * Rules is:
-     * 
+     *
      * SEMI = SWS ";" SWS ; semicolon
-     * 
+     *
      * @param buffer
      * @return true if we indeed did consume a SEMI
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
     public static int consumeSEMI(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-    IOException {
+            IOException {
         return consumeSeparator(buffer, SEMI);
     }
 
     /**
      * Consume colon (COLON), which according to RFC3261 section 25.1 Basic
      * Rules is:
-     * 
+     *
      * COLON = SWS ":" SWS ; colon
-     * 
+     *
      * @param buffer
      * @return true if we indeed did consume a COLON
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
     public static int consumeCOLON(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-    IOException {
+            IOException {
         return consumeSeparator(buffer, COLON);
     }
 
     /**
      * Consume open double quotation mark (LDQUT), which according to RFC3261
      * section 25.1 Basic Rules is:
-     * 
+     *
      * LDQUOT = SWS DQUOTE; open double quotation mark
-     * 
+     *
      * @param buffer
      * @return true if we indeed did consume a LDQUOT
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
     public static int consumeLDQUOT(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-    IOException {
+            IOException {
         buffer.markReaderIndex();
         int consumed = consumeSWS(buffer);
         if (isNext(buffer, DQUOT)) {
@@ -887,16 +905,16 @@ public class SipParser {
     /**
      * Consume close double quotation mark (RDQUT), which according to RFC3261
      * section 25.1 Basic Rules is:
-     * 
+     *
      * RDQUOT = DQUOTE SWS ; close double quotation mark
-     * 
+     *
      * @param buffer
      * @return true if we indeed did consume a LDQUOT
      * @throws IOException
      * @throws IndexOutOfBoundsException
      */
     public static int consumeRDQUOT(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-    IOException {
+            IOException {
         buffer.markReaderIndex();
         int consumed = 0;
         if (isNext(buffer, DQUOT)) {
@@ -913,10 +931,10 @@ public class SipParser {
     /**
      * Helper function for checking stuff as described below. It is all the same pattern so...
      * (from rfc 3261 section 25.1)
-     * 
+     *
      * When tokens are used or separators are used between elements,
      * whitespace is often allowed before or after these characters:
-     * 
+     *
      * STAR    =  SWS "*" SWS ; asterisk
      * SLASH   =  SWS "/" SWS ; slash
      * EQUAL   =  SWS "=" SWS ; equal
@@ -937,7 +955,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     private static int consumeSeparator(final Buffer buffer, final byte b) throws IndexOutOfBoundsException,
-    IOException {
+            IOException {
         buffer.markReaderIndex();
         int consumed = consumeSWS(buffer);
         if (isNext(buffer, b)) {
@@ -953,10 +971,10 @@ public class SipParser {
 
     /**
      * Expects a token, which according to RFC3261 section 25.1 Basic Rules is:
-     * 
+     *
      * token = 1*(alphanum / "-" / "." / "!" / "%" / "*" / "_" / "+" / "`" / "'"
      * / "~" )
-     * 
+     *
      * @param buffer
      * @return the buffer containing the expected token
      * @throws IOException
@@ -965,7 +983,7 @@ public class SipParser {
      *             in case there is no token
      */
     public static Buffer expectToken(final Buffer buffer) throws IndexOutOfBoundsException, IOException,
-    SipParseException {
+            SipParseException {
         final Buffer token = consumeToken(buffer);
         if (token == null) {
             throw new SipParseException(buffer.getReaderIndex(), "Expected TOKEN");
@@ -975,15 +993,15 @@ public class SipParser {
 
     /**
      * Consumes a quoted-string, which is defined as:
-     * 
+     *
      * <pre>
      * quoted-string  =  SWS DQUOTE *(qdtext / quoted-pair ) DQUOTE
      * qdtext         =  LWS / %x21 / %x23-5B / %x5D-7E / UTF8-NONASCII
      * quoted-pair    =  "\" (%x00-09 / %x0B-0C / %x0E-7F)
      * </pre>
-     * 
+     *
      * Note, this is a somewhat simplified version and we'll
-     * 
+     *
      * @param buffer
      * @return
      * @throws IOException
@@ -1011,16 +1029,16 @@ public class SipParser {
      * The display name in SIP is a little tricky since it may or may not be
      * there and the stuff following it (whether or not it was there to begin
      * with) can easily be confused with being a display name.
-     * 
+     *
      * Note, a display name in SIP is only part of of the "name-addr" construct
      * and this function assumes that (even though it actually would work like a
      * regular {@link #consumeToken(Buffer)} in some cases)
-     * 
+     *
      * <pre>
      * name-addr      =  [ display-name ] LAQUOT addr-spec RAQUOT
      * display-name   =  *(token LWS)/ quoted-string
      * </pre>
-     * 
+     *
      * @param buffer
      * @return the display name or null if there was none
      * @throws IOException
@@ -1051,17 +1069,17 @@ public class SipParser {
 
     /**
      * Consumes addr-spec, which according to RFC3261 section 25.1 is:
-     * 
+     *
      * <pre>
      * addr-spec      =  SIP-URI / SIPS-URI / absoluteURI
      * SIP-URI          =  "sip:" [ userinfo ] hostport
      *                      uri-parameters [ headers ]
      * SIPS-URI         =  "sips:" [ userinfo ] hostport
      *                      uri-parameters [ headers ]
-     * 
+     *
      * absoluteURI    =  scheme ":" ( hier-part / opaque-part )
      * </pre>
-     * 
+     *
      * And as you can see, it gets complicated. Also, these consume-functions
      * are not to validate the exact grammar but rather to find the boundaries
      * so the strategy for consuming the addr-spec is:
@@ -1071,11 +1089,11 @@ public class SipParser {
      * <li>If a white space or end-of-line is encountered, we also assume we are
      * done.</li>
      * </ul>
-     * 
+     *
      * Note, I think the above is safe since I do believe you cannot have a
      * white space or a quoted string (which could have contained white space)
      * within any of the elements that are part of the addr-spec... Anyone?
-     * 
+     *
      * @return
      * @throws IOException
      * @throws IndexOutOfBoundsException
@@ -1083,7 +1101,7 @@ public class SipParser {
      *             in case we cannot successfully frame the addr-spec.
      */
     public static Buffer consumeAddressSpec(final Buffer buffer) throws IndexOutOfBoundsException, IOException,
-    SipParseException {
+            SipParseException {
         buffer.markReaderIndex();
         int count = 0;
         int state = 0; // zero is to look for colon, everything else is to find
@@ -1123,30 +1141,30 @@ public class SipParser {
 
     /**
      * Consume the userinfo and hostport.
-     * 
+     *
      * The reason why this method does both is because the userinfo portion is
      * optional and as such you actually don't know whether the stuff you are
      * currently going over is the hostport or the userinfo. Also, unfortunately
      * the userinfo is allowed to have characters that normally are reserved
      * (such as ';'), which complicates things as well.
-     * 
-     * 
+     *
+     *
      * <pre>
      * SIP-URI  =  "sip:" [ userinfo ] hostport
      *             uri-parameters [ headers ]
      * SIPS-URI =  "sips:" [ userinfo ] hostport
      *             uri-parameters [ headers ]
-     * 
+     *
      * userinfo         =  ( user / telephone-subscriber ) [ ":" password ] "@"
      * user             =  1*( unreserved / escaped / user-unreserved )
      * user-unreserved  =  "&" / "=" / "+" / "$" / "," / ";" / "?" / "/"
      * password         =  *( unreserved / escaped / "&" / "=" / "+" / "$" / "," )
      * hostport         =  host [ ":" port ]
      * </pre>
-     * 
+     *
      * As you can see, the user-unreserved is what mess things up. it would have
      * been way easier and more efficient if the user-unreserved wasn't there...
-     * 
+     *
      * @param buffer
      * @return
      */
@@ -1156,26 +1174,26 @@ public class SipParser {
 
     /**
      * Consume the "sent-protocol", which according to RFC 3261 is:
-     * 
+     *
      * <pre>
      * sent-protocol = protocol-name SLASH protocol-version SLASH transport
      * transport     =  "UDP" / "TCP" / "TLS" / "SCTP" / other-transport
      * other-transport   =  token
      * </pre>
-     * 
+     *
      * The "sent-protocol" is only present in a Via header and typically looks
      * like this: SIP/2.0/UDP
-     * 
+     *
      * The consume method will make sure that "SIP/2.0/" is present and if not,
      * complain. The transport can really be anything and as such that is what
      * you will get back as a return value. Hence, in the above example you
      * would get back a buffer consisting of "UDP".
-     * 
+     *
      * Also note that the transport can be "other-transport" which translates to
      * a "token" so we allow really anything and as such we will just consume
      * and return the token after verifying that it start with the SIP/2.0
      * stuff.
-     * 
+     *
      * @param buffer
      * @return the transport part of the "sent-protocol". Typically this will be
      *         one of UDP, TCP or TLS.
@@ -1197,10 +1215,10 @@ public class SipParser {
 
     /**
      * Consume a token, which according to RFC3261 section 25.1 Basic Rules is:
-     * 
+     *
      * token = 1*(alphanum / "-" / "." / "!" / "%" / "*" / "_" / "+" / "`" / "'"
      * / "~" )
-     * 
+     *
      * @param buffer
      * @return the buffer containing the token we consumed or null if nothing
      *         was consumed.
@@ -1217,7 +1235,7 @@ public class SipParser {
 
     /**
      * Consumes a alphanum.
-     * 
+     *
      * @param buffer
      * @return
      * @throws IOException
@@ -1232,7 +1250,7 @@ public class SipParser {
 
     /**
      * Consume a Via-header, which according to RFC3261 is:
-     * 
+     *
      * <pre>
      * Via               =  ( "Via" / "v" ) HCOLON via-parm *(COMMA via-parm)
      * via-parm          =  sent-protocol LWS sent-by *( SEMI via-params )
@@ -1244,10 +1262,10 @@ public class SipParser {
      * via-extension     =  generic-param
      * sent-protocol     =  protocol-name SLASH protocol-version SLASH transport
      * </pre>
-     * 
+     *
      * Note, this method assumes that you have already stripped off the "Via" or
      * "v". I.e., the header name.
-     * 
+     *
      * The return value is ALWAYS an array of objects of size 4. However, the
      * port can be null (index 2 = the third value) so make sure to check it.
      * Also, the 4th value (index 3) contains a List<Buffer[]> containing all
@@ -1256,7 +1274,7 @@ public class SipParser {
      * parameters, the value will be null so make sure to check. For more info
      * regarding how parameters are parsed, see
      * {@link #consumeGenericParams(Buffer)}.
-     * 
+     *
      * <ul>
      * <li>result[0] - the protocol. Will never ever be null</li>
      * <li>result[1] - the sent-by host. Will never ever be null</li>
@@ -1264,7 +1282,7 @@ public class SipParser {
      * <li>result[3] - the via-parameters as a List<Buffer[]>. Will always have
      * elements in it since a via without a branch parameter is illegal.</li>
      * </ul>
-     * 
+     *
      * @param buffer
      * @return returns an array of 4 elements. See above for details
      * @throws SipParseException
@@ -1346,7 +1364,7 @@ public class SipParser {
 
     /**
      * Consume a sent-by which according to 3261 is:
-     * 
+     *
      * <pre>
      * sent-by           =  host [ COLON port ]
      * host             =  hostname / IPv4address / IPv6reference
@@ -1361,18 +1379,18 @@ public class SipParser {
      * hex4           =  1*4HEXDIG
      * port           =  1*DIGIT
      * </pre>
-     * 
+     *
      * Now, since we want to do things as fast as possible and all the
      * consumeXXX methods only do framing we will implement something a little
      * simpler, faster but not 100% according to the BNF.
-     * 
+     *
      * So, consume everything until we either hit a ';' signifying parameters or
      * a ':' which then forces us to start checking the port. Also, white space
      * will stop parsing.
-     * 
+     *
      * However, a colon could also signify an IPv6 address, which is not handled
      * right now.
-     * 
+     *
      * @param buffer
      * @return
      * @throws IOException
@@ -1423,9 +1441,9 @@ public class SipParser {
 
     /**
      * Consume a port, which according to RFC 3261 is:
-     * 
+     *
      * port = 1*DIGIT
-     * 
+     *
      * @param buffer
      * @return the buffer containing only digits or null if there was none fun.
      * @throws IOException
@@ -1456,7 +1474,7 @@ public class SipParser {
 
     /**
      * Consume a m-type, which according to RFC3261 section 25.1 Basic Rules is:
-     * 
+     *
      * <pre>
      * m-type           =  discrete-type / composite-type
      * discrete-type    =  "text" / "image" / "audio" / "video" / "io.sipstack.application.application" / extension-token
@@ -1465,11 +1483,11 @@ public class SipParser {
      * ietf-token       =  token
      * x-token          =  "x-" token
      * </pre>
-     * 
+     *
      * And if you really read through all of that stuff it all boils down to
      * "token" so that is all we end up doing in this method. Hence, this method
      * is really only to put some context to consuming a media-type
-     * 
+     *
      * @return
      * @throws IndexOutOfBoundsException
      * @throws IOException
@@ -1488,7 +1506,7 @@ public class SipParser {
     /**
      * Consume a m-subtype, which according to RFC3261 section 25.1 Basic Rules
      * is:
-     * 
+     *
      * <pre>
      * m-subtype        =  extension-token / iana-token
      * extension-token  =  ietf-token / x-token
@@ -1496,11 +1514,11 @@ public class SipParser {
      * x-token          =  "x-" token
      * iana-token       =  token
      * </pre>
-     * 
+     *
      * And if you really read through all of that stuff it all boils down to
      * "token" so that is all we end up doing in this method. Hence, this method
      * is really only to put some context to consuming a media-type
-     * 
+     *
      * @return
      * @throws IndexOutOfBoundsException
      * @throws IOException
@@ -1519,7 +1537,7 @@ public class SipParser {
     /**
      * Helper method that counts the number of bytes that are considered part of
      * the next token in the {@link Buffer}.
-     * 
+     *
      * @param buffer
      * @return a count of the number of bytes the next token contains or zero if
      *         no token is to be found within the buffer.
@@ -1548,7 +1566,7 @@ public class SipParser {
     /**
      * Helper method that counts the number of bytes that are considered part of
      * the next alphanum block.
-     * 
+     *
      * @param buffer
      * @return a count of the number of bytes the next alphaum contains or zero
      *         if none is found.
@@ -1573,7 +1591,7 @@ public class SipParser {
 
     /**
      * Check whether next byte is a alpha numeric one.
-     * 
+     *
      * @param buffer
      * @return true if the next byte is a alpha numeric character, otherwise
      *         false
@@ -1609,7 +1627,7 @@ public class SipParser {
     /**
      * Helper method for checking whether the supplied byte is a alphanumeric
      * character or not.
-     * 
+     *
      * @param b
      * @return true if the byte is indeed a alphanumeric character, false
      *         otherwise
@@ -1641,9 +1659,9 @@ public class SipParser {
     /**
      * Consume linear whitespace (LWS), which according to RFC3261 section 25.1
      * Basic Rules is:
-     * 
+     *
      * LWS = [*WSP CRLF] 1*WSP ; linear whitespace
-     * 
+     *
      * @param buffer
      * @return the number of bytes consumed
      */
@@ -1664,7 +1682,7 @@ public class SipParser {
 
     /**
      * Consume CR + LF
-     * 
+     *
      * @param buffer
      * @return the number of bytes we consumed, which should be two
      * if we indeed consumed CRLF or zero otherwise.
@@ -1688,7 +1706,7 @@ public class SipParser {
 
     /**
      * Check so that the next byte in the passed in buffer is the expected one.
-     * 
+     *
      * @param buffer
      *            the buffer that we will check.
      * @param expected
@@ -1709,7 +1727,7 @@ public class SipParser {
 
     /**
      * Consume all the whitespace we find (WS)
-     * 
+     *
      * @param buffer
      * @return true if we did consume something, false otherwise
      */
@@ -1733,7 +1751,7 @@ public class SipParser {
 
     /**
      * Check so that the next byte in the passed in buffer is the expected one.
-     * 
+     *
      * @param buffer
      *            the buffer that we will check.
      * @param expected
@@ -1834,7 +1852,7 @@ public class SipParser {
      * Not all headers allow for multiple values on a single line. This is a
      * basic check for validating whether or not that the header allows it or
      * not. Note, for headers such as Contact, it depends!
-     * 
+     *
      * @param headerName
      * @return
      */
@@ -1853,7 +1871,7 @@ public class SipParser {
 
     /**
      * The date header also allows for comma within the value of the header.
-     * 
+     *
      * @param name
      * @return
      */
@@ -1954,7 +1972,7 @@ public class SipParser {
             if (state.foundCRLF) {
                 state.values.add(buffer.slice(state.start, state.stop));
                 // if (isNext(buffer, LF)) {
-                    // buffer.readByte();
+                // buffer.readByte();
                 // }
                 // Until we have implemented the CompositeBuffer I'm just going to cheat like this
                 // and yes, it is stupid but folded lines aren't that common so...
@@ -1991,7 +2009,7 @@ public class SipParser {
     /**
      * Get the next header, which may actually be returning multiple if there
      * are multiple headers on the same line.
-     * 
+     *
      * @param buffer
      * @return an array where the first element is the name of the buffer and
      *         the second element is the value of the buffer
@@ -2066,7 +2084,7 @@ public class SipParser {
      * Frame the supplied buffer into a {@link SipMessage}. No deep analysis of the message will be
      * performed by this framer so there is no guarantee that this {@link SipMessage} is actually a
      * well formed message.
-     * 
+     *
      * @param buffer
      * @return the framed {@link SipMessage}
      */
@@ -2107,7 +2125,7 @@ public class SipParser {
         } else {
             throw new RuntimeException("No longer using the old mutable sip messages");
             // return new SipRequestImpl(rawInitialLine, headers, payload);
-         }
+        }
     }
 
     /**
@@ -2235,7 +2253,7 @@ public class SipParser {
     /**
      * Helper function that checks whether or not the data could be a SIP message. It is a very
      * basic check but if it doesn't go through it definitely is not a SIP message.
-     * 
+     *
      * @param data
      * @return
      */
