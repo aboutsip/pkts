@@ -296,16 +296,26 @@ public final class ByteBuffer extends AbstractBuffer {
             for (int i = 0; i < length; ++i) {
                 final byte a1 = this.buffer[this.lowerBoundary + i];
                 final byte b1 = b.buffer[b.lowerBoundary + i];
-                if (a1 != b1) {
-                    if (ignoreCase) {
-                        // lazy! Fix this and also this won't really work
-                        // for UTF-8 I believe. Def not for UTF-16 but good
-                        // enough for now.
-                        final String s1 = new String(new byte[] {a1}, Charset.forName("UTF-8"));
-                        final String s2 = new String(new byte[] {b1}, Charset.forName("UTF-8"));
-                        if (s1.equalsIgnoreCase(s2)) {
-                            continue;
-                        }
+                // Do a UTF-8-aware, possibly case-insensitive character match. Only considers
+                // case of 7-bit ASCII characters 'a'-'z'. In UTF-8, all bytes of multi-byte
+                // characters have thier most signifcant bit set, so they won't be erroneously
+                // considered by this algorithm since they won't fall in the range 0x41-0x5a/
+                // 0x61-0x7a.
+
+                // This algorithm won't work with UTF-16, and could misfire on malformed UTF-8,
+                // e.g. the first byte of a UTF-8 sequence marks the beginning of a multi-byte
+                // sequence but the second byte does not have the two high-order bits set to 10.
+
+                // For 7-bit ascii leters, upper and lower-case only differ by one bit,
+                // i.e. 'A' is 0x41, and 'a' is 0x61. We need only compare the 5 least
+                // signifcant bits.
+
+                 if (a1 != b1) {
+                    if (ignoreCase &&
+                        ((a1 >= 'A' && a1 <= 'Z') || (a1 >= 'a' && a1 <= 'z')) &&
+                        ((b1 >= 'A' && b1 <= 'Z') || (b1 >= 'a' && b1 <= 'z')) &&
+                        (a1 & 0x1f) == (b1 & 0x1f)) {
+                          continue;
                     }
                     return false;
                 }

@@ -70,7 +70,7 @@ public class SipHeaderImpl implements SipHeader {
      */
     @Override
     public SipHeader ensure() {
-        final Function<SipHeader, ? extends SipHeader> framer = SipParser.framers.get(this.name);
+        final Function<SipHeader, ? extends SipHeader> framer = SipParser.getFramer(this.name);
         if (framer != null) {
             return framer.apply(this);
         }
