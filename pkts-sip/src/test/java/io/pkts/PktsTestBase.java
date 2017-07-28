@@ -17,11 +17,15 @@ import io.pkts.packet.sip.impl.SipParser;
 import org.junit.After;
 import org.junit.Before;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -61,6 +65,12 @@ public class PktsTestBase {
      */
     @After
     public void tearDown() throws Exception {
+    }
+
+    public SipMessage loadSipMessage(final String resource) throws Exception {
+        final Path path = Paths.get(PktsTestBase.class.getResource(resource).toURI());
+        final String content = Files.readAllLines(path).stream().collect(Collectors.joining("\r\n"));
+        return SipMessage.frame(content);
     }
 
     public SipMessage parseMessage(final byte[] data) throws Exception {
