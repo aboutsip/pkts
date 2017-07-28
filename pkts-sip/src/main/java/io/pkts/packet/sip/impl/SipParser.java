@@ -233,7 +233,7 @@ public class SipParser {
      * into one with the correct subtype.
      */
     public static Function<SipHeader, ? extends SipHeader> getFramer(final Buffer b) {
-        // For headers that have the expected capitilization, do a quick case-sensitive
+        // For headers that have the expected capitalization, do a quick case-sensitive
         // search. If that fails do a slower case-insensitive search.
         final Function<SipHeader, ? extends SipHeader> framer = framers.get(b);
         if (framer != null) {
