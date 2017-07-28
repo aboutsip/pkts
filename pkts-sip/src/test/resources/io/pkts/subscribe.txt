@@ -1,0 +1,14 @@
+SUBSCRIBE sip:MAC%3a00041324D9F9@intern.example.com SIP/2.0
+Via: SIP/2.0/UDP 10.11.12.12:2048;rport
+From: <sip:MAC%3a00041324D9F9@intern.example.com>;tag=298473906
+To: <sip:MAC%3a00041324D9F9@intern.example.com>
+Call-ID: 106887444@10.11.12.12
+CSeq: 1 SUBSCRIBE
+Event: ua-profile;profile-type="device";vendor="snom";model="snom320";version="8.7.5.35"
+Expires: 0
+Accept: application/url
+Contact: <sip:10.11.12.12:2048>
+User-Agent: snom320/8.7.5.35
+Content-Length: 0
+
+

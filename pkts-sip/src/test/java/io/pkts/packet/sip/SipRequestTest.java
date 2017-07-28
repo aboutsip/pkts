@@ -52,6 +52,26 @@ public class SipRequestTest extends PktsTestBase {
     }
 
     /**
+     * Test for issue no 38: https://github.com/aboutsip/pkts/issues/38
+     *
+     * Conclusion, nothing wrong with that message. It is missing the branch parameter.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testIssueNo38() throws Exception {
+        try {
+            loadSipMessage("subscribe.txt");
+            fail("Expected the above message to fail");
+        } catch (final SipParseException e) {
+            // ensure it was the branch - perhaps not the best way to test
+            // but currently there are not specif exceptions for every little
+            // parsing detail that can go wrong.
+            assertThat(e.getMessage(), is("You must specify a branch parameter"));
+        }
+    }
+
+    /**
      * You have the ability to specify an empty Via-header since you may not have all the information
      * at hand right now so you rather fill out the Via through the
      * {@link SipMessage.Builder#onTopMostViaHeader(Consumer)} but if you don't register that function
