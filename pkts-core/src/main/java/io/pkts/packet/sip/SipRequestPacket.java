@@ -15,7 +15,7 @@ public interface SipRequestPacket extends SipPacket {
      * 
      * @return
      */
-    URI getRequestUri() throws SipParseException;
+    URI getRequestUri() throws SipPacketParseException;
 
     @Override
     SipRequestPacket clone();

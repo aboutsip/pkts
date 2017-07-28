@@ -13,7 +13,7 @@ import static io.pkts.streams.SipStream.CallState.TRYING;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import io.pkts.packet.sip.SipPacket;
-import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.SipPacketParseException;
 import io.pkts.streams.SipStream.CallState;
 import io.pkts.streams.StreamsTestBase;
 
@@ -242,9 +242,9 @@ public class SimpleCallStateMachineTest extends StreamsTestBase {
      * 
      * @param messages
      * @return
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
-    private String getCallId(final List<SipPacket> messages) throws SipParseException {
+    private String getCallId(final List<SipPacket> messages) throws SipPacketParseException {
         for (final SipPacket msg : messages) {
             if (msg != null) {
                 return msg.getCallIDHeader().getValue().toString();

@@ -11,7 +11,7 @@ import io.pkts.packet.impl.AbstractPacket;
 import io.pkts.packet.impl.SDPPacketImpl;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipPacket;
-import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.SipPacketParseException;
 import io.pkts.packet.sip.SipRequestPacket;
 import io.pkts.packet.sip.SipResponsePacket;
 import io.pkts.packet.sip.header.CSeqHeader;
@@ -301,7 +301,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getContent()
      */
     @Override
-    public Object getContent() throws SipParseException {
+    public Object getContent() throws SipPacketParseException {
         return parseSipContent();
     }
 
@@ -331,7 +331,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getMethod()
      */
     @Override
-    public Buffer getMethod() throws SipParseException {
+    public Buffer getMethod() throws SipPacketParseException {
         return this.msg.getMethod();
     }
 
@@ -341,7 +341,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getHeader(io.pkts.buffer.Buffer)
      */
     @Override
-    public Optional<SipHeader> getHeader(final Buffer headerName) throws SipParseException {
+    public Optional<SipHeader> getHeader(final Buffer headerName) throws SipPacketParseException {
         return this.msg.getHeader(headerName);
     }
 
@@ -351,7 +351,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getHeader(java.lang.String)
      */
     @Override
-    public Optional<SipHeader> getHeader(final String headerName) throws SipParseException {
+    public Optional<SipHeader> getHeader(final String headerName) throws SipPacketParseException {
         return this.msg.getHeader(headerName);
     }
 
@@ -361,7 +361,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getFromHeader()
      */
     @Override
-    public FromHeader getFromHeader() throws SipParseException {
+    public FromHeader getFromHeader() throws SipPacketParseException {
         return this.msg.getFromHeader();
     }
 
@@ -371,7 +371,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getToHeader()
      */
     @Override
-    public ToHeader getToHeader() throws SipParseException {
+    public ToHeader getToHeader() throws SipPacketParseException {
         return this.msg.getToHeader();
     }
 
@@ -381,7 +381,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getViaHeader()
      */
     @Override
-    public ViaHeader getViaHeader() throws SipParseException {
+    public ViaHeader getViaHeader() throws SipPacketParseException {
         return this.msg.getViaHeader();
     }
 
@@ -391,7 +391,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getViaHeaders()
      */
     @Override
-    public List<ViaHeader> getViaHeaders() throws SipParseException {
+    public List<ViaHeader> getViaHeaders() throws SipPacketParseException {
         return this.msg.getViaHeaders();
     }
 
@@ -401,7 +401,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getMaxForwards()
      */
     @Override
-    public MaxForwardsHeader getMaxForwards() throws SipParseException {
+    public MaxForwardsHeader getMaxForwards() throws SipPacketParseException {
         return this.msg.getMaxForwards();
     }
 
@@ -411,7 +411,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getRecordRouteHeader()
      */
     @Override
-    public RecordRouteHeader getRecordRouteHeader() throws SipParseException {
+    public RecordRouteHeader getRecordRouteHeader() throws SipPacketParseException {
         return this.msg.getRecordRouteHeader();
     }
 
@@ -421,7 +421,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getRecordRouteHeaders()
      */
     @Override
-    public List<RecordRouteHeader> getRecordRouteHeaders() throws SipParseException {
+    public List<RecordRouteHeader> getRecordRouteHeaders() throws SipPacketParseException {
         return this.msg.getRecordRouteHeaders();
     }
 
@@ -431,7 +431,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getRouteHeader()
      */
     @Override
-    public RouteHeader getRouteHeader() throws SipParseException {
+    public RouteHeader getRouteHeader() throws SipPacketParseException {
         return this.msg.getRouteHeader();
     }
 
@@ -441,7 +441,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getRouteHeaders()
      */
     @Override
-    public List<RouteHeader> getRouteHeaders() throws SipParseException {
+    public List<RouteHeader> getRouteHeaders() throws SipPacketParseException {
         return this.msg.getRouteHeaders();
     }
 
@@ -451,7 +451,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getContactHeader()
      */
     @Override
-    public ContactHeader getContactHeader() throws SipParseException {
+    public ContactHeader getContactHeader() throws SipPacketParseException {
         return this.msg.getContactHeader();
     }
 
@@ -461,7 +461,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getContentTypeHeader()
      */
     @Override
-    public ContentTypeHeader getContentTypeHeader() throws SipParseException {
+    public ContentTypeHeader getContentTypeHeader() throws SipPacketParseException {
         return this.msg.getContentTypeHeader();
     }
 
@@ -471,7 +471,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getCallIDHeader()
      */
     @Override
-    public CallIdHeader getCallIDHeader() throws SipParseException {
+    public CallIdHeader getCallIDHeader() throws SipPacketParseException {
         return this.msg.getCallIDHeader();
     }
 
@@ -481,7 +481,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#getCSeqHeader()
      */
     @Override
-    public CSeqHeader getCSeqHeader() throws SipParseException {
+    public CSeqHeader getCSeqHeader() throws SipPacketParseException {
         return this.msg.getCSeqHeader();
     }
 
@@ -491,7 +491,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#isInvite()
      */
     @Override
-    public boolean isInvite() throws SipParseException {
+    public boolean isInvite() throws SipPacketParseException {
         return this.msg.isInvite();
     }
 
@@ -501,7 +501,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#isBye()
      */
     @Override
-    public boolean isBye() throws SipParseException {
+    public boolean isBye() throws SipPacketParseException {
         return this.msg.isBye();
     }
 
@@ -511,7 +511,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#isAck()
      */
     @Override
-    public boolean isAck() throws SipParseException {
+    public boolean isAck() throws SipPacketParseException {
         return this.msg.isAck();
     }
 
@@ -521,7 +521,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#isOptions()
      */
     @Override
-    public boolean isOptions() throws SipParseException {
+    public boolean isOptions() throws SipPacketParseException {
         return this.msg.isOptions();
     }
 
@@ -531,7 +531,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#isMessage()
      */
     @Override
-    public boolean isMessage() throws SipParseException {
+    public boolean isMessage() throws SipPacketParseException {
         return this.msg.isMessage();
     }
 
@@ -541,7 +541,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#isInfo()
      */
     @Override
-    public boolean isInfo() throws SipParseException {
+    public boolean isInfo() throws SipPacketParseException {
         return this.msg.isInfo();
     }
 
@@ -551,7 +551,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#isCancel()
      */
     @Override
-    public boolean isCancel() throws SipParseException {
+    public boolean isCancel() throws SipPacketParseException {
         return this.msg.isCancel();
     }
 
@@ -561,7 +561,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      * @see io.pkts.packet.sip.SipPacket#isInitial()
      */
     @Override
-    public boolean isInitial() throws SipParseException {
+    public boolean isInitial() throws SipPacketParseException {
         return this.msg.isInitial();
     }
 
@@ -616,7 +616,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
             if (content != null && contentType.isSDP()) {
                 return SDPFactory.getInstance().parse(content);
             }
-        } catch (final SipParseException | SdpException e) {
+        } catch (final SipPacketParseException | SdpException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }

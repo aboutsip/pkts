@@ -4,7 +4,7 @@
 package io.pkts.packet.sip.impl;
 
 import io.pkts.packet.TransportPacket;
-import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.SipPacketParseException;
 import io.pkts.packet.sip.SipRequest;
 import io.pkts.packet.sip.SipRequestPacket;
 import io.pkts.packet.sip.address.URI;
@@ -28,7 +28,7 @@ public class SipRequestPacketImpl extends SipPacketImpl implements SipRequestPac
      * @see io.pkts.packet.sip.SipRequestPacket#getRequestUri()
      */
     @Override
-    public URI getRequestUri() throws SipParseException {
+    public URI getRequestUri() throws SipPacketParseException {
         return ((SipRequest) getSipMessage()).getRequestUri();
     }
 

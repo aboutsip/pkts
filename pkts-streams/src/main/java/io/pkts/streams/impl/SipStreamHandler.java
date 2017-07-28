@@ -9,7 +9,7 @@ import io.pkts.framer.FramerManager;
 import io.pkts.packet.Packet;
 import io.pkts.packet.PacketParseException;
 import io.pkts.packet.sip.SipPacket;
-import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.SipPacketParseException;
 import io.pkts.packet.sip.SipRequestPacket;
 import io.pkts.packet.sip.SipResponsePacket;
 import io.pkts.protocol.Protocol;
@@ -58,7 +58,7 @@ public class SipStreamHandler {
         this.framerManager = framerManager;
     }
 
-    private StreamId getStreamId(final SipPacket msg) throws SipParseException {
+    private StreamId getStreamId(final SipPacket msg) throws SipPacketParseException {
         try {
             return new BufferStreamId(msg.getCallIDHeader().getValue());
         } catch (final NullPointerException e) {
@@ -154,7 +154,7 @@ public class SipStreamHandler {
                     // System.out.println("Address: " + address + " port : " + port);
                 }
             }
-        } catch (final SipParseException e) {
+        } catch (final SipPacketParseException e) {
             // System.err.println("Ok so the total length is: " + msg.getTotalLength());
             logger.warn("Unable to parse the content of the sip message", e);
             // System.exit(1);
@@ -194,7 +194,7 @@ public class SipStreamHandler {
             // left empty intentionally
         }
 
-        public void count(final SipPacket msg) throws SipParseException {
+        public void count(final SipPacket msg) throws SipPacketParseException {
             ++this.total;
             if (msg.isRequest()) {
                 countRequest(msg.toRequest());
@@ -203,7 +203,7 @@ public class SipStreamHandler {
             }
         }
 
-        private void countRequest(final SipRequestPacket request) throws SipParseException {
+        private void countRequest(final SipRequestPacket request) throws SipPacketParseException {
             if (request.isInvite()) {
                 ++this.inviteRequests;
             } else if (request.isAck()) {
@@ -221,7 +221,7 @@ public class SipStreamHandler {
             }
         }
 
-        private void countResponse(final SipResponsePacket response) throws SipParseException {
+        private void countResponse(final SipResponsePacket response) throws SipPacketParseException {
             ++this.responses[response.getStatus() - 100];
         }
 
