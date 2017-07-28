@@ -6,7 +6,7 @@ package io.pkts.tools;
 import io.pkts.Pcap;
 import io.pkts.packet.IPPacket;
 import io.pkts.packet.sip.SipPacket;
-import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.SipPacketParseException;
 import io.pkts.streams.FragmentListener;
 import io.pkts.streams.SipStatistics;
 import io.pkts.streams.SipStream;
@@ -147,7 +147,7 @@ public final class SipSplitter implements StreamListener<SipPacket>, FragmentLis
                 System.out.println("Strange...");
                 System.out.println(message);
             }
-        } catch (final SipParseException e) {
+        } catch (final SipPacketParseException e) {
             e.printStackTrace();
         }
         ++this.count;
@@ -158,7 +158,7 @@ public final class SipSplitter implements StreamListener<SipPacket>, FragmentLis
         // TODO Auto-generated method stub
     }
 
-    private void checkPDD(final SipStream stream) throws SipParseException {
+    private void checkPDD(final SipStream stream) throws SipPacketParseException {
         final long pdd = stream.getPostDialDelay() / 1000;
         if (pdd > 40000) {
             System.out.println("PDD crazy high: " + stream.getStreamIdentifier());
@@ -170,7 +170,7 @@ public final class SipSplitter implements StreamListener<SipPacket>, FragmentLis
         }
     }
 
-    private void checkDuration(final SipStream stream) throws SipParseException {
+    private void checkDuration(final SipStream stream) throws SipPacketParseException {
         final long duration = stream.getDuration() / 1000;
         if (duration != -1) {
             this.maxCallDuration = Math.max(this.maxCallDuration, duration);
@@ -179,7 +179,7 @@ public final class SipSplitter implements StreamListener<SipPacket>, FragmentLis
         }
     }
 
-    public void count(final SipStream stream) throws SipParseException {
+    public void count(final SipStream stream) throws SipPacketParseException {
         if (this.streams.containsKey(stream.getStreamIdentifier())) {
             return;
         }
@@ -210,7 +210,7 @@ public final class SipSplitter implements StreamListener<SipPacket>, FragmentLis
                     ++this.calls;
                     break;
                 }
-            } catch (final SipParseException e) {
+            } catch (final SipPacketParseException e) {
                 e.printStackTrace();
             }
         }
@@ -222,7 +222,7 @@ public final class SipSplitter implements StreamListener<SipPacket>, FragmentLis
         try {
             count((SipStream) stream);
             this.streams.put(stream.getStreamIdentifier(), (SipStream) stream);
-        } catch (final SipParseException e) {
+        } catch (final SipPacketParseException e) {
             e.toString();
         }
     }

@@ -2,7 +2,7 @@ package io.pkts.streams;
 
 import io.pkts.frame.PcapGlobalHeader;
 import io.pkts.packet.sip.SipPacket;
-import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.SipPacketParseException;
 import io.pkts.sdp.SDP;
 
 import java.io.FileNotFoundException;
@@ -47,11 +47,11 @@ public interface SipStream extends Stream<SipPacket> {
      * @return the PDD in milliseconds or -1 (negative one) in case it hasn't
      *         been calculated yet or because this {@link SipStream} is not an
      *         INVITE scenario.
-     * @throws SipParseException
+     * @throws SipPacketParseException
      *             in case anything goes wrong while trying to calculate the
      *             PDD.
      */
-    long getPostDialDelay() throws SipParseException;
+    long getPostDialDelay() throws SipPacketParseException;
 
     /**
      * Convenience method for returning the {@link SDP} found on the first INVITE request. Note, if
@@ -60,9 +60,9 @@ public interface SipStream extends Stream<SipPacket> {
      * 
      * @return the SDP found in the first INVITE request or null if no INVITE was found in the
      *         stream or if that INVITE simply didn't contain an SDP
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
-    SDP getInviteSDP() throws SipParseException;
+    SDP getInviteSDP() throws SipPacketParseException;
 
     /**
      * Convenience method for returning the {@link SDP} found on the 200 OK to the first INVITE
@@ -73,9 +73,9 @@ public interface SipStream extends Stream<SipPacket> {
      * 
      * @return the SDP found in the first INVITE request or null if no INVITE was found in the
      *         stream or if that INVITE simply didn't contain an SDP
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
-    SDP get200OkSDP() throws SipParseException;
+    SDP get200OkSDP() throws SipPacketParseException;
 
     /**
      * Get the identifier used for grouping the {@link SipPacket}s together. Currently, this is the
@@ -179,11 +179,11 @@ public interface SipStream extends Stream<SipPacket> {
      * @throws IllegalArgumentException
      *             in case the message you are trying to add does not have the
      *             same {@link StreamId}.
-     * @throws SipParseException
+     * @throws SipPacketParseException
      *             in case something goes wrong while parsing the
      *             {@link SipPacket}
      */
-    void addMessage(SipPacket message) throws IllegalArgumentException, SipParseException;
+    void addMessage(SipPacket message) throws IllegalArgumentException, SipPacketParseException;
 
     /**
      * Even though SIP can be used for so much more than just establishing

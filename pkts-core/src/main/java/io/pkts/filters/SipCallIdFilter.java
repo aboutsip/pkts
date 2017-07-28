@@ -8,7 +8,7 @@ import io.pkts.buffer.Buffers;
 import io.pkts.packet.Packet;
 import io.pkts.packet.PacketParseException;
 import io.pkts.packet.sip.SipPacket;
-import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.SipPacketParseException;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ public final class SipCallIdFilter extends SipFilter {
                 final SipPacket msg = (SipPacket) packet.getPacket(Protocol.SIP);
                 return msg.getCallIDHeader().getValue().equals(this.callId);
             }
-        } catch (final SipParseException e) {
+        } catch (final SipPacketParseException e) {
             throw new FilterException("Unable to process the frame due to SipParseException", e);
         } catch (final IOException e) {
             throw new FilterException("Unable to process the frame due to IOException", e);

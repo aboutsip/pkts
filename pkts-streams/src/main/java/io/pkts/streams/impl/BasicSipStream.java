@@ -6,7 +6,7 @@ package io.pkts.streams.impl;
 import io.pkts.PcapOutputStream;
 import io.pkts.frame.PcapGlobalHeader;
 import io.pkts.packet.sip.SipPacket;
-import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.SipPacketParseException;
 import io.pkts.sdp.SDP;
 import io.pkts.streams.SipStream;
 import io.pkts.streams.StreamId;
@@ -55,7 +55,7 @@ public class BasicSipStream implements SipStream {
     }
 
     @Override
-    public void addMessage(final SipPacket message) throws SipParseException {
+    public void addMessage(final SipPacket message) throws SipPacketParseException {
         this.fsm.onEvent(message);
     }
 
@@ -75,7 +75,7 @@ public class BasicSipStream implements SipStream {
      * {@inheritDoc}
      */
     @Override
-    public long getPostDialDelay() throws SipParseException {
+    public long getPostDialDelay() throws SipPacketParseException {
         return this.fsm.getPostDialDelay();
     }
 
@@ -156,7 +156,7 @@ public class BasicSipStream implements SipStream {
     }
 
     @Override
-    public SDP getInviteSDP() throws SipParseException {
+    public SDP getInviteSDP() throws SipPacketParseException {
         for (final SipPacket msg : this.fsm.getMessages()) {
             if (msg.isRequest() && msg.isInvite()) {
                 return getSDPorNull(msg);
@@ -166,7 +166,7 @@ public class BasicSipStream implements SipStream {
     }
 
     @Override
-    public SDP get200OkSDP() throws SipParseException {
+    public SDP get200OkSDP() throws SipPacketParseException {
         for (final SipPacket msg : this.fsm.getMessages()) {
             if (msg.isResponse() && msg.isInvite() && msg.toResponse().isSuccess()) {
                 return getSDPorNull(msg);
@@ -175,7 +175,7 @@ public class BasicSipStream implements SipStream {
         return null;
     }
 
-    private SDP getSDPorNull(final SipPacket msg) throws SipParseException {
+    private SDP getSDPorNull(final SipPacket msg) throws SipPacketParseException {
         final Object content = msg.getContent();
         if (content instanceof SDP) {
             return (SDP) content;

@@ -87,11 +87,11 @@ public interface SipPacket extends ApplicationPacket {
      * representing the payload will be returned.
      * 
      * @return
-     * @throws SipParseException
+     * @throws SipPacketParseException
      *             in case anything goes wrong when trying to frame the content
      *             in any way.
      */
-    Object getContent() throws SipParseException;
+    Object getContent() throws SipPacketParseException;
 
     /**
      * Get the content as a {@link Buffer}.
@@ -114,7 +114,7 @@ public interface SipPacket extends ApplicationPacket {
      * 
      * @return
      */
-    Buffer getMethod() throws SipParseException;
+    Buffer getMethod() throws SipPacketParseException;
 
     /**
      * Get the header as a buffer
@@ -122,9 +122,9 @@ public interface SipPacket extends ApplicationPacket {
      * @param headerName
      *            the name of the header we wish to fetch
      * @return the header as a {@link SipHeader} or null if not found
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
-    Optional<SipHeader> getHeader(Buffer headerName) throws SipParseException;
+    Optional<SipHeader> getHeader(Buffer headerName) throws SipPacketParseException;
 
     /**
      * Same as {@link #getHeader(Buffers.wrap(keyParameter)}.
@@ -132,25 +132,25 @@ public interface SipPacket extends ApplicationPacket {
      * @param headerName
      *            the name of the header we wish to fetch
      * @return the header as a {@link SipHeader}
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
-    Optional<SipHeader> getHeader(String headerName) throws SipParseException;
+    Optional<SipHeader> getHeader(String headerName) throws SipPacketParseException;
 
     /**
      * Convenience method for fetching the from-header
      * 
      * @return the from header as a buffer
-     * @throws SipParseException
+     * @throws SipPacketParseException
      *             TODO
      */
-    FromHeader getFromHeader() throws SipParseException;
+    FromHeader getFromHeader() throws SipPacketParseException;
 
     /**
      * Convenience method for fetching the to-header
      * 
      * @return the to header as a buffer
      */
-    ToHeader getToHeader() throws SipParseException;
+    ToHeader getToHeader() throws SipPacketParseException;
 
     /**
      * Get the top-most {@link ViaHeader} if present. If this is a request that
@@ -160,25 +160,25 @@ public interface SipPacket extends ApplicationPacket {
      * 
      * @return the top-most {@link ViaHeader} or null if there are no
      *         {@link ViaHeader}s on this message just yet.
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
-    ViaHeader getViaHeader() throws SipParseException;
+    ViaHeader getViaHeader() throws SipPacketParseException;
 
     /**
      * Get all the Via-headers in this {@link SipMessage}. If this is a request
      * that just was created then this may return an empty list.
      * 
      * @return
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
-    List<ViaHeader> getViaHeaders() throws SipParseException;
+    List<ViaHeader> getViaHeaders() throws SipPacketParseException;
 
     /**
      * 
      * @return
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
-    MaxForwardsHeader getMaxForwards() throws SipParseException;
+    MaxForwardsHeader getMaxForwards() throws SipPacketParseException;
 
     /**
      * Get the top-most {@link RecordRouteHeader} header if present.
@@ -186,9 +186,9 @@ public interface SipPacket extends ApplicationPacket {
      * @return the top-most {@link RecordRouteHeader} header or null if there
      *         are no {@link RecordRouteHeader} headers found in this
      *         {@link SipPacket}.
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
-    RecordRouteHeader getRecordRouteHeader() throws SipParseException;
+    RecordRouteHeader getRecordRouteHeader() throws SipPacketParseException;
 
     /**
      * Get all the RecordRoute-headers in this {@link SipMessage}. If there are
@@ -196,18 +196,18 @@ public interface SipPacket extends ApplicationPacket {
      * list will be returned.
      * 
      * @return
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
-    List<RecordRouteHeader> getRecordRouteHeaders() throws SipParseException;
+    List<RecordRouteHeader> getRecordRouteHeaders() throws SipPacketParseException;
 
     /**
      * Get the top-most {@link RouteHeader} header if present.
      * 
      * @return the top-most {@link RouteHeader} header or null if there are no
      *         {@link RouteHeader} headers found in this {@link SipPacket}.
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
-    RouteHeader getRouteHeader() throws SipParseException;
+    RouteHeader getRouteHeader() throws SipPacketParseException;
 
     /**
      * Get all the Route-headers in this {@link SipMessage}. If there are no
@@ -215,41 +215,41 @@ public interface SipPacket extends ApplicationPacket {
      * be returned.
      * 
      * @return
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
-    List<RouteHeader> getRouteHeaders() throws SipParseException;
+    List<RouteHeader> getRouteHeaders() throws SipPacketParseException;
 
     /**
      * Get the {@link ContactHeader}
      * 
      * @return
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
-    ContactHeader getContactHeader() throws SipParseException;
+    ContactHeader getContactHeader() throws SipPacketParseException;
 
     /**
      * Get the {@link ContentTypeHeader} for this message. If there is no
      * Content-Type header in this SIP message then null will be returned.
      * 
      * @return the {@link ContentTypeHeader} or null if there is none.
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
-    ContentTypeHeader getContentTypeHeader() throws SipParseException;
+    ContentTypeHeader getContentTypeHeader() throws SipPacketParseException;
 
     /**
      * Convenience method for fetching the call-id-header
      * 
      * @return the call-id header as a buffer
      */
-    CallIdHeader getCallIDHeader() throws SipParseException;
+    CallIdHeader getCallIDHeader() throws SipPacketParseException;
 
     /**
      * Convenience method for fetching the CSeq header
      * 
      * @return
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
-    CSeqHeader getCSeqHeader() throws SipParseException;
+    CSeqHeader getCSeqHeader() throws SipPacketParseException;
 
     /**
      * Convenience method for determining whether the method of this message is
@@ -257,11 +257,11 @@ public interface SipPacket extends ApplicationPacket {
      * this is a INVITE Request or not!
      * 
      * @return true if the method of this message is a INVITE, false otherwise.
-     * @throws SipParseException
+     * @throws SipPacketParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
      */
-    boolean isInvite() throws SipParseException;
+    boolean isInvite() throws SipPacketParseException;
 
     /**
      * Convenience method for determining whether the method of this message is
@@ -269,11 +269,11 @@ public interface SipPacket extends ApplicationPacket {
      * is a BYE Request or not!
      * 
      * @return true if the method of this message is a BYE, false otherwise.
-     * @throws SipParseException
+     * @throws SipPacketParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
      */
-    boolean isBye() throws SipParseException;
+    boolean isBye() throws SipPacketParseException;
 
     /**
      * Convenience method for determining whether the method of this message is
@@ -281,11 +281,11 @@ public interface SipPacket extends ApplicationPacket {
      * is an ACK Request or not!
      * 
      * @return true if the method of this message is a ACK, false otherwise.
-     * @throws SipParseException
+     * @throws SipPacketParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
      */
-    boolean isAck() throws SipParseException;
+    boolean isAck() throws SipPacketParseException;
 
     /**
      * Convenience method for determining whether the method of this message is
@@ -293,11 +293,11 @@ public interface SipPacket extends ApplicationPacket {
      * this is an OPTIONS Request or not!
      * 
      * @return true if the method of this message is a OPTIONS, false otherwise.
-     * @throws SipParseException
+     * @throws SipPacketParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
      */
-    boolean isOptions() throws SipParseException;
+    boolean isOptions() throws SipPacketParseException;
 
     /**
      * Convenience method for determining whether the method of this message is
@@ -305,11 +305,11 @@ public interface SipPacket extends ApplicationPacket {
      * this is an MESSAGE Request or not!
      * 
      * @return true if the method of this message is a MESSAGE, false otherwise.
-     * @throws SipParseException
+     * @throws SipPacketParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
      */
-    boolean isMessage() throws SipParseException;
+    boolean isMessage() throws SipPacketParseException;
 
     /**
      * Convenience method for determining whether the method of this message is
@@ -317,31 +317,31 @@ public interface SipPacket extends ApplicationPacket {
      * is an INFO Request or not!
      * 
      * @return true if the method of this message is a INFO, false otherwise.
-     * @throws SipParseException
+     * @throws SipPacketParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
      */
-    boolean isInfo() throws SipParseException;
+    boolean isInfo() throws SipPacketParseException;
 
     /**
      * Convenience method for determining whether the method of this message is
      * a CANCEL or not
      * 
      * @return true if the method of this message is a CANCEL, false otherwise.
-     * @throws SipParseException
+     * @throws SipPacketParseException
      *             in case the method could not be parsed out of the underlying
      *             buffer.
      */
-    boolean isCancel() throws SipParseException;
+    boolean isCancel() throws SipPacketParseException;
 
     /**
      * Checks whether or not this request is considered to be an "initial"
      * request, i.e., a request that does not go within a dialog.
      * 
      * @return
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
-    boolean isInitial() throws SipParseException;
+    boolean isInitial() throws SipPacketParseException;
 
     /**
      * {@inheritDoc}

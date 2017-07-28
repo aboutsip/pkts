@@ -9,7 +9,7 @@ import io.pkts.Pcap;
 import io.pkts.packet.Packet;
 import io.pkts.packet.rtp.RtpPacket;
 import io.pkts.packet.sip.SipPacket;
-import io.pkts.packet.sip.SipParseException;
+import io.pkts.packet.sip.SipPacketParseException;
 import io.pkts.streams.SipStream;
 import io.pkts.streams.Stream;
 import io.pkts.streams.StreamHandler;
@@ -102,10 +102,10 @@ public class DefaultStreamHandlerTest extends StreamsTestBase {
      *            the expected PDD
      * @param duration
      *            the expected duration
-     * @throws SipParseException
+     * @throws SipPacketParseException
      */
     private void assertStream(final Stream<SipPacket> stream, final long pdd, final long duration)
-            throws SipParseException {
+            throws SipPacketParseException {
         final SipStream sipStream = (SipStream) stream;
         assertThat(sipStream.getPostDialDelay(), is(pdd));
         assertThat(sipStream.getDuration(), is(duration));
