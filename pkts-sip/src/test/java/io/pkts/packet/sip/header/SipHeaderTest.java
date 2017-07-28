@@ -2,165 +2,169 @@ package io.pkts.packet.sip.header;
 
 import org.junit.Test;
 
+import java.util.function.Function;
+import java.util.function.Predicate;
+
 import static io.pkts.packet.sip.header.SipHeader.frame;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author jonas@jonasborjesson.com
  */
 public class SipHeaderTest {
 
+
     @Test
     public void testIsXXX() {
-        SipHeader h1 = null;
-
         // Via Header
-        h1 = frame("Via: SIP/2.0/UDP pkts.io:5088;branch=asdf");
-        assertThat(h1.isViaHeader(), is(true));
-        assertThat(h1.ensure().toViaHeader().getTransport().toString(), is("UDP"));
-
-        h1 = frame("VIA: SIP/2.0/UDP pkts.io:5088;branch=asdf");
-        assertThat(h1.isViaHeader(), is(true));
-        assertThat(h1.ensure().toViaHeader().getTransport().toString(), is("UDP"));
-
-        h1 = frame("v: SIP/2.0/UDP pkts.io:5088;branch=asdf");
-        assertThat(h1.isViaHeader(), is(true));
-        assertThat(h1.ensure().toViaHeader().getTransport().toString(), is("UDP"));
-
-        h1 = frame("V: SIP/2.0/UDP pkts.io:5088;branch=asdf");
-        assertThat(h1.isViaHeader(), is(true));
-        assertThat(h1.ensure().toViaHeader().getTransport().toString(), is("UDP"));
+        ensureViaHeader("Via");
+        ensureViaHeader("VIA");
+        ensureViaHeader("vIa");
+        ensureViaHeader("via");
+        ensureViaHeader("v");
+        ensureViaHeader("V");
 
         // From
-        h1 = frame("From: sip:alice@pkts.io");
-        assertThat(h1.isFromHeader(), is(true));
-        assertThat(h1.ensure().toFromHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
-
-        h1 = frame("FROM: sip:alice@pkts.io");
-        assertThat(h1.isFromHeader(), is(true));
-        assertThat(h1.ensure().toFromHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
-
-        h1 = frame("f: sip:alice@pkts.io");
-        assertThat(h1.isFromHeader(), is(true));
-        assertThat(h1.ensure().toFromHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
-
-        h1 = frame("F: sip:alice@pkts.io");
-        assertThat(h1.isFromHeader(), is(true));
-        assertThat(h1.ensure().toFromHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
+        ensureFromHeader("From");
+        ensureFromHeader("from");
+        ensureFromHeader("FROM");
+        ensureFromHeader("FRoM");
+        ensureFromHeader("FroM");
+        ensureFromHeader("f");
+        ensureFromHeader("F");
 
         // To
-        h1 = frame("To: sip:alice@pkts.io");
-        assertThat(h1.isToHeader(), is(true));
-        assertThat(h1.ensure().toToHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
-
-        h1 = frame("TO: sip:alice@pkts.io");
-        assertThat(h1.isToHeader(), is(true));
-        assertThat(h1.ensure().toToHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
-
-        h1 = frame("t: sip:alice@pkts.io");
-        assertThat(h1.isToHeader(), is(true));
-        assertThat(h1.ensure().toToHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
-
-        h1 = frame("T: sip:alice@pkts.io");
-        assertThat(h1.isToHeader(), is(true));
-        assertThat(h1.ensure().toToHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
+        ensureToHeader("To");
+        ensureToHeader("TO");
+        ensureToHeader("to");
+        ensureToHeader("t");
+        ensureToHeader("T");
 
         // Contact
-        h1 = frame("Contact: sip:alice@pkts.io");
-        assertThat(h1.isContactHeader(), is(true));
-        assertThat(h1.ensure().toContactHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
-
-        h1 = frame("CONTACT: sip:alice@pkts.io");
-        assertThat(h1.isContactHeader(), is(true));
-        assertThat(h1.ensure().toContactHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
-
-        h1 = frame("m: sip:alice@pkts.io");
-        assertThat(h1.isContactHeader(), is(true));
-        assertThat(h1.ensure().toContactHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
-
-        h1 = frame("M: sip:alice@pkts.io");
-        assertThat(h1.isContactHeader(), is(true));
-        assertThat(h1.ensure().toContactHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
+        ensureContactHeader("Contact");
+        ensureContactHeader("contact");
+        ensureContactHeader("CONTACT");
+        ensureContactHeader("CONTaCt");
+        ensureContactHeader("CoNTaCt");
+        ensureContactHeader("m");
+        ensureContactHeader("M");
 
         // Route
-        h1 = frame("Route: sip:alice@pkts.io");
-        assertThat(h1.isRouteHeader(), is(true));
-        assertThat(h1.ensure().toRouteHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
-
-        h1 = frame("ROUTE: sip:alice@pkts.io");
-        assertThat(h1.isRouteHeader(), is(true));
-        assertThat(h1.ensure().toRouteHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
+        ensureRouteHeader("Route");
+        ensureRouteHeader("ROUTE");
+        ensureRouteHeader("route");
+        ensureRouteHeader("rOuTE");
+        ensureRouteHeader("rOuTe");
 
         // Record-Route
-        h1 = frame("Record-Route: sip:alice@pkts.io");
-        assertThat(h1.isRecordRouteHeader(), is(true));
-        assertThat(h1.ensure().toRecordRouteHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
-
-        h1 = frame("RECORD-ROUTE: sip:alice@pkts.io");
-        assertThat(h1.isRecordRouteHeader(), is(true));
-        assertThat(h1.ensure().toRecordRouteHeader().getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
+        ensureRecordRouteHeader("Record-Route");
+        ensureRecordRouteHeader("record-route");
+        ensureRecordRouteHeader("RECORD-ROUTE");
+        ensureRecordRouteHeader("RECOrD-RouTE");
+        ensureRecordRouteHeader("rECOrD-rouTE");
 
         // Max-Forwards
-        h1 = frame("Max-Forwards: 88");
-        assertThat(h1.isMaxForwardsHeader(), is(true));
-        assertThat(h1.ensure().toMaxForwardsHeader().getMaxForwards(), is(88));
-
-        h1 = frame("MAX-FORWARDS: 88");
-        assertThat(h1.isMaxForwardsHeader(), is(true));
-        assertThat(h1.ensure().toMaxForwardsHeader().getMaxForwards(), is(88));
+        ensureMaxForwards("Max-Forwards");
+        ensureMaxForwards("max-forwards");
+        ensureMaxForwards("maX-foRWArds");
+        ensureMaxForwards("maX-foRWArdS");
+        ensureMaxForwards("MAX-FORWARDS");
 
         // Expires
-        h1 = frame("Expires: 876");
-        assertThat(h1.isExpiresHeader(), is(true));
-        assertThat(h1.ensure().toExpiresHeader().getExpires(), is(876));
-
-        h1 = frame("EXPIRES: 876");
-        assertThat(h1.isExpiresHeader(), is(true));
-        assertThat(h1.ensure().toExpiresHeader().getExpires(), is(876));
+        ensureExpires("Expires");
+        ensureExpires("expires");
+        ensureExpires("exPIRes");
+        ensureExpires("exPIReS");
+        ensureExpires("EXPIRES");
 
         // CSeq
-        h1 = frame("CSeq: 1 INVITE");
-        assertThat(h1.isCSeqHeader(), is(true));
-        assertThat(h1.ensure().toCSeqHeader().getSeqNumber(), is(1L));
-
-        h1 = frame("CSEQ: 1 INVITE");
-        assertThat(h1.isCSeqHeader(), is(true));
-        assertThat(h1.ensure().toCSeqHeader().getSeqNumber(), is(1L));
+        ensureCSeq("CSeq");
+        ensureCSeq("cseq");
+        ensureCSeq("cSeq");
+        ensureCSeq("cSeQ");
+        ensureCSeq("CSEQ");
 
         // Content-Type
-        h1 = frame("Content-Type: application/sdp");
-        assertThat(h1.isContentTypeHeader(), is(true));
-        assertThat(h1.ensure().toContentTypeHeader().getContentSubType().toString(), is("sdp"));
-
-        h1 = frame("CONTENT-TYPE: application/sdp");
-        assertThat(h1.isContentTypeHeader(), is(true));
-        assertThat(h1.ensure().toContentTypeHeader().getContentSubType().toString(), is("sdp"));
-
-        h1 = frame("c: application/sdp");
-        assertThat(h1.isContentTypeHeader(), is(true));
-        assertThat(h1.ensure().toContentTypeHeader().getContentSubType().toString(), is("sdp"));
-
-        h1 = frame("C: application/sdp");
-        assertThat(h1.isContentTypeHeader(), is(true));
-        assertThat(h1.ensure().toContentTypeHeader().getContentSubType().toString(), is("sdp"));
+        ensureContentType("Content-Type");
+        ensureContentType("content-type");
+        ensureContentType("conTENt-tYPE");
+        ensureContentType("cOnTEnt-tyPE");
+        ensureContentType("CONTENT-TYPE");
+        ensureContentType("c");
+        ensureContentType("C");
 
         // Content-Length
-        h1 = frame("Content-Length: 123");
-        assertThat(h1.isContentLengthHeader(), is(true));
-        assertThat(h1.ensure().toContentLengthHeader().getContentLength(), is(123));
+        ensureContentLength("Content-Length");
+        ensureContentLength("content-length");
+        ensureContentLength("cONTEnt-leNGTH");
+        ensureContentLength("cONTEnT-lENgTH");
+        ensureContentLength("CONTEnT-lENgTH");
+        ensureContentLength("CONTENT-LENGTH");
+        ensureContentLength("l");
+        ensureContentLength("L");
+    }
 
-        h1 = frame("CONTENT-LENGTH: 123");
-        assertThat(h1.isContentLengthHeader(), is(true));
-        assertThat(h1.ensure().toContentLengthHeader().getContentLength(), is(123));
+    private void ensureViaHeader(String viaName) {
+        final SipHeader h1 = frame(viaName + ": SIP/2.0/UDP pkts.io:5088;branch=asdf");
+        assertThat(h1.isViaHeader(), is(true));
+        assertThat(h1.ensure().toViaHeader().getTransport().toString(), is("UDP"));
+    }
 
-        h1 = frame("l: 123");
-        assertThat(h1.isContentLengthHeader(), is(true));
-        assertThat(h1.ensure().toContentLengthHeader().getContentLength(), is(123));
+    private void ensureFromHeader(final String name) {
+        ensureAddressHeader(name, SipHeader::isFromHeader, header -> header.toFromHeader());
+    }
 
-        h1 = frame("L: 123");
+    private void ensureToHeader(final String name) {
+        ensureAddressHeader(name, SipHeader::isToHeader, header -> header.toToHeader());
+    }
+
+    private void ensureContactHeader(final String name) {
+        ensureAddressHeader(name, SipHeader::isContactHeader, header -> header.toContactHeader());
+    }
+
+    private void ensureRouteHeader(String name) {
+        ensureAddressHeader(name, SipHeader::isRouteHeader, header -> header.toRouteHeader());
+    }
+
+    private void ensureRecordRouteHeader(final String name) {
+        ensureAddressHeader(name, SipHeader::isRecordRouteHeader, header -> header.toRecordRouteHeader());
+    }
+
+    private void ensureAddressHeader(String header, Predicate<SipHeader> isHeader, Function<SipHeader, AddressParametersHeader> mapper) {
+        final SipHeader h1 = frame(header + ": sip:alice@pkts.io");
+        assertThat(isHeader.test(h1), is(true));
+        final AddressParametersHeader addressHeader = mapper.apply(h1.ensure());
+        assertThat(addressHeader.getAddress().getURI().toSipURI().getHost().toString(), is("pkts.io"));
+    }
+
+    private void ensureMaxForwards(String maxName) {
+        final SipHeader h1 = frame(maxName + ": 88");
+        assertThat(h1.isMaxForwardsHeader(), is(true));
+        assertThat(h1.ensure().toMaxForwardsHeader().getMaxForwards(), is(88));
+    }
+
+    private void ensureExpires(String name) {
+        final SipHeader h1 = frame(name + ": 876");
+        assertThat(h1.isExpiresHeader(), is(true));
+        assertThat(h1.ensure().toExpiresHeader().getExpires(), is(876));
+    }
+
+    private void ensureCSeq(String name) {
+        final SipHeader h1 = frame(name + ": 1 INVITE");
+        assertThat(h1.isCSeqHeader(), is(true));
+        assertThat(h1.ensure().toCSeqHeader().getSeqNumber(), is(1L));
+    }
+
+    private void ensureContentType(String name) {
+        final SipHeader h1 = frame(name + ": application/sdp");
+        assertThat(h1.isContentTypeHeader(), is(true));
+        assertThat(h1.ensure().toContentTypeHeader().getContentSubType().toString(), is("sdp"));
+    }
+
+    private void ensureContentLength(String name) {
+        final SipHeader h1 = frame(name + ": 123");
         assertThat(h1.isContentLengthHeader(), is(true));
         assertThat(h1.ensure().toContentLengthHeader().getContentLength(), is(123));
     }
-
 }
