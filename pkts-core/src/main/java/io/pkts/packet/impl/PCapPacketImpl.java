@@ -118,7 +118,7 @@ public final class PCapPacketImpl extends AbstractPacket implements PCapPacket {
             case 1:
             default:
                 return ethernetFramer.frame(this, payload);
-            case 131:
+            case 113:
                 return sllFramer.frame(this, payload);
             case 101:
                 return ipFramer.frame(this, payload);
