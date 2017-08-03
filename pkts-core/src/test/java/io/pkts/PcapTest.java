@@ -1,12 +1,14 @@
 package io.pkts;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import io.pkts.packet.Packet;
 import io.pkts.packet.sip.SipPacket;
 import io.pkts.protocol.Protocol;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
 import org.junit.After;
@@ -36,6 +38,31 @@ public class PcapTest extends PktsTestBase {
         pcap.loop(handler);
         pcap.close();
         assertThat(handler.count, is(30));
+    }
+
+    @Test
+    public void testWritesPackets() throws Exception {
+        final Pcap pcap = Pcap.openStream(PktsTestBase.class.getResourceAsStream("sipp.pcap"));
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PcapOutputStream pcapOutputStream = pcap.createOutputStream(outputStream);
+        pcap.loop(packet -> {
+            Packet ipPacket = packet.getPacket(Protocol.IPv4);
+            pcapOutputStream.write(ipPacket);
+            return true;
+        });
+        outputStream.flush();
+
+        ByteArrayOutputStream expectedStream = new ByteArrayOutputStream();
+        final InputStream resourceStream = PktsTestBase.class.getResourceAsStream("sipp.pcap");
+        int bytesRead;
+        byte[] data = new byte[resourceStream.available()];
+        while ((bytesRead = resourceStream.read(data, 0, data.length)) != -1) {
+            expectedStream.write(data, 0, bytesRead);
+        }
+        expectedStream.flush();
+
+        assertArrayEquals(expectedStream.toByteArray(), outputStream.toByteArray());
     }
 
     private static class FrameHandlerImpl implements PacketHandler {
