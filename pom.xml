@@ -15,7 +15,7 @@
   <name>Pkts IO</name>
   <groupId>io.pkts</groupId>
   <artifactId>pkts-parent</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <description>PKTS IO - A pure java based library for manipulating pcaps</description>
   <licenses>
