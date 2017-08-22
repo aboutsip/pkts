@@ -57,4 +57,11 @@ public class IPFramerTest extends PktsTestBase {
         assertThat(udp.getPayload().getArray(), is("data".getBytes(StandardCharsets.US_ASCII)));
     }
 
+    @Test
+    public void testTruncatedIpPacket() throws Exception {
+        final EthernetFramer framer = new EthernetFramer();
+        final MACPacket frame = framer.frame(mock(PCapPacket.class), Buffers.wrap(RawData.truncatedFrame));
+        // if the framer choked, it would throw an IndexOutOfBoundsException here
+        frame.getPacket(Protocol.IPv4);
+    }
 }

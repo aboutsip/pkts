@@ -94,7 +94,10 @@ public class IPv4Framer implements Framer<PCapPacket> {
         }
 
         //Trim off any padding from the upper layer, e.g. Ethernet padding for small packets.
-        final Buffer data = payload.slice(payload.getReaderIndex() + totalLength - (headerLength * 4));
+        // If the captured frame was truncated, then use the truncated size for the data buffer, instead of what the
+        // IPv4 header says its length should be.
+        final int tcpLength = payload.getReaderIndex() + totalLength - (headerLength * 4);
+        final Buffer data = payload.slice(Math.min(tcpLength, payload.capacity()));
         return new IPPacketImpl(parent, headers, options, data);
     }
 
