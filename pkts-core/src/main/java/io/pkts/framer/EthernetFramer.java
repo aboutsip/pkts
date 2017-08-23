@@ -70,10 +70,10 @@ public class EthernetFramer implements Framer<PCapPacket> {
     }
 
     public static EtherType getEtherTypeSafe(final byte b1, final byte b2) {
-        if (b1 == (byte) 0x08 && b2 == (byte) 0x00) {
-            return EtherType.IPv4;
-        } else if (b1 == (byte) 0x86 && b2 == (byte) 0xdd) {
-            return EtherType.IPv6;
+        for (EtherType t: EtherType.values()) {
+          if (b1 == t.b1 && b2 == t.b2) {
+              return t;
+          }
         }
 
         return null;
@@ -85,7 +85,7 @@ public class EthernetFramer implements Framer<PCapPacket> {
     }
 
     public static enum EtherType {
-        IPv4((byte) 0x08, (byte) 0x00), IPv6((byte) 0x86, (byte) 0xdd);
+        IPv4((byte) 0x08, (byte) 0x00), IPv6((byte) 0x86, (byte) 0xdd), ARP((byte) 0x08, (byte) 0x06);
 
         private final byte b1;
         private final byte b2;
