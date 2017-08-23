@@ -93,7 +93,7 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
     public Buffer readBytes(final int length) throws IndexOutOfBoundsException, IOException {
         if (!checkReadableBytesSafe(length)) {
             final int availableBytes = getReadableBytes();
-            final int read = internalReadBytes(length - availableBytes);
+            final int read = internalReadBytes(length);
             if (read == -1) {
                 // end-of-file
                 return null;
@@ -122,12 +122,11 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
     }
 
     /**
-     * Read at most <code>length</code> no of bytes and store it into the
-     * internal buffer. This method is blocking in case we don't have enough
-     * bytes to read
+     * Ensure that <code>length</code> more bytes are available in the internal
+     * buffer. Read more bytes from the underlying stream if needed. This
+     * method is blocking in case we don't have enough bytes to read.
      *
-     * @param length
-     *            the amount of bytes we wishes to read
+     * @param length the amount of bytes we wishes to read
      * @return the actual number of bytes read.
      * @throws IOException
      */
@@ -139,7 +138,7 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
             return length;
         }
 
-        return readFromStream(length);
+        return readFromStream(length - getReadableBytes());
 
     }
 
