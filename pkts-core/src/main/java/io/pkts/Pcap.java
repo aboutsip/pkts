@@ -8,6 +8,7 @@ import io.pkts.filters.FilterFactory;
 import io.pkts.filters.FilterParseException;
 import io.pkts.frame.PcapGlobalHeader;
 import io.pkts.framer.FramerManager;
+import io.pkts.framer.FramingException;
 import io.pkts.framer.PcapFramer;
 import io.pkts.packet.Packet;
 
@@ -67,7 +68,7 @@ public class Pcap {
         }
     }
 
-    public void loop(final PacketHandler callback) throws IOException {
+    public void loop(final PacketHandler callback) throws IOException, FramingException {
         final ByteOrder byteOrder = this.header.getByteOrder();
         final PcapFramer framer = new PcapFramer(this.header, this.framerManager);
         int count = 1;

@@ -35,7 +35,7 @@ public class EthernetFramer implements Framer<PCapPacket> {
      * {@inheritDoc}
      */
     @Override
-    public MACPacket frame(final PCapPacket parent, final Buffer buffer) throws IOException {
+    public MACPacket frame(final PCapPacket parent, final Buffer buffer) throws IOException, FramingException {
         if (parent == null) {
             throw new IllegalArgumentException("The parent frame cannot be null");
         }
@@ -45,6 +45,9 @@ public class EthernetFramer implements Framer<PCapPacket> {
         // final byte b1 = buffer.readByte();
         // final byte b2 = buffer.readByte();
 
+        if (buffer.getReadableBytes() < 14) {
+            throw new FramingException("not enough bytes for header", getProtocol());
+        }
         final Buffer headers = buffer.readBytes(14);
         final byte b1 = headers.getByte(12);
         final byte b2 = headers.getByte(13);
@@ -52,7 +55,7 @@ public class EthernetFramer implements Framer<PCapPacket> {
         try {
             getEtherType(b1, b2);
         } catch (final UnknownEtherType e) {
-            throw new RuntimeException("unknown ether type");
+            throw new FramingException(String.format("unknown ether type: 0x%02x%02x", b1, b2), getProtocol());
         }
 
         final Buffer payload = buffer.slice(buffer.capacity());
