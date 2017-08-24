@@ -3,13 +3,13 @@
  */
 package io.pkts.framer;
 
-import io.pkts.PktsTestBase;
-
-import io.pkts.buffer.Buffer;
-import io.pkts.packet.PCapPacket;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import io.pkts.PktsTestBase;
+import io.pkts.buffer.Buffer;
+import io.pkts.packet.PCapPacket;
 
 import static org.mockito.Mockito.mock;
 
@@ -48,8 +48,8 @@ public class EthernetFramerTest extends PktsTestBase {
     public void testAcceptsAllEtherTypes() throws Exception {
         for (EthernetFramer.EtherType t : EthernetFramer.EtherType.values()) {
             Buffer frame = this.ethernetFrameBuffer.slice();
-            frame.setByte(12, t.b1);
-            frame.setByte(13, t.b2);
+            frame.setByte(12, t.getB1());
+            frame.setByte(13, t.getB2());
             PCapPacket parent = mock(PCapPacket.class);
             this.framer.frame(parent, frame);
         }
