@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -114,6 +115,20 @@ public class BoundedInputStreamBufferTest extends AbstractBufferTest {
             // expected
         }
 
+    }
+
+    /**
+     * Check that the buffer correctly reads more bytes from the underlying stream when they're needed.
+     */
+    @Test
+    public void testReadingOnDemand() throws Exception {
+        final byte[] content = RawData.rawEthernetFrame;
+        final InputStream in = new ByteArrayInputStream(content);
+        final Buffer outer = Buffers.wrap(in);
+        final Buffer first = outer.readBytes(50);
+        final Buffer second = outer.readBytes(150);
+        assertContent(first, content, 0);
+        assertContent(second, content, 50);
     }
 
     /**
