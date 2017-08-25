@@ -12,7 +12,6 @@ import java.io.IOException;
  */
 public interface RtpPacket extends ApplicationPacket {
 
-    @Override
     int getVersion();
 
     boolean hasPadding() throws IOException;

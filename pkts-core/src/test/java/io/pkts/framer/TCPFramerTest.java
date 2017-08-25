@@ -11,7 +11,7 @@ import io.pkts.RawData;
 import io.pkts.PktsTestBase;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
-import io.pkts.packet.IPPacket;
+import io.pkts.packet.IPv4Packet;
 import io.pkts.packet.TCPPacket;
 
 import org.junit.After;
@@ -120,13 +120,13 @@ public class TCPFramerTest extends PktsTestBase {
     }
 
     private TCPPacket getFrame(final byte[] data) throws Exception {
-        // final IPPacket ipFrame = mock(IPFrame.class);
-        // final IPPacket ip = mock(IPPacket.class);
+        // final IPv4Packet ipFrame = mock(IPFrame.class);
+        // final IPv4Packet ip = mock(IPv4Packet.class);
         // when(ipFrame.parse()).thenReturn(ip);
 
         final Buffer buf = Buffers.wrap(data);
         final Buffer tcp = buf.slice(34, buf.capacity());
-        return this.framer.frame(mock(IPPacket.class), tcp);
+        return this.framer.frame(mock(IPv4Packet.class), tcp);
     }
 
     /**
@@ -144,7 +144,7 @@ public class TCPFramerTest extends PktsTestBase {
 
     @Test
     public void testTcpFramer() throws Exception {
-        final TCPPacket tcp = this.framer.frame(mock(IPPacket.class), this.tcpFrameBuffer);
+        final TCPPacket tcp = this.framer.frame(mock(IPv4Packet.class), this.tcpFrameBuffer);
         assertThat(tcp.getSourcePort(), is(5060));
         assertThat(tcp.getDestinationPort(), is(59409));
         assertThat(tcp.getHeaderLength(), is(32));

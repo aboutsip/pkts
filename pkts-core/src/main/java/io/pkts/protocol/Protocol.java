@@ -18,9 +18,11 @@ public enum Protocol {
     ETHERNET_II("eth", Layer.LAYER_2, 1L),
     SLL("sll", Layer.LAYER_2, 113L),
     IPv4("ip", Layer.LAYER_3, 101L),
+    IPv6("ipv6", Layer.LAYER_3, 229L),
     PCAP("pcap", Layer.LAYER_1),
     RTP("rtp", Layer.LAYER_7),
     RTCP("rtcp", Layer.LAYER_7),
+    ARP("arp", Layer.LAYER_3),
     UNKNOWN("unknown", null);
 
     private final String name;

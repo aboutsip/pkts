@@ -5,6 +5,7 @@ package io.pkts.framer;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.IPPacket;
+import io.pkts.packet.IPv4Packet;
 import io.pkts.packet.TCPPacket;
 import io.pkts.packet.impl.TcpPacketImpl;
 import io.pkts.protocol.Protocol;
@@ -15,7 +16,7 @@ import java.io.IOException;
  * @author jonas@jonasborjesson.com
  * 
  */
-public final class TCPFramer implements Framer<IPPacket> {
+public final class TCPFramer implements Framer<IPPacket, TCPPacket> {
 
     /**
      * 

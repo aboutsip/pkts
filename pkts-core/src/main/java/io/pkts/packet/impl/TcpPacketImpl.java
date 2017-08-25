@@ -5,9 +5,7 @@ package io.pkts.packet.impl;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
-import io.pkts.packet.IPPacket;
-import io.pkts.packet.TCPPacket;
-import io.pkts.packet.TransportPacket;
+import io.pkts.packet.*;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
@@ -23,15 +21,12 @@ public final class TcpPacketImpl extends TransportPacketImpl implements TCPPacke
 
     private final Buffer options;
 
-    private final IPPacket parent;
-
     /**
      * @param parent
      * @param headers
      */
     public TcpPacketImpl(final IPPacket parent, final Buffer headers, final Buffer options, final Buffer payload) {
         super(parent, Protocol.TCP, headers, payload);
-        this.parent = parent;
         this.headers = headers;
         this.options = options;
     }
@@ -154,7 +149,7 @@ public final class TcpPacketImpl extends TransportPacketImpl implements TCPPacke
 
     @Override
     public TransportPacket clone() {
-        final IPPacket parent = getParent().clone();
+        final IPPacket parent = (IPPacket) getParentPacket().clone();
         final Buffer options = this.options != null ? this.options.clone() : null;
         return new TcpPacketImpl(parent, this.headers.clone(), options, getPayload().clone());
     }
@@ -162,7 +157,7 @@ public final class TcpPacketImpl extends TransportPacketImpl implements TCPPacke
     @Override
     public final void write(final OutputStream out, final Buffer payload) throws IOException {
         // TODO: options must be written out as well
-        this.parent.write(out, Buffers.wrap(this.headers, payload));
+        getParentPacket().write(out, Buffers.wrap(this.headers, payload));
     }
 
 }

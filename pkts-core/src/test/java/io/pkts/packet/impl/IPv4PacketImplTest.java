@@ -6,7 +6,7 @@ package io.pkts.packet.impl;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import io.pkts.PktsTestBase;
-import io.pkts.packet.IPPacket;
+import io.pkts.packet.IPv4Packet;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ import org.junit.Test;
 /**
  * @author jonas@jonasborjesson.com
  */
-public class IPPacketImplTest extends PktsTestBase {
+public class IPv4PacketImplTest extends PktsTestBase {
 
     /**
      * {@inheritDoc}
@@ -39,7 +39,7 @@ public class IPPacketImplTest extends PktsTestBase {
 
     @Test
     public void testIpLengths() throws Exception {
-        final List<IPPacket> ipPackets = loadIPPackets("sipp.pcap");
+        final List<IPv4Packet> ipPackets = loadIPPackets("sipp.pcap");
         assertThat(ipPackets.get(0).getTotalIPLength(), is(533));
         assertThat(ipPackets.get(1).getTotalIPLength(), is(334));
         assertThat(ipPackets.get(2).getTotalIPLength(), is(493));
@@ -62,8 +62,8 @@ public class IPPacketImplTest extends PktsTestBase {
 
     @Test
     public void testIpChecksum() throws Exception {
-        final List<IPPacket> ipPackets = loadIPPackets("sipp.pcap");
-        for (final IPPacket pkt : ipPackets) {
+        final List<IPv4Packet> ipPackets = loadIPPackets("sipp.pcap");
+        for (final IPv4Packet pkt : ipPackets) {
             assertThat(pkt.verifyIpChecksum(), is(true));
         }
 
@@ -81,7 +81,7 @@ public class IPPacketImplTest extends PktsTestBase {
 
     @Test
     public void testIpLengthsSllFramed() throws Exception {
-        final List<IPPacket> ipPackets = loadIPPackets("sipp_sll.pcap");
+        final List<IPv4Packet> ipPackets = loadIPPackets("sipp_sll.pcap");
         assertThat(ipPackets.get(0).getTotalIPLength(), is(533));
         assertThat(ipPackets.get(1).getTotalIPLength(), is(334));
         assertThat(ipPackets.get(2).getTotalIPLength(), is(493));
@@ -104,8 +104,8 @@ public class IPPacketImplTest extends PktsTestBase {
 
     @Test
     public void testIpChecksumSllFramed() throws Exception {
-        final List<IPPacket> ipPackets = loadIPPackets("sipp_sll.pcap");
-        for (final IPPacket pkt : ipPackets) {
+        final List<IPv4Packet> ipPackets = loadIPPackets("sipp_sll.pcap");
+        for (final IPv4Packet pkt : ipPackets) {
             assertThat(pkt.verifyIpChecksum(), is(true));
         }
 
@@ -121,4 +121,24 @@ public class IPPacketImplTest extends PktsTestBase {
         assertThat(ipPackets.get(7).getIpChecksum(), is(Integer.parseInt("3b6b", 16)));
     }
 
+    @Test
+    public void testSetDestinationIP() throws Exception {
+        final IPv4Packet pkt = loadIPPackets("sipp.pcap").get(0);
+        pkt.setDestinationIP(10, 20, 30, 40);
+        assertThat(pkt.getDestinationIP(), is("10.20.30.40"));
+
+        pkt.setDestinationIP("50.60.70.80");
+        assertThat(pkt.getDestinationIP(), is("50.60.70.80"));
+    }
+
+    @Test
+    public void testSetSourceIP() throws Exception {
+        final IPv4Packet pkt = loadIPPackets("sipp.pcap").get(0);
+
+        pkt.setSourceIP(11, 22, 33, 44);
+        assertThat(pkt.getSourceIP(), is("11.22.33.44"));
+
+        pkt.setSourceIP("55.66.77.88");
+        assertThat(pkt.getSourceIP(), is("55.66.77.88"));
+    }
 }

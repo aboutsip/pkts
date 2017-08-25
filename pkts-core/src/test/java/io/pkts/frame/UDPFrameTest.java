@@ -8,7 +8,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import io.pkts.PktsTestBase;
 import io.pkts.framer.UDPFramer;
-import io.pkts.packet.IPPacket;
+import io.pkts.packet.IPv4Packet;
 import io.pkts.packet.UDPPacket;
 
 import org.junit.After;
@@ -41,7 +41,7 @@ public class UDPFrameTest extends PktsTestBase {
     @Test
     public void testParsePacket() throws Exception {
         final UDPFramer framer = new UDPFramer();
-        final UDPPacket p = framer.frame(mock(IPPacket.class), this.udpFrameBuffer);
+        final UDPPacket p = framer.frame(mock(IPv4Packet.class), this.udpFrameBuffer);
         assertThat(p.getSourcePort(), is(5060));
         assertThat(p.getDestinationPort(), is(5090));
     }

@@ -5,9 +5,7 @@ package io.pkts.packet.impl;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
-import io.pkts.packet.IPPacket;
-import io.pkts.packet.TransportPacket;
-import io.pkts.packet.UDPPacket;
+import io.pkts.packet.*;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
@@ -21,15 +19,12 @@ public final class UdpPacketImpl extends TransportPacketImpl implements UDPPacke
 
     private final Buffer headers;
 
-    private final IPPacket parent;
-
     /**
      * @param parent
      * @param headers
      */
     public UdpPacketImpl(final IPPacket parent, final Buffer headers, final Buffer payload) {
         super(parent, Protocol.UDP, headers, payload);
-        this.parent = parent;
         this.headers = headers;
     }
 
@@ -39,6 +34,11 @@ public final class UdpPacketImpl extends TransportPacketImpl implements UDPPacke
     @Override
     public boolean isUDP() {
         return true;
+    }
+
+    @Override
+    public int getHeaderLength() {
+        return this.headers.capacity();
     }
 
     public int getLength() {
@@ -55,7 +55,7 @@ public final class UdpPacketImpl extends TransportPacketImpl implements UDPPacke
 
     @Override
     public TransportPacket clone() {
-        final IPPacket parent = getParent().clone();
+        final IPPacket parent = (IPPacket) getParentPacket().clone();
         return new UdpPacketImpl(parent, this.headers.clone(), getPayload().clone());
     }
 
@@ -65,9 +65,12 @@ public final class UdpPacketImpl extends TransportPacketImpl implements UDPPacke
         // in this.headers after we have wrapped them. Simply wont work...
         final int size = this.headers.getReadableBytes() + (payload != null ? payload.getReadableBytes() : 0);
         this.setLength(size);
-        reCalculateChecksum();
+        IPPacket parent = (IPPacket) getParentPacket();
+        if (parent instanceof IPv4Packet) {
+            ((IPv4Packet) parent).reCalculateChecksum();
+        }
         final Buffer pkt = Buffers.wrap(this.headers, payload);
-        this.parent.write(out, pkt);
+        getParentPacket().write(out, pkt);
     }
 
 }

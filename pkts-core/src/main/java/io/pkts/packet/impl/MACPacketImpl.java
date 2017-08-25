@@ -5,10 +5,12 @@ package io.pkts.packet.impl;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.frame.UnknownEtherType;
+import io.pkts.framer.EthernetFramer;
+import io.pkts.framer.FramingException;
 import io.pkts.framer.IPv4Framer;
-import io.pkts.packet.IPPacket;
-import io.pkts.packet.MACPacket;
-import io.pkts.packet.PCapPacket;
+import io.pkts.framer.IPv6Framer;
+import io.pkts.packet.*;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
@@ -19,7 +21,8 @@ import java.io.OutputStream;
  */
 public final class MACPacketImpl extends AbstractPacket implements MACPacket {
 
-    private static final IPv4Framer framer = new IPv4Framer();
+    private static final IPv4Framer ipv4Framer = new IPv4Framer();
+    private static final IPv6Framer ipv6Framer = new IPv6Framer();
 
     private final PCapPacket parent;
     private final String sourceMacAddress;
@@ -56,8 +59,6 @@ public final class MACPacketImpl extends AbstractPacket implements MACPacket {
     /**
      * Construct a new {@link MACPacket} based on the supplied headers.
      * 
-     * @param packet
-     * @param headers
      */
     public MACPacketImpl(final Protocol protocol, final PCapPacket parent, final Buffer headers, final Buffer payload) {
         super(protocol, parent, payload);
@@ -189,22 +190,49 @@ public final class MACPacketImpl extends AbstractPacket implements MACPacket {
     }
 
     @Override
-    public long getTotalLength() {
-        return this.parent.getTotalLength();
+    public Protocol getNextProtocol() throws IOException {
+      if (getProtocol() == Protocol.ETHERNET_II) {
+          final byte b1 = headers.getByte(12);
+          final byte b2 = headers.getByte(13);
+          EthernetFramer.EtherType etherType;
+          try {
+              etherType = EthernetFramer.getEtherType(b1, b2);
+          } catch (UnknownEtherType e) {
+              throw new PacketParseException(12, String.format("Unknown Ethernet type 0x%x%x", b1, b2));
+          }
+          switch (etherType) {
+              case IPv4:
+                  return Protocol.IPv4;
+              case IPv6:
+                  return Protocol.IPv6;
+              case ARP:
+                  return Protocol.ARP;
+              default:
+                  return Protocol.UNKNOWN;
+          }
+      } else {
+          // TODO: figure out how an SLL packet indicates IPv4 vs IPv6
+          return Protocol.IPv4;
+      }
     }
 
     @Override
-    public long getCapturedLength() {
-        return this.parent.getCapturedLength();
-    }
-
-    @Override
-    public IPPacket getNextPacket() throws IOException {
+    public IPPacket getNextPacket() throws IOException, PacketParseException {
         final Buffer payload = getPayload();
         if (payload == null) {
             return null;
         }
-        return framer.frame(this, payload);
+        switch (getNextProtocol()) {
+            case IPv4:
+                return ipv4Framer.frame(this, payload);
+            case IPv6:
+                try {
+                    return ipv6Framer.frame(this, payload);
+                } catch (FramingException e) {
+                    throw new PacketParseException(0, "Failed to parse IPv6 payload", e);
+                }
+            default:
+                return null;
+        }
     }
-
 }

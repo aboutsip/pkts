@@ -17,7 +17,7 @@ import java.nio.ByteOrder;
 /**
  * @author jonas@jonasborjesson.com
  */
-public final class PcapFramer implements Framer<PCapPacket> {
+public final class PcapFramer implements Framer<PCapPacket, PCapPacket> {
     // Nobody uses packets bigger than 9k in practice, so add 1k of overhead and we have 10k.
     private static final int MAX_FRAME_LENGTH = 10000;
 

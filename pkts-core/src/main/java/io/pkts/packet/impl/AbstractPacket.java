@@ -4,7 +4,7 @@
 package io.pkts.packet.impl;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.packet.IPPacket;
+import io.pkts.packet.IPv4Packet;
 import io.pkts.packet.Packet;
 import io.pkts.packet.PacketParseException;
 import io.pkts.packet.TransportPacket;
@@ -52,7 +52,7 @@ public abstract class AbstractPacket implements Packet {
      *            all {@link Packet} have a parent, this is it.
      * @param payload
      *            the payload of the packet, which may be null. Note, this is
-     *            the actual payload of this packet. For an {@link IPPacket}
+     *            the actual payload of this packet. For an {@link IPv4Packet}
      *            that would typically be {@link TransportPacket} (such as udp
      *            or tcp). For a {@link UDPPacket}, the payload could really be
      *            anything, such as a {@link SipPacket}.
@@ -100,11 +100,16 @@ public abstract class AbstractPacket implements Packet {
         return this.parent;
     }
 
+    @Override
+    public long getArrivalTime() {
+        return parent.getArrivalTime();
+    }
+
     /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.Packet#hasProtocol(io.pkts.protocol.Protocol)
-     */
+         * (non-Javadoc)
+         *
+         * @see io.pkts.packet.Packet#hasProtocol(io.pkts.protocol.Protocol)
+         */
     @Override
     public boolean hasProtocol(final Protocol p) throws IOException {
         if (p == null) {

@@ -11,6 +11,7 @@ import io.pkts.framer.FramingException;
 import io.pkts.framer.IPv4Framer;
 import io.pkts.framer.SllFramer;
 import io.pkts.packet.PCapPacket;
+import io.pkts.packet.Packet;
 import io.pkts.packet.PacketParseException;
 import io.pkts.protocol.Protocol;
 
@@ -108,7 +109,7 @@ public final class PCapPacketImpl extends AbstractPacket implements PCapPacket {
     }
 
     @Override
-    public PCapPacket getNextPacket() throws IOException, PacketParseException {
+    public Packet getNextPacket() throws IOException, PacketParseException {
         final Buffer payload = getPayload();
         if (payload == null) {
             return null;

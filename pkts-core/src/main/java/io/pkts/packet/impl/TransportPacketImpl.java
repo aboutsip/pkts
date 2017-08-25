@@ -7,7 +7,6 @@ import io.pkts.buffer.Buffer;
 import io.pkts.framer.RTPFramer;
 import io.pkts.framer.SIPFramer;
 import io.pkts.packet.IPPacket;
-import io.pkts.packet.MACPacket;
 import io.pkts.packet.Packet;
 import io.pkts.packet.TransportPacket;
 import io.pkts.packet.rtp.RtpPacket;
@@ -28,7 +27,7 @@ public abstract class TransportPacketImpl extends AbstractPacket implements Tran
     private final Buffer headers;
 
     protected TransportPacketImpl(final IPPacket parent, final Protocol protocol, final Buffer headers,
-            final Buffer payload) {
+                                  final Buffer payload) {
         super(protocol, parent, payload);
         assert parent != null;
         this.parent = parent;
@@ -90,107 +89,9 @@ public abstract class TransportPacketImpl extends AbstractPacket implements Tran
         return this.parent.getArrivalTime();
     }
 
-    /**
-     * 
-     * {@inheritDoc}
-     */
-    @Override
-    public int getRawSourceIp() {
-        return this.parent.getRawSourceIp();
-    }
-
-    @Override
-    public final String getSourceIP() {
-        return this.parent.getSourceIP();
-    }
-
-    /**
-     * 
-     * {@inheritDoc}
-     */
-    @Override
-    public int getRawDestinationIp() {
-        return this.parent.getRawDestinationIp();
-    }
-
-    @Override
-    public final String getDestinationIP() {
-        return this.parent.getDestinationIP();
-    }
-
-    @Override
-    public final long getTotalLength() {
-        return this.parent.getTotalLength();
-    }
-
-    @Override
-    public final void setSourceIP(final int a, final int b, final int c, final int d) {
-        this.parent.setSourceIP(a, b, c, d);
-    }
-
-    @Override
-    public final void setDestinationIP(final int a, final int b, final int c, final int d) {
-        this.parent.setDestinationIP(a, b, c, d);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final void setSourceIP(final String sourceIp) {
-        this.parent.setSourceIP(sourceIp);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final void setDestinationIP(final String destinationIP) {
-        this.parent.setDestinationIP(destinationIP);
-    }
-
-    @Override
-    public final int getIpChecksum() {
-        return this.parent.getIpChecksum();
-    }
-
-    @Override
-    public final boolean verifyIpChecksum() {
-        return this.parent.verifyIpChecksum();
-    }
-
-    @Override
-    public final void setSourceIP(final byte a, final byte b, final byte c, final byte d) {
-        this.parent.setSourceIP(a, b, c, d);
-    }
-
-    @Override
-    public final void setDestinationIP(final byte a, final byte b, final byte c, final byte d) {
-        this.parent.setDestinationIP(a, b, c, d);
-    }
-
-    @Override
-    public final void reCalculateChecksum() {
-        this.parent.reCalculateChecksum();
-    }
 
     @Override
     public abstract TransportPacket clone();
-
-    protected IPPacket getParent() {
-        return this.parent;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.PCapPacket#getCapturedLength()
-     */
-    @Override
-    public long getCapturedLength() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
 
     /*
      * (non-Javadoc)
@@ -226,95 +127,4 @@ public abstract class TransportPacketImpl extends AbstractPacket implements Tran
             return null;
         }
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#getTotalIPLength()
-     */
-    @Override
-    public int getTotalIPLength() {
-        return this.parent.getTotalIPLength();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#getVersion()
-     */
-    @Override
-    public int getVersion() {
-        return this.parent.getVersion();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#getHeaderLength()
-     */
-    @Override
-    public int getHeaderLength() {
-        return this.parent.getHeaderLength();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#getIdentification()
-     */
-    @Override
-    public int getIdentification() {
-        return this.parent.getIdentification();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#isFragmented()
-     */
-    @Override
-    public boolean isFragmented() {
-        return this.parent.isFragmented();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#isReservedFlagSet()
-     */
-    @Override
-    public boolean isReservedFlagSet() {
-        return this.parent.isReservedFlagSet();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#isDontFragmentSet()
-     */
-    @Override
-    public boolean isDontFragmentSet() {
-        return this.parent.isDontFragmentSet();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#isMoreFragmentsSet()
-     */
-    @Override
-    public boolean isMoreFragmentsSet() {
-        return this.parent.isMoreFragmentsSet();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#getFragmentOffset()
-     */
-    @Override
-    public short getFragmentOffset() {
-        return this.parent.getFragmentOffset();
-    }
-
 }

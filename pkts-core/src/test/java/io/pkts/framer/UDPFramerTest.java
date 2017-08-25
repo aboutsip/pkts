@@ -7,7 +7,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import io.pkts.PktsTestBase;
-import io.pkts.packet.IPPacket;
+import io.pkts.packet.IPv4Packet;
 import io.pkts.packet.UDPPacket;
 
 import org.junit.After;
@@ -41,7 +41,7 @@ public class UDPFramerTest extends PktsTestBase {
     @Test
     public void testUdpFramer() throws Exception {
         final UDPFramer framer = new UDPFramer();
-        final UDPPacket udp = framer.frame(mock(IPPacket.class), this.udpFrameBuffer);
+        final UDPPacket udp = framer.frame(mock(IPv4Packet.class), this.udpFrameBuffer);
         assertThat(udp.getSourcePort(), is(5060));
         assertThat(udp.getDestinationPort(), is(5090));
     }
