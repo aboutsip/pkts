@@ -34,6 +34,12 @@ public final class ContentTypeHeaderImpl extends MediaTypeHeaderImpl implements 
     }
 
     @Override
+    protected void transferValue(final Buffer dst) {
+        getValue().getBytes(0, dst);
+        super.transferValue(dst);
+    }
+
+    @Override
     public ContentTypeHeader ensure() {
         return this;
     }
