@@ -3,20 +3,22 @@
  */
 package io.pkts.packet.sip;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.List;
+
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.header.CSeqHeader;
+import io.pkts.packet.sip.header.ContentTypeHeader;
 import io.pkts.packet.sip.header.ViaHeader;
 
-import java.util.List;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -99,6 +101,26 @@ public class SipMessageImplTest extends PktsTestBase {
         sb.append("Content-Length: 0\r\n\r\n");
         return parseMessage(sb.toString()).toResponse();
     }
+
+    /**
+     * Issue 65 is about accessing the ContentType header and after doing so, it will not be included
+     * in the "toString" of the message again. This issue *should* only exist on 1.x and 2.x of pkts.io
+     * since 3.x is immutable.
+     */
+    @Test
+    public void testIssueNo65() throws Exception {
+        assertContentTypeHeader(parseMessage(RawData.sipInvite), "application", "sdp");
+        assertContentTypeHeader(parseMessage(RawData.twoHundredOkFourViaOnOneLine), "application", "sdp");
+    }
+
+    private void assertContentTypeHeader(final SipMessage msg, final String type, final String subType) {
+        final ContentTypeHeader hdr = msg.getContentTypeHeader();
+        assertThat(hdr.getContentType().toString(), is(type));
+        assertThat(hdr.getContentSubType().toString(), is(subType));
+        assertThat(msg.toBuffer().toString().contains("Content-Type: " + type + "/" + subType), is(true));
+
+    }
+
 
     /**
      * Make sure that we can parse out headers (in this case Via headers) when
