@@ -3,20 +3,22 @@
  */
 package io.pkts.packet.sip;
 
-import io.pkts.PktsTestBase;
-import io.pkts.RawData;
-import io.pkts.buffer.Buffer;
-import io.pkts.packet.sip.header.CSeqHeader;
-import io.pkts.packet.sip.header.ViaHeader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
 
+import io.pkts.PktsTestBase;
+import io.pkts.RawData;
+import io.pkts.buffer.Buffer;
+import io.pkts.packet.sip.header.CSeqHeader;
+import io.pkts.packet.sip.header.ContentTypeHeader;
+import io.pkts.packet.sip.header.ViaHeader;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -86,6 +88,30 @@ public class SipMessageImplTest extends PktsTestBase {
         final SipRequest req2a = (SipRequest) parseMessage(RawData.sipBye);
         assertThat(req2a, is(req2a));
         assertThat(req2a, not(req1a));
+    }
+
+    /**
+     * Issue 65 is about accessing the ContentType header and after doing so, it will not be included
+     * in the "toString" of the message again. Since in pkts.io 3.x, everything is immutable this *should*
+     * be impossible so the bug is most likely for the older versions of pkts.io.
+     *
+     * Conclusion: at least 3.x doesn't seem to have this bug. Looking at the suggested fix
+     * from the reporter it seems that that fix went into the 1.0.6 version.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testIssueNo65() throws Exception {
+        assertContentTypeHeader(parseMessage(RawData.sipInvite), "application", "sdp");
+        assertContentTypeHeader(parseMessage(RawData.twoHundredOkFourViaOnOneLine), "application", "sdp");
+    }
+
+    private void assertContentTypeHeader(final SipMessage msg, final String type, String subType) {
+        final ContentTypeHeader hdr = msg.getContentTypeHeader();
+        assertThat(hdr.getContentType().toString(), is(type));
+        assertThat(hdr.getContentSubType().toString(), is(subType));
+        assertThat(msg.toBuffer().toString().contains("Content-Type: " + type + "/" + subType), is(true));
+
     }
 
 
