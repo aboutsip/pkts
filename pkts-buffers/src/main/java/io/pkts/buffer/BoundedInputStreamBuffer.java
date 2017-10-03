@@ -2,12 +2,13 @@ package io.pkts.buffer;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 /**
  * @author jonas@jonasborjesson.com
  */
-public class BoundedInputStreamBuffer extends AbstractBuffer {
+public class BoundedInputStreamBuffer extends BaseBuffer {
 
     private static final String CANNOT_WRITE_TO_AN_INPUT_STREAM_BUFFER = "Cannot write to an InputStreamBuffer";
     private static final String NOT_IMPLEMENTED_JUST_YET = "Not implemented just yet";
@@ -15,9 +16,19 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
     private final InputStream is;
 
     /**
-     * The default capacity for each individual byte array
+     * The default capacity for each individual byte array, default to tcpdumps default snaplength.
      */
-    private static final int DEFAULT_CAPACITY = 4096 * 10;
+    public static final int DEFAULT_CAPACITY = 262144;
+
+    /**
+     * From where we will continue reading
+     */
+    private long readerIndex;
+
+    /**
+     * This is where we will write the next byte.
+     */
+    private long writerIndex;
 
     final byte[] buffer;
 
@@ -29,12 +40,13 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
 
     /**
      *
-     * @param initialCapacity
-     *            the initial size of the internal byte array
+     * @param bufferCapacity To be sure that the PCAP framer works, this needs to be same or larger than SNAPLENGTH used to get PCAP.
+     * Default SNAPLENGTH of tcpdump is 262144. If using '-s NNN' parameter of tcpdump, you should also be able
+     * to reduce this to a lower value for less memory usage.
+
      * @param is
      */
     public BoundedInputStreamBuffer(final int bufferCapacity, final InputStream is) {
-        super(0, 0, 0, 0);
         assert is != null;
         this.is = is;
         this.localCapacity = bufferCapacity;
@@ -46,14 +58,37 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      */
     @Override
     public Buffer slice(final int start, final int stop) {
-        checkIndex(this.lowerBoundary + start);
-        checkIndex(this.lowerBoundary + stop - 1);
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
 
-        // this has to change now that we can have multiple
-        // rows of byte buffers
-        final int upperBoundary = this.lowerBoundary + stop;
-        final int writerIndex = upperBoundary;
-        return new ByteBuffer(0, this.lowerBoundary + start, upperBoundary, writerIndex, this.buffer);
+//        final long length = stop - start;
+//        if (length > localCapacity) {
+//            throw new IllegalArgumentException("Slice is too big: " + length + ", must be less or equals to " + localCapacity);
+//        }
+//        checkIndex(this.lowerBoundary + start);
+//        checkIndex(this.lowerBoundary + stop - 1);
+//
+//        final int startPos = (int) (start % this.localCapacity);
+//        final int stopPos = (int) (stop % this.localCapacity);
+//
+//        if (startPos <= stopPos) {
+//            // All contained linearly in current buffer. REUSE buffer as-is.
+//            return new ByteBuffer(0, startPos, stopPos, this.buffer);
+//        } else {
+//            // Data is 'wrapped around' the buffer end, need to create a new buffer that ByteBuffer understands
+//            final byte[] resultBuffer = new byte[(int)length];
+//            final int firstCopyLength = localCapacity - startPos;
+//            System.arraycopy(this.buffer, startPos, resultBuffer, 0, firstCopyLength);
+//            System.arraycopy(this.buffer, 0, resultBuffer, firstCopyLength, stopPos );
+//            return new ByteBuffer(resultBuffer);
+//        }
+    }
+
+    private static int assertSafeInt(final long value) {
+        if (value > Integer.MAX_VALUE || value < Integer.MIN_VALUE) {
+            throw new IllegalStateException("pkts only supports this operation with files/streams less than 2gb. Value=" + value);
+        }
+
+        return (int) value;
     }
 
     /**
@@ -132,6 +167,10 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      */
     private int internalReadBytes(final int length) throws IOException {
 
+        if (length > localCapacity) {
+            throw new IllegalArgumentException("Length is larger than buffer. Request=" + length + ", capacity=" + localCapacity);
+        }
+
         // check if we already have enough bytes available for reading
         // and if so, just return the length the user is asking for
         if (checkReadableBytesSafe(length)) {
@@ -150,7 +189,7 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      * @return
      */
     private int getLocalWriterIndex() {
-        return this.writerIndex % this.localCapacity;
+        return (int) (this.writerIndex % this.localCapacity);
     }
 
     /**
@@ -159,7 +198,7 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      * @return
      */
     private int getLocalReaderIndex() {
-        return this.readerIndex % this.localCapacity;
+        return (int) (this.readerIndex % this.localCapacity);
     }
 
     /**
@@ -192,23 +231,22 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      * @throws IOException
      *             in case anything goes wrong while reading
      */
-    private int readFromStream(final int length) throws IOException {
+    private int readFromStream(final long length) throws IOException {
+        if (getReadableBytes() + length > localCapacity ) {
+            throw new IllegalArgumentException("Trying to read too far ahead, will cause wrap-around issues: " + length);
+        }
         int total = 0;
         int actual = 0;
         while (total < length && actual != -1) {
 
             final int localIndex = getLocalWriterIndex();
             final int spaceLeft = getAvailableLocalWritingSpace();
-            final int readAtMost = Math.min(length - total, spaceLeft);
+            final int readAtMost = (int)Math.min(length - total, spaceLeft);
 
-            try {
-                actual = this.is.read(this.buffer, localIndex, readAtMost);
-            } catch (final Exception e) {
-                e.printStackTrace();
-            }
+            actual = this.is.read(this.buffer, localIndex, readAtMost);
+
             if (actual > 0) {
-                this.upperBoundary += actual;
-                this.writerIndex = this.upperBoundary;
+                this.writerIndex += actual;
                 total += actual;
             }
         }
@@ -220,8 +258,7 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      */
     @Override
     public int getReadableBytes() {
-        return super.getReadableBytes();
-        // return this.upperBoundary - this.readerIndex;
+        return assertSafeInt(this.writerIndex - this.readerIndex);
     }
 
     /**
@@ -250,8 +287,7 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      */
     @Override
     public boolean isEmpty() {
-        // TODO Auto-generated method stub
-        return false;
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     /**
@@ -259,8 +295,7 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      */
     @Override
     public byte[] getArray() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     /**
@@ -268,10 +303,12 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      */
     @Override
     public byte getByte(final int index) throws IndexOutOfBoundsException, IOException {
-        checkIndex(this.lowerBoundary + index);
-        return this.buffer[this.lowerBoundary + index];
+        return getByte((long) index);
     }
-
+    public byte getByte(final long index) throws IndexOutOfBoundsException, IOException {
+        checkIndex(index);
+        return this.buffer[(int)(index % localCapacity)];
+    }
     /**
      * Convenience method for checking if we can get the byte at the specified
      * index. If we can't, then we will try and read the missing bytes off of
@@ -286,9 +323,8 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      * @throws IndexOutOfBoundsException
      * @throws IOException
      */
-    @Override
-    protected void checkIndex(final int index) throws IndexOutOfBoundsException {
-        final int missingBytes = index + 1 - (this.lowerBoundary + capacity());
+    private void checkIndex(final long index) throws IndexOutOfBoundsException {
+        final long missingBytes = index + 1 - this.writerIndex;
         if (missingBytes <= 0) {
             // we got all the bytes needed
             return;
@@ -309,8 +345,7 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      */
     @Override
     public long readUnsignedInt() throws IndexOutOfBoundsException {
-        // TODO Auto-generated method stub
-        return 0;
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     /**
@@ -318,8 +353,7 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      */
     @Override
     public int readInt() throws IndexOutOfBoundsException {
-        // TODO Auto-generated method stub
-        return 0;
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     /**
@@ -327,8 +361,7 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      */
     @Override
     public int getInt(final int index) throws IndexOutOfBoundsException {
-        // TODO Auto-generated method stub
-        return 0;
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     /**
@@ -336,8 +369,7 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      */
     @Override
     public short getShort(final int index) throws IndexOutOfBoundsException {
-        // TODO Auto-generated method stub
-        return 0;
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     /**
@@ -345,8 +377,7 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      */
     @Override
     public int readUnsignedShort() throws IndexOutOfBoundsException {
-        // TODO Auto-generated method stub
-        return 0;
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     /**
@@ -354,8 +385,7 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      */
     @Override
     public int getUnsignedShort(final int index) throws IndexOutOfBoundsException {
-        // TODO Auto-generated method stub
-        return 0;
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     /**
@@ -363,8 +393,7 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      */
     @Override
     public short readShort() throws IndexOutOfBoundsException {
-        // TODO Auto-generated method stub
-        return 0;
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     /**
@@ -372,8 +401,7 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      */
     @Override
     public short getUnsignedByte(final int index) throws IndexOutOfBoundsException {
-        // TODO Auto-generated method stub
-        return 0;
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     /**
@@ -381,8 +409,7 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      */
     @Override
     public String dumpAsHex() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     /**
@@ -390,17 +417,17 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
      */
     @Override
     public void setByte(final int index, final byte value) throws IndexOutOfBoundsException {
-        // TODO Auto-generated method stub
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     @Override
     public void setUnsignedByte(final int index, final short value) throws IndexOutOfBoundsException {
-        // TODO Auto-generated method stub
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     @Override
     public void setUnsignedShort(final int index, final int value) throws IndexOutOfBoundsException {
-        // TODO Auto-generated method stub
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
     @Override
@@ -475,10 +502,6 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
         throw new WriteNotSupportedException("Cannot write to an InputStreamBuffer");
     }
 
-    public void getBytes() {
-
-    }
-
     @Override
     public void getBytes(final Buffer dst) {
         throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
@@ -521,8 +544,89 @@ public class BoundedInputStreamBuffer extends AbstractBuffer {
 
     @Override
     public void setUnsignedInt(final int index, final long value) throws IndexOutOfBoundsException {
-        // TODO Auto-generated method stub
+        throw new WriteNotSupportedException(NOT_IMPLEMENTED_JUST_YET);
+    }
 
+    @Override
+    public void write(final byte b) throws IndexOutOfBoundsException {
+        throw new WriteNotSupportedException(NOT_IMPLEMENTED_JUST_YET);
+    }
+
+    @Override
+    public void write(final String s) throws IndexOutOfBoundsException, WriteNotSupportedException,
+        UnsupportedEncodingException {
+        throw new WriteNotSupportedException(NOT_IMPLEMENTED_JUST_YET);
+    }
+
+    @Override
+    public void write(final String s, final String charset) throws IndexOutOfBoundsException,
+        WriteNotSupportedException, UnsupportedEncodingException {
+        throw new WriteNotSupportedException(NOT_IMPLEMENTED_JUST_YET);
+    }
+
+    @Override
+    public boolean hasWriteSupport() {
+        return false;
+    }
+
+    @Override
+    public void setWriterIndex(final int index) {
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
+    }
+
+    @Override
+    public void setReaderIndex(final int index) {
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
+    }
+
+    @Override
+    public int getReaderIndex() {
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
+    }
+
+    @Override
+    public int getWriterIndex() {
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
+    }
+
+    @Override
+    public final short readUnsignedByte() throws IndexOutOfBoundsException, IOException {
+        return (short) (readByte() & 0xFF);
+    }
+
+    @Override
+    public int capacity() {
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
+    }
+
+    @Override
+    public void resetReaderIndex() {
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
+    }
+
+    @Override
+    public void markReaderIndex() {
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
+    }
+
+    @Override
+    public int getLowerBoundary() {
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
+    }
+
+    @Override
+    public int getUpperBoundary() {
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
+    }
+
+    @Override
+    public Buffer slice(final int stop) {
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
+    }
+
+    @Override
+    public Buffer slice() {
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
 }

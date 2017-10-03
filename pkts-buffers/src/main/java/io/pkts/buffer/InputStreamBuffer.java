@@ -244,11 +244,9 @@ public final class InputStreamBuffer extends AbstractBuffer {
             final int readAtMost = Math.min(length - total, spaceLeft);
 
             final java.nio.ByteBuffer bb = getWritingRow();
-            try {
-                actual = this.is.read(bb.array(), localIndex, readAtMost);
-            } catch (final Exception e) {
-                e.printStackTrace();
-            }
+
+            actual = this.is.read(bb.array(), localIndex, readAtMost);
+
             if (actual > 0) {
                 this.upperBoundary += actual;
                 this.writerIndex = this.upperBoundary;

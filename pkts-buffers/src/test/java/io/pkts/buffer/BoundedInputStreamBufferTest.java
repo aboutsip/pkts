@@ -15,22 +15,19 @@ import static org.junit.Assert.*;
 /**
  * @author jonas@jonasborjesson.com
  */
-public class BoundedInputStreamBufferTest extends AbstractBufferTest {
+public class BoundedInputStreamBufferTest {
 
 
     /**
      * @throws Exception
      */
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
     public Buffer createBuffer(final byte[] array) {
         return new BoundedInputStreamBuffer(new ByteArrayInputStream(array));
     }
@@ -83,26 +80,21 @@ public class BoundedInputStreamBufferTest extends AbstractBufferTest {
         final Buffer buffer = new InputStreamBuffer(initialCapacity, new ByteArrayInputStream(content));
 
         final Buffer initial = buffer.readBytes(50);
-        assertThat(initial.capacity(), is(50));
-        assertContent(initial, content, 0);
+        assertContent(initial, content, 0, 50);
 
         final Buffer forty = buffer.readBytes(40);
-        assertThat(forty.capacity(), is(40));
-        assertContent(forty, content, 50);
+        assertContent(forty, content, 50, 40);
 
         final Buffer fifty = buffer.readBytes(50);
-        assertThat(fifty.capacity(), is(50));
-        assertContent(fifty, content, 90);
+        assertContent(fifty, content, 90, 50);
 
         // we are now at 140. Read another 300 bytes,
         final Buffer threehundred = buffer.readBytes(300);
-        assertThat(threehundred.capacity(), is(300));
-        assertContent(threehundred, content, 140);
+        assertContent(threehundred, content, 140, 300);
 
         // which leaves us with 65 bytes. read those as well and check them
         final Buffer theRest = buffer.readBytes(65);
-        assertThat(theRest.capacity(), is(65));
-        assertContent(theRest, content, 440);
+        assertContent(theRest, content, 440, 65);
 
         // and there should not be any more bytes left in the input stream
         assertThat(buffer.hasReadableBytes(), is(false));
@@ -127,8 +119,8 @@ public class BoundedInputStreamBufferTest extends AbstractBufferTest {
         final Buffer outer = Buffers.wrap(in);
         final Buffer first = outer.readBytes(50);
         final Buffer second = outer.readBytes(150);
-        assertContent(first, content, 0);
-        assertContent(second, content, 50);
+        assertContent(first, content, 0, 50);
+        assertContent(second, content, 50, 150);
     }
 
     /**
@@ -141,10 +133,40 @@ public class BoundedInputStreamBufferTest extends AbstractBufferTest {
      * @param offset the offest into the actual content where we expect to find
      *            the content of the buffer
      */
-    private void assertContent(final Buffer buffer, final byte[] actual, final int offset) throws Exception {
+    private void assertContent(final Buffer buffer, final byte[] actual, final int offset, final int length) throws Exception {
+        assertThat("Size differs", buffer.capacity(), is(length));
         for (int i = 0; i < buffer.capacity(); ++i) {
             assertThat("Index: " + i + " Actual Index: " + (i + offset), buffer.getByte(i), is(actual[i + offset]));
         }
     }
 
+    /**
+     * Check that slice is doing the right thing with a wrap-around buffer.
+     */
+    @Test
+    public void testSliceAndWrapAroundBuffer() throws Exception {
+        // Content is 547 bytes, default buffer is 40kb
+        final byte[] content = RawData.rawEthernetFrame;
+        final InputStream in = new ByteArrayInputStream(content);
+
+        // Use a prime number that is in interval (size < x < size*2)
+        final int bufferSize = 719;
+
+        assertTrue("Buffer size not valid", bufferSize > content.length && content.length * 2 > bufferSize);
+
+        // Make internal buffer _only_ 50% bigger than content.
+        final BoundedInputStreamBuffer buffer = new BoundedInputStreamBuffer(bufferSize, in);
+
+        // Read more than twice! Second iteration should hit buffer roll-around logic.
+        for (int counter = 0; counter < 20; counter++) {
+
+//            final Buffer slice = buffer.slice((long)buffer.getReaderIndex(), buffer.getReaderIndex() + content.length);
+//            assertContent(slice, content, 0, content.length);
+
+            final Buffer data = buffer.readBytes(content.length);
+            assertContent(data, content, 0, content.length);
+
+            in.reset();
+        }
+    }
 }
