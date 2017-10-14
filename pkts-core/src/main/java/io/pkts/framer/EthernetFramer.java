@@ -18,7 +18,7 @@ import io.pkts.protocol.Protocol;
  * 
  * @author jonas@jonasborjesson.com
  */
-public class EthernetFramer implements Framer<PCapPacket> {
+public class EthernetFramer implements Framer<PCapPacket, MACPacket> {
 
     public EthernetFramer() {
     }
@@ -35,7 +35,7 @@ public class EthernetFramer implements Framer<PCapPacket> {
      * {@inheritDoc}
      */
     @Override
-    public MACPacket frame(final PCapPacket parent, final Buffer buffer) throws IOException {
+    public MACPacket frame(final PCapPacket parent, final Buffer buffer) throws IOException, FramingException {
         if (parent == null) {
             throw new IllegalArgumentException("The parent frame cannot be null");
         }
@@ -45,6 +45,9 @@ public class EthernetFramer implements Framer<PCapPacket> {
         // final byte b1 = buffer.readByte();
         // final byte b2 = buffer.readByte();
 
+        if (buffer.getReadableBytes() < 14) {
+            throw new FramingException("not enough bytes for header", getProtocol());
+        }
         final Buffer headers = buffer.readBytes(14);
         final byte b1 = headers.getByte(12);
         final byte b2 = headers.getByte(13);
@@ -52,7 +55,7 @@ public class EthernetFramer implements Framer<PCapPacket> {
         try {
             getEtherType(b1, b2);
         } catch (final UnknownEtherType e) {
-            throw new RuntimeException("unknown ether type");
+            throw new FramingException(String.format("unknown ether type: 0x%02x%02x", b1, b2), getProtocol());
         }
 
         final Buffer payload = buffer.slice(buffer.capacity());
@@ -70,6 +73,10 @@ public class EthernetFramer implements Framer<PCapPacket> {
     }
 
     public static EtherType getEtherTypeSafe(final byte b1, final byte b2) {
+        int type = ((b1 << 8) & 0xFF00) | (b2 & 0xFF);
+        if (type < 1536) {
+            return EtherType.None;
+        }
         for (EtherType t: EtherType.values()) {
           if (b1 == t.b1 && b2 == t.b2) {
               return t;
@@ -85,7 +92,14 @@ public class EthernetFramer implements Framer<PCapPacket> {
     }
 
     public enum EtherType {
-        IPv4((byte) 0x08, (byte) 0x00), IPv6((byte) 0x86, (byte) 0xdd), ARP((byte) 0x08, (byte) 0x06);
+        IPv4((byte) 0x08, (byte) 0x00),
+        IPv6((byte) 0x86, (byte) 0xdd),
+        ARP((byte) 0x08, (byte) 0x06),
+        // Representing EtherType < 1536, which is actually a length of the frame and not a meaningful type
+        None((byte) 0x00, (byte) 0x00),
+        LLDP((byte) 0x88, (byte) 0xcc),
+
+        ;
 
         private final byte b1;
         private final byte b2;

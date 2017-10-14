@@ -6,12 +6,7 @@ package io.pkts.packet.impl;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.frame.PcapRecordHeader;
-import io.pkts.packet.MACPacket;
-import io.pkts.packet.PCapPacket;
-import io.pkts.packet.PacketFactory;
-import io.pkts.packet.TransportPacket;
-import io.pkts.packet.TransportPacketFactory;
-import io.pkts.packet.UDPPacket;
+import io.pkts.packet.*;
 import io.pkts.protocol.IllegalProtocolException;
 import io.pkts.protocol.Protocol;
 
@@ -73,11 +68,12 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
             final Buffer payload) throws IllegalArgumentException, IllegalProtocolException {
 
         final TransportPacket pkt = createUdpInternal(payload);
-        pkt.setDestinationIP(destAddress);
-        pkt.setSourceIP(srcAddress);
+        final IPv4Packet ipPkt = (IPv4Packet) pkt.getParentPacket();
+        ipPkt.setDestinationIP(destAddress);
+        ipPkt.setSourceIP(srcAddress);
         pkt.setDestinationPort(destPort);
         pkt.setSourcePort(srcPort);
-        pkt.reCalculateChecksum();
+        ipPkt.reCalculateChecksum();
         return pkt;
     }
 
@@ -93,7 +89,7 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
         final PCapPacket pkt = new PCapPacketImpl(pcapRecordHeader, null);
         final MACPacket mac = MACPacketImpl.create(pkt, ethernet);
 
-        final IPPacketImpl ipPacket = new IPPacketImpl(mac, ipv4, 0, null);
+        final IPv4PacketImpl ipPacket = new IPv4PacketImpl(mac, ipv4, 0, null);
         ipPacket.setTotalLength(this.ipv4.length + this.udp.length + payloadSize);
 
         final UdpPacketImpl udp = new UdpPacketImpl(ipPacket, Buffers.wrap(new byte[8]), payload);
@@ -111,11 +107,12 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
             final byte[] destAddress, final int destPort, final Buffer payload) throws IllegalArgumentException,
             IllegalProtocolException {
         final TransportPacket pkt = createUdpInternal(payload);
-        pkt.setSourceIP(srcAddress[0], srcAddress[1], srcAddress[2], srcAddress[3]);
-        pkt.setDestinationIP(destAddress[0], destAddress[1], destAddress[2], destAddress[3]);
+        final IPv4Packet ipPkt = (IPv4Packet) pkt.getParentPacket();
+        ipPkt.setSourceIP(srcAddress[0], srcAddress[1], srcAddress[2], srcAddress[3]);
+        ipPkt.setDestinationIP(destAddress[0], destAddress[1], destAddress[2], destAddress[3]);
         pkt.setDestinationPort(destPort);
         pkt.setSourcePort(srcPort);
-        pkt.reCalculateChecksum();
+        ipPkt.reCalculateChecksum();
         return pkt;
     }
 

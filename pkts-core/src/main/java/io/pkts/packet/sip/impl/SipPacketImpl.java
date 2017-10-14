@@ -5,6 +5,7 @@ package io.pkts.packet.sip.impl;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.packet.IPPacket;
 import io.pkts.packet.Packet;
 import io.pkts.packet.TransportPacket;
 import io.pkts.packet.impl.AbstractPacket;
@@ -40,9 +41,6 @@ import java.util.Optional;
  * @author jonas@jonasborjesson.com
  */
 public abstract class SipPacketImpl extends AbstractPacket implements SipPacket {
-
-    private final TransportPacket parent;
-
     /**
      * The actual SIP message. The {@link SipPacket} is merely a thin wrapper
      * around this object in order to make if fit the pcap model whereas the
@@ -55,12 +53,11 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      */
     public SipPacketImpl(final TransportPacket parent, final SipMessage msg) {
         super(Protocol.SIP, parent, null);
-        this.parent = parent;
         this.msg = msg;
     }
 
     protected TransportPacket getTransportPacket() {
-        return this.parent;
+        return (TransportPacket) getParentPacket();
     }
 
     protected SipMessage getSipMessage() {
@@ -70,169 +67,11 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
     /*
      * (non-Javadoc)
      * 
-     * @see io.pkts.packet.TransportPacket#getSourcePort()
-     */
-    @Override
-    public int getSourcePort() {
-        return this.parent.getSourcePort();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.TransportPacket#getDestinationPort()
-     */
-    @Override
-    public int getDestinationPort() {
-        return this.parent.getDestinationPort();
-    }
-
-    /**
-     * 
-     * {@inheritDoc}
-     */
-    @Override
-    public int getRawSourceIp() {
-        return this.parent.getRawSourceIp();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#getSourceIP()
-     */
-    @Override
-    public String getSourceIP() {
-        return this.parent.getSourceIP();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#setSourceIP(int, int, int, int)
-     */
-    @Override
-    public void setSourceIP(final int a, final int b, final int c, final int d) {
-        this.parent.setSourceIP(a, b, c, d);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#setSourceIP(byte, byte, byte, byte)
-     */
-    @Override
-    public void setSourceIP(final byte a, final byte b, final byte c, final byte d) {
-        this.parent.setSourceIP(a, b, c, d);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#setSourceIP(java.lang.String)
-     */
-    @Override
-    public void setSourceIP(final String sourceIp) {
-        this.parent.setSourceIP(sourceIp);
-    }
-
-    /**
-     * 
-     * {@inheritDoc}
-     */
-    @Override
-    public int getRawDestinationIp() {
-        return this.parent.getRawDestinationIp();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#getDestinationIP()
-     */
-    @Override
-    public String getDestinationIP() {
-        return this.parent.getDestinationIP();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#setDestinationIP(int, int, int, int)
-     */
-    @Override
-    public void setDestinationIP(final int a, final int b, final int c, final int d) {
-        this.parent.setDestinationIP(a, b, c, d);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#setDestinationIP(byte, byte, byte, byte)
-     */
-    @Override
-    public void setDestinationIP(final byte a, final byte b, final byte c, final byte d) {
-        this.parent.setDestinationIP(a, b, c, d);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#setDestinationIP(java.lang.String)
-     */
-    @Override
-    public void setDestinationIP(final String destinationIP) {
-        this.parent.setDestinationIP(destinationIP);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#getTotalLength()
-     */
-    @Override
-    public long getTotalLength() {
-        return this.parent.getTotalLength();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#getIpChecksum()
-     */
-    @Override
-    public int getIpChecksum() {
-        return this.parent.getIpChecksum();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#reCalculateChecksum()
-     */
-    @Override
-    public void reCalculateChecksum() {
-        this.parent.reCalculateChecksum();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#verifyIpChecksum()
-     */
-    @Override
-    public boolean verifyIpChecksum() {
-        return this.parent.verifyIpChecksum();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see io.pkts.packet.Packet#getArrivalTime()
      */
     @Override
     public long getArrivalTime() {
-        return this.parent.getArrivalTime();
+        return getTransportPacket().getArrivalTime();
     }
 
     /*
@@ -242,7 +81,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
      */
     @Override
     public void write(final OutputStream out, final Buffer payload) throws IOException {
-        this.parent.write(out, Buffers.wrap(this.msg.toBuffer(), payload));
+        this.getParentPacket().write(out, Buffers.wrap(this.msg.toBuffer(), payload));
     }
 
     /*
@@ -586,28 +425,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
     }
 
     @Override
-    public void setSourcePort(final int port) {
-        this.parent.setSourcePort(port);
-    }
-
-    @Override
-    public void setDestinationPort(final int port) {
-        this.parent.setDestinationPort(port);
-    }
-
-    @Override
     public abstract SipPacket clone();
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.PCapPacket#getCapturedLength()
-     */
-    @Override
-    public long getCapturedLength() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
 
     private Object parseSipContent() {
         try {
@@ -642,102 +460,12 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
         return this.msg.getContent();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#getTotalIPLength()
-     */
-    @Override
-    public int getTotalIPLength() {
-        return this.parent.getTotalIPLength();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#getVersion()
-     */
-    @Override
-    public int getVersion() {
-        return this.parent.getVersion();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#getHeaderLength()
-     */
-    @Override
-    public int getHeaderLength() {
-        return this.parent.getHeaderLength();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#getIdentification()
-     */
-    @Override
-    public int getIdentification() {
-        return this.parent.getIdentification();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#isFragmented()
-     */
-    @Override
-    public boolean isFragmented() {
-        return this.parent.isFragmented();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#isReservedFlagSet()
-     */
-    @Override
-    public boolean isReservedFlagSet() {
-        return this.parent.isReservedFlagSet();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#isDontFragmentSet()
-     */
-    @Override
-    public boolean isDontFragmentSet() {
-        return this.parent.isDontFragmentSet();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#isMoreFragmentsSet()
-     */
-    @Override
-    public boolean isMoreFragmentsSet() {
-        return this.parent.isMoreFragmentsSet();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see io.pkts.packet.IPPacket#getFragmentOffset()
-     */
-    @Override
-    public short getFragmentOffset() {
-        return this.parent.getFragmentOffset();
-    }
-
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        if (isUDP()) {
+        if (getTransportPacket().isUDP()) {
             sb.append("U ");
-        } else if (isTCP()) {
+        } else if (getTransportPacket().isTCP()) {
             sb.append("T ");
         } else {
             // TODO: need WS, SCTP etc as well. but not as common
@@ -747,22 +475,12 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
         // final DateTimeFormatter formatter =
         // DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss.SSS");
         final Instant timestamp = Instant.ofEpochMilli(getArrivalTime() / 1000);
+        IPPacket ipPacket = (IPPacket) getParentPacket().getParentPacket();
         sb.append(timestamp.toString())
-          .append(" ").append(getSourceIP()).append(":").append(getSourcePort())
-          .append(" -> ").append(getDestinationIP()).append(":").append(getDestinationPort())
+          .append(" ").append(ipPacket.getSourceIP()).append(":").append(getTransportPacket().getSourcePort())
+          .append(" -> ").append(ipPacket.getDestinationIP()).append(":").append(getTransportPacket().getDestinationPort())
           .append("\n")
           .append(this.msg.toString());
         return sb.toString();
     }
-
-    @Override
-    public boolean isUDP() {
-        return this.parent.isUDP();
-    }
-
-    @Override
-    public boolean isTCP() {
-        return this.parent.isTCP();
-    }
-
 }

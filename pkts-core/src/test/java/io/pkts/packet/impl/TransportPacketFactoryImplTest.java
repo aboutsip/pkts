@@ -60,9 +60,9 @@ public class TransportPacketFactoryImplTest {
         final UDPPacket pkt = this.factory.createUDP(Buffers.wrap("this is some random text"));
         assertThat(((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).getSourceMacAddress(), is("00:00:00:00:00:00"));
         assertThat(((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).getDestinationMacAddress(), is("00:00:00:00:00:00"));
-        assertThat(pkt.getSourceIP(), is("127.0.0.1"));
+        assertThat(((IPPacket) pkt.getParentPacket()).getSourceIP(), is("127.0.0.1"));
         assertThat(pkt.getSourcePort(), is(0));
-        assertThat(pkt.getDestinationIP(), is("127.0.0.1"));
+        assertThat(((IPPacket) pkt.getParentPacket()).getDestinationIP(), is("127.0.0.1"));
         assertThat(pkt.getDestinationPort(), is(0));
         assertThat(pkt.getPayload().toString(), is("this is some random text"));
     }
@@ -117,38 +117,26 @@ public class TransportPacketFactoryImplTest {
         final TransportPacket pkt = this.factory.create(Protocol.UDP, "10.36.10.10", 9999, "192.168.0.10", 7654,
                 buffer);
         assertThat(pkt, not((TransportPacket) null));
-        assertThat(((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).getSourceMacAddress(), is("00:00:00:00:00:00"));
-        assertThat(pkt.getSourceIP(), is("10.36.10.10"));
+        assertThat(((MACPacket)pkt.getParentPacket().getParentPacket()).getSourceMacAddress(), is("00:00:00:00:00:00"));
+        assertThat(((IPPacket) pkt.getParentPacket()).getSourceIP(), is("10.36.10.10"));
         assertThat(pkt.getSourcePort(), is(9999));
-        assertThat(pkt.getDestinationIP(), is("192.168.0.10"));
+        assertThat(((IPPacket) pkt.getParentPacket()).getDestinationIP(), is("192.168.0.10"));
         assertThat(pkt.getDestinationPort(), is(7654));
-        assertThat(((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).getDestinationMacAddress(), is("00:00:00:00:00:00"));
+        assertThat(((MACPacket)pkt.getParentPacket().getParentPacket()).getDestinationMacAddress(), is("00:00:00:00:00:00"));
         assertPayload(pkt, payload);
 
         // change stuff
-        ((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).setSourceMacAddress("12:13:14:15:16:17");
-        assertThat(((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).getSourceMacAddress(), is("12:13:14:15:16:17"));
+        ((MACPacket)pkt.getParentPacket().getParentPacket()).setSourceMacAddress("12:13:14:15:16:17");
+        assertThat(((MACPacket)pkt.getParentPacket().getParentPacket()).getSourceMacAddress(), is("12:13:14:15:16:17"));
 
-        ((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).setDestinationMacAddress("01:02:03:04:05:06");
-        assertThat(((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).getDestinationMacAddress(), is("01:02:03:04:05:06"));
-
-        pkt.setDestinationIP(10, 20, 30, 40);
-        assertThat(pkt.getDestinationIP(), is("10.20.30.40"));
-
-        pkt.setDestinationIP("50.60.70.80");
-        assertThat(pkt.getDestinationIP(), is("50.60.70.80"));
-
-        pkt.setSourceIP(11, 22, 33, 44);
-        assertThat(pkt.getSourceIP(), is("11.22.33.44"));
-
-        pkt.setSourceIP("55.66.77.88");
-        assertThat(pkt.getSourceIP(), is("55.66.77.88"));
+        ((MACPacket)pkt.getParentPacket().getParentPacket()).setDestinationMacAddress("01:02:03:04:05:06");
+        assertThat(((MACPacket)pkt.getParentPacket().getParentPacket()).getDestinationMacAddress(), is("01:02:03:04:05:06"));
 
         final TransportPacket pkt2 = serializeAndDeserialize(pkt);
         assertThat(((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).getSourceMacAddress(), is("12:13:14:15:16:17"));
         assertThat(((MACPacket)pkt.getPacket(Protocol.ETHERNET_II)).getDestinationMacAddress(), is("01:02:03:04:05:06"));
-        assertThat(pkt2.getSourceIP(), is("55.66.77.88"));
-        assertThat(pkt2.getDestinationIP(), is("50.60.70.80"));
+        assertThat(((IPPacket) pkt2.getParentPacket()).getSourceIP(), is("10.36.10.10"));
+        assertThat(((IPPacket) pkt2.getParentPacket()).getDestinationIP(), is("192.168.0.10"));
         assertPayload(pkt2, payload);
     }
 

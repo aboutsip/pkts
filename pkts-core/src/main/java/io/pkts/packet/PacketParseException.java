@@ -3,7 +3,7 @@
  */
 package io.pkts.packet;
 
-/**
+import io.pkts.framer.FramingException; /**
  * Signals that an error has been reached unexpectedly while parsing a packet.
  * 
  * @author jonas@jonasborjesson.com

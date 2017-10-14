@@ -7,10 +7,12 @@ import io.pkts.buffer.Buffer;
 import io.pkts.frame.PcapGlobalHeader;
 import io.pkts.frame.PcapRecordHeader;
 import io.pkts.framer.EthernetFramer;
+import io.pkts.framer.FramingException;
 import io.pkts.framer.IPv4Framer;
 import io.pkts.framer.SllFramer;
-import io.pkts.packet.MACPacket;
 import io.pkts.packet.PCapPacket;
+import io.pkts.packet.Packet;
+import io.pkts.packet.PacketParseException;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
@@ -107,7 +109,7 @@ public final class PCapPacketImpl extends AbstractPacket implements PCapPacket {
     }
 
     @Override
-    public PCapPacket getNextPacket() throws IOException {
+    public Packet getNextPacket() throws IOException, PacketParseException {
         final Buffer payload = getPayload();
         if (payload == null) {
             return null;
@@ -117,7 +119,11 @@ public final class PCapPacketImpl extends AbstractPacket implements PCapPacket {
         {
             case 1:
             default:
-                return ethernetFramer.frame(this, payload);
+                try {
+                    return ethernetFramer.frame(this, payload);
+                } catch (FramingException e) {
+                    throw new PacketParseException(16, "Ethernet parsing failed", e);
+                }
             case 113:
                 return sllFramer.frame(this, payload);
             case 101:

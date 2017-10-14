@@ -5,6 +5,7 @@ package io.pkts.examples.core;
 
 import io.pkts.PacketHandler;
 import io.pkts.Pcap;
+import io.pkts.framer.FramingException;
 import io.pkts.packet.Packet;
 import io.pkts.protocol.Protocol;
 
@@ -18,7 +19,7 @@ import java.io.IOException;
  */
 public class CoreExample001 {
 
-    public static void main(final String[] args) throws IOException {
+    public static void main(final String[] args) throws IOException, FramingException {
 
         // Step 1 - obtain a new Pcap instance by supplying an InputStream that points
         //          to a source that contains your captured traffic. Typically you may

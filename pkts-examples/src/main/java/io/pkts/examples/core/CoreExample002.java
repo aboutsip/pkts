@@ -3,6 +3,7 @@ package io.pkts.examples.core;
 import io.pkts.PacketHandler;
 import io.pkts.Pcap;
 import io.pkts.PcapOutputStream;
+import io.pkts.framer.FramingException;
 import io.pkts.packet.Packet;
 import io.pkts.packet.UDPPacket;
 import io.pkts.packet.sip.SipPacket;
@@ -28,7 +29,7 @@ import java.util.List;
  */
 public class CoreExample002 {
 
-    public static void main(final String[] args) throws IOException {
+    public static void main(final String[] args) throws IOException, FramingException {
 
         // Step 1 - accept two inputs, first one being the pcap from which we will read
         //          and the second argument being the SIP Call-ID we are looking for.

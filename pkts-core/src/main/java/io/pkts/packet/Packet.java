@@ -54,7 +54,7 @@ public interface Packet extends Cloneable {
      * packet needs to follow. E.g., if this happens to be a SIP packet, then it
      * will check if it has the mandatory headers etc.
      * 
-     * Some simpler packets, such as the {@link IPPacket}, hardly does anything
+     * Some simpler packets, such as the {@link IPv4Packet}, hardly does anything
      * in this method but more complex protocols such as SIP (once again), HTTP
      * etc can spend quite some time verifying everything, which is why you
      * don't want to do it unless you really have to.
@@ -117,8 +117,10 @@ public interface Packet extends Cloneable {
      * @throws IOException
      *             in case something goes wrong when framing the rest of the
      *             protocol stack
+     * @throws PacketParseException if the next packet can't be parsed by the
+     *                              framer
      */
-    Packet getPacket(Protocol p) throws IOException;
+    Packet getPacket(Protocol p) throws IOException, PacketParseException;
 
     /**
      * Get the name of the packet. Wireshark will give you a short description
@@ -138,14 +140,16 @@ public interface Packet extends Cloneable {
      * 
      * @return
      * @throws IOException
+     * @throws PacketParseException if the next packet can't be parsed by the
+     *                              framer
      */
-    Packet getNextPacket() throws IOException;
+    Packet getNextPacket() throws IOException, PacketParseException;
 
     /**
      * Almost all packets have a parent, which is the encapsulating protocol.
      * E.g., the parent of a {@link SipPacket} is typically a
      * {@link TransportPacket} such as {@link UDPPacket} or a {@link TCPPacket}.
-     * The parent of a {@link TransportPacket} is usually a {@link IPPacket} and
+     * The parent of a {@link TransportPacket} is usually a {@link IPv4Packet} and
      * so on.
      * 
      * @return

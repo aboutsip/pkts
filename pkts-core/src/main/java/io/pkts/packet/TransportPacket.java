@@ -9,7 +9,7 @@ package io.pkts.packet;
  * @author jonas@jonasborjesson.com
  * 
  */
-public interface TransportPacket extends IPPacket, Cloneable {
+public interface TransportPacket extends Packet, Cloneable {
 
     int getSourcePort();
 
@@ -23,8 +23,7 @@ public interface TransportPacket extends IPPacket, Cloneable {
 
     boolean isTCP();
 
+    int getHeaderLength();
 
-    @Override
     TransportPacket clone();
-
 }

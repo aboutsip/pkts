@@ -5,6 +5,7 @@ package io.pkts.framer;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.IPPacket;
+import io.pkts.packet.IPv4Packet;
 import io.pkts.packet.UDPPacket;
 import io.pkts.packet.impl.UdpPacketImpl;
 import io.pkts.protocol.Protocol;
@@ -14,7 +15,7 @@ import java.io.IOException;
 /**
  * @author jonas@jonasborjesson.com
  */
-public class UDPFramer implements Framer<IPPacket> {
+public class UDPFramer implements Framer<IPPacket, UDPPacket> {
 
     /**
      * 

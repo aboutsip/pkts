@@ -5,6 +5,7 @@ package io.pkts.examples.streams;
 
 import io.pkts.Pcap;
 import io.pkts.packet.sip.SipPacket;
+import io.pkts.framer.FramingException;
 import io.pkts.streams.SipStream;
 import io.pkts.streams.Stream;
 import io.pkts.streams.StreamHandler;
@@ -36,7 +37,7 @@ import java.io.IOException;
  */
 public final class StreamsExample001 {
 
-    public static void main(final String[] args) throws FileNotFoundException, IOException {
+    public static void main(final String[] args) throws FileNotFoundException, IOException, FramingException {
 
         // Step 1 - Open the pcap containing our traffic.
         final Pcap pcap = Pcap.openStream("my_traffic.pcap");

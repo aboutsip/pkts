@@ -3,6 +3,10 @@
  */
 package io.pkts.packet;
 
+import io.pkts.protocol.Protocol;
+
+import java.io.IOException;
+
 /**
  * Represents a packet from the Data Link Layer (DLL - Layer 2 in the OSI
  * model). Now, this is not 100% accurate since the MAC layer is really a sub
@@ -10,7 +14,7 @@ package io.pkts.packet;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface MACPacket extends PCapPacket, Cloneable {
+public interface MACPacket extends Packet, Cloneable {
 
     String getSourceMacAddress();
 
@@ -27,6 +31,11 @@ public interface MACPacket extends PCapPacket, Cloneable {
     String getDestinationMacAddress();
 
     void setDestinationMacAddress(String macAddress) throws IllegalArgumentException;
+
+    /**
+     * Get the protocol of the next header
+     */
+    Protocol getNextProtocol() throws IOException;
 
     @Override
     MACPacket clone();

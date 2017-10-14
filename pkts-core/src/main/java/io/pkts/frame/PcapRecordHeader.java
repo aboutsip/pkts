@@ -15,6 +15,10 @@ import java.nio.ByteOrder;
  * 
  */
 public final class PcapRecordHeader {
+    /**
+     * pcaprec_hdr_s struct is SIZE bytes long.
+     */
+    public static final int SIZE = 16;
 
     private final ByteOrder byteOrder;
 
