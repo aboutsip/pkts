@@ -1,5 +1,6 @@
 package io.pkts;
 
+import io.pkts.buffer.BoundedInputStreamBuffer;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.filters.Filter;
@@ -118,6 +119,20 @@ public class Pcap {
      */
     public static Pcap openStream(final InputStream is) throws IOException {
         final Buffer stream = Buffers.wrap(is);
+        final PcapGlobalHeader header = PcapGlobalHeader.parse(stream);
+        return new Pcap(header, stream);
+    }
+
+    /**
+     * Capture packets from the input stream
+     *
+     * @param is
+     * @param bufferCapacity Size of buffer, must be larger than PCAPs largest framesize. See SNAPLENGTH for tcpdump, et.al.
+     * @return
+     * @throws IOException
+     */
+    public static Pcap openStream(final InputStream is, final int bufferCapacity) throws IOException {
+        final Buffer stream = new BoundedInputStreamBuffer(bufferCapacity, is);
         final PcapGlobalHeader header = PcapGlobalHeader.parse(stream);
         return new Pcap(header, stream);
     }
