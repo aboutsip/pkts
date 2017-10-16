@@ -18,7 +18,7 @@ import io.pkts.protocol.Protocol;
  * 
  * @author jonas@jonasborjesson.com
  */
-public class EthernetFramer implements Framer<PCapPacket> {
+public class EthernetFramer implements Framer<PCapPacket, MACPacket> {
 
     public EthernetFramer() {
     }

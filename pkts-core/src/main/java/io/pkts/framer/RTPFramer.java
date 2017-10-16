@@ -14,7 +14,7 @@ import java.io.IOException;
 /**
  * @author jonas@jonasborjesson.com
  */
-public final class RTPFramer implements Framer<TransportPacket> {
+public final class RTPFramer implements Framer<TransportPacket, RtpPacket> {
 
     /**
      * 

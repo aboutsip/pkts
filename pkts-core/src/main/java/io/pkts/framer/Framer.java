@@ -14,7 +14,7 @@ import java.io.IOException;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface Framer<T extends Packet> {
+public interface Framer<P extends Packet, T extends Packet> {
 
     /**
      * 
@@ -36,7 +36,7 @@ public interface Framer<T extends Packet> {
      *             in case something goes wrong when reading data from the
      *             buffer
      */
-    T frame(T parent, Buffer buffer) throws IOException;
+    T frame(P parent, Buffer buffer) throws IOException;
 
     /**
      * Check whether the supplied data could be framed into a frame of this

@@ -33,4 +33,7 @@ public interface TCPPacket extends TransportPacket {
     long getSequenceNumber();
 
     long getAcknowledgementNumber();
+
+    @Override
+    IPPacket getParentPacket();
 }

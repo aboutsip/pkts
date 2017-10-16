@@ -56,8 +56,6 @@ public final class MACPacketImpl extends AbstractPacket implements MACPacket {
     /**
      * Construct a new {@link MACPacket} based on the supplied headers.
      * 
-     * @param packet
-     * @param headers
      */
     public MACPacketImpl(final Protocol protocol, final PCapPacket parent, final Buffer headers, final Buffer payload) {
         super(protocol, parent, payload);
@@ -189,16 +187,6 @@ public final class MACPacketImpl extends AbstractPacket implements MACPacket {
     }
 
     @Override
-    public long getTotalLength() {
-        return this.parent.getTotalLength();
-    }
-
-    @Override
-    public long getCapturedLength() {
-        return this.parent.getCapturedLength();
-    }
-
-    @Override
     public IPPacket getNextPacket() throws IOException {
         final Buffer payload = getPayload();
         if (payload == null) {
@@ -206,5 +194,4 @@ public final class MACPacketImpl extends AbstractPacket implements MACPacket {
         }
         return framer.frame(this, payload);
     }
-
 }

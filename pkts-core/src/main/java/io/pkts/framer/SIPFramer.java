@@ -18,7 +18,7 @@ import java.io.IOException;
  * @author jonas@jonasborjesson.com
  * 
  */
-public final class SIPFramer implements Framer<TransportPacket> {
+public final class SIPFramer implements Framer<TransportPacket, SipPacket> {
 
     public SIPFramer() {
     }

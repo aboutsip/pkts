@@ -10,7 +10,7 @@ package io.pkts.packet;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface MACPacket extends PCapPacket, Cloneable {
+public interface MACPacket extends Packet, Cloneable {
 
     String getSourceMacAddress();
 

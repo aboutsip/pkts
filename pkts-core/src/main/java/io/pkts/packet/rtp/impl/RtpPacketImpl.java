@@ -4,6 +4,7 @@
 package io.pkts.packet.rtp.impl;
 
 import io.pkts.buffer.Buffer;
+import io.pkts.packet.IPPacket;
 import io.pkts.packet.Packet;
 import io.pkts.packet.TransportPacket;
 import io.pkts.packet.impl.AbstractPacket;
@@ -135,96 +136,16 @@ public final class RtpPacketImpl extends AbstractPacket implements RtpPacket {
         return this.parent.getArrivalTime();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int getSourcePort() {
-        return this.parent.getSourcePort();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int getDestinationPort() {
-        return this.parent.getDestinationPort();
-    }
-
-    /**
-     * 
-     * {@inheritDoc}
-     */
-    @Override
-    public int getRawSourceIp() {
-        return this.parent.getRawSourceIp();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getSourceIP() {
-        return this.parent.getSourceIP();
-    }
-
-    /**
-     * 
-     * {@inheritDoc}
-     */
-    @Override
-    public int getRawDestinationIp() {
-        return this.parent.getRawDestinationIp();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getDestinationIP() {
-        return this.parent.getDestinationIP();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setSourceIP(final int a, final int b, final int c, final int d) {
-        this.parent.setSourceIP(a, b, c, d);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setDestinationIP(final int a, final int b, final int c, final int d) {
-        this.parent.setDestinationIP(a, b, c, d);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setSourceIP(final String sourceIp) {
-        this.parent.setSourceIP(sourceIp);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setDestinationIP(final String destinationIP) {
-        this.parent.setDestinationIP(destinationIP);
-    }
-
     @Override
     public String toString() {
         try {
             final StringBuilder sb = new StringBuilder();
+            final TransportPacket transportPacket = getParentPacket();
+            final IPPacket ipPacket = transportPacket.getParentPacket();
             sb.append("Seq=").append(getSeqNumber())
               .append(" type=").append(getPayloadType())
-              .append(" src=").append(getSourceIP()).append(":").append(getSourcePort())
-              .append(" dst=").append(getDestinationIP()).append(":").append(getDestinationPort());
+              .append(" src=").append(ipPacket.getSourceIP()).append(":").append(transportPacket.getSourcePort())
+              .append(" dst=").append(ipPacket.getDestinationIP()).append(":").append(transportPacket.getDestinationPort());
             return sb.toString();
         } catch (final IOException e) {
             return super.toString();
@@ -249,96 +170,8 @@ public final class RtpPacketImpl extends AbstractPacket implements RtpPacket {
     }
 
     @Override
-    public long getTotalLength() {
-        return this.parent.getTotalLength();
-    }
-
-    @Override
-    public int getIpChecksum() {
-        return this.parent.getIpChecksum();
-    }
-
-    @Override
-    public void setSourceIP(final byte a, final byte b, final byte c, final byte d) {
-        this.parent.setSourceIP(a, b, c, d);
-    }
-
-    @Override
-    public void setDestinationIP(final byte a, final byte b, final byte c, final byte d) {
-        this.parent.setDestinationIP(a, b, c, d);
-    }
-
-    @Override
-    public void reCalculateChecksum() {
-        this.parent.reCalculateChecksum();
-    }
-
-    @Override
-    public boolean verifyIpChecksum() {
-        return this.parent.verifyIpChecksum();
-    }
-
-    @Override
     public RtpPacket clone() {
         throw new RuntimeException("Sorry, not implemented just yet");
-    }
-
-    @Override
-    public void setSourcePort(final int port) {
-        this.parent.setSourcePort(port);
-    }
-
-    @Override
-    public void setDestinationPort(final int port) {
-        this.parent.setDestinationPort(port);
-    }
-
-    @Override
-    public int getTotalIPLength() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    @Override
-    public int getHeaderLength() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    @Override
-    public int getIdentification() {
-        return this.parent.getIdentification();
-    }
-
-    @Override
-    public boolean isFragmented() {
-        return this.parent.isFragmented();
-    }
-
-    @Override
-    public boolean isReservedFlagSet() {
-        return this.parent.isReservedFlagSet();
-    }
-
-    @Override
-    public boolean isDontFragmentSet() {
-        return this.parent.isDontFragmentSet();
-    }
-
-    @Override
-    public boolean isMoreFragmentsSet() {
-        return this.parent.isMoreFragmentsSet();
-    }
-
-    @Override
-    public short getFragmentOffset() {
-        return this.parent.getFragmentOffset();
-    }
-
-    @Override
-    public long getCapturedLength() {
-        // TODO Auto-generated method stub
-        return 0;
     }
 
     @Override
@@ -348,13 +181,7 @@ public final class RtpPacketImpl extends AbstractPacket implements RtpPacket {
     }
 
     @Override
-    public boolean isUDP() {
-        return this.parent.isUDP();
+    public TransportPacket getParentPacket() {
+        return (TransportPacket) super.getParentPacket();
     }
-
-    @Override
-    public boolean isTCP() {
-        return this.parent.isTCP();
-    }
-
 }

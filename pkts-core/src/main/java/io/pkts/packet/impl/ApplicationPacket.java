@@ -3,7 +3,7 @@
  */
 package io.pkts.packet.impl;
 
-import io.pkts.packet.TransportPacket;
+import io.pkts.packet.Packet;
 
 /**
  * Represents a packet from the Application Layer (layer 7) in the OSI model.
@@ -13,6 +13,6 @@ import io.pkts.packet.TransportPacket;
  * 
  * @author jonas@jonasborjesson.com
  */
-public interface ApplicationPacket extends TransportPacket {
+public interface ApplicationPacket extends Packet {
 
 }
