@@ -15,6 +15,10 @@ import java.nio.ByteOrder;
  * 
  */
 public final class PcapRecordHeader {
+    /**
+     * pcaprec_hdr_s struct is SIZE bytes long.
+     */
+    public static final int SIZE = 16;
 
     private final ByteOrder byteOrder;
 
@@ -25,7 +29,7 @@ public final class PcapRecordHeader {
      */
     public PcapRecordHeader(final ByteOrder byteOrder, final Buffer body) {
         assert body != null;
-        assert body.capacity() == 16;
+        assert body.capacity() == SIZE;
 
         this.byteOrder = byteOrder;
         this.body = body;
@@ -42,7 +46,7 @@ public final class PcapRecordHeader {
      * @return
      */
     public static PcapRecordHeader createDefaultHeader(final long timestamp) {
-        final byte[] body = new byte[16];
+        final byte[] body = new byte[SIZE];
 
         // time stamp seconds
         // body[0] = (byte) 0x00;

@@ -13,6 +13,10 @@ import java.nio.ByteOrder;
  * @author jonas@jonasborjesson.com
  */
 public final class PcapGlobalHeader {
+    /**
+    * pcap_hdr_s struct is SIZE bytes long.
+    */
+    public static final int SIZE = 24;
 
     /**
      * See http://wiki.wireshark.org/Development/LibpcapFileFormat
