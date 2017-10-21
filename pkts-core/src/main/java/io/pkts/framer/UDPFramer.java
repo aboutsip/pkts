@@ -14,7 +14,7 @@ import java.io.IOException;
 /**
  * @author jonas@jonasborjesson.com
  */
-public class UDPFramer implements Framer<IPPacket> {
+public class UDPFramer implements Framer<IPPacket, UDPPacket> {
 
     /**
      * 

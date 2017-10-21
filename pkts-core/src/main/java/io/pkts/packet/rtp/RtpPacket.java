@@ -3,16 +3,16 @@
  */
 package io.pkts.packet.rtp;
 
-import io.pkts.packet.impl.ApplicationPacket;
-
 import java.io.IOException;
+
+import io.pkts.packet.TransportPacket;
+import io.pkts.packet.impl.ApplicationPacket;
 
 /**
  * @author jonas@jonasborjesson.com
  */
 public interface RtpPacket extends ApplicationPacket {
 
-    @Override
     int getVersion();
 
     boolean hasPadding() throws IOException;
@@ -38,4 +38,6 @@ public interface RtpPacket extends ApplicationPacket {
      */
     byte[] dumpPacket();
 
+    @Override
+    TransportPacket getParentPacket();
 }

@@ -101,7 +101,7 @@ public class RTPSplitter {
 
         private void processRtpFrame(final RtpPacket rtp) throws PacketParseException {
             System.out.println(rtp);
-            final String key = rtp.getSourceIP() + rtp.getSourcePort();
+            final String key = rtp.getParentPacket().getParentPacket().getSourceIP() + rtp.getParentPacket().getSourcePort();
             RtpStream stream = this.streams.get(key);
             if (stream == null) {
                 stream = new RtpStream();

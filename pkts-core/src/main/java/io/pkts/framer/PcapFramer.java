@@ -7,6 +7,7 @@ import io.pkts.buffer.Buffer;
 import io.pkts.frame.PcapGlobalHeader;
 import io.pkts.frame.PcapRecordHeader;
 import io.pkts.packet.PCapPacket;
+import io.pkts.packet.Packet;
 import io.pkts.packet.impl.PCapPacketImpl;
 import io.pkts.protocol.Protocol;
 
@@ -16,7 +17,7 @@ import java.nio.ByteOrder;
 /**
  * @author jonas@jonasborjesson.com
  */
-public final class PcapFramer implements Framer<PCapPacket> {
+public final class PcapFramer implements Framer<Packet, PCapPacket> {
 
     private final PcapGlobalHeader globalHeader;
     private final FramerManager framerManager;
@@ -43,7 +44,7 @@ public final class PcapFramer implements Framer<PCapPacket> {
      * {@inheritDoc}
      */
     @Override
-    public PCapPacket frame(final PCapPacket parent, final Buffer buffer) throws IOException {
+    public PCapPacket frame(final Packet parent, final Buffer buffer) throws IOException {
 
         // note that for the PcapPacket the parent will always be null
         // so we are simply ignoring it.

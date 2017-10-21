@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import io.pkts.PktsTestBase;
 import io.pkts.buffer.Buffers;
 import io.pkts.framer.SIPFramer;
+import io.pkts.packet.IPPacket;
 import io.pkts.packet.TransportPacket;
 import io.pkts.packet.sip.SipPacket;
 import io.pkts.packet.sip.SipRequestPacket;
@@ -23,6 +24,7 @@ import org.junit.Test;
  */
 public class SipFrameTest extends PktsTestBase {
 
+    private IPPacket ipPkt;
     private TransportPacket transportPkt;
 
     /**
@@ -33,9 +35,12 @@ public class SipFrameTest extends PktsTestBase {
     public void setUp() throws Exception {
         super.setUp();
         this.transportPkt = mock(TransportPacket.class);
+        this.ipPkt = mock(IPPacket.class);
+        when(this.transportPkt.getParentPacket()).thenReturn(this.ipPkt);
+
         when(this.transportPkt.getArrivalTime()).thenReturn(123L);
-        when(this.transportPkt.getSourceIP()).thenReturn("192.168.0.100");
-        when(this.transportPkt.getDestinationIP()).thenReturn("10.36.10.10");
+        when(this.ipPkt.getSourceIP()).thenReturn("192.168.0.100");
+        when(this.ipPkt.getDestinationIP()).thenReturn("10.36.10.10");
         when(this.transportPkt.getDestinationPort()).thenReturn(5060);
         when(this.transportPkt.getSourcePort()).thenReturn(5060);
     }
@@ -61,10 +66,10 @@ public class SipFrameTest extends PktsTestBase {
         assertThat(sip.getHeader(Buffers.wrap("Call-ID")).get().getValue().toString(), is("1-16732@127.0.1.1"));
 
         assertThat(sip.getArrivalTime(), is(123L));
-        assertThat(sip.getSourceIP(), is("192.168.0.100"));
-        assertThat(sip.getDestinationIP(), is("10.36.10.10"));
-        assertThat(sip.getDestinationPort(), is(5060));
-        assertThat(sip.getSourcePort(), is(5060));
+        assertThat(((IPPacket)sip.getParentPacket().getParentPacket()).getSourceIP(), is("192.168.0.100"));
+        assertThat(((IPPacket)sip.getParentPacket().getParentPacket()).getDestinationIP(), is("10.36.10.10"));
+        assertThat(((TransportPacket)sip.getParentPacket()).getDestinationPort(), is(5060));
+        assertThat(((TransportPacket)sip.getParentPacket()).getSourcePort(), is(5060));
     }
 
     @Test
