@@ -6,6 +6,7 @@ package io.pkts.packet.impl;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.IPPacket;
 import io.pkts.packet.Packet;
+import io.pkts.packet.PacketParseException;
 import io.pkts.packet.TransportPacket;
 import io.pkts.packet.UDPPacket;
 import io.pkts.packet.sip.SipPacket;
@@ -134,7 +135,7 @@ public abstract class AbstractPacket implements Packet {
      * @see io.pkts.packet.Packet#getPacket(io.pkts.protocol.Protocol)
      */
     @Override
-    public Packet getPacket(final Protocol p) throws IOException {
+    public Packet getPacket(final Protocol p) throws IOException, PacketParseException {
         if (this.protocol == p) {
             return this;
         }

@@ -76,7 +76,7 @@ public class PcapFramerTest extends PktsTestBase {
     }
 
     private void verifyNextFrame(final Buffer in, final int expectedLength)
-            throws IOException {
+            throws IOException, FramingException {
         final PCapPacket frame = this.framer.frame(null, in);
         final Buffer payload = frame.getPayload();
         assertThat(expectedLength, is(payload.capacity()));
