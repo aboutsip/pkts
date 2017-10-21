@@ -88,8 +88,8 @@ public class CoreExample002 {
                             }
 
                         }
-                    } else if (rtpInfo.stream().filter(info -> (info.getAddress().equals(udp.getDestinationIP()) && info.getMediaPort() == udp.getDestinationPort())
-                                    || (info.getAddress().equals(udp.getSourceIP()) && info.getMediaPort() == udp.getSourcePort())
+                    } else if (rtpInfo.stream().filter(info -> (info.getAddress().equals(udp.getParentPacket().getDestinationIP()) && info.getMediaPort() == udp.getDestinationPort())
+                                    || (info.getAddress().equals(udp.getParentPacket().getSourceIP()) && info.getMediaPort() == udp.getSourcePort())
                     ).findFirst().isPresent()) {
                         // Step 9 - If the incoming UDP packet is from any known address
                         //          as listed in an SDP then just save it.

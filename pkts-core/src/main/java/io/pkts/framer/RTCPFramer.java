@@ -13,7 +13,7 @@ import java.io.IOException;
 /**
  * @author jonas@jonasborjesson.com
  */
-public final class RTCPFramer implements Framer<TransportPacket> {
+public final class RTCPFramer implements Framer<TransportPacket, RtcpPacket> {
 
     /**
      * 

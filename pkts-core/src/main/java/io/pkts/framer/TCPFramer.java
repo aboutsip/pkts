@@ -15,7 +15,7 @@ import java.io.IOException;
  * @author jonas@jonasborjesson.com
  * 
  */
-public final class TCPFramer implements Framer<IPPacket> {
+public final class TCPFramer implements Framer<IPPacket, TCPPacket> {
 
     /**
      * 

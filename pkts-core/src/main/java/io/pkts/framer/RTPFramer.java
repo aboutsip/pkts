@@ -3,18 +3,18 @@
  */
 package io.pkts.framer;
 
+import java.io.IOException;
+
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.TransportPacket;
 import io.pkts.packet.rtp.RtpPacket;
 import io.pkts.packet.rtp.impl.RtpPacketImpl;
 import io.pkts.protocol.Protocol;
 
-import java.io.IOException;
-
 /**
  * @author jonas@jonasborjesson.com
  */
-public final class RTPFramer implements Framer<TransportPacket> {
+public final class RTPFramer implements Framer<TransportPacket, RtpPacket> {
 
     /**
      * 

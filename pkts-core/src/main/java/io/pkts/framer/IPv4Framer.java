@@ -17,7 +17,7 @@ import java.io.IOException;
  * @author jonas@jonasborjesson.com
  * 
  */
-public class IPv4Framer implements Framer<PCapPacket> {
+public class IPv4Framer implements Framer<Packet, IPPacket> {
 
     public IPv4Framer() {
     }
@@ -34,7 +34,7 @@ public class IPv4Framer implements Framer<PCapPacket> {
      * {@inheritDoc}
      */
     @Override
-    public IPPacket frame(final PCapPacket parent, final Buffer payload) throws IOException {
+    public IPPacket frame(final Packet parent, final Buffer payload) throws IOException {
 
         if (parent == null) {
             throw new IllegalArgumentException("The parent frame cannot be null");

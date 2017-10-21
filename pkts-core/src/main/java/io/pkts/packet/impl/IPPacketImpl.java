@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package io.pkts.packet.impl;
 
@@ -8,7 +8,6 @@ import io.pkts.buffer.Buffers;
 import io.pkts.framer.TCPFramer;
 import io.pkts.framer.UDPFramer;
 import io.pkts.packet.IPPacket;
-import io.pkts.packet.PCapPacket;
 import io.pkts.packet.Packet;
 import io.pkts.protocol.Protocol;
 
@@ -24,7 +23,7 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
 
     private static final TCPFramer tcpFramer = new TCPFramer();
 
-    private final PCapPacket parent;
+    private final Packet parent;
 
     private final Buffer headers;
 
@@ -33,7 +32,7 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
     /**
      * 
      */
-    public IPPacketImpl(final PCapPacket parent, final Buffer headers, final int options, final Buffer payload) {
+    public IPPacketImpl(final Packet parent, final Buffer headers, final int options, final Buffer payload) {
         super(Protocol.IPv4, parent, payload);
         assert parent != null;
         assert headers != null;
@@ -228,19 +227,9 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
 
     @Override
     public IPPacket clone() {
-        final PCapPacket parent = this.parent.clone();
+        final Packet parent = this.parent.clone();
         final IPPacket pkt = new IPPacketImpl(parent, this.headers.clone(), this.options, getPayload().clone());
         return pkt;
-    }
-
-    @Override
-    public long getTotalLength() {
-        return this.parent.getTotalLength();
-    }
-
-    @Override
-    public long getCapturedLength() {
-        return this.parent.getCapturedLength();
     }
 
     @Override
@@ -357,8 +346,7 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("IPv4 ");
-        sb.append(" Total Length: ").append(getTotalLength())
-          .append(" ID: ").append(getIdentification())
+        sb.append(" ID: ").append(getIdentification())
           .append(" DF: ").append(isDontFragmentSet() ? "Set" : "Not Set")
           .append(" MF: ").append(isMoreFragmentsSet() ? "Set" : "Not Set")
           .append(" Fragment Offset: ").append(getFragmentOffset());

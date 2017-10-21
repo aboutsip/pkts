@@ -21,7 +21,7 @@ import java.io.IOException;
  * 
  * @author jonas@jonasborjesson.com
  */
-public class SllFramer implements Framer<PCapPacket> {
+public class SllFramer implements Framer<PCapPacket, MACPacket> {
 
     /**
      * See pcap/sll.h for the meaning of these values

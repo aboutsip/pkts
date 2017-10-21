@@ -6,6 +6,7 @@ package io.pkts.packet.impl;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.frame.PcapRecordHeader;
+import io.pkts.packet.IPPacket;
 import io.pkts.packet.MACPacket;
 import io.pkts.packet.PCapPacket;
 import io.pkts.packet.PacketFactory;
@@ -73,11 +74,12 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
             final Buffer payload) throws IllegalArgumentException, IllegalProtocolException {
 
         final TransportPacket pkt = createUdpInternal(payload);
-        pkt.setDestinationIP(destAddress);
-        pkt.setSourceIP(srcAddress);
+        final IPPacket ipPkt = pkt.getParentPacket();
+        ipPkt.setDestinationIP(destAddress);
+        ipPkt.setSourceIP(srcAddress);
         pkt.setDestinationPort(destPort);
         pkt.setSourcePort(srcPort);
-        pkt.reCalculateChecksum();
+        ipPkt.reCalculateChecksum();
         return pkt;
     }
 
@@ -111,11 +113,12 @@ public final class TransportPacketFactoryImpl implements TransportPacketFactory 
             final byte[] destAddress, final int destPort, final Buffer payload) throws IllegalArgumentException,
             IllegalProtocolException {
         final TransportPacket pkt = createUdpInternal(payload);
-        pkt.setSourceIP(srcAddress[0], srcAddress[1], srcAddress[2], srcAddress[3]);
-        pkt.setDestinationIP(destAddress[0], destAddress[1], destAddress[2], destAddress[3]);
+        final IPPacket ipPkt = pkt.getParentPacket();
+        ipPkt.setSourceIP(srcAddress[0], srcAddress[1], srcAddress[2], srcAddress[3]);
+        ipPkt.setDestinationIP(destAddress[0], destAddress[1], destAddress[2], destAddress[3]);
         pkt.setDestinationPort(destPort);
         pkt.setSourcePort(srcPort);
-        pkt.reCalculateChecksum();
+        ipPkt.reCalculateChecksum();
         return pkt;
     }
 
