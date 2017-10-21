@@ -7,7 +7,8 @@ import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.framer.TCPFramer;
 import io.pkts.framer.UDPFramer;
-import io.pkts.packet.IPPacket;
+import io.pkts.packet.IPv4Packet;
+import io.pkts.packet.PCapPacket;
 import io.pkts.packet.Packet;
 import io.pkts.protocol.Protocol;
 
@@ -17,7 +18,7 @@ import java.io.OutputStream;
 /**
  * @author jonas@jonasborjesson.com
  */
-public final class IPPacketImpl extends AbstractPacket implements IPPacket {
+public final class IPv4PacketImpl extends AbstractPacket implements IPv4Packet {
 
     private static final UDPFramer udpFramer = new UDPFramer();
 
@@ -30,9 +31,9 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
     private final int options;
 
     /**
-     * 
+     *
      */
-    public IPPacketImpl(final Packet parent, final Buffer headers, final int options, final Buffer payload) {
+    public IPv4PacketImpl(final Packet parent, final Buffer headers, final int options, final Buffer payload) {
         super(Protocol.IPv4, parent, payload);
         assert parent != null;
         assert headers != null;
@@ -48,7 +49,7 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
 
     /**
      * Algorithm adopted from RFC 1071 - Computing the Internet Checksum
-     * 
+     *
      * @return
      */
     private int calculateChecksum() {
@@ -66,20 +67,27 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
         return (int) ~sum & 0xFFFF;
     }
 
+    @Override
+    public byte[] getRawSourceIP() {
+        Buffer tmp = Buffers.createBuffer(4);
+        this.headers.getBytes(12, tmp);
+        return tmp.getArray();
+    }
+
     /**
-     * Get the raw source ip.
-     * 
+     * Get the raw source ip as 32-bit integer
+     *
      * Note, these are the raw bits and should be treated as such. If you really
      * want to print it, then you should treat it as unsigned
-     * 
+     *
      * @return
      */
-    public int getRawSourceIp() {
+    public int getRawSourceIpInt() {
         return this.headers.getInt(12);
     }
 
     /**
-     * 
+     *
      * {@inheritDoc}
      */
     @Override
@@ -91,20 +99,27 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
         return a + "." + b + "." + c + "." + d;
     }
 
+    @Override
+    public byte[] getRawDestinationIP() {
+        Buffer tmp = Buffers.createBuffer(4);
+        this.headers.getBytes(16, tmp);
+        return tmp.getArray();
+    }
+
     /**
-     * Get the raw destination ip.
-     * 
+     * Get the raw destination ip as a 32-bit integer.
+     *
      * Note, these are the raw bits and should be treated as such. If you really
      * want to print it, then you should treat it as unsigned
-     * 
+     *
      * @return
      */
-    public int getRawDestinationIp() {
+    public int getRawDestinationIpInt() {
         return this.headers.getInt(16);
     }
 
     /**
-     * 
+     *
      * {@inheritDoc}
      */
     @Override
@@ -197,7 +212,7 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
     /**
      * Very naive initial implementation. Should be changed to do a better job
      * and its performance probably can go up a lot as well.
-     * 
+     *
      * @param startIndex
      * @param address
      */
@@ -226,9 +241,9 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
     }
 
     @Override
-    public IPPacket clone() {
+    public IPv4Packet clone() {
         final Packet parent = this.parent.clone();
-        final IPPacket pkt = new IPPacketImpl(parent, this.headers.clone(), this.options, getPayload().clone());
+        final IPv4Packet pkt = new IPv4PacketImpl(parent, this.headers.clone(), this.options, getPayload().clone());
         return pkt;
     }
 
@@ -255,7 +270,7 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
 
     /**
      * The version of this ip frame, will always be 4
-     * 
+     *
      * @return
      */
     @Override
@@ -265,7 +280,7 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
 
     /**
      * The length of the ipv4 headers
-     * 
+     *
      * @return
      */
     @Override
@@ -279,7 +294,7 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
     }
 
     /**
-     * 
+     *
      * {@inheritDoc}
      */
     @Override
@@ -346,7 +361,8 @@ public final class IPPacketImpl extends AbstractPacket implements IPPacket {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("IPv4 ");
-        sb.append(" ID: ").append(getIdentification())
+        sb.append(" Total Length: ").append(getTotalIPLength())
+          .append(" ID: ").append(getIdentification())
           .append(" DF: ").append(isDontFragmentSet() ? "Set" : "Not Set")
           .append(" MF: ").append(isMoreFragmentsSet() ? "Set" : "Not Set")
           .append(" Fragment Offset: ").append(getFragmentOffset());
