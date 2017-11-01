@@ -154,7 +154,7 @@ public final class ByteBuffer extends AbstractBuffer {
      */
     @Override
     public long readUnsignedInt() throws IndexOutOfBoundsException {
-        return getInt(this.readerIndex) & 0xFFFFFFFFL;
+        return readInt() & 0xFFFFFFFFL;
     }
 
     /**
