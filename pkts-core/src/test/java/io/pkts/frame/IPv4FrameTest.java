@@ -8,7 +8,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import io.pkts.PktsTestBase;
 import io.pkts.framer.IPv4Framer;
-import io.pkts.packet.IPPacket;
+import io.pkts.packet.IPv4Packet;
 import io.pkts.packet.MACPacket;
 
 import org.junit.After;
@@ -19,7 +19,7 @@ import org.junit.Test;
  * @author jonas@jonasborjesson.com
  * 
  */
-public class IPFrameTest extends PktsTestBase {
+public class IPv4FrameTest extends PktsTestBase {
 
     /**
      * {@inheritDoc}
@@ -42,7 +42,7 @@ public class IPFrameTest extends PktsTestBase {
     @Test
     public void testParsePacket() throws Exception {
         final IPv4Framer framer = new IPv4Framer();
-        final IPPacket p = framer.frame(mock(MACPacket.class), this.ipv4FrameBuffer);
+        final IPv4Packet p = framer.frame(mock(MACPacket.class), this.ipv4FrameBuffer);
         assertThat(p.getDestinationIP(), is("127.0.0.1"));
         assertThat(p.getSourceIP(), is("127.0.0.1"));
     }

@@ -16,17 +16,6 @@ package io.pkts.packet;
  * @author jonas@jonasborjesson.com
  */
 public interface IPPacket extends Packet, Cloneable {
-
-    /**
-     * Get the raw source ip.
-     * 
-     * Note, these are the raw bits and should be treated as such. If you really want to print it,
-     * then you should treat it as unsigned
-     * 
-     * @return
-     */
-    int getRawSourceIp();
-
     /**
      * Convenience method for returning the source IP in a more human readable form.
      * 
@@ -35,48 +24,17 @@ public interface IPPacket extends Packet, Cloneable {
     String getSourceIP();
 
     /**
-     * Setting an IPv4 address the fast way! Specify each part separately. E.g.,
-     * setting 192.168.0.100 would be accomplished like so:
-     * 
-     * {@link #setSourceIP(192, 168, 0, 100)}
-     * 
-     * @param a
-     *            the first part of the IPv4 address, e.g. 192
-     * @param b
-     *            the second part of the IPv4 address, e.g. 168
-     * @param c
-     *            the third part of the IPv4 address, e.g. 0
-     * @param d
-     *            the fourth part of the IPv4 address, e.g. 100
+     * Get the raw bytes, either 4 or 16, that represent the source IP.
+     * @return
      */
-    void setSourceIP(int a, int b, int c, int d);
+    byte[] getRawSourceIP();
 
     /**
-     * Setting an IPv4 address the fast(est?) way! Specify each part separately.
-     * E.g., setting 192.168.0.100 would be accomplished like so:
-     * 
-     * @param rawIp
-     */
-    void setSourceIP(byte a, byte b, byte c, byte d);
-
-    /**
-     * Set the source IP of this {@link IPPacket}. Note, using
-     * {@link #setSourceIP(int, int, int, int)} will be must faster so try and
-     * use it instead.
-     * 
+     * Set the source IP of this {@link IPPacket}.
+     *
      * @param sourceIp
      */
     void setSourceIP(String sourceIp);
-
-    /**
-     * Get the raw destination ip.
-     * 
-     * Note, these are the raw bits and should be treated as such. If you really want to print it,
-     * then you should treat it as unsigned
-     * 
-     * @return
-     */
-    int getRawDestinationIp();
 
     /**
      * Convenience method for returning the destination IP in a more human readable form.
@@ -86,30 +44,14 @@ public interface IPPacket extends Packet, Cloneable {
     String getDestinationIP();
 
     /**
-     * Setting an IPv4 address the fast way! Specify each part separately. E.g.,
-     * setting 192.168.0.100 would be accomplished like so:
-     * 
-     * {@link #setSourceIP(192, 168, 0, 100)}
-     * 
-     * @param a
-     *            the first part of the IPv4 address, e.g. 192
-     * @param b
-     *            the second part of the IPv4 address, e.g. 168
-     * @param c
-     *            the third part of the IPv4 address, e.g. 0
-     * @param d
-     *            the fourth part of the IPv4 address, e.g. 100
+     * Get the raw bytes, either 4 or 16, that represent the destination IP address.
+     * @return
      */
-    void setDestinationIP(int a, int b, int c, int d);
+    byte[] getRawDestinationIP();
 
-    void setDestinationIP(byte a, byte b, byte c, byte d);
 
     /**
-     * Set the destination IP of this {@link IPPacket}. Note, using
-     * {@link #setDestinationIP(int, int, int, int)} will be must faster so try
-     * and use it instead.
-     * 
-     * @param sourceIp
+     * Set the destination IP of this {@link IPPacket}.
      */
     void setDestinationIP(String destinationIP);
 
@@ -128,27 +70,6 @@ public interface IPPacket extends Packet, Cloneable {
      * @return
      */
     int getTotalIPLength();
-
-    /**
-     * The checksum of the IP-packet. The checksum in an IP-packet is a 16 bit
-     * checksum of the header bytes (which the checksum set to zero) and is
-     * returned as a unsigned short (hence an int)
-     * 
-     * Checkout
-     * 
-     * @return
-     */
-    int getIpChecksum();
-
-    /**
-     * After you change anything in an IP packet (apart from the payload) you
-     * should re-calculate the checksum. If you don't, if this then is written
-     * to a pcap and later opened in e.g. wireshark, then all packets will be
-     * flagged as bad checksums.
-     */
-    void reCalculateChecksum();
-
-    boolean verifyIpChecksum();
 
     @Override
     IPPacket clone();
@@ -187,74 +108,6 @@ public interface IPPacket extends Packet, Cloneable {
      * @return
      */
     boolean isFragmented();
-
-    /**
-     * The Reserved flag is part of the three-bit flag field and those flags
-     * are: (in order, from high order to low order):
-     * 
-     * <pre>
-     * bit 0: Reserved; must be zero.
-     * bit 1: Don't Fragment (DF)
-     * bit 2: More Fragments (MF)
-     * </pre>
-     * 
-     * (source http://en.wikipedia.org/wiki/IPv4)
-     * 
-     * @return should always return false
-     */
-    boolean isReservedFlagSet();
-
-    /**
-     * The DF flag is part of the three-bit flag field and those flags are: (in
-     * order, from high order to low order):
-     * 
-     * <pre>
-     * bit 0: Reserved; must be zero.
-     * bit 1: Don't Fragment (DF)
-     * bit 2: More Fragments (MF)
-     * </pre>
-     * 
-     * If the DF flag is set, and fragmentation is required to route the packet,
-     * then the packet is dropped. This can be used when sending packets to a
-     * host that does not have sufficient resources to handle fragmentation. It
-     * can also be used for Path MTU Discovery, either automatically by the host
-     * IP software, or manually using diagnostic tools such as ping or
-     * traceroute. For unfragmented packets, the MF flag is cleared. For
-     * fragmented packets, all fragments except the last have the MF flag set.
-     * The last fragment has a non-zero Fragment Offset field, differentiating
-     * it from an unfragmented packet.
-     * 
-     * (source http://en.wikipedia.org/wiki/IPv4)
-     * 
-     * @return
-     */
-    boolean isDontFragmentSet();
-
-    /**
-     * The MF flag is part of the three-bit flag field and those flags are: (in
-     * order, from high order to low order):
-     * 
-     * <pre>
-     * bit 0: Reserved; must be zero.
-     * bit 1: Don't Fragment (DF)
-     * bit 2: More Fragments (MF)
-     * </pre>
-     * 
-     * If the DF flag is set, and fragmentation is required to route the packet,
-     * then the packet is dropped. This can be used when sending packets to a
-     * host that does not have sufficient resources to handle fragmentation. It
-     * can also be used for Path MTU Discovery, either automatically by the host
-     * IP software, or manually using diagnostic tools such as ping or
-     * traceroute. For unfragmented packets, the MF flag is cleared. For
-     * fragmented packets, all fragments except the last have the MF flag set.
-     * The last fragment has a non-zero Fragment Offset field, differentiating
-     * it from an unfragmented packet.
-     * 
-     * (source http://en.wikipedia.org/wiki/IPv4)
-     * 
-     * @return
-     */
-    boolean isMoreFragmentsSet();
 
     /**
      * The fragment offset field, measured in units of eight-byte blocks, is 13

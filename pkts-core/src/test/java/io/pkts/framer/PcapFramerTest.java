@@ -11,6 +11,7 @@ import io.pkts.buffer.Buffer;
 import io.pkts.frame.PcapGlobalHeader;
 import io.pkts.frame.PcapRecordHeader;
 import io.pkts.packet.IPPacket;
+import io.pkts.packet.IPv4Packet;
 import io.pkts.packet.PCapPacket;
 
 import java.io.IOException;
@@ -88,14 +89,14 @@ public class PcapFramerTest extends PktsTestBase {
      */
     @Test
     public void testRawLinktypeFraming() throws Exception {
-        IPPacket ipPacket = loadIPPackets("sipp.pcap").get(0);
+        IPv4Packet ipPacket = (IPv4Packet) loadIPPackets("sipp.pcap").get(0);
 
         PCapPacketImpl pcapPacket = new PCapPacketImpl(
                 PcapGlobalHeader.createDefaultHeader(Protocol.IPv4),
                 PcapRecordHeader.createDefaultHeader(1),
                 ipPacket.getParentPacket().getPayload());
 
-        IPPacket parsedIpPacket = (IPPacket) pcapPacket.getNextPacket();
+        IPv4Packet parsedIpPacket = (IPv4Packet) pcapPacket.getNextPacket();
 
         assertThat(parsedIpPacket.getDestinationIP(), is(ipPacket.getDestinationIP()));
         assertThat(parsedIpPacket.getSourceIP(), is(ipPacket.getSourceIP()));

@@ -4,11 +4,9 @@
 package io.pkts.framer;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.packet.IPPacket;
-import io.pkts.packet.MACPacket;
-import io.pkts.packet.PCapPacket;
+import io.pkts.packet.IPv4Packet;
 import io.pkts.packet.Packet;
-import io.pkts.packet.impl.IPPacketImpl;
+import io.pkts.packet.impl.IPv4PacketImpl;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
@@ -17,8 +15,7 @@ import java.io.IOException;
  * @author jonas@jonasborjesson.com
  * 
  */
-public class IPv4Framer implements Framer<Packet, IPPacket> {
-
+public class IPv4Framer implements Framer<Packet, IPv4Packet> {
     public IPv4Framer() {
     }
 
@@ -34,7 +31,7 @@ public class IPv4Framer implements Framer<Packet, IPPacket> {
      * {@inheritDoc}
      */
     @Override
-    public IPPacket frame(final Packet parent, final Buffer payload) throws IOException {
+    public IPv4Packet frame(final Packet parent, final Buffer payload) throws IOException {
 
         if (parent == null) {
             throw new IllegalArgumentException("The parent frame cannot be null");
@@ -98,7 +95,7 @@ public class IPv4Framer implements Framer<Packet, IPPacket> {
         // IPv4 header says its length should be.
         final int tcpLength = payload.getReaderIndex() + totalLength - (headerLength * 4);
         final Buffer data = payload.slice(Math.min(tcpLength, payload.capacity()));
-        return new IPPacketImpl(parent, headers, options, data);
+        return new IPv4PacketImpl(parent, headers, options, data);
     }
 
     @Override

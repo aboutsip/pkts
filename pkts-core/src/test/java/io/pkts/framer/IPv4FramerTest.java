@@ -10,7 +10,7 @@ import static org.mockito.Mockito.mock;
 import io.pkts.RawData;
 import io.pkts.PktsTestBase;
 import io.pkts.buffer.Buffers;
-import io.pkts.packet.IPPacket;
+import io.pkts.packet.IPv4Packet;
 import io.pkts.packet.MACPacket;
 import io.pkts.packet.PCapPacket;
 import io.pkts.packet.UDPPacket;
@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * @author jonas@jonasborjesson.com
  */
-public class IPFramerTest extends PktsTestBase {
+public class IPv4FramerTest extends PktsTestBase {
 
     @Test(expected = IllegalArgumentException.class)
     public void testIPFramerNoParent() throws Exception {
@@ -35,7 +35,7 @@ public class IPFramerTest extends PktsTestBase {
     public void testFragmentedIpPacket() throws Exception {
         final EthernetFramer framer = new EthernetFramer();
         final MACPacket frame = framer.frame(mock(PCapPacket.class), Buffers.wrap(RawData.fragmented));
-        final IPPacket ip = (IPPacket) frame.getPacket(Protocol.IPv4);
+        final IPv4Packet ip = (IPv4Packet) frame.getPacket(Protocol.IPv4);
         assertThat(ip.isMoreFragmentsSet(), is(true));
     }
 

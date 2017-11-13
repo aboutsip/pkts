@@ -10,6 +10,7 @@ import io.pkts.frame.PcapGlobalHeader;
 import io.pkts.framer.FramerManager;
 import io.pkts.framer.PcapFramer;
 import io.pkts.packet.IPPacket;
+import io.pkts.packet.IPv4Packet;
 import io.pkts.packet.PCapPacket;
 import io.pkts.packet.Packet;
 import io.pkts.packet.PacketParseException;
@@ -152,11 +153,11 @@ public class PktsTestBase {
         return packets;
     }
 
-    public List<IPPacket> loadIPPackets(final String streamName) throws Exception {
+    public List<IPv4Packet> loadIPPackets(final String streamName) throws Exception {
         final List<Packet> packets = loadStream(streamName);
-        final List<IPPacket> ipPackets = new ArrayList<IPPacket>();
+        final List<IPv4Packet> ipPackets = new ArrayList<>();
         for (final Packet packet : packets) {
-            final IPPacket ip = (IPPacket) packet.getPacket(Protocol.IPv4);
+            final IPv4Packet ip = (IPv4Packet) packet.getPacket(Protocol.IPv4);
             ipPackets.add(ip);
         }
         return ipPackets;

@@ -6,6 +6,7 @@ package io.pkts.packet.impl;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.IPPacket;
+import io.pkts.packet.IPv4Packet;
 import io.pkts.packet.TransportPacket;
 import io.pkts.packet.UDPPacket;
 import io.pkts.protocol.Protocol;
@@ -67,7 +68,10 @@ public final class UdpPacketImpl extends TransportPacketImpl implements UDPPacke
         // in this.headers after we have wrapped them. Simply wont work...
         final int size = this.headers.getReadableBytes() + (payload != null ? payload.getReadableBytes() : 0);
         this.setLength(size);
-        getParentPacket().reCalculateChecksum();
+        final IPPacket parent = getParentPacket();
+        if (parent instanceof IPv4Packet) {
+            ((IPv4Packet) parent).reCalculateChecksum();
+        }
         final Buffer pkt = Buffers.wrap(this.headers, payload);
         getParentPacket().write(out, pkt);
     }
