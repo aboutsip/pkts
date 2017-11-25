@@ -287,7 +287,8 @@ public final class IPv4PacketImpl extends AbstractPacket implements IPv4Packet {
     public int getHeaderLength() {
         try {
             final byte b = this.headers.getByte(0);
-            return b & 0x0F;
+            // length is encoded as the number of 32-bit words, so to get number of bytes we must multiply by 4
+            return (b & 0x0F) * 4;
         } catch (final IOException e) {
             throw new RuntimeException("unable to get the header length of the IP packet due to IOException", e);
         }
