@@ -40,8 +40,6 @@ public interface Buffer extends Cloneable {
      */
     void getBytes(final int index, final Buffer dst) throws IndexOutOfBoundsException;
 
-    void getByes(final byte[] dst) throws IndexOutOfBoundsException;
-
     /**
      * Read the requested number of bytes and increase the readerIndex with the
      * corresponding number of bytes. The new buffer and this buffer both share
@@ -276,26 +274,6 @@ public interface Buffer extends Cloneable {
      * @return
      */
     Buffer slice();
-
-    /**
-     * If you access the {@link Buffer#getRawArray()} you will get just that. The raw
-     * un-guarded array, which may be useful but should be used with care since you
-     * now can do whatever you want with the data. However, if you do so and also
-     * want to know which 'slice' of that array this buffer is seeing, then you
-     * need to know the lower boundary as well since the array can e.g be 1k long
-     * but the data seen by this buffer starts at index 200.
-     *
-     * @return
-     */
-    int getLowerBoundary();
-
-    /**
-     * See explanation in {@link Buffer#getLowerBoundary()} since this is the same, just
-     * the upper limit of that raw array.
-     *
-     * @return
-     */
-    int getUpperBoundary();
 
     /**
      * The reader index

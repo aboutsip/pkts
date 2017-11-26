@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 
 /**
  * A buffer directly backed by a byte-array
@@ -373,12 +372,6 @@ public final class ByteBuffer extends AbstractBuffer {
         for (int i = this.lowerBoundary + index; i < stop; ++i) {
             dst.write(this.buffer[i]);
         }
-    }
-
-    @Override
-    public void getByes(final byte[] dst) throws IndexOutOfBoundsException {
-        final int length = Math.min(dst.length, getReadableBytes());
-        System.arraycopy(this.buffer, this.lowerBoundary + this.readerIndex, dst, 0, length);
     }
 
     public void getBytes(final int index, final java.nio.ByteBuffer dst) {

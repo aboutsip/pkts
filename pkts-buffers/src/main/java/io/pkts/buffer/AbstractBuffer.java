@@ -54,17 +54,7 @@ public abstract class AbstractBuffer extends BaseBuffer {
     @Override
     public abstract Buffer clone();
 
-    @Override
-    public int getLowerBoundary() {
-        return this.lowerBoundary;
-    }
-
-    @Override
-    public int getUpperBoundary() {
-        return this.upperBoundary;
-    }
-
-    /**
+  /**
      * {@inheritDoc}
      */
     @Override

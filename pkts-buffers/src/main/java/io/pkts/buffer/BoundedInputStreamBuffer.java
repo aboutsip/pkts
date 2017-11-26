@@ -508,11 +508,6 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
     }
 
     @Override
-    public void getByes(final byte[] dst) throws IndexOutOfBoundsException {
-        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
-    }
-
-    @Override
     public void getBytes(final int index, final Buffer dst) throws IndexOutOfBoundsException {
         throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
@@ -606,16 +601,6 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
 
     @Override
     public void markReaderIndex() {
-        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
-    }
-
-    @Override
-    public int getLowerBoundary() {
-        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
-    }
-
-    @Override
-    public int getUpperBoundary() {
         throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 

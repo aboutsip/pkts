@@ -124,16 +124,6 @@ public class EmptyBuffer implements Buffer {
         return this;
     }
 
-    @Override
-    public int getLowerBoundary() {
-        return 0;
-    }
-
-    @Override
-    public int getUpperBoundary() {
-        return 0;
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -404,13 +394,7 @@ public class EmptyBuffer implements Buffer {
         // so therefore leaving empty.
     }
 
-    @Override
-    public void getByes(final byte[] dst) throws IndexOutOfBoundsException {
-        // since it is empty, there are no bytes to get
-        // so therefore leaving empty.
-    }
-
-    @Override
+  @Override
     public void getBytes(final int index, final Buffer dst) throws IndexOutOfBoundsException {
         // since it is empty, there are no bytes to get
         // so therefore leaving empty.
