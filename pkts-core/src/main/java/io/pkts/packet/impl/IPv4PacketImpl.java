@@ -10,6 +10,7 @@ import io.pkts.framer.UDPFramer;
 import io.pkts.packet.IPv4Packet;
 import io.pkts.packet.PCapPacket;
 import io.pkts.packet.Packet;
+import io.pkts.packet.PacketParseException;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
@@ -257,15 +258,18 @@ public final class IPv4PacketImpl extends AbstractPacket implements IPv4Packet {
         // the protocol is in byte 10
         final byte code = this.headers.getByte(9);
         final Protocol protocol = Protocol.valueOf(code);
-        switch (protocol) {
-        case UDP:
-            return udpFramer.frame(this, payload);
-        case TCP:
-            return tcpFramer.frame(this, payload);
-        default:
-            throw new RuntimeException("Unknown Protocol. Was this SCTP or something???");
+        if (protocol != null) {
+            switch (protocol) {
+            case UDP:
+                return udpFramer.frame(this, payload);
+            case TCP:
+                return tcpFramer.frame(this, payload);
+            default:
+                throw new PacketParseException(9, String.format("Unsupported inner protocol %s for IPv4", protocol.getName()));
+            }
+        } else {
+            throw new PacketParseException(9, String.format("Unknown protocol %d inside IPv4 packet", code));
         }
-
     }
 
     /**
