@@ -3,6 +3,7 @@ package io.pkts;
 import io.pkts.buffer.BoundedInputStreamBuffer;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.buffer.ChannelBuffer;
 import io.pkts.filters.Filter;
 import io.pkts.filters.FilterException;
 import io.pkts.filters.FilterFactory;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
+import java.nio.channels.ReadableByteChannel;
 
 /**
  * 
@@ -161,6 +163,12 @@ public class Pcap {
      */
     public static Pcap openStream(final String file) throws FileNotFoundException, IOException {
         return openStream(new File(file));
+    }
+
+    public static Pcap openChannel(final ReadableByteChannel channel) throws IOException {
+        final Buffer stream = new ChannelBuffer(channel);
+        final PcapGlobalHeader header = PcapGlobalHeader.parse(stream);
+        return new Pcap(header, stream);
     }
 
     public void close() {
