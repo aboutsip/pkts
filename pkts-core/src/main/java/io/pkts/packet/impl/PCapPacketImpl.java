@@ -87,7 +87,7 @@ public final class PCapPacketImpl extends AbstractPacket implements PCapPacket {
         final Date date = new Date(getArrivalTime() / 1000);
         sb.append("Arrival Time: ").append(formatter.format(date))
           .append(" Epoch Time: ").append(this.pcapHeader.getTimeStampSeconds()).append(".")
-          .append(this.pcapHeader.getTimeStampMicroSeconds())
+          .append(String.format("%06d", this.pcapHeader.getTimeStampMicroSeconds()))
           .append(" Frame Length: ").append(getTotalLength())
           .append(" Capture Length: ").append(getCapturedLength());
 
