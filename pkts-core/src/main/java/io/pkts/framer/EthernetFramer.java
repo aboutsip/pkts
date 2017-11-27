@@ -93,11 +93,12 @@ public class EthernetFramer implements Framer<PCapPacket, MACPacket> {
 
     public enum EtherType {
         IPv4((byte) 0x08, (byte) 0x00),
-        IPv6((byte) 0x86, (byte) 0xdd),
         ARP((byte) 0x08, (byte) 0x06),
+        IPv6((byte) 0x86, (byte) 0xdd),
+        LLDP((byte) 0x88, (byte) 0xcc),
+        EAPOL((byte) 0x88, (byte) 0x8e),
         // Representing EtherType < 1536, which is actually a length of the frame and not a meaningful type
         None((byte) 0x00, (byte) 0x00),
-        LLDP((byte) 0x88, (byte) 0xcc),
 
         ;
 
