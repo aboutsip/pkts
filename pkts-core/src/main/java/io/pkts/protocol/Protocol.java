@@ -8,6 +8,7 @@ import io.pkts.framer.FramerManager;
  */
 public enum Protocol {
     ICMP("icmp", Layer.LAYER_3),
+    ICMP6("icmp6", Layer.LAYER_3),
     IGMP("igmp", Layer.LAYER_3),
     TLS("tcp", Layer.LAYER_7),
     TCP("tcp", Layer.LAYER_4),
@@ -94,6 +95,8 @@ public enum Protocol {
                 return UDP;
             case (byte) 0x84:
                 return SCTP;
+            case (byte) 0x3A:
+                return ICMP6;
             default:
                 return null;
         }
