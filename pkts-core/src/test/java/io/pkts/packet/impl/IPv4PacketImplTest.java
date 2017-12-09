@@ -141,4 +141,12 @@ public class IPv4PacketImplTest extends PktsTestBase {
         pkt.setSourceIP("55.66.77.88");
         assertThat(pkt.getSourceIP(), is("55.66.77.88"));
     }
+
+    @Test
+    public void testHeaderLength() throws Exception {
+        final IPv4Packet pkt = loadIPPackets("sipp.pcap").get(0);
+        // normal IP header is 5 32-bit words, or 20 bytes long
+        assertThat(pkt.getHeaderLength(), is(20));
+
+    }
 }
