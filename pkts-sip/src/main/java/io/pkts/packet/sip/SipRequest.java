@@ -181,6 +181,24 @@ public interface SipRequest extends SipMessage {
         return null;
     }
 
+    /**
+     * Convenience method for just replying with a 200 to a request.
+     *
+     * @return the 200 OK response.
+     */
+    default SipResponse ok() {
+        return createResponse(200).build();
+    }
+
+    /**
+     * Convenience method for just replying with a 405 Method Not Allowed to a request.
+     *
+     * @return the 405 response.
+     */
+    default SipResponse methodNotAllowed() {
+        return createResponse(405).build();
+    }
+
     @Override
     Builder copy();
 

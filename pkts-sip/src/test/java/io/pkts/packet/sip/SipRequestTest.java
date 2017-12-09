@@ -3,8 +3,15 @@
  */
 package io.pkts.packet.sip;
 
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.List;
+import java.util.function.Consumer;
+
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
+import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.CallIdHeader;
@@ -15,15 +22,11 @@ import io.pkts.packet.sip.header.RecordRouteHeader;
 import io.pkts.packet.sip.header.RouteHeader;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ViaHeader;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.List;
-import java.util.function.Consumer;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -127,6 +130,12 @@ public class SipRequestTest extends PktsTestBase {
                 .onFromHeader(from -> from.withDefaultTag()) // set a new tag since this is a b2bua request
                 .onToHeader(to -> to.withNoTag()) // ensure there is no tag param on the To.
                 .build();
+
+        // Ensure that the from-tags now are different and that the two are actually
+        // set in the first place.
+        assertThat(req.getFromHeader().getTag(), not((Buffer)null));
+        assertThat(b2bua.getFromHeader().getTag(), not((Buffer)null));
+        assertThat(req.getFromHeader().getTag(), not(b2bua.getFromHeader().getTag()));
 
         // ensure the Vias are correct. We pushed one, which should be at the top
         // and the one that came in on the original request should be un-touched.
