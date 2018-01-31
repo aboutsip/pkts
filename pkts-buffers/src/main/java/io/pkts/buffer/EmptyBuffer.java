@@ -405,7 +405,7 @@ public class EmptyBuffer implements Buffer {
     }
 
     @Override
-    public void getByes(final byte[] dst) throws IndexOutOfBoundsException {
+    public void getBytes(final byte[] dst) throws IndexOutOfBoundsException {
         // since it is empty, there are no bytes to get
         // so therefore leaving empty.
     }

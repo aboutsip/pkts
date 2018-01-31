@@ -508,7 +508,7 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
     }
 
     @Override
-    public void getByes(final byte[] dst) throws IndexOutOfBoundsException {
+    public void getBytes(final byte[] dst) throws IndexOutOfBoundsException {
         throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 

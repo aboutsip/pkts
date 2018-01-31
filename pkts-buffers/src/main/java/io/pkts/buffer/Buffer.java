@@ -40,7 +40,16 @@ public interface Buffer extends Cloneable {
      */
     void getBytes(final int index, final Buffer dst) throws IndexOutOfBoundsException;
 
-    void getByes(final byte[] dst) throws IndexOutOfBoundsException;
+    void getBytes(final byte[] dst) throws IndexOutOfBoundsException;
+
+    /**
+     * @see #getBytes(byte[])
+     * @deprecated Please use {@link #getBytes(byte[])} instead
+     */
+    @Deprecated
+    default void getByes(final byte[] dst) throws IndexOutOfBoundsException {
+        getBytes(dst);
+    }
 
     /**
      * Read the requested number of bytes and increase the readerIndex with the
