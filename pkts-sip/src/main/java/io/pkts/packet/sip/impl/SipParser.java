@@ -1864,6 +1864,10 @@ public class SipParser {
             return !isAllowHeader(headerName);
         } else if (size == 4) {
             return !isDateHeader(headerName);
+        } else if (size == 1) {
+            return !isAllowEventsHeaderShort(headerName);
+        } else if (size == 12) {
+            return !isAllowEventsHeader(headerName);
         }
 
         return true;
@@ -1889,6 +1893,27 @@ public class SipParser {
             return name.getByte(0) == 'A' && name.getByte(1) == 'l' &&
                     name.getByte(2) == 'l' && name.getByte(3) == 'o' &&
                     name.getByte(4) == 'w';
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
+    private static boolean isAllowEventsHeaderShort(final Buffer name) {
+        try {
+            return name.getByte(0) == 'u';
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
+    private static boolean isAllowEventsHeader(final Buffer name) {
+        try {
+            return name.getByte(0) == 'A' && name.getByte(1) == 'l' &&
+                    name.getByte(2) == 'l' && name.getByte(3) == 'o' &&
+                    name.getByte(4) == 'w' && name.getByte(5) == '-' &&
+                    name.getByte(6) == 'E' && name.getByte(7) == 'v' &&
+                    name.getByte(8) == 'e' && name.getByte(9) == 'n' &&
+                    name.getByte(10) == 't' && name.getByte(11) == 's';
         } catch (final IOException e) {
             return false;
         }

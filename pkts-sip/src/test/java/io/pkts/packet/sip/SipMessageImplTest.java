@@ -172,14 +172,41 @@ public class SipMessageImplTest extends PktsTestBase {
         final List<SipHeader> allow = msg.getHeaders("Allow");
         assertThat(allow.size(), is(1));
         assertThat(allow.get(0).getValue().toString(), is("INVITE, ACK, CANCEL, BYE, REFER, OPTIONS, NOTIFY, SUBSCRIBE, PRACK, MESSAGE, INFO, UPDATE"));
-
-        // Allow-Events (RFC3265) doesn't actually allow multiple values on a single
-        // line either but currently there is a bug that doesn't take this into account.
-        // Filing a new bug on this.
-        // final List<SipHeader> allowEvents = msg.getHeaders("Allow-Events");
-        // assertThat(allowEvents.size(), is(1));
-        // assertThat(allowEvents.get(0).getValue().toString(), is("talk, hold, refer, call-info"));
     }
+
+    /**
+     * <p>Issue no 88</p>
+     *
+     * Allow-Events does not allow multiple values to be folded onto a single line.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testIssue88AllowEvents() throws Exception {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("INVITE sip:bob@192.168.1.100 SIP/2.0\r\n");
+        sb.append("Via: SIP/2.0/UDP 192.168.1.201:2048;branch=z9hG4bK-16gcnwrd28r3;rport\r\n");
+        sb.append("From: \"Alice\" <sip:alice@192.168.1.100>;tag=te94a023hw\r\n");
+        sb.append("To: <sip:bob@192.168.1.100>\r\n");
+        sb.append("Accept: application/sdp\r\n");
+        sb.append("Content-Length: 0\r\n");
+
+        final String fullHeaderName = "Allow-Events: talk, hold, refer, call-info\r\n\r\n";
+        SipMessage msg = SipMessage.frame(sb.toString() + fullHeaderName);
+        ensureHeaderValues(msg, "Allow-Events", "talk, hold, refer, call-info");
+
+        final String shortHeaderName = "u: talk, hold, refer, call-info\r\n\r\n";
+        msg = SipMessage.frame(sb.toString() + shortHeaderName);
+        ensureHeaderValues(msg, "u", "talk, hold, refer, call-info");
+
+    }
+
+    private void ensureHeaderValues(final SipMessage msg, final String name, final String expectedValues) {
+        final List<SipHeader> headers = msg.getHeaders(name);
+        assertThat(headers.size(), is(1));
+        assertThat(headers.get(0).getValue().toString(), is(expectedValues));
+    }
+
 
     /**
      * Issue 65 is about accessing the ContentType header and after doing so, it will not be included
