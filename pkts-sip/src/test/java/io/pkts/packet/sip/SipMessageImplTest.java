@@ -14,6 +14,7 @@ import io.pkts.RawData;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.ContentTypeHeader;
+import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ViaHeader;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -88,6 +89,96 @@ public class SipMessageImplTest extends PktsTestBase {
         final SipRequest req2a = (SipRequest) parseMessage(RawData.sipBye);
         assertThat(req2a, is(req2a));
         assertThat(req2a, not(req1a));
+    }
+
+    /**
+     * <p>
+     * Reported as: Allow: ACK, CANCEL, BYE ... parsed as VIA header
+     * </p>
+     *
+     * <p>
+     * However, the example used to by filer to reprdouce the bug isn't correct.
+     * Here are the errors in that example:
+     * </p>
+     *
+     * <ol>
+     * <li>In RFC 3251 (unlike 2543), lines MUST terminate with CRLF. The example only had LF.
+     * This is a change from 2543. See the BNF in 3261 and they also have a statement about
+     * this difference between the two versions on Section 28.1 page 256, which says:
+     *     "In RFC 2543, lines in a message could be terminated with CR, LF,
+     *      or CRLF.  This specification only allows CRLF."</li>
+     * <li><Missed CRLF on the Content-Length line</li>
+     * <li>Must have double CRLF between headers and body of message. In the example
+     *   provided, the last header in the message was Content-Length and there was
+     *   no extra CRLF between it and the body.</li>
+     * </ol>
+     *
+     * <p>
+     * One the above mis-formatting was corrected, the example works just fine.
+     * See unit test below.
+     * </p>
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testIssue84() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append("INVITE sip:bob@192.168.1.100 SIP/2.0\r\n");
+        sb.append("Via: SIP/2.0/UDP 192.168.1.201:2048;branch=z9hG4bK-16gcnwrd28r3;rport\r\n");
+        sb.append("From: \"Alice\" <sip:alice@192.168.1.100>;tag=te94a023hw\r\n");
+        sb.append("To: <sip:bob@192.168.1.100>\r\n");
+        sb.append("Call-ID: 313438313130343734353532333433-xehwxtcark7e\r\n");
+        sb.append("CSeq: 1 INVITE\r\n");
+        sb.append("Max-Forwards: 70\r\n");
+        sb.append("User-Agent: snom300/8.7.5.17\r\n");
+        sb.append("Contact: <sip:alice@192.168.1.201:2048;line=8lif2g5m>;reg-id=1\r\n");
+        sb.append("X-Serialnumber: 00041325476C\r\n");
+        sb.append("P-Key-Flags: keys=\"3\"\r\n");
+        sb.append("Accept: application/sdp\r\n");
+        sb.append("Allow: INVITE, ACK, CANCEL, BYE, REFER, OPTIONS, NOTIFY, SUBSCRIBE, PRACK, MESSAGE, INFO, UPDATE\r\n");
+        sb.append("Allow-Events: talk, hold, refer, call-info\r\n");
+        sb.append("Supported: timer, 100rel, replaces, from-change\r\n");
+        sb.append("Session-Expires: 3600\r\n");
+        sb.append("Min-SE: 90\r\n");
+        sb.append("Content-Type: application/sdp\r\n");
+        sb.append("Content-Length: 403\r\n\r\n"); // missed here. Also need to be double line
+        sb.append("v=0\r\n");
+        sb.append("o=root 722847273 722847273 IN IP4 192.168.1.201\r\n");
+        sb.append("s=call\r\n");
+        sb.append("c=IN IP4 192.168.1.201\r\n");
+        sb.append("t=0 0\r\n");
+        sb.append("m=audio 61856 RTP/AVP 9 0 8 3 99 112 18 101\r\n");
+        sb.append("a=rtpmap:9 G722/8000\r\n");
+        sb.append("a=rtpmap:0 PCMU/8000\r\n");
+        sb.append("a=rtpmap:8 PCMA/8000\r\n");
+        sb.append("a=rtpmap:3 GSM/8000\r\n");
+        sb.append("a=rtpmap:99 G726-32/8000\r\n");
+        sb.append("a=rtpmap:112 AAL2-G726-32/8000\r\n");
+        sb.append("a=rtpmap:18 G729/8000\r\n");
+        sb.append("a=fmtp:18 annexb=no\r\n");
+        sb.append("a=rtpmap:101 telephone-event/8000\r\n");
+        sb.append("a=fmtp:101 0-15\r\n");
+        sb.append("a=ptime:20\r\n");
+        sb.append("a=sendrecv\r\n");
+
+        final SipMessage msg = SipMessage.frame(sb.toString());
+        final List<ViaHeader> vias = msg.getViaHeaders();
+        assertThat(vias.size(), is(1));
+        assertThat(vias.get(0).getValue().toString(), is("SIP/2.0/UDP 192.168.1.201:2048;branch=z9hG4bK-16gcnwrd28r3;rport"));
+
+        // Note that the Allow header does not allow multiple values
+        // on a single line and as such, there is only one Allow header
+        // with one long value.
+        final List<SipHeader> allow = msg.getHeaders("Allow");
+        assertThat(allow.size(), is(1));
+        assertThat(allow.get(0).getValue().toString(), is("INVITE, ACK, CANCEL, BYE, REFER, OPTIONS, NOTIFY, SUBSCRIBE, PRACK, MESSAGE, INFO, UPDATE"));
+
+        // Allow-Events (RFC3265) doesn't actually allow multiple values on a single
+        // line either but currently there is a bug that doesn't take this into account.
+        // Filing a new bug on this.
+        // final List<SipHeader> allowEvents = msg.getHeaders("Allow-Events");
+        // assertThat(allowEvents.size(), is(1));
+        // assertThat(allowEvents.get(0).getValue().toString(), is("talk, hold, refer, call-info"));
     }
 
     /**
