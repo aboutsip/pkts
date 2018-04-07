@@ -50,6 +50,7 @@
     <module>pkts-buffers</module>
     <module>pkts-sdp</module>
     <module>pkts-sip</module>
+    <module>pkts-diameter</module>
     <module>pkts-core</module>
     <module>pkts-streams</module>
     <module>pkts-examples</module>

@@ -1,0 +1,35 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.pkts</groupId>
+    <artifactId>pkts-parent</artifactId>
+    <version>3.0.4-SNAPSHOT</version>
+  </parent>
+
+  <name>SIP Framer and Parser Library</name>
+  <groupId>io.pkts</groupId>
+  <artifactId>pkts-diameter</artifactId>
+  <packaging>jar</packaging>
+  <dependencies>
+
+    <!-- Compile Dependencies -->
+    <dependency>
+      <groupId>io.pkts</groupId>
+      <artifactId>pkts-buffers</artifactId>
+    </dependency>
+
+    <!-- Test Dependencies -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+    </dependency>
+
+  </dependencies>
+
+</project>
