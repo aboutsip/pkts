@@ -276,7 +276,11 @@ public abstract class ImmutableSipMessage implements SipMessage {
     public ContentTypeHeader getContentTypeHeader() throws SipParseException {
         final SipHeader header = findHeader(ContentTypeHeader.NAME);
         if (header == null) {
+            final SipHeader cheader = findHeader(ContentTypeHeader.COMPACT_NAME);
+            if (cheader == null)
             return null;
+            else
+                return cheader.ensure().toContentTypeHeader();
         }
 
         return header.ensure().toContentTypeHeader();
@@ -286,7 +290,12 @@ public abstract class ImmutableSipMessage implements SipMessage {
     public int getContentLength() throws SipParseException {
         final SipHeader header = findHeader(ContentLengthHeader.NAME);
         if (header == null) {
+            final SipHeader cheader = findHeader(ContentLengthHeader.COMPACT_NAME);
+            if (cheader == null) {
             return 0;
+            } else {
+                return cheader.ensure().toContentLengthHeader().getContentLength();
+            }
         }
 
         return header.ensure().toContentLengthHeader().getContentLength();
