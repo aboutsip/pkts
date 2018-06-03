@@ -24,6 +24,24 @@ public interface DiameterHeader {
 
     int getLength();
 
+    boolean isRequest();
+
+    default boolean isResponse() {
+        return !isRequest();
+    }
+
+    boolean isProxiable();
+
+    boolean isError();
+
+    boolean isPossiblyRetransmission();
+
+    long getApplicationId();
+
+    long getHopByHopId();
+
+    long getEndToEndId();
+
     static DiameterHeader frame(final Buffer buffer) throws DiameterParseException, IOException {
         return DiameterParser.frameHeader(buffer);
     }

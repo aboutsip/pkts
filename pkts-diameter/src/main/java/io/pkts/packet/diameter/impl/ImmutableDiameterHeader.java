@@ -14,9 +14,45 @@ public class ImmutableDiameterHeader implements DiameterHeader {
         this.buffer = buffer.getRawArray();
     }
 
+    @Override
     public int getLength() {
-        return (this.buffer[1] & 0xff) << 16
-                | (this.buffer[2] & 0xff) << 8 | (this.buffer[3] & 0xff) << 0;
+        return (buffer[1] & 0xff) << 16
+                | (buffer[2] & 0xff) << 8 | (buffer[3] & 0xff) << 0;
+    }
+
+    @Override
+    public boolean isRequest() {
+        return false;
+    }
+
+    @Override
+    public boolean isProxiable() {
+        return false;
+    }
+
+    @Override
+    public boolean isError() {
+        return false;
+    }
+
+    @Override
+    public boolean isPossiblyRetransmission() {
+        return false;
+    }
+
+    @Override
+    public long getApplicationId() {
+        return 0;
+    }
+
+    @Override
+    public long getHopByHopId() {
+        return 0;
+    }
+
+    @Override
+    public long getEndToEndId() {
+        return 0;
     }
 
 }

@@ -3,6 +3,7 @@ package io.pkts.packet.diameter.impl;
 import java.io.IOException;
 
 import io.pkts.buffer.Buffer;
+import io.pkts.packet.diameter.AvpHeader;
 import io.pkts.packet.diameter.DiameterHeader;
 import io.pkts.packet.diameter.DiameterMessage;
 import io.pkts.packet.diameter.DiameterParseException;
@@ -19,11 +20,22 @@ public class DiameterParser {
 
     public static DiameterHeader frameHeader(final Buffer buffer) throws DiameterParseException, IOException {
         if (!couldBeDiameterHeader(buffer)) {
-            throw new DiameterParseException(0, "Cannot be a Diameter message because it is less than 20 bytes");
+            throw new DiameterParseException(0, "Cannot be a Diameter message because the header is less than 20 bytes");
         }
 
         final Buffer header = buffer.slice(20);
         return new ImmutableDiameterHeader(header);
+    }
+
+
+    public static AvpHeader frameAvpHeader(final Buffer buffer) throws DiameterParseException, IOException {
+        try {
+            final Buffer base = buffer.readBytes(8);
+
+        } catch (final IOException e) {
+            throw new DiameterParseException("Unable to read 8 bytes from the buffer, not enough data to parse AVP.");
+        }
+        return null;
     }
 
     /**
