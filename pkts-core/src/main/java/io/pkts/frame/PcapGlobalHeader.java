@@ -42,7 +42,7 @@ public final class PcapGlobalHeader {
      * saved in nanosecond resolution instead of microseconds.
      */
     public static final byte[] MAGIC_NSEC = { (byte) 0xa1, (byte) 0xb2, (byte) 0x3c, (byte) 0x4d };
-    public static final byte[] MAGIC_NSEC_SWAPPED = { (byte) 0x4d, (byte) 0x3c, (byte) 0xb2, (byte) 0xa2 };
+    public static final byte[] MAGIC_NSEC_SWAPPED = { (byte) 0x4d, (byte) 0x3c, (byte) 0xb2, (byte) 0xa1 };
 
     /**
      * Found the following at:
@@ -202,6 +202,12 @@ public final class PcapGlobalHeader {
             byteOrder = ByteOrder.BIG_ENDIAN;
         } else if (header[0] == MAGIC_LITTLE_ENDIAN[0] && header[1] == MAGIC_LITTLE_ENDIAN[1]
                 && header[2] == MAGIC_LITTLE_ENDIAN[2] && header[3] == MAGIC_LITTLE_ENDIAN[3]) {
+            byteOrder = ByteOrder.LITTLE_ENDIAN;
+        } else if (header[0] == MAGIC_NSEC[0] && header[1] == MAGIC_NSEC[1]
+                && header[2] == MAGIC_NSEC[2] && header[3] == MAGIC_NSEC[3]) {
+            byteOrder = ByteOrder.BIG_ENDIAN;
+        } else if (header[0] == MAGIC_NSEC_SWAPPED[0] && header[1] == MAGIC_NSEC_SWAPPED[1]
+                && header[2] == MAGIC_NSEC_SWAPPED[2] && header[3] == MAGIC_NSEC_SWAPPED[3]) {
             byteOrder = ByteOrder.LITTLE_ENDIAN;
         } else {
             throw new IllegalArgumentException("Unknown header type");
