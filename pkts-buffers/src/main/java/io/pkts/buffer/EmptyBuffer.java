@@ -206,6 +206,11 @@ public class EmptyBuffer implements Buffer {
         throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
+    @Override
+    public long getUnsignedInt(int index) throws IndexOutOfBoundsException {
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -425,6 +430,7 @@ public class EmptyBuffer implements Buffer {
     public void setInt(final int index, final int value) throws IndexOutOfBoundsException {
         throw new IndexOutOfBoundsException("Sorry, this buffer is empty");
     }
+
 
     @Override
     public int parseToInt() throws NumberFormatException {

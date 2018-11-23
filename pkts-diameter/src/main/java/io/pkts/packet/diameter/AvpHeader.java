@@ -1,10 +1,10 @@
 package io.pkts.packet.diameter;
 
-import java.io.IOException;
-import java.util.Optional;
-
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.diameter.impl.DiameterParser;
+
+import java.io.IOException;
+import java.util.Optional;
 
 /**
  * The {@link AvpHeader} contains the AVP code, length, flags and potentially
@@ -18,9 +18,15 @@ public interface AvpHeader {
         return DiameterParser.frameAvpHeader(buffer);
     }
 
-    int getCode();
+    long getCode();
 
-    long getLength();
+    int getLength();
 
     Optional<Long> getVendorId();
+
+    boolean isVendorSpecific();
+
+    boolean isMandatory();
+
+    boolean isProtected();
 }

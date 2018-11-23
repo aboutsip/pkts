@@ -49,7 +49,7 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
     public BoundedInputStreamBuffer(final int bufferCapacity, final InputStream is) {
         assert is != null;
         this.is = is;
-        this.localCapacity = bufferCapacity;
+        localCapacity = bufferCapacity;
         buffer = new byte[bufferCapacity];
     }
 
@@ -103,7 +103,7 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
             // not sure this is really the right thing to do
             throw new IndexOutOfBoundsException();
         }
-        return getByte(this.readerIndex++);
+        return getByte(readerIndex++);
     }
 
     /**
@@ -116,7 +116,7 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
             // not sure this is really the right thing to do
             throw new IndexOutOfBoundsException();
         }
-        return getByte(this.readerIndex);
+        return getByte(readerIndex);
     }
 
     /**
@@ -148,8 +148,8 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
             final int readAtMost = Math.min(length - index, spaceLeft);
             final int localIndex = getLocalReaderIndex();
 
-            System.arraycopy(this.buffer, localIndex, buf, index, readAtMost);
-            this.readerIndex += readAtMost;
+            System.arraycopy(buffer, localIndex, buf, index, readAtMost);
+            readerIndex += readAtMost;
             index += readAtMost;
         }
         return Buffers.wrap(buf);
@@ -189,7 +189,7 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
      * @return
      */
     private int getLocalWriterIndex() {
-        return (int) (this.writerIndex % this.localCapacity);
+        return (int) (writerIndex % localCapacity);
     }
 
     /**
@@ -198,7 +198,7 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
      * @return
      */
     private int getLocalReaderIndex() {
-        return (int) (this.readerIndex % this.localCapacity);
+        return (int) (readerIndex % localCapacity);
     }
 
     /**
@@ -209,7 +209,7 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
      * @return
      */
     private int getAvailableLocalWritingSpace() {
-        return this.localCapacity - getLocalWriterIndex();
+        return localCapacity - getLocalWriterIndex();
     }
 
     /**
@@ -218,7 +218,7 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
      * @return
      */
     private int getAvailableLocalReadingSpace() {
-        return this.localCapacity - getLocalReaderIndex();
+        return localCapacity - getLocalReaderIndex();
     }
 
     /**
@@ -232,7 +232,7 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
      *             in case anything goes wrong while reading
      */
     private int readFromStream(final long length) throws IOException {
-        if (getReadableBytes() + length > localCapacity ) {
+        if (getReadableBytes() + length > localCapacity) {
             throw new IllegalArgumentException("Trying to read too far ahead, will cause wrap-around issues: " + length);
         }
         int total = 0;
@@ -243,10 +243,10 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
             final int spaceLeft = getAvailableLocalWritingSpace();
             final int readAtMost = (int)Math.min(length - total, spaceLeft);
 
-            actual = this.is.read(this.buffer, localIndex, readAtMost);
+            actual = is.read(buffer, localIndex, readAtMost);
 
             if (actual > 0) {
-                this.writerIndex += actual;
+                writerIndex += actual;
                 total += actual;
             }
         }
@@ -258,7 +258,7 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
      */
     @Override
     public int getReadableBytes() {
-        return assertSafeInt(this.writerIndex - this.readerIndex);
+        return assertSafeInt(writerIndex - readerIndex);
     }
 
     /**
@@ -307,7 +307,7 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
     }
     public byte getByte(final long index) throws IndexOutOfBoundsException, IOException {
         checkIndex(index);
-        return this.buffer[(int)(index % localCapacity)];
+        return buffer[(int) (index % localCapacity)];
     }
     /**
      * Convenience method for checking if we can get the byte at the specified
@@ -324,7 +324,7 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
      * @throws IOException
      */
     private void checkIndex(final long index) throws IndexOutOfBoundsException {
-        final long missingBytes = index + 1 - this.writerIndex;
+        final long missingBytes = index + 1 - writerIndex;
         if (missingBytes <= 0) {
             // we got all the bytes needed
             return;
@@ -361,6 +361,11 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
      */
     @Override
     public int getInt(final int index) throws IndexOutOfBoundsException {
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
+    }
+
+    @Override
+    public long getUnsignedInt(final int index) throws IndexOutOfBoundsException {
         throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
 
@@ -483,7 +488,7 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
         // perhaps not the most efficient way? but it works
         // so for now we'll leave it as this until proven
         // slow
-        final Buffer b = this.slice();
+        final Buffer b = slice();
         return b.toString();
     }
 
@@ -498,7 +503,7 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
     }
 
     @Override
-    public void write(byte[] bytes) throws IndexOutOfBoundsException, WriteNotSupportedException {
+    public void write(final byte[] bytes) throws IndexOutOfBoundsException, WriteNotSupportedException {
         throw new WriteNotSupportedException("Cannot write to an InputStreamBuffer");
     }
 

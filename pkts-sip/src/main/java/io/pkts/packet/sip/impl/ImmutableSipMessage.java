@@ -28,7 +28,6 @@ import java.util.Optional;
  */
 public abstract class ImmutableSipMessage implements SipMessage {
 
-    private static final String I_AM_IMMUTABLE_NO_CAN_DO = "I am immutable, no can do";
     private final Buffer message;
     private final SipInitialLine initialLine;
     private final List<SipHeader> headers;
@@ -83,12 +82,12 @@ public abstract class ImmutableSipMessage implements SipMessage {
 
     @Override
     public SipInitialLine initialLine() {
-        return this.initialLine;
+        return initialLine;
     }
 
     @Override
     public String toString() {
-        return this.message.toString();
+        return message.toString();
     }
 
     @Override

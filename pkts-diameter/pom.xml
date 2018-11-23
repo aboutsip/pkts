@@ -7,7 +7,7 @@
     <version>3.0.4-SNAPSHOT</version>
   </parent>
 
-  <name>SIP Framer and Parser Library</name>
+  <name>Diameter Framer and Parser Library</name>
   <groupId>io.pkts</groupId>
   <artifactId>pkts-diameter</artifactId>
   <packaging>jar</packaging>

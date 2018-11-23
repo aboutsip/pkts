@@ -18,6 +18,21 @@ import java.io.UnsupportedEncodingException;
  */
 public interface Buffer extends Cloneable {
 
+
+    /**
+     * Helper method to "parse" out a unsigned int from the given 4 bytes.
+     *
+     * @param a
+     * @param b
+     * @param c
+     * @param d
+     * @return
+     */
+    static long unsignedInt(final byte a, final byte b, final byte c, final byte d) {
+        return (a & 0xff) << 24 | (b & 0xff) << 16 | (c & 0xff) << 8 | d & 0xff;
+    }
+
+
     /**
      * Same as calling {@link #getBytes(int, Buffer)} where the index is
      * {@link #getReaderIndex()}.
@@ -403,6 +418,8 @@ public interface Buffer extends Cloneable {
     int getInt(int index) throws IndexOutOfBoundsException;
 
     void setInt(int index, int value) throws IndexOutOfBoundsException;
+
+    long getUnsignedInt(int index) throws IndexOutOfBoundsException;
 
     void setUnsignedInt(int index, long value) throws IndexOutOfBoundsException;
 

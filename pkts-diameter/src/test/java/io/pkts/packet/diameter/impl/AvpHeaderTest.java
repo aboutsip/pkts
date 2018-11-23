@@ -1,9 +1,9 @@
 package io.pkts.packet.diameter.impl;
 
-import org.junit.Test;
-
+import io.pkts.packet.diameter.Avp;
 import io.pkts.packet.diameter.AvpHeader;
 import io.pkts.packet.diameter.DiameterTestBase;
+import org.junit.Test;
 
 /**
  * Tests for verifying the {@link AvpHeader}.
@@ -14,11 +14,19 @@ public class AvpHeaderTest extends DiameterTestBase {
 
     @Test
     public void testAvpHeader() throws Exception {
-
-        ensureAvpHeader("001_diameter_auth_info_request.raw", 344);
+        for (final RawAvpHolder raw : RAW_AVPS) {
+            final AvpHeader header = raw.getHeader();
+            raw.assertHeader(header);
+        }
     }
 
-    private static void ensureAvpHeader(final String resource, final int code) throws Exception {
-        final AvpHeader header = AvpHeader.frame(loadBuffer(resource));
+    @Test
+    public void testBasicAvp() throws Exception {
+        for (final RawAvpHolder raw : RAW_AVPS) {
+            Avp avp = raw.getAvp();
+            raw.assertHeader(avp.getHeader());
+        }
+
     }
+
 }

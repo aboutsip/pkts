@@ -1,12 +1,16 @@
 package io.pkts.packet.diameter.impl;
 
-import java.io.IOException;
-
 import io.pkts.buffer.Buffer;
+import io.pkts.packet.diameter.Avp;
 import io.pkts.packet.diameter.AvpHeader;
 import io.pkts.packet.diameter.DiameterHeader;
 import io.pkts.packet.diameter.DiameterMessage;
 import io.pkts.packet.diameter.DiameterParseException;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -14,55 +18,117 @@ import io.pkts.packet.diameter.DiameterParseException;
 public class DiameterParser {
 
     public static DiameterMessage frame(final Buffer buffer) throws DiameterParseException, IOException {
+        final int start = buffer.getReaderIndex();
+        final DiameterHeader header = frameHeader(buffer);
+        // the +20 because we have already consumed 20 bytes for the header but the length as stated
+        // in the diameter header actually includes these 20 bytes so...
+        if (header.getLength() > buffer.getReadableBytes() + 20) {
+            throw new DiameterParseException(20, "Not enough bytes in message to parse out the full message");
+        }
 
-        return null;
+        // TODO: we may want to slice out the entire buffer and store that as well
+        // for those applications that just write back out to another network connection
+        // and doesn't really need to mess with the data. Kind of what I do for SIP.
+        // Also, the way this will be read off of the network, we will probably always have
+        // the exact buffer we need and perhaps we should just assume that's the case.
+
+        final Buffer avps = buffer.readBytes(header.getLength() - 20);
+        final List<Avp> list = new ArrayList<>(); // TODO: what's a sensible default?
+        while (avps.getReadableBytes() > 0) {
+            final int readerIndex = avps.getReaderIndex();
+            final Avp avp = Avp.frame(avps);
+            list.add(avp);
+            final int padding = avp.getPadding();
+            if (padding != 0) {
+                avps.readBytes(padding);
+            }
+
+            // fail safe - if we are not making any progress
+            // then we need to bail out.
+            if (readerIndex == avps.getReaderIndex()) {
+                throw new DiameterParseException(readerIndex, "Seems like we are stuck parsing " +
+                        "AVPs for diameter message " + header.getCommandCode() + ". Bailing out");
+
+            }
+        }
+
+        final Buffer entireMsg = buffer.slice(start, buffer.getReaderIndex());
+
+        return new ImmutableDiameterMessage(entireMsg, header, list);
     }
 
+
     public static DiameterHeader frameHeader(final Buffer buffer) throws DiameterParseException, IOException {
-        if (!couldBeDiameterHeader(buffer)) {
+        if (buffer.getReadableBytes() < 20) {
             throw new DiameterParseException(0, "Cannot be a Diameter message because the header is less than 20 bytes");
         }
 
-        final Buffer header = buffer.slice(20);
+        final Buffer header = buffer.readBytes(20);
         return new ImmutableDiameterHeader(header);
     }
 
-
-    public static AvpHeader frameAvpHeader(final Buffer buffer) throws DiameterParseException, IOException {
-        try {
-            final Buffer base = buffer.readBytes(8);
-
-        } catch (final IOException e) {
-            throw new DiameterParseException("Unable to read 8 bytes from the buffer, not enough data to parse AVP.");
-        }
-        return null;
-    }
-
     /**
-     * Helper function to see if the supplied byte-buffer could be a diameter message. Even if this method
-     * returns true, there is no guarantee that it indeed is a Diameter message but if it doesn't go through,
-     * then it is definitely NOT a Diameter message.
+     * Convenience method for checking if this could indeed by a {@link DiameterMessage}. Use this when
+     * you just want to check and not handle the {@link DiameterParseException} that would be thrown as a
+     * result of this not being a diameter message.
+     * <p>
+     * TODO: may actually need a more specific parse exception because right now, you don't konw if
+     * it "blew" up because it is not a diameter message or because there is a "real" parse exception.
      *
      * @param buffer
-     * @return true if this could potentially be a diameter message, false if it def is not a diameter message.
+     * @return
      * @throws IOException
      */
     public static boolean couldBeDiameterMessage(final Buffer buffer) throws IOException {
-
-        if (!couldBeDiameterHeader(buffer)) {
+        try {
+            frameHeader(buffer).validate();
+            return true;
+        } catch (final DiameterParseException e) {
             return false;
         }
+    }
 
-        // perhaps more stuff? Checking version?
-        return true;
+    public static Avp frameAvp(final Buffer buffer) throws DiameterParseException, IOException {
+        try {
+            final AvpHeader header = frameAvpHeader(buffer);
+            final int avpHeaderLength = header.isVendorSpecific() ? 12 : 8;
+            final Buffer data = buffer.readBytes(header.getLength() - avpHeaderLength);
+            return new ImmutableAvp(header, data);
+        } catch (final IndexOutOfBoundsException | IOException e) {
+            // not enough data
+            throw new DiameterParseException("Not enough data in buffer to read out the full AVP");
+        }
+    }
+
+    public static AvpHeader frameAvpHeader(final Buffer buffer) throws DiameterParseException, IOException {
+        try {
+            if (buffer.getReadableBytes() < 8) {
+                throw new DiameterParseException("Unable to read 8 bytes from the buffer, not enough data to parse AVP.");
+            }
+
+            // these are the flags and we need to check if the Vendor-ID bit is set and if so we need
+            // another 4 bytes for the AVP Header.
+            final byte flags = buffer.getByte(buffer.getReaderIndex() + 4);
+            final boolean isVendorIdPresent = (flags & 0b10000000) == 0b10000000;
+            final Buffer avpHeader = isVendorIdPresent ? buffer.readBytes(12) : buffer.readBytes(8);
+            final Optional<Long> vendorId = isVendorIdPresent ? Optional.of(avpHeader.getUnsignedInt(8)) : Optional.empty();
+            return new ImmutableAvpHeader(avpHeader, vendorId);
+
+        } catch (final IOException e) {
+            throw new DiameterParseException("Not enough data in the buffer in order to parse the AVP Header.");
+        }
     }
 
     /**
-     * A diameter message must be at least 20 bytes long. This is then just
-     * diameter header and no AVPs. I guess one could argue there must also
-     * be at least one AVP but we'll add that later if that is necessary.
+     * It is quite common in the various diameter headers that the length is stored in 3 octects. This will return
+     * an int based on those.
+     *
+     * @param a
+     * @param b
+     * @param c
+     * @return
      */
-    public static boolean couldBeDiameterHeader(final Buffer buffer) throws IOException {
-        return buffer.getReadableBytes() >= 20;
+    public static int getIntFromThreeOctets(final byte a, final byte b, final byte c) {
+        return (a & 0xff) << 16 | (b & 0xff) << 8 | (c & 0xff) << 0;
     }
 }
