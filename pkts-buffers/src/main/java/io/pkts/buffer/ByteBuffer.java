@@ -13,7 +13,7 @@ import java.io.UnsupportedEncodingException;
  * 
  * @author jonas@jonasborjesson.com
  */
-public final class ByteBuffer extends AbstractBuffer {
+public class ByteBuffer extends AbstractBuffer {
 
     /**
      * The actual buffer
@@ -50,7 +50,7 @@ public final class ByteBuffer extends AbstractBuffer {
         checkIndex(lowerBoundary + stop - 1);
         final int upperBoundary = lowerBoundary + stop;
         final int writerIndex = upperBoundary;
-        return new ByteBuffer(0, lowerBoundary + start, upperBoundary, writerIndex, buffer);
+        return createBuffer(0, lowerBoundary + start, upperBoundary, writerIndex, buffer);
     }
 
     /**
@@ -67,23 +67,25 @@ public final class ByteBuffer extends AbstractBuffer {
         readerIndex += length;
         final int upperBoundary = readerIndex + this.lowerBoundary;
         final int writerIndex = upperBoundary;
+        return createBuffer(0, lowerBoundary, upperBoundary, writerIndex, buffer);
+    }
+
+    /**
+     * Sub-classes should override this method to return their specific version.
+     *
+     * TODO: should perhaps re-structure ByteBuffer into a new base class (DirectBuffer ala Netty?)
+     * TODO: should probably also have this one return a T extends Buffer or something
+     *
+     * @param readerIndex
+     * @param lowerBoundary
+     * @param upperBoundary
+     * @param writerIndex
+     * @param buffer
+     * @return
+     */
+    protected Buffer createBuffer(final int readerIndex, final int lowerBoundary, final int upperBoundary,
+                                  final int writerIndex, final byte[] buffer) {
         return new ByteBuffer(0, lowerBoundary, upperBoundary, writerIndex, buffer);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean hasReadableBytes() {
-        return getReadableBytes() > 0;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isEmpty() {
-        return getReadableBytes() == 0;
     }
 
     /**

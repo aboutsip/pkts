@@ -108,6 +108,16 @@ public abstract class AbstractBuffer extends BaseBuffer {
         this.markedReaderIndex = this.readerIndex;
     }
 
+    @Override
+    public boolean hasReadableBytes() {
+        return getReadableBytes() > 0;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return getReadableBytes() == 0;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -149,7 +159,6 @@ public abstract class AbstractBuffer extends BaseBuffer {
      */
     protected void checkIndex(final int index) throws IndexOutOfBoundsException {
         if (index >= this.lowerBoundary + capacity()) {
-            //if (index >= this.lowerBoundary + this.writerIndex) {
             throw new IndexOutOfBoundsException();
         }
     }

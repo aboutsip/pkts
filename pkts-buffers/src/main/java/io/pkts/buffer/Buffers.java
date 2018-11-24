@@ -5,6 +5,7 @@ package io.pkts.buffer;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.function.Function;
 
 /**
  * @author jonas@jonasborjesson.com
@@ -78,6 +79,22 @@ public final class Buffers {
         }
 
         return Buffers.wrap(s.getBytes(Charset.forName("UTF-8")));
+    }
+
+    /**
+     * Create a new read-only buffer based on the supplied string. Naturally, the returned buffer
+     * cannot be written to.
+     */
+    public static ReadOnlyBuffer wrapAsReadOnly(final String s) {
+        if (s == null) {
+            throw new IllegalArgumentException("String cannot be null");
+        }
+
+        return new ReadOnlyByteBuffer(s.getBytes(Charset.forName("UTF-8")));
+    }
+
+    private static <T extends Buffer> T internalWrap(final String s, final Function<String, T> f) {
+        return f.apply(s);
     }
 
     public static Buffer wrap(final InputStream is) {
