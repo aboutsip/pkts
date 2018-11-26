@@ -1,7 +1,7 @@
-package io.pkts.packet.diameter;
+package io.pkts.diameter;
 
-import io.pkts.buffer.Buffer;
-import io.pkts.packet.diameter.impl.DiameterParser;
+import io.pkts.buffer.ReadOnlyBuffer;
+import io.pkts.diameter.impl.DiameterParser;
 
 import java.io.IOException;
 
@@ -53,7 +53,7 @@ public interface DiameterHeader {
      */
     boolean validate();
 
-    static DiameterHeader frame(final Buffer buffer) throws DiameterParseException, IOException {
+    static DiameterHeader frame(final ReadOnlyBuffer buffer) throws DiameterParseException, IOException {
         return DiameterParser.frameHeader(buffer);
     }
 

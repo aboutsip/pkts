@@ -1,7 +1,7 @@
-package io.pkts.packet.diameter;
+package io.pkts.diameter;
 
-import io.pkts.buffer.Buffer;
-import io.pkts.packet.diameter.impl.DiameterParser;
+import io.pkts.buffer.ReadOnlyBuffer;
+import io.pkts.diameter.impl.DiameterParser;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -14,7 +14,7 @@ import java.util.Optional;
  */
 public interface AvpHeader {
 
-    static AvpHeader frame(final Buffer buffer) throws DiameterParseException, IOException {
+    static AvpHeader frame(final ReadOnlyBuffer buffer) throws DiameterParseException, IOException {
         return DiameterParser.frameAvpHeader(buffer);
     }
 

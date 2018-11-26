@@ -1,7 +1,7 @@
-package io.pkts.packet.diameter.impl;
+package io.pkts.diameter.impl;
 
-import io.pkts.packet.diameter.DiameterHeader;
-import io.pkts.packet.diameter.DiameterTestBase;
+import io.pkts.diameter.DiameterHeader;
+import io.pkts.diameter.DiameterTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;

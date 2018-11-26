@@ -1,11 +1,11 @@
 /**
  * 
  */
-package io.pkts.packet.diameter;
+package io.pkts.diameter;
 
-import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
-import io.pkts.packet.diameter.impl.DiameterParser;
+import io.pkts.buffer.ReadOnlyBuffer;
+import io.pkts.diameter.impl.DiameterParser;
 import org.junit.After;
 import org.junit.Before;
 
@@ -16,7 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import static io.pkts.packet.diameter.impl.DiameterParser.couldBeDiameterMessage;
+import static io.pkts.diameter.impl.DiameterParser.couldBeDiameterMessage;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -73,17 +73,17 @@ public class DiameterTestBase {
     public void tearDown() throws Exception {
     }
 
-    public static Buffer loadBuffer(final String resource) throws Exception {
+    public static ReadOnlyBuffer loadBuffer(final String resource) throws Exception {
         final Path path = Paths.get(DiameterTestBase.class.getResource(resource).toURI());
         final File file = path.toFile();
         final byte[] buffer = new byte[(int)file.length()];
         final InputStream ios = new FileInputStream(path.toFile());
         ios.read(buffer);
-        return Buffers.wrap(buffer);
+        return Buffers.wrapAsReadOnly(buffer);
     }
 
     public static DiameterMessage loadDiameterMessage(final String resource) throws Exception {
-        final Buffer buffer = loadBuffer(resource);
+        final ReadOnlyBuffer buffer = loadBuffer(resource);
         System.out.println(buffer.toString());
         return DiameterMessage.frame(buffer);
 
@@ -128,7 +128,7 @@ public class DiameterTestBase {
             assertThat("Incorrect protected bit for resource " + resource, header.isProtected(), is(isProtected));
         }
 
-        public Buffer load() {
+        public ReadOnlyBuffer load() {
             try {
                 return loadBuffer(resource);
             } catch (final Exception e) {
@@ -265,7 +265,7 @@ public class DiameterTestBase {
          * this stuff in lambdas etc and don't want to do catch-stuff for it. If it
          * fails the unit test will fail so all good.
          */
-        public Buffer load() {
+        public ReadOnlyBuffer load() {
             try {
                 return loadBuffer(resource);
             } catch (final Exception e) {

@@ -15,6 +15,7 @@ public enum Protocol {
     UDP("udp", Layer.LAYER_4),
     SCTP("sctp", Layer.LAYER_4),
     SIP("sip", Layer.LAYER_7),
+    DIAMETER("diameter", Layer.LAYER_7),
     SDP("sdp", Layer.LAYER_7),
     ETHERNET_II("eth", Layer.LAYER_2, 1L),
     SLL("sll", Layer.LAYER_2, 113L),
@@ -38,7 +39,7 @@ public enum Protocol {
         this.layer = layer;
     }
 
-    private Protocol(final String name, final Layer layer, Long linkType) {
+    private Protocol(final String name, final Layer layer, final Long linkType) {
         this.name = name;
         this.layer = layer;
         this.linkType = linkType;

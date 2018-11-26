@@ -1,10 +1,10 @@
-package io.pkts.packet.diameter;
+package io.pkts.diameter;
 
-import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.buffer.ReadOnlyBuffer;
 import org.junit.Test;
 
-import static io.pkts.packet.diameter.impl.DiameterParser.couldBeDiameterMessage;
+import static io.pkts.diameter.impl.DiameterParser.couldBeDiameterMessage;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -31,9 +31,9 @@ public class DiameterTest extends DiameterTestBase {
 
     @Test
     public void testNoDiameterMessage() throws Exception {
-        assertThat(couldBeDiameterMessage(Buffers.EMPTY_BUFFER), is(false));
+        assertThat(couldBeDiameterMessage(Buffers.EMPTY_BUFFER.toReadOnly()), is(false));
         for (int i = 1; i < 20; ++i) {
-            final Buffer buffer = Buffers.wrap(new byte[i]);
+            final ReadOnlyBuffer buffer = Buffers.wrapAsReadOnly(new byte[i]);
             assertThat(couldBeDiameterMessage(buffer), is(false));
         }
     }

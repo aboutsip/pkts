@@ -11,7 +11,7 @@ import java.io.UnsupportedEncodingException;
  * 
  * @author jonas@jonasborjesson.com
  */
-public class EmptyBuffer implements Buffer {
+public class EmptyBuffer implements ReadOnlyBuffer {
 
     private static final String THIS_IS_AN_EMPTY_BUFFER_CANT_WRITE_TO_IT = "This is an empty buffer. Cant write to it";
     private static final String THIS_BUFFER_IS_EMPTY = "This buffer is empty";
@@ -23,6 +23,11 @@ public class EmptyBuffer implements Buffer {
      */
     protected EmptyBuffer() {
         // only Buffers should create this one
+    }
+
+    @Override
+    public ReadOnlyBuffer toReadOnly() {
+        return this;
     }
 
     /**

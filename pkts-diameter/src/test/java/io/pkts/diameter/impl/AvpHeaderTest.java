@@ -1,8 +1,8 @@
-package io.pkts.packet.diameter.impl;
+package io.pkts.diameter.impl;
 
-import io.pkts.packet.diameter.Avp;
-import io.pkts.packet.diameter.AvpHeader;
-import io.pkts.packet.diameter.DiameterTestBase;
+import io.pkts.diameter.Avp;
+import io.pkts.diameter.AvpHeader;
+import io.pkts.diameter.DiameterTestBase;
 import org.junit.Test;
 
 /**
@@ -23,7 +23,7 @@ public class AvpHeaderTest extends DiameterTestBase {
     @Test
     public void testBasicAvp() throws Exception {
         for (final RawAvpHolder raw : RAW_AVPS) {
-            Avp avp = raw.getAvp();
+            final Avp avp = raw.getAvp();
             raw.assertHeader(avp.getHeader());
         }
 

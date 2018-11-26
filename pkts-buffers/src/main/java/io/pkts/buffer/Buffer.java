@@ -18,6 +18,18 @@ import java.io.UnsupportedEncodingException;
  */
 public interface Buffer extends Cloneable {
 
+    /**
+     * Turn this buffer into a {@link ReadOnlyBuffer}. This guarantees that no one can update
+     * the underlying byte storage and as such, it is quite cheap to clone, slice etc on this buffer
+     * since we will not copy the underlying storage.
+     * <p>
+     * If this buffer already is a {@link ReadOnlyBuffer} then "this" will be returned.
+     *
+     * @return
+     */
+    default ReadOnlyBuffer toReadOnly() {
+        throw new RuntimeException("The underlying buffer doesn't support this operation");
+    }
 
     /**
      * Helper method to "parse" out a unsigned int from the given 4 bytes.
@@ -333,7 +345,6 @@ public interface Buffer extends Cloneable {
     /**
      * Mark the current position of the reader index.
      * 
-     * @see #reset()
      */
     void markReaderIndex();
 

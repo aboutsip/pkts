@@ -1,4 +1,4 @@
-package io.pkts.packet.diameter;
+package io.pkts.diameter;
 
 /**
  * @author jonas@jonasborjesson.com

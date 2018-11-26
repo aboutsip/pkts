@@ -1,11 +1,12 @@
-package io.pkts.packet.diameter.impl;
+package io.pkts.diameter.impl;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.packet.diameter.Avp;
-import io.pkts.packet.diameter.AvpHeader;
-import io.pkts.packet.diameter.DiameterHeader;
-import io.pkts.packet.diameter.DiameterMessage;
-import io.pkts.packet.diameter.DiameterParseException;
+import io.pkts.buffer.ReadOnlyBuffer;
+import io.pkts.diameter.Avp;
+import io.pkts.diameter.AvpHeader;
+import io.pkts.diameter.DiameterHeader;
+import io.pkts.diameter.DiameterMessage;
+import io.pkts.diameter.DiameterParseException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import java.util.Optional;
  */
 public class DiameterParser {
 
-    public static DiameterMessage frame(final Buffer buffer) throws DiameterParseException, IOException {
+    public static DiameterMessage frame(final ReadOnlyBuffer buffer) throws DiameterParseException, IOException {
         final int start = buffer.getReaderIndex();
         final DiameterHeader header = frameHeader(buffer);
         // the +20 because we have already consumed 20 bytes for the header but the length as stated
@@ -32,7 +33,7 @@ public class DiameterParser {
         // Also, the way this will be read off of the network, we will probably always have
         // the exact buffer we need and perhaps we should just assume that's the case.
 
-        final Buffer avps = buffer.readBytes(header.getLength() - 20);
+        final ReadOnlyBuffer avps = (ReadOnlyBuffer) buffer.readBytes(header.getLength() - 20);
         final List<Avp> list = new ArrayList<>(); // TODO: what's a sensible default?
         while (avps.getReadableBytes() > 0) {
             final int readerIndex = avps.getReaderIndex();
@@ -52,18 +53,18 @@ public class DiameterParser {
             }
         }
 
-        final Buffer entireMsg = buffer.slice(start, buffer.getReaderIndex());
+        final ReadOnlyBuffer entireMsg = (ReadOnlyBuffer) buffer.slice(start, buffer.getReaderIndex());
 
         return new ImmutableDiameterMessage(entireMsg, header, list);
     }
 
 
-    public static DiameterHeader frameHeader(final Buffer buffer) throws DiameterParseException, IOException {
+    public static DiameterHeader frameHeader(final ReadOnlyBuffer buffer) throws DiameterParseException, IOException {
         if (buffer.getReadableBytes() < 20) {
             throw new DiameterParseException(0, "Cannot be a Diameter message because the header is less than 20 bytes");
         }
 
-        final Buffer header = buffer.readBytes(20);
+        final ReadOnlyBuffer header = (ReadOnlyBuffer) buffer.readBytes(20);
         return new ImmutableDiameterHeader(header);
     }
 
@@ -79,16 +80,19 @@ public class DiameterParser {
      * @return
      * @throws IOException
      */
-    public static boolean couldBeDiameterMessage(final Buffer buffer) throws IOException {
+    public static boolean couldBeDiameterMessage(final ReadOnlyBuffer buffer) throws IOException {
+        final int index = buffer.getReaderIndex();
         try {
-            frameHeader(buffer).validate();
-            return true;
+            final DiameterHeader header = frameHeader(buffer);
+            return header.validate();
         } catch (final DiameterParseException e) {
             return false;
+        } finally {
+            buffer.setReaderIndex(index);
         }
     }
 
-    public static Avp frameAvp(final Buffer buffer) throws DiameterParseException, IOException {
+    public static Avp frameAvp(final ReadOnlyBuffer buffer) throws DiameterParseException {
         try {
             final AvpHeader header = frameAvpHeader(buffer);
             final int avpHeaderLength = header.isVendorSpecific() ? 12 : 8;
@@ -100,7 +104,7 @@ public class DiameterParser {
         }
     }
 
-    public static AvpHeader frameAvpHeader(final Buffer buffer) throws DiameterParseException, IOException {
+    public static AvpHeader frameAvpHeader(final ReadOnlyBuffer buffer) throws DiameterParseException {
         try {
             if (buffer.getReadableBytes() < 8) {
                 throw new DiameterParseException("Unable to read 8 bytes from the buffer, not enough data to parse AVP.");

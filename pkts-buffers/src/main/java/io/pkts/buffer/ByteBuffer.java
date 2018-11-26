@@ -3,6 +3,8 @@
  */
 package io.pkts.buffer;
 
+import com.google.polo.pairing.HexDump;
+
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -248,7 +250,7 @@ public class ByteBuffer extends AbstractBuffer {
      */
     @Override
     public String dumpAsHex() {
-        return "dumpAsHex isn't implemented just yet";
+        return HexDump.dumpHexString(buffer, lowerBoundary, upperBoundary - lowerBoundary);
     }
 
     /**
@@ -361,6 +363,12 @@ public class ByteBuffer extends AbstractBuffer {
         } catch (final UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public ReadOnlyBuffer toReadOnly() {
+        final byte[] clone = getArray();
+        return ReadOnlyBuffer.of(clone);
     }
 
     @Override

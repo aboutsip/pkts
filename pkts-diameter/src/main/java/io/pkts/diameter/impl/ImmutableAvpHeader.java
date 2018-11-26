@@ -1,7 +1,7 @@
-package io.pkts.packet.diameter.impl;
+package io.pkts.diameter.impl;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.packet.diameter.AvpHeader;
+import io.pkts.diameter.AvpHeader;
 
 import java.io.IOException;
 import java.util.Optional;

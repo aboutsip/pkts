@@ -130,6 +130,14 @@ public final class Buffers {
         return new ByteBuffer(buffer);
     }
 
+    public static ReadOnlyBuffer wrapAsReadOnly(final byte[] buffer) {
+        if (buffer == null || buffer.length == 0) {
+            throw new IllegalArgumentException("the buffer cannot be null or empty");
+        }
+
+        return ReadOnlyBuffer.of(buffer);
+    }
+
     /**
      * Same as {@link #wrap(byte[])} but we will clone the byte array first.
      * 
@@ -204,6 +212,26 @@ public final class Buffers {
         final int readerIndex = 0;
         final int writerIndex = upperBoundary;
         return new ByteBuffer(readerIndex, lowerBoundary, upperBoundary, writerIndex, buffer);
+    }
+
+    public static ReadOnlyBuffer wrapAsReadOnly(final byte[] buffer, final int lowerBoundary, final int upperBoundary) {
+        if (buffer == null || buffer.length == 0) {
+            throw new IllegalArgumentException("the buffer cannot be null or empty");
+        }
+        if (upperBoundary > buffer.length) {
+            throw new IllegalArgumentException("The upper boundary cannot exceed the length of the buffer");
+        }
+        if (lowerBoundary >= upperBoundary) {
+            throw new IllegalArgumentException("The lower boundary must be lower than the upper boundary");
+        }
+
+        if (lowerBoundary < 0) {
+            throw new IllegalArgumentException("The lower boundary must be a equal or greater than zero");
+        }
+
+        final int readerIndex = 0;
+        final int writerIndex = upperBoundary;
+        return new ReadOnlyByteBuffer(readerIndex, lowerBoundary, upperBoundary, writerIndex, buffer);
     }
 
     /**

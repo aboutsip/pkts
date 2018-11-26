@@ -1,7 +1,7 @@
 /**
  * 
  */
-package io.pkts.packet.diameter;
+package io.pkts.diameter;
 
 
 /**

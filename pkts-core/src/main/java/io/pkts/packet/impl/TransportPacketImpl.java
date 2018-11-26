@@ -4,6 +4,7 @@
 package io.pkts.packet.impl;
 
 import io.pkts.buffer.Buffer;
+import io.pkts.framer.DiameterFramer;
 import io.pkts.framer.RTPFramer;
 import io.pkts.framer.SIPFramer;
 import io.pkts.packet.IPPacket;
@@ -21,6 +22,7 @@ public abstract class TransportPacketImpl extends AbstractPacket implements Tran
 
     private static final SIPFramer sipFramer = new SIPFramer();
     private static final RTPFramer rtpFramer = new RTPFramer();
+    private static final DiameterFramer diameterFramer = new DiameterFramer();
 
     private final IPPacket parent;
 
@@ -107,9 +109,11 @@ public abstract class TransportPacketImpl extends AbstractPacket implements Tran
 
         if (sipFramer.accept(payload)) {
             return sipFramer.frame(this, payload);
+        } else if (diameterFramer.accept(payload)) {
+            return diameterFramer.frame(this, payload);
         } else if (rtpFramer.accept(payload)) {
             // RTP is tricky to parse so if we return
-            // null then it wasn't an RTP packet afterall
+            // null then it wasn't an RTP packet after all
             // so fall through...
             final RtpPacket rtp = frameRtp(payload);
             if (rtp != null) {

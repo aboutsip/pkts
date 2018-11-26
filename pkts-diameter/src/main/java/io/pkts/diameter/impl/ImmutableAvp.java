@@ -1,8 +1,8 @@
-package io.pkts.packet.diameter.impl;
+package io.pkts.diameter.impl;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.packet.diameter.Avp;
-import io.pkts.packet.diameter.AvpHeader;
+import io.pkts.diameter.Avp;
+import io.pkts.diameter.AvpHeader;
 
 public class ImmutableAvp implements Avp {
 
@@ -34,6 +34,7 @@ public class ImmutableAvp implements Avp {
         return 0;
     }
 
+    @Override
     public String toString() {
         return header.toString();
     }
