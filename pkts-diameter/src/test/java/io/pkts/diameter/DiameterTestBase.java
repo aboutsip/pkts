@@ -5,6 +5,8 @@ package io.pkts.diameter;
 
 import io.pkts.buffer.Buffers;
 import io.pkts.buffer.ReadOnlyBuffer;
+import io.pkts.diameter.avp.AvpHeader;
+import io.pkts.diameter.avp.RawAvp;
 import io.pkts.diameter.impl.DiameterParser;
 import org.junit.After;
 import org.junit.Before;
@@ -30,6 +32,8 @@ public class DiameterTestBase {
      * These are "raw" AVPs that we have stored in raw files based off of exporting them from wireshark.
      */
     public static final RawAvpHolder[] RAW_AVPS = new RawAvpHolder[]{
+            new RawAvpHolder("AVP_Vendor_Specific_Application.raw", 260, 32, Optional.empty(), false, true, false),
+            new RawAvpHolder("AVP_Origin_Host.raw", 264, 45, Optional.empty(), false, true, false),
             new RawAvpHolder("AVP_Subscription_Id.raw", 443, 44, Optional.empty(), false, true, false),
             new RawAvpHolder("AVP_PDN_Connection_Charging_ID.raw", 2050, 16, Optional.of(10415L), true, true, false),
             new RawAvpHolder("AVP_3GPP_SGSN_MCC_MNC.raw", 18, 17, Optional.of(10415L), true, false, false),
@@ -144,9 +148,9 @@ public class DiameterTestBase {
             }
         }
 
-        public Avp getAvp() {
+        public RawAvp getAvp() {
             try {
-                return Avp.frame(load());
+                return RawAvp.frame(load());
             } catch (final Exception e) {
                 throw new RuntimeException("Issue loading the raw diameter byte-array from resource " + resource, e);
             }

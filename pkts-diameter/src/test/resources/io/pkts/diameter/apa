@@ -1,0 +1,22 @@
+total 88
+drwxr-xr-x 2 jonas jonas 4096 Nov 20 11:05 .
+drwxr-xr-x 3 jonas jonas 4096 Nov 20 10:33 ..
+-rw-r--r-- 1 jonas jonas   12 Nov 20 10:33 001_diameter_auth_info_request_avp_auth_session_state.raw
+-rw-r--r-- 1 jonas jonas   60 Nov 20 10:33 001_diameter_auth_info_request_avp_session_id.raw
+-rw-r--r-- 1 jonas jonas   32 Nov 20 10:33 001_diameter_auth_info_request_avp_vendor_260.raw
+-rw-r--r-- 1 jonas jonas  344 Nov 20 10:33 001_diameter_auth_info_request.raw
+-rw-r--r-- 1 jonas jonas  832 Nov 20 10:33 002_diameter_auth_info_answer.raw
+-rw-r--r-- 1 jonas jonas  456 Nov 20 10:33 003_diameter_update_location_request.raw
+-rw-r--r-- 1 jonas jonas 1024 Nov 20 10:33 004_diameter_update_location_answer.raw
+-rw-r--r-- 1 jonas jonas  664 Nov 20 10:33 005_diameter_credit_control_request.raw
+-rw-r--r-- 1 jonas jonas  252 Nov 20 10:33 006_diameter_credit_control_answer.raw
+-rw-r--r-- 1 jonas jonas  316 Nov 20 10:33 007_diameter_notify_request.raw
+-rw-r--r-- 1 jonas jonas  228 Nov 20 10:33 008_diameter_notify_answer.raw
+-rw-r--r-- 1 jonas jonas  284 Nov 20 10:33 009_diameter_purge_ue_request.raw
+-rw-r--r-- 1 jonas jonas  420 Nov 20 10:33 010_diameter_credit_control_request.raw
+-rw-r--r-- 1 jonas jonas  244 Nov 20 10:33 011_diameter_purge_ue_answer.raw
+-rw-r--r-- 1 jonas jonas  220 Nov 20 10:33 012_diameter_credit_control_answer.raw
+-rw-r--r-- 1 jonas jonas  112 Nov 20 10:33 013_diameter_device_watchdog_request.raw
+-rw-r--r-- 1 jonas jonas  124 Nov 20 10:33 014_diameter_device_watchdog_answer.raw
+-rw-r--r-- 1 jonas jonas    0 Nov 20 11:05 apa
+-rw-r--r-- 1 jonas jonas 8300 Nov 20 10:33 diameter.pcap

@@ -1,6 +1,7 @@
-package io.pkts.diameter;
+package io.pkts.diameter.avp;
 
 import io.pkts.buffer.ReadOnlyBuffer;
+import io.pkts.diameter.DiameterParseException;
 import io.pkts.diameter.impl.DiameterParser;
 
 import java.io.IOException;
@@ -17,6 +18,13 @@ public interface AvpHeader {
     static AvpHeader frame(final ReadOnlyBuffer buffer) throws DiameterParseException, IOException {
         return DiameterParser.frameAvpHeader(buffer);
     }
+
+    /**
+     * The length (in bytes) of the header itself.
+     *
+     * @return
+     */
+    int getHeaderLength();
 
     long getCode();
 

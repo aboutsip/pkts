@@ -1,7 +1,9 @@
 package io.pkts.packet.diameter.impl;
 
 import io.pkts.buffer.Buffer;
+import io.pkts.diameter.DiameterHeader;
 import io.pkts.diameter.DiameterMessage;
+import io.pkts.diameter.avp.RawAvp;
 import io.pkts.packet.Packet;
 import io.pkts.packet.PacketParseException;
 import io.pkts.packet.TransportPacket;
@@ -11,6 +13,7 @@ import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 public class DiameterPacketImpl extends AbstractPacket implements DiameterPacket {
 
@@ -58,5 +61,15 @@ public class DiameterPacketImpl extends AbstractPacket implements DiameterPacket
     @Override
     public String toString() {
         return msg.toString();
+    }
+
+    @Override
+    public DiameterHeader getHeader() {
+        return msg.getHeader();
+    }
+
+    @Override
+    public List<RawAvp> getAllAvps() {
+        return msg.getAllAvps();
     }
 }

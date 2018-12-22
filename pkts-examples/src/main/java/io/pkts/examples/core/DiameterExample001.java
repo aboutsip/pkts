@@ -5,6 +5,7 @@ package io.pkts.examples.core;
 
 import io.pkts.PacketHandler;
 import io.pkts.Pcap;
+import io.pkts.diameter.DiameterHeader;
 import io.pkts.framer.FramingException;
 import io.pkts.packet.Packet;
 import io.pkts.packet.diameter.DiameterPacket;
@@ -49,16 +50,12 @@ public class DiameterExample001 {
                 //          for Diameter.
                 if (packet.hasProtocol(Protocol.DIAMETER)) {
 
+                    // Step 5 - Now that we know that the packet contains
+                    //          a Diameter packet we get ask to get the Diameter packet
+                    //          and once we have it we can examine it in anyway we'd like.
                     final DiameterPacket diameter = (DiameterPacket) packet.getPacket(Protocol.DIAMETER);
-                    System.err.println(diameter);
-
-                    // Step 4 - Now that we know that the packet contains
-                    //          a UDP packet we get ask to get the UDP packet
-                    //          and once we have it we can just get its
-                    //          payload and print it, which is what we are
-                    //          doing below.
-
-                    // System.out.println(packet.getPacket(Protocol.UDP).getPayload());
+                    final DiameterHeader header = diameter.getHeader();
+                    System.out.println(header);
                 }
 
                 return true;

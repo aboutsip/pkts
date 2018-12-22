@@ -1,15 +1,17 @@
-package io.pkts.diameter.impl;
+package io.pkts.diameter.avp.impl;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.diameter.Avp;
-import io.pkts.diameter.AvpHeader;
+import io.pkts.diameter.avp.Avp;
+import io.pkts.diameter.avp.AvpHeader;
+import io.pkts.diameter.avp.RawAvp;
+import io.pkts.diameter.impl.DiameterParser;
 
-public class ImmutableAvp implements Avp {
+public class ImmutableRawAvp implements RawAvp {
 
     private final AvpHeader header;
     private final Buffer data;
 
-    public ImmutableAvp(final AvpHeader header, final Buffer data) {
+    public ImmutableRawAvp(final AvpHeader header, final Buffer data) {
         this.header = header;
         this.data = data;
     }
@@ -47,5 +49,10 @@ public class ImmutableAvp implements Avp {
     @Override
     public Buffer getData() {
         return data;
+    }
+
+    @Override
+    public Avp parse() {
+        return DiameterParser.parseAvp(this);
     }
 }

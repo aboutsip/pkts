@@ -1,7 +1,8 @@
-package io.pkts.diameter.impl;
+package io.pkts.diameter.avp.impl;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.diameter.AvpHeader;
+import io.pkts.diameter.avp.AvpHeader;
+import io.pkts.diameter.impl.DiameterParser;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -17,6 +18,13 @@ public class ImmutableAvpHeader implements AvpHeader {
     public ImmutableAvpHeader(final Buffer buffer, final Optional<Long> vendorId) {
         this.buffer = buffer;
         this.vendorId = vendorId;
+    }
+
+    @Override
+    public int getHeaderLength() {
+        // the AVP header length is always at least 8 bytes plus an additional 4 if
+        // the optional vendor id is set.
+        return vendorId.isPresent() ? 12 : 8;
     }
 
     @Override
