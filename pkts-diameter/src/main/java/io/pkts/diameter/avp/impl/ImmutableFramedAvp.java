@@ -3,15 +3,15 @@ package io.pkts.diameter.avp.impl;
 import io.pkts.buffer.Buffer;
 import io.pkts.diameter.avp.Avp;
 import io.pkts.diameter.avp.AvpHeader;
-import io.pkts.diameter.avp.RawAvp;
+import io.pkts.diameter.avp.FramedAvp;
 import io.pkts.diameter.impl.DiameterParser;
 
-public class ImmutableRawAvp implements RawAvp {
+public class ImmutableFramedAvp implements FramedAvp {
 
     private final AvpHeader header;
     private final Buffer data;
 
-    public ImmutableRawAvp(final AvpHeader header, final Buffer data) {
+    public ImmutableFramedAvp(final AvpHeader header, final Buffer data) {
         this.header = header;
         this.data = data;
     }
@@ -48,7 +48,8 @@ public class ImmutableRawAvp implements RawAvp {
 
     @Override
     public Buffer getData() {
-        return data;
+        // must slice so that the returned data has it's own reader index etc.
+        return data.slice();
     }
 
     @Override

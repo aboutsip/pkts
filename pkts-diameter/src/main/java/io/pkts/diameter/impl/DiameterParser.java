@@ -5,14 +5,16 @@ import io.pkts.buffer.ReadOnlyBuffer;
 import io.pkts.diameter.DiameterHeader;
 import io.pkts.diameter.DiameterMessage;
 import io.pkts.diameter.DiameterParseException;
+import io.pkts.diameter.avp.AuthApplicationId;
 import io.pkts.diameter.avp.Avp;
 import io.pkts.diameter.avp.AvpHeader;
+import io.pkts.diameter.avp.FramedAvp;
 import io.pkts.diameter.avp.OriginHost;
 import io.pkts.diameter.avp.OriginRealm;
-import io.pkts.diameter.avp.RawAvp;
+import io.pkts.diameter.avp.VendorId;
 import io.pkts.diameter.avp.VendorSpecificApplicationId;
 import io.pkts.diameter.avp.impl.ImmutableAvpHeader;
-import io.pkts.diameter.avp.impl.ImmutableRawAvp;
+import io.pkts.diameter.avp.impl.ImmutableFramedAvp;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,10 +42,10 @@ public class DiameterParser {
         // the exact buffer we need and perhaps we should just assume that's the case.
 
         final ReadOnlyBuffer avps = (ReadOnlyBuffer) buffer.readBytes(header.getLength() - 20);
-        final List<RawAvp> list = new ArrayList<>(); // TODO: what's a sensible default?
+        final List<FramedAvp> list = new ArrayList<>(); // TODO: what's a sensible default?
         while (avps.getReadableBytes() > 0) {
             final int readerIndex = avps.getReaderIndex();
-            final RawAvp avp = RawAvp.frame(avps);
+            final FramedAvp avp = FramedAvp.frame(avps);
             list.add(avp);
             final int padding = avp.getPadding();
             if (padding != 0) {
@@ -98,7 +100,7 @@ public class DiameterParser {
         }
     }
 
-    public static Avp parseAvp(final RawAvp raw) {
+    public static Avp parseAvp(final FramedAvp raw) {
 
         // TODO: I believe the way this is compiled will be super fast because it is just a lookup
         // and a jump. Will do some performance test doing this vs map or something else. We will
@@ -110,18 +112,22 @@ public class DiameterParser {
                 return OriginRealm.parse(raw);
             case VendorSpecificApplicationId.CODE:
                 return VendorSpecificApplicationId.parse(raw);
+            case VendorId.CODE:
+                return VendorId.parse(raw);
+            case AuthApplicationId.CODE:
+                return AuthApplicationId.parse(raw);
             default:
-                throw new RuntimeException("Not done yet");
+                throw new RuntimeException("AVP " + raw.getCode() + " has not yet been implemented");
         }
 
     }
 
-    public static RawAvp frameRawAvp(final ReadOnlyBuffer buffer) throws DiameterParseException {
+    public static FramedAvp frameRawAvp(final ReadOnlyBuffer buffer) throws DiameterParseException {
         try {
             final AvpHeader header = frameAvpHeader(buffer);
             final int avpHeaderLength = header.isVendorSpecific() ? 12 : 8;
             final Buffer data = buffer.readBytes(header.getLength() - avpHeaderLength);
-            return new ImmutableRawAvp(header, data);
+            return new ImmutableFramedAvp(header, data);
         } catch (final IndexOutOfBoundsException | IOException e) {
             // not enough data
             throw new DiameterParseException("Not enough data in buffer to read out the full AVP");

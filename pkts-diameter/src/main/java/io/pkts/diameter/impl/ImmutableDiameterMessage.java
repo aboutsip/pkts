@@ -3,9 +3,9 @@ package io.pkts.diameter.impl;
 import io.pkts.buffer.ReadOnlyBuffer;
 import io.pkts.diameter.DiameterHeader;
 import io.pkts.diameter.DiameterMessage;
+import io.pkts.diameter.avp.FramedAvp;
 import io.pkts.diameter.avp.OriginHost;
 import io.pkts.diameter.avp.OriginRealm;
-import io.pkts.diameter.avp.RawAvp;
 
 import java.util.List;
 
@@ -17,9 +17,9 @@ public class ImmutableDiameterMessage implements DiameterMessage {
     private final ReadOnlyBuffer raw;
 
     private final DiameterHeader header;
-    private final List<RawAvp> avps;
+    private final List<FramedAvp> avps;
 
-    public ImmutableDiameterMessage(final ReadOnlyBuffer raw, final DiameterHeader header, final List<RawAvp> avps) {
+    public ImmutableDiameterMessage(final ReadOnlyBuffer raw, final DiameterHeader header, final List<FramedAvp> avps) {
         this.raw = raw;
         this.header = header;
         this.avps = avps;
@@ -31,7 +31,7 @@ public class ImmutableDiameterMessage implements DiameterMessage {
     }
 
     @Override
-    public List<RawAvp> getAllAvps() {
+    public List<FramedAvp> getAllAvps() {
         return avps;
     }
 

@@ -22,7 +22,7 @@ public interface OriginRealm extends Avp<DiameterIdentity> {
         return CODE;
     }
 
-    static OriginRealm parse(final RawAvp raw) {
+    static OriginRealm parse(final FramedAvp raw) {
         if (CODE != raw.getCode()) {
             throw new AvpParseException("AVP Code mismatch - unable to parse the AVP into a " + OriginRealm.class.getName());
         }
@@ -30,7 +30,7 @@ public interface OriginRealm extends Avp<DiameterIdentity> {
     }
 
     class DefaultOriginRealm extends DiameterIdentityAvp implements OriginRealm {
-        private DefaultOriginRealm(final RawAvp raw) {
+        private DefaultOriginRealm(final FramedAvp raw) {
             super(raw);
         }
     }

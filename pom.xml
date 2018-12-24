@@ -52,6 +52,7 @@
         <module>pkts-sdp</module>
         <module>pkts-sip</module>
         <module>pkts-diameter</module>
+        <module>pkts-diameter-codegen</module>
         <module>pkts-core</module>
         <module>pkts-streams</module>
         <module>pkts-examples</module>

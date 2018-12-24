@@ -3,7 +3,7 @@ package io.pkts.packet.diameter.impl;
 import io.pkts.buffer.Buffer;
 import io.pkts.diameter.DiameterHeader;
 import io.pkts.diameter.DiameterMessage;
-import io.pkts.diameter.avp.RawAvp;
+import io.pkts.diameter.avp.FramedAvp;
 import io.pkts.packet.Packet;
 import io.pkts.packet.PacketParseException;
 import io.pkts.packet.TransportPacket;
@@ -69,7 +69,7 @@ public class DiameterPacketImpl extends AbstractPacket implements DiameterPacket
     }
 
     @Override
-    public List<RawAvp> getAllAvps() {
+    public List<FramedAvp> getAllAvps() {
         return msg.getAllAvps();
     }
 }

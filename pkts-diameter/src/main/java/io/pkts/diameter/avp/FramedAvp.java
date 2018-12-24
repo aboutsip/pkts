@@ -8,12 +8,13 @@ import io.pkts.diameter.impl.DiameterParser;
 import java.io.IOException;
 
 /**
- * A {@link RawAvp} is an AVP who has not been fully framed, i.e., you only have access to the {@link AvpHeader}
- * and the raw data. However, if you want to convert it to a known type, you can call the
+ * A {@link FramedAvp} is an AVP who has not been fully parsed, i.e., you only have access to the {@link AvpHeader}
+ * and the raw data. However, if you want to convert it to a known type, you can call the {@link FramedAvp#parse()}
+ * method to actually parse the structure into, hopefully, a known AVP.
  */
-public interface RawAvp {
+public interface FramedAvp {
 
-    static RawAvp frame(final ReadOnlyBuffer buffer) throws DiameterParseException, IOException {
+    static FramedAvp frame(final ReadOnlyBuffer buffer) throws DiameterParseException, IOException {
         return DiameterParser.frameRawAvp(buffer);
     }
 
@@ -41,7 +42,7 @@ public interface RawAvp {
     /**
      * Fully parse this raw AVP to something known. If the AVP isn't known,
      * then you'll get back a unknown AVP, which is really just the same as the
-     * {@link RawAvp} and then you have to figure things out for yourself.
+     * {@link FramedAvp} and then you have to figure things out for yourself.
      *
      * @return
      */
@@ -51,12 +52,19 @@ public interface RawAvp {
      * Since every diameter message must have a origin host, it is one of the
      * most used AVPs and therefore this convenience method.
      *
-     * @return true if this {@link RawAvp} is {@link OriginHost}
+     * @return true if this {@link FramedAvp} is of type {@link OriginHost}
      */
     default boolean isOriginHost() {
         return OriginHost.CODE == getCode();
     }
 
+    /**
+     * Convenience method for calling {@link FramedAvp#parse()} and then cast that to an
+     * {@link OriginHost}. If the AVP isn't of type {@link OriginHost}, then a {@link AvpParseException} will
+     * be thrown.
+     *
+     * @return
+     */
     default OriginHost toOriginHost() {
         return OriginHost.parse(this);
     }

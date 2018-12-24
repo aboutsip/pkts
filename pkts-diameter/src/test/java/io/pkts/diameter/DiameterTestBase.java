@@ -6,7 +6,7 @@ package io.pkts.diameter;
 import io.pkts.buffer.Buffers;
 import io.pkts.buffer.ReadOnlyBuffer;
 import io.pkts.diameter.avp.AvpHeader;
-import io.pkts.diameter.avp.RawAvp;
+import io.pkts.diameter.avp.FramedAvp;
 import io.pkts.diameter.impl.DiameterParser;
 import org.junit.After;
 import org.junit.Before;
@@ -148,9 +148,9 @@ public class DiameterTestBase {
             }
         }
 
-        public RawAvp getAvp() {
+        public FramedAvp getAvp() {
             try {
-                return RawAvp.frame(load());
+                return FramedAvp.frame(load());
             } catch (final Exception e) {
                 throw new RuntimeException("Issue loading the raw diameter byte-array from resource " + resource, e);
             }
