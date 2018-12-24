@@ -4,6 +4,8 @@ import io.pkts.buffer.Buffer;
 
 public interface Integer64 extends DiameterType {
 
+    DiameterType.Type TYPE = Type.INTEGER_64;
+
     static Integer64 parse(final Buffer data) {
         return new DefaultInteger64(data.getUnsignedInt(data.getReaderIndex()));
     }

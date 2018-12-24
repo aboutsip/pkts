@@ -17,6 +17,17 @@ public interface GavpPrimitive extends DiameterPrimitive {
         return NAME;
     }
 
+    default GavpPrimitive toGavpPrimitive() throws ClassCastException {
+        return this;
+    }
+
+    /**
+     * The name of the AVP that is part of a {@link GroupedPrimitive}
+     *
+     * @return
+     */
+    String getName();
+
     static Builder of(final AttributeContext ctx) throws CodeGenParseException {
         ctx.ensureElementName(NAME);
         final String name = ctx.getString("name");
@@ -37,7 +48,6 @@ public interface GavpPrimitive extends DiameterPrimitive {
             return NAME;
         }
 
-
         /**
          * We do not expect that there is a child attribute to the typedefn element.
          *
@@ -45,12 +55,13 @@ public interface GavpPrimitive extends DiameterPrimitive {
          */
         @Override
         public void attachChildBuilder(final DiameterSaxBuilder child) {
-            throwException("Unexpected child element");
+            throw createException("Unexpected child element");
         }
 
         @Override
         public GavpPrimitive build(final DiameterContext ctx) {
-            return null;
+            return () -> name;
         }
     }
+
 }

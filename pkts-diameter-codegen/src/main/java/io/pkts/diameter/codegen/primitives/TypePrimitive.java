@@ -1,5 +1,6 @@
 package io.pkts.diameter.codegen.primitives;
 
+import io.pkts.diameter.avp.type.DiameterType;
 import io.pkts.diameter.codegen.CodeGenParseException;
 import io.pkts.diameter.codegen.DiameterContext;
 import io.pkts.diameter.codegen.builders.AttributeContext;
@@ -12,24 +13,29 @@ public interface TypePrimitive extends DiameterPrimitive {
      */
     String NAME = "type";
 
+    DiameterType.Type getType();
+
     @Override
     default String getElementName() {
         return NAME;
     }
 
+    @Override
+    default TypePrimitive toTypePrimitive() throws ClassCastException {
+        return this;
+    }
+
     static Builder of(final AttributeContext ctx) throws CodeGenParseException {
         ctx.ensureElementName(NAME);
-
-        // TODO: should probably be an ENUM
-        final String type = ctx.getString("type-name");
+        final DiameterType.Type type = DiameterType.Type.fromName(ctx.getString("type-name"));
         return new Builder(ctx, type);
     }
 
     class Builder extends DiameterSaxBuilder.BaseBuilder<TypePrimitive> {
 
-        private final String type;
+        private final DiameterType.Type type;
 
-        private Builder(final AttributeContext ctx, final String type) {
+        private Builder(final AttributeContext ctx, final DiameterType.Type type) {
             super(ctx);
             this.type = type;
         }
@@ -46,12 +52,12 @@ public interface TypePrimitive extends DiameterPrimitive {
          */
         @Override
         public void attachChildBuilder(final DiameterSaxBuilder child) {
-            throwException("Unexpected child element");
+            throw createException("Unexpected child element");
         }
 
         @Override
         public TypePrimitive build(final DiameterContext ctx) {
-            return null;
+            return () -> type;
         }
     }
 }

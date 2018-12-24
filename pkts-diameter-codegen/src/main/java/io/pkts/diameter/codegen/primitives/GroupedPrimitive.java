@@ -7,6 +7,8 @@ import io.pkts.diameter.codegen.builders.DiameterSaxBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public interface GroupedPrimitive extends DiameterPrimitive {
 
@@ -15,9 +17,20 @@ public interface GroupedPrimitive extends DiameterPrimitive {
      */
     String NAME = "grouped";
 
+
+    /**
+     * Get the AVPs that is part of this group.
+     */
+    List<GavpPrimitive> getGroupedAvps();
+
     @Override
     default String getElementName() {
         return NAME;
+    }
+
+    @Override
+    default GroupedPrimitive toGroupedPrimitive() throws ClassCastException {
+        return this;
     }
 
     static Builder of(final AttributeContext ctx) throws CodeGenParseException {
@@ -41,13 +54,33 @@ public interface GroupedPrimitive extends DiameterPrimitive {
         }
 
         @Override
+        protected List<String> getKnownChildElements() {
+            return acceptableChildElements;
+        }
+
+        @Override
         public String getElementName() {
             return NAME;
         }
 
         @Override
         public GroupedPrimitive build(final DiameterContext ctx) {
-            return null;
+            final Map<String, List<DiameterPrimitive>> primitives = buildChildren(ctx);
+
+            // we only expect one type of child and that's the gavp.
+            // Now, that should have already been taken care of but
+            // just in case it hasn't, let's check again.
+            final List<DiameterPrimitive> children = primitives.get(GavpPrimitive.NAME);
+            if (children == null || children.isEmpty()) {
+                throw createException("Expected at least one 'gavp' as part of the '" + NAME + "' element");
+            }
+
+            if (primitives.size() != 1) {
+                throw createException("Only expected child elements of '" + GavpPrimitive.NAME + "' but found others too");
+            }
+
+            return () -> children.stream().map(DiameterPrimitive::toGavpPrimitive).collect(Collectors.toList());
         }
     }
+
 }

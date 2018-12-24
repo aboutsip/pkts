@@ -17,6 +17,11 @@ public interface EnumPrimitive extends DiameterPrimitive {
         return NAME;
     }
 
+    @Override
+    default EnumPrimitive toEnumPrimitive() throws ClassCastException {
+        return this;
+    }
+
     static Builder of(final AttributeContext ctx) throws CodeGenParseException {
         ctx.ensureElementName(NAME);
 
@@ -49,12 +54,23 @@ public interface EnumPrimitive extends DiameterPrimitive {
          */
         @Override
         public void attachChildBuilder(final DiameterSaxBuilder child) {
-            throwException("Unexpected child element");
+            throw createException("Unexpected child element");
         }
 
         @Override
         public EnumPrimitive build(final DiameterContext ctx) {
-            return null;
+            return new DefaultEnumPrimitive(name, code);
+        }
+    }
+
+    class DefaultEnumPrimitive implements EnumPrimitive {
+
+        private final String name;
+        private final long code;
+
+        private DefaultEnumPrimitive(final String name, final long code) {
+            this.name = name;
+            this.code = code;
         }
     }
 }

@@ -29,10 +29,10 @@ public class WiresharkDictionaryReader {
 
     private final SAXParserFactory saxFactory = SAXParserFactory.newInstance();
 
-    public WiresharkDictionaryReader() throws Exception {
+    public WiresharkDictionaryReader(final DiameterContext collector) throws Exception {
         saxFactory.setValidating(true);
         final SAXParser saxParser = saxFactory.newSAXParser();
-        final WiresharkXmlHandler handler = new WiresharkXmlHandler();
+        final WiresharkXmlHandler handler = new WiresharkXmlHandler(collector);
         final String home = "/home/jonas/development/3rd-party/wireshark/diameter";
         final String dictionary = home + "/dictionary.xml";
         saxParser.parse(new File(dictionary), handler);
@@ -61,14 +61,16 @@ public class WiresharkDictionaryReader {
          */
         private Locator locator;
 
-        private final DiameterContext ctx;
+        private final DiameterContext collector;
 
         @Override
         public void setDocumentLocator(final Locator locator) {
             this.locator = locator;
         }
 
-        public WiresharkXmlHandler() {
+        public WiresharkXmlHandler(final DiameterContext collector) {
+            this.collector = collector;
+
             // Put all the known builders here.
             creators.put(ApplicationPrimitive.NAME, ApplicationPrimitive::of);
             creators.put(AvpPrimitive.NAME, AvpPrimitive::of);
@@ -81,8 +83,6 @@ public class WiresharkDictionaryReader {
             // ignore these xml elements
             ignore.add("dictionary");
             ignore.add("base");
-
-            ctx = new DiameterContext();
         }
 
         @Override
@@ -123,7 +123,7 @@ public class WiresharkDictionaryReader {
                 return;
             }
 
-            builders.pop().build(ctx);
+            builders.pop().build(collector);
         }
 
     }

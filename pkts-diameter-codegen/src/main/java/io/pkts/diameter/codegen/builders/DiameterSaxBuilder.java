@@ -1,17 +1,24 @@
 package io.pkts.diameter.codegen.builders;
 
+import io.pkts.diameter.avp.type.DiameterType;
 import io.pkts.diameter.codegen.CodeGenParseException;
 import io.pkts.diameter.codegen.DiameterContext;
 import io.pkts.diameter.codegen.primitives.ApplicationPrimitive;
 import io.pkts.diameter.codegen.primitives.AvpPrimitive;
 import io.pkts.diameter.codegen.primitives.DiameterPrimitive;
+import io.pkts.diameter.codegen.primitives.EnumPrimitive;
+import io.pkts.diameter.codegen.primitives.GavpPrimitive;
+import io.pkts.diameter.codegen.primitives.GroupedPrimitive;
 import io.pkts.diameter.codegen.primitives.TypePrimitive;
 import org.xml.sax.SAXException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public interface DiameterSaxBuilder<T extends DiameterPrimitive> {
 
@@ -61,12 +68,18 @@ public interface DiameterSaxBuilder<T extends DiameterPrimitive> {
             return null;
         }
 
-        protected List<String> getIgnoreChildElements() {
-            return null;
+        protected CodeGenParseException createException(final String msg) {
+            return new CodeGenParseException(ctx.getLocator(), msg);
         }
 
-        protected boolean throwException(final String msg) throws CodeGenParseException {
-            throw new CodeGenParseException(ctx.getLocator(), msg);
+        protected Map<String, List<DiameterPrimitive>> buildChildren(final DiameterContext ctx) {
+
+            final Map<String, List<DiameterPrimitive>> builtChildren = new HashMap<>();
+            children.entrySet().forEach(entry -> {
+                builtChildren.put(entry.getKey(),
+                        entry.getValue().stream().map(b -> b.build(ctx)).collect(Collectors.toList()));
+            });
+            return builtChildren;
         }
 
         /**
@@ -85,16 +98,9 @@ public interface DiameterSaxBuilder<T extends DiameterPrimitive> {
                 return true;
             }
 
-            if (getIgnoreChildElements() == null || getIgnoreChildElements().contains(child.getElementName())) {
-                // ok, don't get confused. We recognize the element but we don't
-                // want to accept it but we are also not complaining loudly about it.
-                // Hence, we'll just return false.
-                return false;
-            }
-
             // ok, unknown element for which we do not have a policy (accept or silently ignore).
             // complain...
-            return throwException("Un-acceptable child element '" + child.getElementName()
+            throw createException("Un-acceptable child element '" + child.getElementName()
                     + "'. Please either fix the XML file or add missing code to accept this child element");
         }
 
@@ -110,6 +116,54 @@ public interface DiameterSaxBuilder<T extends DiameterPrimitive> {
             }
         }
 
+        protected boolean isNotEmpty(final List list) {
+            return list != null && !list.isEmpty();
+        }
+
+        protected List<GavpPrimitive> getGavps(final Map<String, List<DiameterPrimitive>> map) {
+            return map.getOrDefault(GavpPrimitive.NAME, Collections.emptyList())
+                    .stream()
+                    .map(DiameterPrimitive::toGavpPrimitive).collect(Collectors.toList());
+        }
+
+        protected List<TypePrimitive> getTypes(final Map<String, List<DiameterPrimitive>> map) {
+            return map.getOrDefault(TypePrimitive.NAME, Collections.emptyList())
+                    .stream()
+                    .map(DiameterPrimitive::toTypePrimitive).collect(Collectors.toList());
+        }
+
+        protected Optional<DiameterType.Type> getType(final Map<String, List<DiameterPrimitive>> map) {
+            final List<TypePrimitive> types = getTypes(map);
+            if (types.size() > 1) {
+                throw createException("There can only be one type element");
+            }
+            return types.isEmpty() ? Optional.empty() : Optional.of(types.get(0).getType());
+        }
+
+        protected List<GroupedPrimitive> getGroupeds(final Map<String, List<DiameterPrimitive>> map) {
+            return map.getOrDefault(GroupedPrimitive.NAME, Collections.emptyList())
+                    .stream()
+                    .map(DiameterPrimitive::toGroupedPrimitive).collect(Collectors.toList());
+        }
+
+        protected Optional<GroupedPrimitive> getGrouped(final Map<String, List<DiameterPrimitive>> map) {
+            final List<GroupedPrimitive> groups = getGroupeds(map);
+            if (groups.size() > 1) {
+                throw createException("There can only be one grouped element");
+            }
+
+            return groups.isEmpty() ? Optional.empty() : Optional.of(groups.get(0));
+        }
+
+        protected List<EnumPrimitive> getEnums(final Map<String, List<DiameterPrimitive>> map) {
+            try {
+                return map.getOrDefault(EnumPrimitive.NAME, Collections.emptyList())
+                        .stream()
+                        .map(DiameterPrimitive::toEnumPrimitive).collect(Collectors.toList());
+            } catch (final NullPointerException e) {
+                throw e;
+            }
+        }
     }
 
 }

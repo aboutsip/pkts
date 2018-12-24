@@ -20,6 +20,11 @@ public interface TypedefPrimitive extends DiameterPrimitive {
         return NAME;
     }
 
+    @Override
+    default TypedefPrimitive toTypedefPrimitive() throws ClassCastException {
+        return this;
+    }
+
     static Builder of(final AttributeContext ctx) throws CodeGenParseException {
         ctx.ensureElementName(NAME);
 
@@ -59,7 +64,7 @@ public interface TypedefPrimitive extends DiameterPrimitive {
          */
         @Override
         public void attachChildBuilder(final DiameterSaxBuilder child) {
-            throwException("Unexpected child element");
+            throw createException("Unexpected child element");
         }
 
         @Override

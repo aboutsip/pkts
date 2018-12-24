@@ -21,17 +21,21 @@ public class DiameterContext {
     private final List<ApplicationPrimitive> apps = new ArrayList<>();
     private final List<TypedefPrimitive> typedefs = new ArrayList<>();
 
-    public void collectAvp(AvpPrimitive primitive) {
+    public void collectAvp(final AvpPrimitive primitive) {
         avps.add(primitive);
     }
 
-    public void collectAapplication(ApplicationPrimitive primitive) {
+    public void collectApplication(final ApplicationPrimitive primitive) {
         apps.add(primitive);
     }
 
-    public void collectTypeDef(TypedefPrimitive primitive) {
+    public void collectTypeDef(final TypedefPrimitive primitive) {
         typedefs.add(primitive);
     }
 
+
+    public List<AvpPrimitive> getAvps() {
+        return avps;
+    }
 
 }
