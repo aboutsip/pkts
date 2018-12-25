@@ -16,7 +16,7 @@ public class Renderer {
         this.config = config;
     }
 
-    public void renderAvp(final String name) {
+    public String renderAvp(final String name) {
         final Optional<AvpPrimitive> avp = collector.getAvps()
                 .stream()
                 .filter(a -> a.getName().equals(name))
@@ -27,9 +27,11 @@ public class Renderer {
         }
 
         try {
-            renderAvp(avp.get());
+            return renderAvp(avp.get());
         } catch (final Exception e) {
+            // TODO
             e.printStackTrace();
+            return null;
         }
     }
 

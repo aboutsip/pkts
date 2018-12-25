@@ -629,4 +629,6 @@ public interface Buffer extends Cloneable {
 
     @Override
     String toString();
+
+    String toUTF8String();
 }

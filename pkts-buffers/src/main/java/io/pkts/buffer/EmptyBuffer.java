@@ -212,7 +212,7 @@ public class EmptyBuffer implements ReadOnlyBuffer {
     }
 
     @Override
-    public long getUnsignedInt(int index) throws IndexOutOfBoundsException {
+    public long getUnsignedInt(final int index) throws IndexOutOfBoundsException {
         throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }
 
@@ -310,6 +310,11 @@ public class EmptyBuffer implements ReadOnlyBuffer {
     }
 
     @Override
+    public String toUTF8String() {
+        return "";
+    }
+
+    @Override
     public byte peekByte() throws IndexOutOfBoundsException, IOException {
         throw new IndexOutOfBoundsException(NOT_ENOUGH_READABLE_BYTES);
     }
@@ -353,7 +358,7 @@ public class EmptyBuffer implements ReadOnlyBuffer {
     }
 
     @Override
-    public void write(byte[] bytes) throws IndexOutOfBoundsException, WriteNotSupportedException {
+    public void write(final byte[] bytes) throws IndexOutOfBoundsException, WriteNotSupportedException {
         throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
     }
 
@@ -394,7 +399,7 @@ public class EmptyBuffer implements ReadOnlyBuffer {
     }
 
     @Override
-    public void setWriterIndex(int index) {
+    public void setWriterIndex(final int index) {
         throw new WriteNotSupportedException("This is an empty buffer. Cant write to it");
     }
 
@@ -460,7 +465,7 @@ public class EmptyBuffer implements ReadOnlyBuffer {
 
         try {
             return ((Buffer) other).isEmpty();
-        } catch (NullPointerException | ClassCastException e) {
+        } catch (final NullPointerException | ClassCastException e) {
             return false;
         }
     }

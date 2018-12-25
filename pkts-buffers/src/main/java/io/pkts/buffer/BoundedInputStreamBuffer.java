@@ -493,6 +493,12 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
     }
 
     @Override
+    public String toUTF8String() {
+        final Buffer b = slice();
+        return b.toUTF8String();
+    }
+
+    @Override
     public int getWritableBytes() {
         return 0;
     }

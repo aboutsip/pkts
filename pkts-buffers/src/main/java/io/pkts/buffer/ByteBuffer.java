@@ -358,6 +358,11 @@ public class ByteBuffer extends AbstractBuffer {
 
     @Override
     public String toString() {
+        return toUTF8String();
+    }
+
+    @Override
+    public String toUTF8String() {
         try {
             return new String(getArray(), "UTF-8");
         } catch (final UnsupportedEncodingException e) {

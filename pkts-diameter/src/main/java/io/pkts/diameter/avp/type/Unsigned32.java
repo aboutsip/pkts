@@ -4,7 +4,6 @@ import io.pkts.buffer.Buffer;
 
 public interface Unsigned32 extends DiameterType {
 
-    DiameterType.Type TYPE = Type.UNSIGNED_32;
 
     static Unsigned32 parse(final Buffer data) {
         return new DefaultUnsigned32(data.getUnsignedInt(data.getReaderIndex()));

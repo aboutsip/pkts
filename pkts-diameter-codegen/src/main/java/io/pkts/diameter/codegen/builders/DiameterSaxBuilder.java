@@ -1,8 +1,8 @@
 package io.pkts.diameter.codegen.builders;
 
-import io.pkts.diameter.avp.type.DiameterType;
 import io.pkts.diameter.codegen.CodeGenParseException;
 import io.pkts.diameter.codegen.DiameterCollector;
+import io.pkts.diameter.codegen.Typedef;
 import io.pkts.diameter.codegen.primitives.ApplicationPrimitive;
 import io.pkts.diameter.codegen.primitives.AvpPrimitive;
 import io.pkts.diameter.codegen.primitives.DiameterPrimitive;
@@ -135,12 +135,12 @@ public interface DiameterSaxBuilder<T extends DiameterPrimitive> {
                     .map(DiameterPrimitive::toTypePrimitive).collect(Collectors.toList());
         }
 
-        protected Optional<DiameterType.Type> getType(final Map<String, List<DiameterPrimitive>> map) {
+        protected Optional<Typedef> getType(final Map<String, List<DiameterPrimitive>> map) {
             final List<TypePrimitive> types = getTypes(map);
             if (types.size() > 1) {
                 throw createException("There can only be one type element");
             }
-            return types.isEmpty() ? Optional.empty() : Optional.of(types.get(0).getType());
+            return types.isEmpty() ? Optional.empty() : Optional.of(types.get(0).getTypedef());
         }
 
         protected List<GroupedPrimitive> getGroupeds(final Map<String, List<DiameterPrimitive>> map) {

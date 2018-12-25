@@ -1,8 +1,8 @@
 package io.pkts.diameter.codegen.primitives;
 
-import io.pkts.diameter.avp.type.DiameterType;
 import io.pkts.diameter.codegen.CodeGenParseException;
 import io.pkts.diameter.codegen.DiameterCollector;
+import io.pkts.diameter.codegen.Typedef;
 import io.pkts.diameter.codegen.builders.AttributeContext;
 import io.pkts.diameter.codegen.builders.DiameterSaxBuilder;
 
@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static io.pkts.diameter.avp.type.DiameterType.Type.ENUMERATED;
-import static io.pkts.diameter.avp.type.DiameterType.Type.INTEGER_32;
+import static io.pkts.diameter.codegen.Typedef.ENUMERATED;
+import static io.pkts.diameter.codegen.Typedef.INTEGER_32;
 
 public interface AvpPrimitive extends DiameterPrimitive {
 
@@ -114,7 +114,7 @@ public interface AvpPrimitive extends DiameterPrimitive {
         public AvpPrimitive build(final DiameterCollector ctx) {
             final Map<String, List<DiameterPrimitive>> primitives = buildChildren(ctx);
 
-            final Optional<DiameterType.Type> type = getType(primitives);
+            final Optional<Typedef> typedef = getType(primitives);
             final Optional<GroupedPrimitive> grouped = getGrouped(primitives);
             final List<EnumPrimitive> enums = getEnums(primitives);
 
@@ -126,7 +126,7 @@ public interface AvpPrimitive extends DiameterPrimitive {
             }
 
             // if grouped, then we don't expect a type
-            if (grouped.isPresent() && type.isPresent()) {
+            if (grouped.isPresent() && typedef.isPresent()) {
                 throw createException("For a Grouped AVP, we don't expect a type");
             } else if (grouped.isPresent()) {
                 final AvpPrimitive avp = new GroupedAvpPrimitive(name, code, grouped.get());
@@ -136,7 +136,7 @@ public interface AvpPrimitive extends DiameterPrimitive {
 
             // if we have enums then the type must be enumerated or integer32 or, as it turns out, unsigned32
             // (note, using OCTET_STRING as a cheat to make the code more readable)
-            final DiameterType.Type base = type.orElse(DiameterType.Type.OCTET_STRING).getBaseType();
+            final Typedef base = typedef.orElse(Typedef.OCTET_STRING).getBaseType();
             final boolean isInteger32 = base.isInteger32() || base.isUnsigned32();
             if (isNotEmpty(enums) && isInteger32) {
                 final AvpPrimitive avp = new EnumeratedAvpPrimitive(name, code, enums);
@@ -151,7 +151,7 @@ public interface AvpPrimitive extends DiameterPrimitive {
             // only one thing left and that is a regular typed AVP so make sure
             // that the type is indeed specified and if so, create the AVP
             final AvpPrimitive avp = new TypedAvpPrimitive(name, code,
-                    type.orElseThrow(() -> createException("The AVP must specify the type")));
+                    typedef.orElseThrow(() -> createException("The AVP must specify the type")));
             ctx.collectAvp(avp);
             return avp;
         }
@@ -178,16 +178,16 @@ public interface AvpPrimitive extends DiameterPrimitive {
     }
 
     class TypedAvpPrimitive extends BaseAvpPrimitive {
-        private final DiameterType.Type type;
+        private final Typedef typedef;
 
         @Override
         public boolean isTyped() {
             return true;
         }
 
-        private TypedAvpPrimitive(final String name, final long code, final DiameterType.Type type) {
+        private TypedAvpPrimitive(final String name, final long code, final Typedef typedef) {
             super(name, code);
-            this.type = type;
+            this.typedef = typedef;
         }
 
         @Override
@@ -195,8 +195,8 @@ public interface AvpPrimitive extends DiameterPrimitive {
             return this;
         }
 
-        public DiameterType.Type getType() {
-            return type;
+        public Typedef getTypedef() {
+            return typedef;
         }
 
     }

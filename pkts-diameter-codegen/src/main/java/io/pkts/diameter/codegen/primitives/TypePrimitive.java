@@ -1,8 +1,8 @@
 package io.pkts.diameter.codegen.primitives;
 
-import io.pkts.diameter.avp.type.DiameterType;
 import io.pkts.diameter.codegen.CodeGenParseException;
 import io.pkts.diameter.codegen.DiameterCollector;
+import io.pkts.diameter.codegen.Typedef;
 import io.pkts.diameter.codegen.builders.AttributeContext;
 import io.pkts.diameter.codegen.builders.DiameterSaxBuilder;
 
@@ -13,7 +13,7 @@ public interface TypePrimitive extends DiameterPrimitive {
      */
     String NAME = "type";
 
-    DiameterType.Type getType();
+    Typedef getTypedef();
 
     @Override
     default String getElementName() {
@@ -27,17 +27,17 @@ public interface TypePrimitive extends DiameterPrimitive {
 
     static Builder of(final AttributeContext ctx) throws CodeGenParseException {
         ctx.ensureElementName(NAME);
-        final DiameterType.Type type = DiameterType.Type.fromName(ctx.getString("type-name"));
-        return new Builder(ctx, type);
+        final Typedef typedef = Typedef.fromName(ctx.getString("type-name"));
+        return new Builder(ctx, typedef);
     }
 
     class Builder extends DiameterSaxBuilder.BaseBuilder<TypePrimitive> {
 
-        private final DiameterType.Type type;
+        private final Typedef typedef;
 
-        private Builder(final AttributeContext ctx, final DiameterType.Type type) {
+        private Builder(final AttributeContext ctx, final Typedef typedef) {
             super(ctx);
-            this.type = type;
+            this.typedef = typedef;
         }
 
         @Override
@@ -57,7 +57,7 @@ public interface TypePrimitive extends DiameterPrimitive {
 
         @Override
         public TypePrimitive build(final DiameterCollector ctx) {
-            return () -> type;
+            return () -> typedef;
         }
     }
 }

@@ -504,6 +504,11 @@ public final class InputStreamBuffer extends AbstractBuffer {
     }
 
     @Override
+    public String toUTF8String() {
+        return slice().toUTF8String();
+    }
+
+    @Override
     public int getWritableBytes() {
         return 0;
     }

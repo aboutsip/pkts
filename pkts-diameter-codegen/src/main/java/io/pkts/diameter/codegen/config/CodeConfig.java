@@ -2,6 +2,7 @@ package io.pkts.diameter.codegen.config;
 
 import io.pkts.diameter.avp.Avp;
 import io.pkts.diameter.avp.type.DiameterType;
+import io.pkts.diameter.codegen.Typedef;
 import io.pkts.diameter.codegen.primitives.AvpPrimitive;
 
 import java.util.ArrayList;
@@ -61,15 +62,19 @@ public class CodeConfig {
 
         avpAttributes.put("code", avp.getCode());
 
-        final DiameterType.Type type = avp.toTyped().getType();
-        final Class<? extends DiameterType> typeInterface = type.getImplementingInterface();
-        final Class<? extends Avp> typeClass = type.getImplementingClass();
+        final Typedef typedef = avp.toTyped().getTypedef();
+        final Class<? extends DiameterType> typeInterface =
+                typedef.getImplementingInterface().orElseThrow(() -> new IllegalArgumentException("Unable to render AVP " + avp.getName()
+                        + " because missing interface definition for the type " + typedef.getName()));
+       
+        final Class<? extends Avp> typeClass =
+                typedef.getImplementingClass().orElseThrow(IllegalArgumentException::new);
 
-        avpTypeAttributes.put("interface", typeInterface.getSimpleName());
         avpTypeAttributes.put("class", typeClass.getSimpleName());
+        avpTypeAttributes.put("interface", typeInterface.getSimpleName());
 
-        imports.add(typeInterface.getName());
         imports.add(typeClass.getName());
+        imports.add(typeInterface.getName());
 
         return attributes;
     }

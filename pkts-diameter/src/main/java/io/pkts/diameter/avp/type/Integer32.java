@@ -4,8 +4,6 @@ import io.pkts.buffer.Buffer;
 
 public interface Integer32 extends DiameterType {
 
-    DiameterType.Type TYPE = Type.INTEGER_32;
-
     static Integer32 parse(final Buffer data) {
         return new DefaultInteger32(data.getInt(data.getReaderIndex()));
     }
