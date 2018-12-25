@@ -1,16 +1,29 @@
 package io.pkts.diameter.codegen;
 
+import io.pkts.diameter.codegen.config.CodeConfig;
 import org.junit.Test;
 
 public class CodeGenTest {
 
     @Test
     public void testReadXml() throws Exception {
-        final DiameterContext collector = new DiameterContext();
+        final DiameterCollector collector = new DiameterCollector();
         final WiresharkDictionaryReader reader = new WiresharkDictionaryReader(collector);
-        System.err.println(collector.getAvps().size());
-        // collector.getAvps().forEach(avp -> {
-            // System.out.println("\"" + avp.getName() + "\"");
-        // });
+
+        final String home = "/home/jonas/development/3rd-party/wireshark/diameter";
+        final String dictionary = home + "/dictionary.xml";
+        reader.parse(dictionary);
+
+        /*
+        collector.getAvps().forEach(avp -> {
+            if (Character.isDigit(avp.getName().charAt(0))) {
+                System.out.println(avp.getName());
+            }
+        });
+        */
+
+        final CodeConfig config = new CodeConfig();
+        final Renderer renderer = new Renderer(config, collector);
+        renderer.renderAvp("Origin-Host");
     }
 }

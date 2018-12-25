@@ -2,7 +2,7 @@ package io.pkts.diameter.codegen.primitives;
 
 import io.pkts.diameter.avp.type.DiameterType;
 import io.pkts.diameter.codegen.CodeGenParseException;
-import io.pkts.diameter.codegen.DiameterContext;
+import io.pkts.diameter.codegen.DiameterCollector;
 import io.pkts.diameter.codegen.builders.AttributeContext;
 import io.pkts.diameter.codegen.builders.DiameterSaxBuilder;
 
@@ -29,6 +29,30 @@ public interface AvpPrimitive extends DiameterPrimitive {
     @Override
     default AvpPrimitive toAvpPrimitive() throws ClassCastException {
         return this;
+    }
+
+    default boolean isGrouped() {
+        return false;
+    }
+
+    default GroupedAvpPrimitive toGrouped() throws ClassCastException {
+        throw new ClassCastException("Unable to cast a " + this.getClass().getName() + " into a " + GroupedAvpPrimitive.class.getName());
+    }
+
+    default boolean isTyped() {
+        return false;
+    }
+
+    default TypedAvpPrimitive toTyped() throws ClassCastException {
+        throw new ClassCastException("Unable to cast a " + this.getClass().getName() + " into a " + TypedAvpPrimitive.class.getName());
+    }
+
+    default boolean isEnumerated() {
+        return false;
+    }
+
+    default EnumeratedAvpPrimitive toEnumerated() throws ClassCastException {
+        throw new ClassCastException("Unable to cast a " + this.getClass().getName() + " into a " + EnumeratedAvpPrimitive.class.getName());
     }
 
     /**
@@ -87,7 +111,7 @@ public interface AvpPrimitive extends DiameterPrimitive {
         }
 
         @Override
-        public AvpPrimitive build(final DiameterContext ctx) {
+        public AvpPrimitive build(final DiameterCollector ctx) {
             final Map<String, List<DiameterPrimitive>> primitives = buildChildren(ctx);
 
             final Optional<DiameterType.Type> type = getType(primitives);
@@ -156,15 +180,39 @@ public interface AvpPrimitive extends DiameterPrimitive {
     class TypedAvpPrimitive extends BaseAvpPrimitive {
         private final DiameterType.Type type;
 
+        @Override
+        public boolean isTyped() {
+            return true;
+        }
+
         private TypedAvpPrimitive(final String name, final long code, final DiameterType.Type type) {
             super(name, code);
             this.type = type;
+        }
+
+        @Override
+        public TypedAvpPrimitive toTyped() throws ClassCastException {
+            return this;
+        }
+
+        public DiameterType.Type getType() {
+            return type;
         }
 
     }
 
     class GroupedAvpPrimitive extends BaseAvpPrimitive {
         private final GroupedPrimitive grouped;
+
+        @Override
+        public boolean isGrouped() {
+            return false;
+        }
+
+        @Override
+        public GroupedAvpPrimitive toGrouped() throws ClassCastException {
+            return this;
+        }
 
         private GroupedAvpPrimitive(final String name, final long code, final GroupedPrimitive grouped) {
             super(name, code);
@@ -174,6 +222,16 @@ public interface AvpPrimitive extends DiameterPrimitive {
 
     class EnumeratedAvpPrimitive extends BaseAvpPrimitive {
         final List<EnumPrimitive> enums;
+
+        @Override
+        public boolean isEnumerated() {
+            return true;
+        }
+
+        @Override
+        public EnumeratedAvpPrimitive toEnumerated() throws ClassCastException {
+            return this;
+        }
 
         private EnumeratedAvpPrimitive(final String name, final long code, final List<EnumPrimitive> enums) {
             super(name, code);

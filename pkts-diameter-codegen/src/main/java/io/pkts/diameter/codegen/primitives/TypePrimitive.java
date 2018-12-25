@@ -2,7 +2,7 @@ package io.pkts.diameter.codegen.primitives;
 
 import io.pkts.diameter.avp.type.DiameterType;
 import io.pkts.diameter.codegen.CodeGenParseException;
-import io.pkts.diameter.codegen.DiameterContext;
+import io.pkts.diameter.codegen.DiameterCollector;
 import io.pkts.diameter.codegen.builders.AttributeContext;
 import io.pkts.diameter.codegen.builders.DiameterSaxBuilder;
 
@@ -56,7 +56,7 @@ public interface TypePrimitive extends DiameterPrimitive {
         }
 
         @Override
-        public TypePrimitive build(final DiameterContext ctx) {
+        public TypePrimitive build(final DiameterCollector ctx) {
             return () -> type;
         }
     }

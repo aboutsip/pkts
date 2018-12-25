@@ -2,7 +2,7 @@ package io.pkts.diameter.codegen.builders;
 
 import io.pkts.diameter.avp.type.DiameterType;
 import io.pkts.diameter.codegen.CodeGenParseException;
-import io.pkts.diameter.codegen.DiameterContext;
+import io.pkts.diameter.codegen.DiameterCollector;
 import io.pkts.diameter.codegen.primitives.ApplicationPrimitive;
 import io.pkts.diameter.codegen.primitives.AvpPrimitive;
 import io.pkts.diameter.codegen.primitives.DiameterPrimitive;
@@ -49,7 +49,7 @@ public interface DiameterSaxBuilder<T extends DiameterPrimitive> {
         return false;
     }
 
-    T build(DiameterContext ctx);
+    T build(DiameterCollector ctx);
 
     abstract class BaseBuilder<T extends DiameterPrimitive> implements DiameterSaxBuilder<T> {
 
@@ -72,7 +72,7 @@ public interface DiameterSaxBuilder<T extends DiameterPrimitive> {
             return new CodeGenParseException(ctx.getLocator(), msg);
         }
 
-        protected Map<String, List<DiameterPrimitive>> buildChildren(final DiameterContext ctx) {
+        protected Map<String, List<DiameterPrimitive>> buildChildren(final DiameterCollector ctx) {
 
             final Map<String, List<DiameterPrimitive>> builtChildren = new HashMap<>();
             children.entrySet().forEach(entry -> {
@@ -106,6 +106,9 @@ public interface DiameterSaxBuilder<T extends DiameterPrimitive> {
 
         @Override
         public void characters(final char[] ch, final int start, final int length) throws SAXException {
+            final char[] que = new char[length];
+            System.arraycopy(ch, start, que, 0, length);
+            System.err.println("-->" + (new String(que)) + "<---");
             throw new CodeGenParseException(ctx.getLocator(), "Did not expect to get any additional characters");
         }
 

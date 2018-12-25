@@ -1,7 +1,7 @@
 package io.pkts.diameter.codegen.primitives;
 
 import io.pkts.diameter.codegen.CodeGenParseException;
-import io.pkts.diameter.codegen.DiameterContext;
+import io.pkts.diameter.codegen.DiameterCollector;
 import io.pkts.diameter.codegen.builders.AttributeContext;
 import io.pkts.diameter.codegen.builders.DiameterSaxBuilder;
 
@@ -17,6 +17,7 @@ public interface GavpPrimitive extends DiameterPrimitive {
         return NAME;
     }
 
+    @Override
     default GavpPrimitive toGavpPrimitive() throws ClassCastException {
         return this;
     }
@@ -59,7 +60,7 @@ public interface GavpPrimitive extends DiameterPrimitive {
         }
 
         @Override
-        public GavpPrimitive build(final DiameterContext ctx) {
+        public GavpPrimitive build(final DiameterCollector ctx) {
             return () -> name;
         }
     }

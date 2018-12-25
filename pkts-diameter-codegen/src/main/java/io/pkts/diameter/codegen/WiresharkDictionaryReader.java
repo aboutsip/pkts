@@ -18,6 +18,9 @@ import org.xml.sax.helpers.DefaultHandler;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,14 +31,25 @@ import java.util.function.Function;
 public class WiresharkDictionaryReader {
 
     private final SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+    private final SAXParser saxParser;
+    private final WiresharkXmlHandler handler;
 
-    public WiresharkDictionaryReader(final DiameterContext collector) throws Exception {
+    public WiresharkDictionaryReader(final DiameterCollector collector) throws Exception {
         saxFactory.setValidating(true);
-        final SAXParser saxParser = saxFactory.newSAXParser();
-        final WiresharkXmlHandler handler = new WiresharkXmlHandler(collector);
-        final String home = "/home/jonas/development/3rd-party/wireshark/diameter";
-        final String dictionary = home + "/dictionary.xml";
-        saxParser.parse(new File(dictionary), handler);
+        saxParser = saxFactory.newSAXParser();
+        handler = new WiresharkXmlHandler(collector);
+    }
+
+    public void parse(final String file) throws IOException, SAXException {
+        saxParser.parse(new File(file), handler);
+    }
+
+    public void parse(final Path path) throws IOException, SAXException {
+        saxParser.parse(path.toFile(), handler);
+    }
+
+    public void parse(final InputStream stream) throws IOException, SAXException {
+        saxParser.parse(stream, handler);
     }
 
     private static class WiresharkXmlHandler extends DefaultHandler {
@@ -61,14 +75,14 @@ public class WiresharkDictionaryReader {
          */
         private Locator locator;
 
-        private final DiameterContext collector;
+        private final DiameterCollector collector;
 
         @Override
         public void setDocumentLocator(final Locator locator) {
             this.locator = locator;
         }
 
-        public WiresharkXmlHandler(final DiameterContext collector) {
+        public WiresharkXmlHandler(final DiameterCollector collector) {
             this.collector = collector;
 
             // Put all the known builders here.

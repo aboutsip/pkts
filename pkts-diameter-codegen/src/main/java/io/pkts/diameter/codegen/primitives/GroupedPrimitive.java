@@ -1,7 +1,7 @@
 package io.pkts.diameter.codegen.primitives;
 
 import io.pkts.diameter.codegen.CodeGenParseException;
-import io.pkts.diameter.codegen.DiameterContext;
+import io.pkts.diameter.codegen.DiameterCollector;
 import io.pkts.diameter.codegen.builders.AttributeContext;
 import io.pkts.diameter.codegen.builders.DiameterSaxBuilder;
 
@@ -64,7 +64,7 @@ public interface GroupedPrimitive extends DiameterPrimitive {
         }
 
         @Override
-        public GroupedPrimitive build(final DiameterContext ctx) {
+        public GroupedPrimitive build(final DiameterCollector ctx) {
             final Map<String, List<DiameterPrimitive>> primitives = buildChildren(ctx);
 
             // we only expect one type of child and that's the gavp.
