@@ -1,19 +1,10 @@
-
 package io.pkts.diameter.avp;
 
 import io.pkts.diameter.avp.impl.DiameterIdentityAvp;
 import io.pkts.diameter.avp.type.DiameterIdentity;
 
 /**
- * <p>
- * <b>Source: RFC6733 Section 6.3</b>
- * <pre>
- *    The Origin-Host AVP (AVP Code 264) is of type DiameterIdentity, and
- *    it MUST be present in all Diameter messages.  This AVP identifies the
- *    endpoint that originated the Diameter message.  Relay agents MUST NOT
- *    modify this AVP.
- * </pre>
- * </p>
+ * 
  */
 public interface OriginHost extends Avp<DiameterIdentity> {
 

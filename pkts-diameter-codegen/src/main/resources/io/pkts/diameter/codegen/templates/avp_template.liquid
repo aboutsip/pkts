@@ -1,0 +1,29 @@
+package {{java.package}};
+{% for import in java.imports %}
+import {{ import }};{% endfor %}
+
+/**
+ * {{ javadoc.class }}
+ */
+public interface {{java.class.name}} extends Avp<{{avp.type.interface}}> {
+
+    int CODE = {{avp.code}};
+
+    @Override
+    default long getCode() {
+        return CODE;
+    }
+
+    static {{java.class.name}} parse(final FramedAvp raw) {
+        if (CODE != raw.getCode()) {
+            throw new AvpParseException("AVP Code mismatch - unable to parse the AVP into a " + {{java.class.name}}.class.getName());
+        }
+        return new Default{{java.class.name}}(raw);
+    }
+
+    class Default{{java.class.name}} extends {{avp.type.class}} implements {{java.class.name}} {
+        private Default{{java.class.name}}(final FramedAvp raw) {
+            super(raw);
+        }
+    }
+}

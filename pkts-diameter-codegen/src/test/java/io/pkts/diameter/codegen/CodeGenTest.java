@@ -14,15 +14,7 @@ public class CodeGenTest {
         final String dictionary = home + "/dictionary.xml";
         reader.parse(dictionary);
 
-        /*
-        collector.getAvps().forEach(avp -> {
-            if (Character.isDigit(avp.getName().charAt(0))) {
-                System.out.println(avp.getName());
-            }
-        });
-        */
-
-        final CodeConfig config = new CodeConfig();
+        final CodeConfig config = CodeConfig.of().build();
         final Renderer renderer = new Renderer(config, collector);
         renderer.renderAvp("Origin-Host");
     }

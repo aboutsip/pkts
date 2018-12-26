@@ -4,18 +4,15 @@ import io.pkts.diameter.codegen.config.CodeConfig;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
-
 public class RenderTest extends CodeGenTestBase {
 
     private CodeConfig config;
 
     @Override
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         super.setUp();
-        config = new CodeConfig();
+        config = CodeConfig.of().build();
     }
 
     @Test

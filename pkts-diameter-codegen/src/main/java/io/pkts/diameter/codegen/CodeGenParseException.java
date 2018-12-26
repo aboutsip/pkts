@@ -9,7 +9,7 @@ import org.xml.sax.Locator;
 /**
  * @author jonas@jonasborjesson.com
  */
-public class CodeGenParseException extends RuntimeException {
+public class CodeGenParseException extends CodeGenException {
 
     private final int lineNo;
     private final String source;

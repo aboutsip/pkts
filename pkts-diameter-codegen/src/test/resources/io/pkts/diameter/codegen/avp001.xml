@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dictionary SYSTEM "dictionary.dtd">
+
+<!-- For doing unit testing -->
+
+<dictionary>
+    <base>
+        <avp name="User-Name" code="1" mandatory="must">
+            <type type-name="UTF8String"/>
+        </avp>
+        <avp name="Origin-Host" code="264" mandatory="must" may-encrypt="no" protected="may" vendor-bit="mustnot">
+            <type type-name="DiameterIdentity"/>
+        </avp>
+        <avp name="Vendor-Id" code="266" mandatory="must" may-encrypt="no" protected="may" vendor-bit="mustnot">
+            <type type-name="VendorId"/>
+        </avp>
+        <avp name="Framed-MTU" code="12" mandatory="must" protected="may" may-encrypt="yes" vendor-bit="mustnot">
+            <type type-name="Unsigned32"/>
+        </avp>
+    </base>
+</dictionary>

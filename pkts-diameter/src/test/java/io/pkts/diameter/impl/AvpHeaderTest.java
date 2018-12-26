@@ -44,8 +44,7 @@ public class AvpHeaderTest extends DiameterTestBase {
         final Avp avp = raw.parse();
         assertThat(avp instanceof OriginHost, is(true));
         assertThat(avp.getCode(), is(264L));
-        assertThat(raw.toOriginHost() instanceof OriginHost, is(true));
-        assertThat(raw.isOriginHost(), is(true));
+        assertThat((OriginHost) raw instanceof OriginHost, is(true));
 
         final DiameterIdentity identity = (DiameterIdentity) avp.getValue();
         assertThat(identity.asString(), is("mme.epc.mnc001.mcc001.3gppnetwork.org"));
@@ -56,10 +55,9 @@ public class AvpHeaderTest extends DiameterTestBase {
         final FramedAvp raw = FramedAvp.frame(loadBuffer("AVP_Origin_Realm.raw"));
         final Avp avp = raw.parse();
         assertThat(avp instanceof OriginRealm, is(true));
-        assertThat(raw.toOriginRealm() instanceof OriginRealm, is(true));
-        assertThat(raw.isOriginRealm(), is(true));
+        assertThat((OriginRealm) raw instanceof OriginRealm, is(true));
 
-        final OriginRealm originRealm = raw.toOriginRealm();
+        final OriginRealm originRealm = (OriginRealm) raw;
         final DiameterIdentity identity = originRealm.getValue();
         assertThat(identity.asString(), is("epc.mnc001.mcc001.3gppnetwork.org"));
     }

@@ -47,33 +47,4 @@ public interface FramedAvp {
      * @return
      */
     Avp parse();
-
-    /**
-     * Since every diameter message must have a origin host, it is one of the
-     * most used AVPs and therefore this convenience method.
-     *
-     * @return true if this {@link FramedAvp} is of type {@link OriginHost}
-     */
-    default boolean isOriginHost() {
-        return OriginHost.CODE == getCode();
-    }
-
-    /**
-     * Convenience method for calling {@link FramedAvp#parse()} and then cast that to an
-     * {@link OriginHost}. If the AVP isn't of type {@link OriginHost}, then a {@link AvpParseException} will
-     * be thrown.
-     *
-     * @return
-     */
-    default OriginHost toOriginHost() {
-        return OriginHost.parse(this);
-    }
-
-    default boolean isOriginRealm() {
-        return OriginRealm.CODE == getCode();
-    }
-
-    default OriginRealm toOriginRealm() {
-        return OriginRealm.parse(this);
-    }
 }

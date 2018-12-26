@@ -1,7 +1,5 @@
 package io.pkts.diameter.codegen.config;
 
-import io.pkts.diameter.codegen.primitives.DiameterPrimitive;
-
 /**
  * Simple interface that takes the name of a diameter element, such as an AVP, a command or application,
  * and converts the name, which usually comes the dictionary xml files, into a Java class name.
@@ -11,8 +9,6 @@ public interface ClassNameConverter {
     static ClassNameConverter defaultConverter() {
         return new DefaultClassNameConverter();
     }
-
-    String convert(DiameterPrimitive primitive);
 
     String convert(String name);
 
@@ -24,14 +20,9 @@ public interface ClassNameConverter {
          * "Outgoing-Trunk-Group-ID" may be named OutgoingTrunkGroupID but this one will convert it
          * to OutgoingTrunkGroupId, note how the last ID is "Id", i.e. capital 'i' but lowercase 'd'.
          *
-         * @param primitive
+         * @param name
          * @return
          */
-        @Override
-        public String convert(final DiameterPrimitive primitive) {
-            return convert(primitive.toAvpPrimitive().getName());
-        }
-
         @Override
         public String convert(final String name) {
             final String origName = name.toLowerCase();

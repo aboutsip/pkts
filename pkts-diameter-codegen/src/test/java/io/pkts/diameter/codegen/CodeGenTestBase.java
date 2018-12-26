@@ -10,7 +10,7 @@ public class CodeGenTestBase {
     private DiameterCollector collector;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         collector = new DiameterCollector();
     }
 

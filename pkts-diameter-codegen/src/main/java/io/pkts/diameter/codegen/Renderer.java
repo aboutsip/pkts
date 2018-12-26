@@ -35,7 +35,7 @@ public class Renderer {
         }
     }
 
-    private String renderAvp(final AvpPrimitive avp) throws Exception {
+    public String renderAvp(final AvpPrimitive avp) throws Exception {
         final AvpTemplate template = AvpTemplate.load(avp);
         return template.render(config);
     }

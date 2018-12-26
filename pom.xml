@@ -45,6 +45,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <netty.version>4.1.13.Final</netty.version>
+        <sl4j.version>1.7.25</sl4j.version>
     </properties>
 
     <modules>
@@ -52,6 +53,9 @@
         <module>pkts-sdp</module>
         <module>pkts-sip</module>
         <module>pkts-diameter</module>
+        <module>pkts-diameter-avp</module>
+        <module>pkts-diameter-cmd</module>
+        <module>pkts-diameter-app</module>
         <module>pkts-diameter-codegen</module>
         <module>pkts-core</module>
         <module>pkts-streams</module>
@@ -90,6 +94,30 @@
             <dependency>
                 <groupId>io.pkts</groupId>
                 <artifactId>pkts-diameter</artifactId>
+                <version>${project.version}</version>
+                <type>jar</type>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>io.pkts</groupId>
+                <artifactId>pkts-diameter-avp</artifactId>
+                <version>${project.version}</version>
+                <type>jar</type>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>io.pkts</groupId>
+                <artifactId>pkts-diameter-cmd</artifactId>
+                <version>${project.version}</version>
+                <type>jar</type>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>io.pkts</groupId>
+                <artifactId>pkts-diameter-app</artifactId>
                 <version>${project.version}</version>
                 <type>jar</type>
                 <scope>compile</scope>
@@ -138,10 +166,11 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.7.2</version>
+                <version>${sl4j.version}</version>
                 <scope>provided</scope>
             </dependency>
 
+            <!--
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-log4j12</artifactId>
@@ -155,6 +184,7 @@
                 <version>1.2.14</version>
                 <scope>runtime</scope>
             </dependency>
+            -->
 
             <!-- Test Dependencies -->
             <dependency>

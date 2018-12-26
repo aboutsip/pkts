@@ -13,6 +13,13 @@
     <artifactId>pkts-diameter-codegen</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <snakeyaml.version>1.23</snakeyaml.version>
+        <liqp.version>0.7.7</liqp.version>
+        <jackson.version>2.9.7</jackson.version>
+        <logback.version>1.2.3</logback.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.pkts</groupId>
@@ -20,9 +27,52 @@
         </dependency>
 
         <dependency>
+            <groupId>net.sourceforge.argparse4j</groupId>
+            <artifactId>argparse4j</artifactId>
+            <version>0.8.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${sl4j.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- For reading our configuration yaml file -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>${snakeyaml.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>${jackson.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- For rendering liquid template -->
+
+        <dependency>
             <groupId>nl.big-o</groupId>
             <artifactId>liqp</artifactId>
-            <version>0.7.7</version>
+            <version>${liqp.version}</version>
             <scope>compile</scope>
         </dependency>
 

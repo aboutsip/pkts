@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 /**
  * Helper class for finding and loading the appropriate template for an AVP.
@@ -33,7 +34,11 @@ public class AvpTemplate {
     }
 
     public String render(final CodeConfig baseConfig) {
-        return template.render(baseConfig.createAvpConfig(avp));
+        return render(baseConfig.createAvpConfig(avp).getAttributes());
+    }
+
+    public String render(final Map<String, Object> attributes) {
+        return template.render(attributes);
     }
 
 
