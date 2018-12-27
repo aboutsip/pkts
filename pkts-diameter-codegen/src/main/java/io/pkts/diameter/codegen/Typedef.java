@@ -1,11 +1,14 @@
 package io.pkts.diameter.codegen;
 
 import io.pkts.diameter.avp.Avp;
+import io.pkts.diameter.avp.impl.DiameterGroupedAvp;
 import io.pkts.diameter.avp.impl.DiameterIdentityAvp;
+import io.pkts.diameter.avp.impl.DiameterInteger32Avp;
 import io.pkts.diameter.avp.impl.DiameterUnsigned32Avp;
 import io.pkts.diameter.avp.impl.DiameterUtf8StringAvp;
 import io.pkts.diameter.avp.type.DiameterIdentity;
 import io.pkts.diameter.avp.type.DiameterType;
+import io.pkts.diameter.avp.type.Grouped;
 import io.pkts.diameter.avp.type.Integer32;
 import io.pkts.diameter.avp.type.Integer64;
 import io.pkts.diameter.avp.type.UTF8String;
@@ -16,7 +19,7 @@ import java.util.stream.Stream;
 
 public enum Typedef {
     OCTET_STRING("OctetString", null, null, null),
-    INTEGER_32("Integer32", null, Integer32.class, null),
+    INTEGER_32("Integer32", null, Integer32.class, DiameterInteger32Avp.class),
     INTEGER_64("Integer64", null, Integer64.class, null),
     UNSIGNED_32("Unsigned32", null, Unsigned32.class, DiameterUnsigned32Avp.class),
     UNSIGNED_64("Unsigned64", null, null, null),
@@ -25,7 +28,9 @@ public enum Typedef {
     TIME("Time", null, null, null),
 
     UTF8_STRING("UTF8String", OCTET_STRING, UTF8String.class, DiameterUtf8StringAvp.class),
-    ENUMERATED("Enumerated", INTEGER_32, null, null),
+    ENUMERATED("Enumerated", INTEGER_32, Integer32.class, DiameterInteger32Avp.class),
+    GROUPED("Grouped", null, Grouped.class, DiameterGroupedAvp.class),
+    GAVP("Gavp", null, Grouped.class, DiameterGroupedAvp.class),
     DIAMETER_URI("DiameterURI", UTF8_STRING, null, null),
     IP_ADDRESS("IPAddress", OCTET_STRING, null, null),
     DIAMETER_IDENTITY("DiameterIdentity", OCTET_STRING, DiameterIdentity.class, DiameterIdentityAvp.class),

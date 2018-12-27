@@ -5,7 +5,10 @@ import io.pkts.diameter.avp.type.Grouped;
 
 import java.util.Optional;
 
-public interface VendorSpecificApplicationId extends Avp<Grouped> {
+/**
+ *
+ */
+public interface VendorSpecificApplicationId2 extends Avp<Grouped> {
 
     int CODE = 260;
 
@@ -14,35 +17,24 @@ public interface VendorSpecificApplicationId extends Avp<Grouped> {
         return CODE;
     }
 
-    /**
-     * The {@link VendorId}, which is a mandatory parameter.
-     *
-     * @return
-     */
     VendorId getVendorId();
 
-    /**
-     * The {@link VendorSpecificApplicationId} must contain either a {@link AuthApplicationId} or a
-     * {@link AcctApplicationId} and therefore, there are convenience methods for getting those and
-     * they are returned as optionals.
-     *
-     * @return
-     */
     Optional<AuthApplicationId> getAuthApplicationId();
 
     Optional<AcctApplicationId> getAcctApplicationId();
 
-    static VendorSpecificApplicationId parse(final FramedAvp raw) {
+    static VendorSpecificApplicationId2 parse(final FramedAvp raw) {
         if (CODE != raw.getCode()) {
-            throw new AvpParseException("AVP Code mismatch - unable to parse the AVP into a " + VendorSpecificApplicationId.class.getName());
+            throw new AvpParseException("AVP Code mismatch - unable to parse the AVP into a " + VendorSpecificApplicationId2.class.getName());
         }
         return new DefaultVendorSpecificApplicationId(raw);
     }
 
-    class DefaultVendorSpecificApplicationId extends DiameterGroupedAvp implements VendorSpecificApplicationId {
+    class DefaultVendorSpecificApplicationId extends DiameterGroupedAvp implements VendorSpecificApplicationId2 {
         private DefaultVendorSpecificApplicationId(final FramedAvp raw) {
             super(raw);
         }
+
 
         @Override
         public VendorId getVendorId() {
@@ -59,6 +51,4 @@ public interface VendorSpecificApplicationId extends Avp<Grouped> {
             return getValue().getFramedAvp(AcctApplicationId.CODE).map(avp -> (AcctApplicationId) avp.parse());
         }
     }
-
-
 }

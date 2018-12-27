@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static io.pkts.diameter.codegen.Typedef.ENUMERATED;
+import static io.pkts.diameter.codegen.Typedef.GROUPED;
 import static io.pkts.diameter.codegen.Typedef.INTEGER_32;
 
 public interface AvpPrimitive extends DiameterPrimitive {
@@ -195,6 +196,7 @@ public interface AvpPrimitive extends DiameterPrimitive {
             return this;
         }
 
+        @Override
         public Typedef getTypedef() {
             return typedef;
         }
@@ -218,6 +220,11 @@ public interface AvpPrimitive extends DiameterPrimitive {
             super(name, code);
             this.grouped = grouped;
         }
+
+        @Override
+        public Typedef getTypedef() {
+            return GROUPED;
+        }
     }
 
     class EnumeratedAvpPrimitive extends BaseAvpPrimitive {
@@ -236,6 +243,11 @@ public interface AvpPrimitive extends DiameterPrimitive {
         private EnumeratedAvpPrimitive(final String name, final long code, final List<EnumPrimitive> enums) {
             super(name, code);
             this.enums = enums;
+        }
+
+        @Override
+        public Typedef getTypedef() {
+            return ENUMERATED;
         }
     }
 

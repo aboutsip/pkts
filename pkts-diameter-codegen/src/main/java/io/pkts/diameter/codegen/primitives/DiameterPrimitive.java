@@ -1,5 +1,7 @@
 package io.pkts.diameter.codegen.primitives;
 
+import io.pkts.diameter.codegen.Typedef;
+
 /**
  * Base interface for our code generation for generating various diameter "primitives".
  */
@@ -11,6 +13,8 @@ public interface DiameterPrimitive {
      * @return
      */
     String getElementName();
+
+    Typedef getTypedef();
 
     default GavpPrimitive toGavpPrimitive() throws ClassCastException {
         throw new ClassCastException("Unable to cast a " + this.getClass().getName() + " into a " + GavpPrimitive.class.getName());

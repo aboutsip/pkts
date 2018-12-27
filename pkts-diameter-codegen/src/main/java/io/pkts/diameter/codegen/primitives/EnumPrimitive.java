@@ -2,6 +2,7 @@ package io.pkts.diameter.codegen.primitives;
 
 import io.pkts.diameter.codegen.CodeGenParseException;
 import io.pkts.diameter.codegen.DiameterCollector;
+import io.pkts.diameter.codegen.Typedef;
 import io.pkts.diameter.codegen.builders.AttributeContext;
 import io.pkts.diameter.codegen.builders.DiameterSaxBuilder;
 
@@ -71,6 +72,11 @@ public interface EnumPrimitive extends DiameterPrimitive {
         private DefaultEnumPrimitive(final String name, final long code) {
             this.name = name;
             this.code = code;
+        }
+
+        @Override
+        public Typedef getTypedef() {
+            return Typedef.ENUMERATED;
         }
     }
 }

@@ -2,6 +2,7 @@ package io.pkts.diameter.codegen.primitives;
 
 import io.pkts.diameter.codegen.CodeGenParseException;
 import io.pkts.diameter.codegen.DiameterCollector;
+import io.pkts.diameter.codegen.Typedef;
 import io.pkts.diameter.codegen.builders.AttributeContext;
 import io.pkts.diameter.codegen.builders.DiameterSaxBuilder;
 
@@ -17,6 +18,10 @@ public interface GroupedPrimitive extends DiameterPrimitive {
      */
     String NAME = "grouped";
 
+    @Override
+    default Typedef getTypedef() {
+        return Typedef.GROUPED;
+    }
 
     /**
      * Get the AVPs that is part of this group.
@@ -80,6 +85,7 @@ public interface GroupedPrimitive extends DiameterPrimitive {
             }
 
             return () -> children.stream().map(DiameterPrimitive::toGavpPrimitive).collect(Collectors.toList());
+
         }
     }
 

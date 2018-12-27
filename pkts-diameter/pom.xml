@@ -29,11 +29,6 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
     </dependency>
-    <dependency>
-      <groupId>io.pkts</groupId>
-      <artifactId>pkts-diameter-avp</artifactId>
-      <scope>compile</scope>
-    </dependency>
 
   </dependencies>
 

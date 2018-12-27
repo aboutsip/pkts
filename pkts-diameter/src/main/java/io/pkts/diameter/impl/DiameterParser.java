@@ -11,8 +11,9 @@ import io.pkts.diameter.avp.AvpHeader;
 import io.pkts.diameter.avp.FramedAvp;
 import io.pkts.diameter.avp.OriginHost;
 import io.pkts.diameter.avp.OriginRealm;
+import io.pkts.diameter.avp.ResultCode;
 import io.pkts.diameter.avp.VendorId;
-import io.pkts.diameter.avp.VendorSpecificApplicationId;
+import io.pkts.diameter.avp.VendorSpecificApplicationId2;
 import io.pkts.diameter.avp.impl.ImmutableAvpHeader;
 import io.pkts.diameter.avp.impl.ImmutableFramedAvp;
 
@@ -110,12 +111,14 @@ public class DiameterParser {
                 return OriginHost.parse(raw);
             case OriginRealm.CODE:
                 return OriginRealm.parse(raw);
-            case VendorSpecificApplicationId.CODE:
-                return VendorSpecificApplicationId.parse(raw);
+            case VendorSpecificApplicationId2.CODE:
+                return VendorSpecificApplicationId2.parse(raw);
             case VendorId.CODE:
                 return VendorId.parse(raw);
             case AuthApplicationId.CODE:
                 return AuthApplicationId.parse(raw);
+            case ResultCode.CODE:
+                return ResultCode.parse(raw);
             default:
                 throw new RuntimeException("AVP " + raw.getCode() + " has not yet been implemented");
         }

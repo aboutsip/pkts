@@ -13,8 +13,6 @@ public interface TypePrimitive extends DiameterPrimitive {
      */
     String NAME = "type";
 
-    Typedef getTypedef();
-
     @Override
     default String getElementName() {
         return NAME;

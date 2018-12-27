@@ -4,14 +4,7 @@ import io.pkts.diameter.avp.impl.DiameterIdentityAvp;
 import io.pkts.diameter.avp.type.DiameterIdentity;
 
 /**
- * <p>
- * <b>Source: RFC6733 Section 6.4/b>
- * <pre>
- *    The Origin-Realm AVP (AVP Code 296) is of type DiameterIdentity.
- *    This AVP contains the Realm of the originator of any Diameter message
- *    and MUST be present in all messages
- * </pre>
- * </p>
+ * 
  */
 public interface OriginRealm extends Avp<DiameterIdentity> {
 

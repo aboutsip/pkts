@@ -1,6 +1,7 @@
 package io.pkts.diameter.avp;
 
 import io.pkts.diameter.avp.type.DiameterType;
+import io.pkts.diameter.avp.type.Enumerated;
 
 /**
  * The difference between this {@link Avp} and the raw version, {@link FramedAvp} is that
@@ -14,4 +15,17 @@ import io.pkts.diameter.avp.type.DiameterType;
 public interface Avp<T extends DiameterType> extends FramedAvp {
 
     T getValue();
+
+    /**
+     * Check if this AVP is an enumerated AVP.
+     *
+     * @return
+     */
+    default boolean isEnumerated() {
+        return false;
+    }
+
+    default <E extends Enum<E>> Avp<Enumerated<E>> toEnumerated() throws ClassCastException {
+        throw new ClassCastException("Unable to cast a " + this.getClass().getName() + " into a " + Enumerated.class.getName());
+    }
 }

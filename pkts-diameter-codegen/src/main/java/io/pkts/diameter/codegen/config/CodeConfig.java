@@ -90,7 +90,8 @@ public class CodeConfig {
 
         avpAttributes.put("code", avp.getCode());
 
-        final Typedef typedef = avp.toTyped().getTypedef();
+        // final Typedef typedef = avp.toTyped().getTypedef();
+        final Typedef typedef = avp.getTypedef();
         final Class<? extends DiameterType> typeInterface =
                 typedef.getImplementingInterface().orElseThrow(() -> new IllegalArgumentException("Unable to render AVP " + avp.getName()
                         + " because missing interface definition for the type " + typedef.getName()));
@@ -186,7 +187,7 @@ public class CodeConfig {
         /**
          * All the expected directories to which we will generate the code into.
          */
-        private static final String AVP_MVN_DIR = "pkts-diameter-avp";
+        private static final String AVP_MVN_DIR = "pkts-diameter";
         private static final String CMD_MVN_DIR = "pkts-diameter-cmd";
         private static final String APP_MVN_DIR = "pkts-diameter-app";
 
@@ -201,7 +202,7 @@ public class CodeConfig {
          * Default package names
          */
         private static final String DEFAULT_BASE_PACKAGE = "io.pkts.diameter";
-        private static final String DEFAULT_AVP_PACKAGE = "avp";
+        private static final String DEFAULT_AVP_PACKAGE = "avp.api";
         private static final String DEFAULT_CMD_PACKAGE = "cmd";
         private static final String DEFAULT_APP_PACKAGE = "app";
 

@@ -2,6 +2,7 @@ package io.pkts.diameter.codegen.primitives;
 
 import io.pkts.diameter.codegen.CodeGenParseException;
 import io.pkts.diameter.codegen.DiameterCollector;
+import io.pkts.diameter.codegen.Typedef;
 import io.pkts.diameter.codegen.builders.AttributeContext;
 import io.pkts.diameter.codegen.builders.DiameterSaxBuilder;
 
@@ -11,6 +12,11 @@ public interface GavpPrimitive extends DiameterPrimitive {
      * The name of the XML element.
      */
     String NAME = "gavp";
+
+    @Override
+    default Typedef getTypedef() {
+        return Typedef.GAVP;
+    }
 
     @Override
     default String getElementName() {

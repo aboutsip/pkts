@@ -6,8 +6,10 @@ import io.pkts.diameter.avp.AvpHeader;
 import io.pkts.diameter.avp.FramedAvp;
 import io.pkts.diameter.avp.OriginHost;
 import io.pkts.diameter.avp.OriginRealm;
-import io.pkts.diameter.avp.VendorSpecificApplicationId;
+import io.pkts.diameter.avp.ResultCode.ResultCodeEnum;
+import io.pkts.diameter.avp.VendorSpecificApplicationId2;
 import io.pkts.diameter.avp.type.DiameterIdentity;
+import io.pkts.diameter.avp.type.Enumerated;
 import io.pkts.diameter.avp.type.Grouped;
 import org.junit.Test;
 
@@ -44,7 +46,7 @@ public class AvpHeaderTest extends DiameterTestBase {
         final Avp avp = raw.parse();
         assertThat(avp instanceof OriginHost, is(true));
         assertThat(avp.getCode(), is(264L));
-        assertThat((OriginHost) raw instanceof OriginHost, is(true));
+        assertThat((OriginHost) avp instanceof OriginHost, is(true));
 
         final DiameterIdentity identity = (DiameterIdentity) avp.getValue();
         assertThat(identity.asString(), is("mme.epc.mnc001.mcc001.3gppnetwork.org"));
@@ -55,11 +57,24 @@ public class AvpHeaderTest extends DiameterTestBase {
         final FramedAvp raw = FramedAvp.frame(loadBuffer("AVP_Origin_Realm.raw"));
         final Avp avp = raw.parse();
         assertThat(avp instanceof OriginRealm, is(true));
-        assertThat((OriginRealm) raw instanceof OriginRealm, is(true));
+        assertThat((OriginRealm) avp instanceof OriginRealm, is(true));
 
-        final OriginRealm originRealm = (OriginRealm) raw;
+        final OriginRealm originRealm = (OriginRealm) avp;
         final DiameterIdentity identity = originRealm.getValue();
         assertThat(identity.asString(), is("epc.mnc001.mcc001.3gppnetwork.org"));
+    }
+
+    @Test
+    public void testResultCode() throws Exception {
+        final FramedAvp raw = FramedAvp.frame(loadBuffer("AVP_Result_Code.raw"));
+        // final Avp<Enumerated<ResultCodeEnum>> avp = raw.parse();
+        final Avp avp = raw.parse();
+        assertThat(avp.isEnumerated(), is(true));
+        assertThat(avp.getCode(), is(268L));
+        // assertThat(avp.getValue().getValue(), is(2001));
+        final Avp<Enumerated<ResultCodeEnum>> result = avp.toEnumerated();
+        final ResultCodeEnum rse = result.getValue().getAsEnum().get();
+        assertThat(rse, is(ResultCodeEnum.DIAMETER_SUCCESS));
     }
 
     @Test
@@ -82,7 +97,7 @@ public class AvpHeaderTest extends DiameterTestBase {
 
         // now test to use the convenience methods that will parse it all out
         // and also return the correct types
-        final VendorSpecificApplicationId vsaid = (VendorSpecificApplicationId) avp;
+        final VendorSpecificApplicationId2 vsaid = (VendorSpecificApplicationId2) avp;
         assertThat(vsaid.getVendorId().getValue().getValue(), is(10415L));
         assertThat(vsaid.getAuthApplicationId().get().getValue().getValue(), is(16777251L));
 
