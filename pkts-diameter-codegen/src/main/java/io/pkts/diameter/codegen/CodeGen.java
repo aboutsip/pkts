@@ -79,7 +79,7 @@ public class CodeGen {
         final Path packageDir = src.resolve(attributes.getPackage().replaceAll("\\.", File.separator));
         final Path fullFileName = packageDir.resolve(attributes.getName() + ".java");
         logger.debug("Saving {} as {}", attributes.getName(), fullFileName);
-        System.err.println(content);
+        // System.err.println(content);
         Files.createDirectories(packageDir);
         Files.write(fullFileName, content.getBytes());
     }

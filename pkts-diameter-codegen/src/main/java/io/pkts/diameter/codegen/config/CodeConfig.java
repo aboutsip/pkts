@@ -8,6 +8,7 @@ import io.pkts.diameter.avp.Avp;
 import io.pkts.diameter.avp.type.DiameterType;
 import io.pkts.diameter.codegen.Typedef;
 import io.pkts.diameter.codegen.primitives.AvpPrimitive;
+import io.pkts.diameter.codegen.primitives.EnumPrimitive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static io.pkts.diameter.codegen.PreConditions.ensureArgument;
@@ -90,7 +92,6 @@ public class CodeConfig {
 
         avpAttributes.put("code", avp.getCode());
 
-        // final Typedef typedef = avp.toTyped().getTypedef();
         final Typedef typedef = avp.getTypedef();
         final Class<? extends DiameterType> typeInterface =
                 typedef.getImplementingInterface().orElseThrow(() -> new IllegalArgumentException("Unable to render AVP " + avp.getName()
@@ -101,6 +102,22 @@ public class CodeConfig {
 
         avpTypeAttributes.put("class", typeClass.getSimpleName());
         avpTypeAttributes.put("interface", typeInterface.getSimpleName());
+
+        if (avp.isEnumerated()) {
+            final List<EnumPrimitive> enums = avp.toEnumerated().getSortedEnums();
+            final List<String> enumList = enums.stream().map(e -> {
+                // we're building up the enum declaration ourselves here.
+                // was easier than messing with the liquid template.
+                return e.getEnumName() + "_" + e.getEnumCode() + "(\"" + e.getEnumName() + "\", " + e.getEnumCode() + ")";
+            }).collect(Collectors.toList());
+            avpAttributes.put("enum_definition", enumList);
+
+            final List<String> enumSwitch = enums.stream().map(e -> {
+                final String fullName = e.getEnumName() + "_" + e.getEnumCode();
+                return "case " + e.getEnumCode() + ": return Optional.of(" + fullName + ");";
+            }).collect(Collectors.toList());
+            avpAttributes.put("enum_switch", enumSwitch);
+        }
 
         imports.add(typeClass.getName());
         imports.add(typeInterface.getName());

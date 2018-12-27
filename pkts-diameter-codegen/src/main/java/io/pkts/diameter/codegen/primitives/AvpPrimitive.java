@@ -240,6 +240,24 @@ public interface AvpPrimitive extends DiameterPrimitive {
             return this;
         }
 
+        /**
+         * Get all the enums in a sorted list based on the code.
+         *
+         * @return
+         */
+        public List<EnumPrimitive> getSortedEnums() {
+            enums.sort((o1, o2) -> {
+                final long res = o1.getEnumCode() - o2.getEnumCode();
+                if (res < 0) {
+                    return -1;
+                } else if (res == 0) {
+                    return 0;
+                }
+                return 1;
+            });
+            return enums;
+        }
+
         private EnumeratedAvpPrimitive(final String name, final long code, final List<EnumPrimitive> enums) {
             super(name, code);
             this.enums = enums;

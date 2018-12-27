@@ -67,14 +67,13 @@ public class AvpHeaderTest extends DiameterTestBase {
     @Test
     public void testResultCode() throws Exception {
         final FramedAvp raw = FramedAvp.frame(loadBuffer("AVP_Result_Code.raw"));
-        // final Avp<Enumerated<ResultCodeEnum>> avp = raw.parse();
-        final Avp avp = raw.parse();
+        final Avp<Enumerated<ResultCodeEnum>> avp = raw.parse();
+        // final Avp avp = raw.parse();
         assertThat(avp.isEnumerated(), is(true));
         assertThat(avp.getCode(), is(268L));
-        // assertThat(avp.getValue().getValue(), is(2001));
         final Avp<Enumerated<ResultCodeEnum>> result = avp.toEnumerated();
         final ResultCodeEnum rse = result.getValue().getAsEnum().get();
-        assertThat(rse, is(ResultCodeEnum.DIAMETER_SUCCESS));
+        assertThat(rse, is(ResultCodeEnum.DIAMETER_SUCCESS_2001));
     }
 
     @Test

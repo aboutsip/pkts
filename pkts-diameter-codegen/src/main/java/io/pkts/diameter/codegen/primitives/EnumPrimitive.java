@@ -6,6 +6,8 @@ import io.pkts.diameter.codegen.Typedef;
 import io.pkts.diameter.codegen.builders.AttributeContext;
 import io.pkts.diameter.codegen.builders.DiameterSaxBuilder;
 
+import java.util.Objects;
+
 public interface EnumPrimitive extends DiameterPrimitive {
 
     /**
@@ -18,6 +20,10 @@ public interface EnumPrimitive extends DiameterPrimitive {
         return NAME;
     }
 
+    long getEnumCode();
+
+    String getEnumName();
+
     @Override
     default EnumPrimitive toEnumPrimitive() throws ClassCastException {
         return this;
@@ -25,8 +31,8 @@ public interface EnumPrimitive extends DiameterPrimitive {
 
     static Builder of(final AttributeContext ctx) throws CodeGenParseException {
         ctx.ensureElementName(NAME);
-
-        final String name = ctx.getString("name");
+        // there are some bad values in the wireshark dictionary file.
+        final String name = ctx.getString("name").replace(" ", "_").trim();
         final long code = ctx.getLong("code");
         return new Builder(ctx, name, code);
     }
@@ -77,6 +83,34 @@ public interface EnumPrimitive extends DiameterPrimitive {
         @Override
         public Typedef getTypedef() {
             return Typedef.ENUMERATED;
+        }
+
+        @Override
+        public long getEnumCode() {
+            return code;
+        }
+
+        @Override
+        public String getEnumName() {
+            return name;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            final DefaultEnumPrimitive that = (DefaultEnumPrimitive) o;
+            return code == that.code;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(code);
+        }
+
+        @Override
+        public String toString() {
+            return name + "(" + code + ")";
         }
     }
 }

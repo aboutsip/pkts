@@ -1,6 +1,7 @@
 package io.pkts.diameter.codegen;
 
 import io.pkts.diameter.avp.Avp;
+import io.pkts.diameter.avp.impl.DiameterEnumeratedAvp;
 import io.pkts.diameter.avp.impl.DiameterGroupedAvp;
 import io.pkts.diameter.avp.impl.DiameterIdentityAvp;
 import io.pkts.diameter.avp.impl.DiameterInteger32Avp;
@@ -8,6 +9,7 @@ import io.pkts.diameter.avp.impl.DiameterUnsigned32Avp;
 import io.pkts.diameter.avp.impl.DiameterUtf8StringAvp;
 import io.pkts.diameter.avp.type.DiameterIdentity;
 import io.pkts.diameter.avp.type.DiameterType;
+import io.pkts.diameter.avp.type.Enumerated;
 import io.pkts.diameter.avp.type.Grouped;
 import io.pkts.diameter.avp.type.Integer32;
 import io.pkts.diameter.avp.type.Integer64;
@@ -28,7 +30,7 @@ public enum Typedef {
     TIME("Time", null, null, null),
 
     UTF8_STRING("UTF8String", OCTET_STRING, UTF8String.class, DiameterUtf8StringAvp.class),
-    ENUMERATED("Enumerated", INTEGER_32, Integer32.class, DiameterInteger32Avp.class),
+    ENUMERATED("Enumerated", INTEGER_32, Enumerated.class, DiameterEnumeratedAvp.class),
     GROUPED("Grouped", null, Grouped.class, DiameterGroupedAvp.class),
     GAVP("Gavp", null, Grouped.class, DiameterGroupedAvp.class),
     DIAMETER_URI("DiameterURI", UTF8_STRING, null, null),

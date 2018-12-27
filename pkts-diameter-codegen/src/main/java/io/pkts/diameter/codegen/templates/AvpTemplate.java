@@ -20,7 +20,12 @@ public class AvpTemplate {
     private final AvpPrimitive avp;
 
     public static AvpTemplate load(final AvpPrimitive avp) throws URISyntaxException, IOException {
-        final Path p = Paths.get(AvpTemplate.class.getResource("avp_template.liquid").toURI());
+        final Path p;
+        if (avp.isEnumerated()) {
+            p = Paths.get(AvpTemplate.class.getResource("avp_enumerated_template.liquid").toURI());
+        } else {
+            p = Paths.get(AvpTemplate.class.getResource("avp_template.liquid").toURI());
+        }
 
         final RenderSettings settings = new RenderSettings.Builder().withStrictVariables(false).build();
         final Template template = Template.parse(p.toFile()).withRenderSettings(settings);

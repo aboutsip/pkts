@@ -1,0 +1,87 @@
+package {{java.package}};
+
+import io.pkts.buffer.Buffer;
+{% for import in java.imports %}
+import {{ import }};{% endfor %}
+
+import java.util.Optional;
+
+/**
+ * {{ javadoc.class }}
+ nisse
+ */
+public interface {{java.class.name}} extends Avp<{{avp.type.interface}}<{{java.class.name}}.{{java.class.name}}Enum>> {
+
+    int CODE = {{avp.code}};
+
+    @Override
+    default long getCode() {
+        return CODE;
+    }
+
+    enum {{java.class.name}}Enum { {% for enum in avp.enum_definition %}
+        {{ enum }}{%if forloop.last == true %};{% else %},{% endif %}{% endfor %}
+
+        private final String name;
+        private final int code;
+
+        {{java.class.name}}Enum(final String name, final int code) {
+            this.name = name;
+            this.code = code;
+        }
+
+        static Optional<{{java.class.name}}Enum> lookup(final int code) {
+            switch (code) { {% for switch in avp.enum_switch %}
+                {{ switch }}{% endfor %}
+                default:
+                    return Optional.empty();
+            }
+        }
+    }
+
+    default Optional<{{java.class.name}}Enum> getAsEnum() {
+        return getValue().getAsEnum();
+    }
+
+    static {{java.class.name}} parse(final FramedAvp raw) {
+        if (CODE != raw.getCode()) {
+            throw new AvpParseException("AVP Code mismatch - unable to parse the AVP into a " + {{java.class.name}}.class.getName());
+        }
+        final Buffer data = raw.getData();
+        final int value = data.getInt(data.getReaderIndex());
+        final Optional<{{java.class.name}}Enum> e = {{java.class.name}}Enum.lookup(value);
+        final EnumeratedHolder holder = new EnumeratedHolder(value, e);
+        return new Default{{java.class.name}}(raw, holder);
+    }
+
+    class Default{{java.class.name}} extends {{avp.type.class}}<{{java.class.name}}Enum> implements {{java.class.name}} {
+        private Default{{java.class.name}}(final FramedAvp raw, final EnumeratedHolder value) {
+            super(raw, value);
+        }
+    }
+
+    /**
+     * Ah! Must be a better way. I ran out of steam - getting late so it is what it is.
+     */
+    class EnumeratedHolder implements Enumerated<{{java.class.name}}Enum> {
+
+        private final int code;
+        private final Optional<{{java.class.name}}Enum> e;
+
+        private EnumeratedHolder(final int code, final Optional<{{java.class.name}}Enum> e) {
+            this.code = code;
+            this.e = e;
+        }
+
+        @Override
+        public Optional<{{java.class.name}}Enum> getAsEnum() {
+            return e;
+        }
+
+        @Override
+        public int getValue() {
+            return code;
+        }
+    }
+
+}
