@@ -48,14 +48,19 @@ public class EthernetFramer implements Framer<PCapPacket, MACPacket> {
         if (buffer.getReadableBytes() < 14) {
             throw new FramingException("not enough bytes for header", getProtocol());
         }
-        final Buffer headers = buffer.readBytes(14);
-        final byte b1 = headers.getByte(12);
-        final byte b2 = headers.getByte(13);
-
+        Buffer headers;
         try {
-            getEtherType(b1, b2);
+            EtherType etherType = getEtherType(buffer.getByte(12), buffer.getByte(13));
+            if (etherType == EtherType.Dot1Q) {
+                getEtherType(buffer.getByte(16), buffer.getByte(17));
+                headers = buffer.readBytes(18);
+            } else {
+                headers = buffer.readBytes(14);
+            }
+        } catch (IndexOutOfBoundsException e) {
+            throw new FramingException("not enough bytes for header", getProtocol());
         } catch (final UnknownEtherType e) {
-            throw new FramingException(String.format("unknown ether type: 0x%02x%02x", b1, b2), getProtocol());
+            throw new FramingException(String.format("unknown ether type: 0x%02x%02x", e.getB1(), e.getB2()), getProtocol());
         }
 
         final Buffer payload = buffer.slice(buffer.capacity());
@@ -99,7 +104,7 @@ public class EthernetFramer implements Framer<PCapPacket, MACPacket> {
         EAPOL((byte) 0x88, (byte) 0x8e),
         // Representing EtherType < 1536, which is actually a length of the frame and not a meaningful type
         None((byte) 0x00, (byte) 0x00),
-
+        Dot1Q((byte) 0x81, (byte) 0x00)
         ;
 
         private final byte b1;
