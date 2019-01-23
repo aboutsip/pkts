@@ -3,6 +3,12 @@
  */
 package io.pkts.framer;
 
+import io.pkts.RawData;
+import io.pkts.buffer.Buffers;
+import io.pkts.packet.IPv4Packet;
+import io.pkts.packet.MACPacket;
+import io.pkts.packet.Packet;
+import io.pkts.protocol.Protocol;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,6 +17,8 @@ import io.pkts.PktsTestBase;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.PCapPacket;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -53,5 +61,18 @@ public class EthernetFramerTest extends PktsTestBase {
             PCapPacket parent = mock(PCapPacket.class);
             this.framer.frame(parent, frame);
         }
+    }
+
+    @Test
+    public void testVlanFrame() throws Exception {
+        final EthernetFramer framer = new EthernetFramer();
+        Buffer frameBuffer = Buffers.wrap(RawData.rawEthernetVlanFrame);
+        final MACPacket frame = framer.frame(mock(PCapPacket.class), frameBuffer);
+        // ensure that this frame is indeed a VLAN frame
+        assertThat(EthernetFramer.getEtherType(frameBuffer.getByte(12), frameBuffer.getByte(13)),
+                is(equalTo(EthernetFramer.EtherType.Dot1Q)));
+
+        // then ensure that we can traverse the frame
+        assertThat(frame.getNextPacket().getProtocol(), is(equalTo(Protocol.IPv4)));
     }
 }
