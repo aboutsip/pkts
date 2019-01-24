@@ -17,5 +17,12 @@ public final class UnknownEtherType extends Exception {
         this.b1 = b1;
         this.b2 = b2;
     }
+    public byte getB1() {
+        return b1;
+    }
+
+    public byte getB2() {
+        return b2;
+    }
 
 }
