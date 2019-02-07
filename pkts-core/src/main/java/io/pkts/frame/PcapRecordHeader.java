@@ -92,6 +92,11 @@ public final class PcapRecordHeader {
         return PcapGlobalHeader.getUnsignedInt(0, this.body.getArray(), this.byteOrder);
     }
 
+    @Deprecated
+    public long getTimeStampMicroSeconds() {
+        return PcapGlobalHeader.getUnsignedInt(4, this.body.getArray(), this.byteOrder);
+    }
+
     public long getTimeStampMicroOrNanoSeconds() {
         return PcapGlobalHeader.getUnsignedInt(4, this.body.getArray(), this.byteOrder);
     }
