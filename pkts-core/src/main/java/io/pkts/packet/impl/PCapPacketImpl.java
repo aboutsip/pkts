@@ -58,11 +58,8 @@ public final class PCapPacketImpl extends AbstractPacket implements PCapPacket {
      */
     @Override
     public long getArrivalTime() {
-        long multiplier = 1000000;
+        final long multiplier = pcapGlobalHeader.timestampsInNs() ? 1000000000 : 1000000;
 
-        if (this.pcapGlobalHeader.timestampsInNs()) {
-          multiplier = multiplier*1000;
-        }
         return this.pcapHeader.getTimeStampSeconds() * multiplier + this.pcapHeader.getTimeStampMicroOrNanoSeconds();
     }
 
