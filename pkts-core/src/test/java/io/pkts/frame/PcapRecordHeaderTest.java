@@ -20,7 +20,7 @@ public class PcapRecordHeaderTest {
         final long ts = 1378443125356L;
         final PcapRecordHeader header = PcapRecordHeader.createDefaultHeader(ts);
         assertThat(header.getTimeStampSeconds(), is(ts / 1000));
-        assertThat(header.getTimeStampMicroSeconds(), is(ts % 1000 * 1000));
+        assertThat(header.getTimeStampMicroOrNanoSeconds(), is(ts % 1000 * 1000));
 
         assertThat(header.getCapturedLength(), is(0L));
         assertThat(header.getTotalLength(), is(0L));

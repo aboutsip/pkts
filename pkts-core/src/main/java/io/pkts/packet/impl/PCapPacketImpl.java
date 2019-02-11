@@ -58,7 +58,9 @@ public final class PCapPacketImpl extends AbstractPacket implements PCapPacket {
      */
     @Override
     public long getArrivalTime() {
-        return this.pcapHeader.getTimeStampSeconds() * 1000000 + this.pcapHeader.getTimeStampMicroSeconds();
+        final long multiplier = pcapGlobalHeader.timestampsInNs() ? 1000000000 : 1000000;
+
+        return this.pcapHeader.getTimeStampSeconds() * multiplier + this.pcapHeader.getTimeStampMicroOrNanoSeconds();
     }
 
     @Override
@@ -87,7 +89,7 @@ public final class PCapPacketImpl extends AbstractPacket implements PCapPacket {
         final Date date = new Date(getArrivalTime() / 1000);
         sb.append("Arrival Time: ").append(formatter.format(date))
           .append(" Epoch Time: ").append(this.pcapHeader.getTimeStampSeconds()).append(".")
-          .append(String.format("%06d", this.pcapHeader.getTimeStampMicroSeconds()))
+          .append(String.format("%09d", this.pcapHeader.getTimeStampMicroOrNanoSeconds()))
           .append(" Frame Length: ").append(getTotalLength())
           .append(" Capture Length: ").append(getCapturedLength());
 
