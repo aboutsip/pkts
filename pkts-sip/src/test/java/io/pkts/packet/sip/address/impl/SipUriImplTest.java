@@ -6,14 +6,21 @@ package io.pkts.packet.sip.address.impl;
 import io.pkts.PktsTestBase;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.packet.sip.SipException;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.Transport;
 import io.pkts.packet.sip.address.SipURI;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.Optional;
+
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -24,6 +31,7 @@ public class SipUriImplTest extends PktsTestBase {
     /**
      * @throws java.lang.Exception
      */
+    @Override
     @Before
     public void setUp() throws Exception {
     }
@@ -40,6 +48,60 @@ public class SipUriImplTest extends PktsTestBase {
         final SipURI uri = SipURI.withHost("pkts.io").withTransport("ws").build();
         assertThat(uri.getTransportParam().get(), is(Transport.ws));
         assertThat(uri.toString(), is("sip:pkts.io;transport=ws"));
+    }
+
+    /**
+     * Test for issue no 106: https://github.com/aboutsip/pkts/issues/106
+     * <p>
+     * The issue is not around the SipURI parsing but prompted me to write some more
+     * tests around annoyingly formatted URIs and addresses etc.
+     * <p>
+     *
+     * <p>
+     * Note that we are mainly testing the {@link io.pkts.packet.sip.header.impl.ParametersSupport}
+     * really but even so, that is implementation specific so who knows, at some point we may change
+     * so still good to have these tests...
+     * </p>
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testIssueNo106() throws Exception {
+        ensureSipUri("sip:hello@world.com");
+        ensureSipUri("sip:hello@world.com;");
+        ensureSipUri("sip:hello@world.com;       ");
+        ensureSipUri("sip:hello@world.com;\t\t\t");
+        ensureSipUri("sip:hello@world.com;apa", "apa", "");
+        ensureSipUri("sip:hello@world.com;apa=monkey", "apa", "monkey");
+        ensureSipUri("sip:hello@world.com;apa =monkey", "apa", "monkey");
+        ensureSipUri("sip:hello@world.com;apa    =monkey", "apa", "monkey");
+        ensureSipUri("sip:hello@world.com;apa    = monkey", "apa", "monkey");
+        ensureSipUri("sip:hello@world.com;apa    = \t\tmonkey", "apa", "monkey");
+        ensureSipUri("sip:hello@world.com;apa = ", "apa", "");
+        ensureSipUri("sip:hello@world.com;apa = ;  foo = boo", "apa", "", "foo", "boo");
+        ensureSipUri("sip:hello@world.com;apa = ;  foo = boo; flag", "apa", "", "foo", "boo", "flag", "");
+    }
+
+    private static void ensureSipUri(final String uri, final String... params) throws SipException, IOException {
+        if (params != null && params.length % 2 != 0) {
+            fail("You must specify an even number of key-value parameters");
+        }
+
+        final SipURI sipUri = SipURI.frame(uri);
+        assertThat(sipUri, notNullValue());
+
+        // make sure that we do not find this one, no matter if we had
+        // parameters specified or not (shouldn't matter)
+        assertThat(sipUri.getParameter("whatever"), is(Optional.empty()));
+
+        if (params != null) {
+            for (int i = 0; i < params.length; i += 2) {
+                final String key = params[i];
+                final String value = params[i + 1];
+
+                assertThat(sipUri.getParameter(key), is(Optional.of(Buffers.wrap(value))));
+            }
+        }
     }
 
     @Test
@@ -298,7 +360,7 @@ public class SipUriImplTest extends PktsTestBase {
 
         try {
             SipURI.frame(uri);
-        } catch (SipParseException ex) {
+        } catch (final SipParseException ex) {
             assertEquals(ex.getErrorOffset(), expectedOffset);
             return;
         }

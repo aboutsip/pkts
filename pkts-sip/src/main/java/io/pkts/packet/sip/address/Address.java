@@ -135,7 +135,7 @@ public interface Address {
                         "Unable to parse the uri (addr-spec) portion of the address");
             }
         } else {
-            addrSpec = SipParser.consumeAddressSpec(buffer);
+            addrSpec = SipParser.consumeAddressSpec(true, buffer);
         }
 
         if (addrSpec == null) {

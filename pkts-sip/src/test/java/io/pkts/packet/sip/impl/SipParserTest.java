@@ -3,21 +3,21 @@
  */
 package io.pkts.packet.sip.impl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.SipHeader;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * Tests to verify that basic parsing functionality that is provided by the
@@ -235,7 +235,7 @@ public class SipParserTest {
 
         try {
             final SipUserHostInfo userHost = SipParser.consumeUserInfoHostPort(buffer);
-        } catch (SipParseException ex) {
+        } catch (final SipParseException ex) {
             assertEquals(expectedOffset, ex.getErrorOffset());
             return;
         }
@@ -343,6 +343,26 @@ public class SipParserTest {
     }
 
     /**
+     * <a href="https://github.com/aboutsip/pkts/issues/106">issue-106</a> related tests.
+     */
+    @Test
+    public void testConsumeAddressSpecIssue106() throws Exception {
+        ensureAddressSpecProtected("sips:alice@example.com ; hello", "sips:alice@example.com ; hello");
+        ensureAddressSpecProtected("sips:alice@example.com; hello", "sips:alice@example.com; hello");
+        ensureAddressSpecProtected("sips:alice@example.com;hello", "sips:alice@example.com;hello");
+        ensureAddressSpecProtected("sips:alice@example.com;hello=world", "sips:alice@example.com;hello=world");
+        ensureAddressSpecProtected("sips:alice@example.com;hello\t\t=world", "sips:alice@example.com;hello\t\t=world");
+        ensureAddressSpecProtected("sips:alice@example.com;hello\t  \t= world", "sips:alice@example.com;hello\t  \t= world");
+        ensureAddressSpecProtected("sips:alice@example.com\t\t;\thello\t  \t= world", "sips:alice@example.com\t\t;\thello\t  \t= world");
+    }
+
+    private static void ensureAddressSpecProtected(final String orig, final String expected) throws Exception {
+        final Buffer buffer = Buffers.wrap(orig);
+        assertThat(SipParser.consumeAddressSpec(true, buffer).toString(), is(expected));
+        assertThat(buffer.toString(), is(""));
+    }
+
+    /**
      * Consuming a display name can be tricky so make sure we do it correctly.
      * 
      * @throws Exception
@@ -391,14 +411,15 @@ public class SipParserTest {
         assertGenericParams("hello this is not a params");
         assertGenericParams(";lr the lr was a flag param followed by some crap", "lr", null);
 
+        assertGenericParams("nope");
+        assertGenericParams(";flag", "flag", null);
     }
 
     /**
      * Helper function for asserting the generic param behavior.
      * 
      * @param input
-     * @param expectedKey
-     * @param expectedValue
+     * @param expectedKeyValuePairs
      */
     private void assertGenericParams(final String input, final String... expectedKeyValuePairs) throws Exception {
         final List<Buffer[]> params = SipParser.consumeGenericParams(Buffers.wrap(input));

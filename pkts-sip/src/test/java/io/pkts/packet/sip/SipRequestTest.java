@@ -3,15 +3,10 @@
  */
 package io.pkts.packet.sip;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.List;
-import java.util.function.Consumer;
-
 import io.pkts.PktsTestBase;
 import io.pkts.RawData;
 import io.pkts.buffer.Buffer;
+import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.address.SipURI;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.CallIdHeader;
@@ -22,6 +17,11 @@ import io.pkts.packet.sip.header.RecordRouteHeader;
 import io.pkts.packet.sip.header.RouteHeader;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ViaHeader;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.List;
+import java.util.function.Consumer;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -72,6 +72,48 @@ public class SipRequestTest extends PktsTestBase {
             // parsing detail that can go wrong.
             assertThat(e.getMessage(), is("You must specify a branch parameter"));
         }
+    }
+
+    /**
+     * Test for issue no 106: https://github.com/aboutsip/pkts/issues/106
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testIssueNo106() throws Exception {
+        assertThat(loadSipMessage("issue-106_001.txt").getFromHeader().getTag(), is((Buffer) null));
+        assertThat(loadSipMessage("issue-106_002.txt").getFromHeader().getTag(), is((Buffer) null));
+        assertThat(loadSipMessage("issue-106_003.txt").getFromHeader().getTag(), is((Buffer) null));
+        assertThat(loadSipMessage("issue-106_004.txt").getFromHeader().getTag(), is((Buffer) null));
+        assertThat(loadSipMessage("issue-106_005.txt").getFromHeader().getTag(), is((Buffer) null));
+        assertThat(loadSipMessage("issue-106_006.txt").getFromHeader().getTag(), is((Buffer) null));
+        assertThat(loadSipMessage("issue-106_007.txt").getFromHeader().getTag(), is((Buffer) null));
+        assertThat(loadSipMessage("issue-106_008.txt").getFromHeader().getTag(), is((Buffer) null));
+        assertThat(loadSipMessage("issue-106_009.txt").getFromHeader().getTag(), is((Buffer) null));
+        assertThat(loadSipMessage("issue-106_010.txt").getFromHeader().getTag(), is((Buffer) null));
+        assertThat(loadSipMessage("issue-106_011.txt").getFromHeader().getTag(), is(Buffers.EMPTY_BUFFER));
+        assertThat(loadSipMessage("issue-106_012.txt").getFromHeader().getTag(), is(Buffers.EMPTY_BUFFER));
+
+        assertFromHeaderTag("sip:blah@example.com;tag=", "");
+        assertFromHeaderTag("sip:blah@example.com;tag   =        ", "");
+        assertFromHeaderTag("<sip:blah@example.com;tag>", null);
+
+        // at the end of the day, the issue was that when consuming the address-spec, which
+        // does not actually allow a space between the uri and the potential params, which then
+        // created a bad input to ParametersSupport, which then never progressed when asking
+        // for parameters that didn't exist (it got stuck on the ">", which should not have been
+        // passed to the {@link ParametersSupport} in the first place.
+        assertFromHeaderTag("<sip:blah@example.com;nisse= asdf>", null);
+        assertFromHeaderTag("<sip:blah@example.com;nisse =asdf>", null);
+        assertFromHeaderTag("<sip:blah@example.com;nisse =   asdf>", null);
+        assertFromHeaderTag("<sip:blah@example.com; asdf>", null);
+        assertFromHeaderTag("<sip:blah@example.com;\tasdf>", null);
+        assertFromHeaderTag("<sip:blah@example.com; >", null);
+    }
+
+    private static void assertFromHeaderTag(final String from, final String expected) throws SipParseException {
+        final Buffer expectedBuffer = expected == null ? null : Buffers.wrap(expected);
+        assertThat(FromHeader.frame(from).getTag(), is(expectedBuffer));
     }
 
     /**
@@ -207,7 +249,7 @@ public class SipRequestTest extends PktsTestBase {
         // 9. We will also register a function for the top-most route header for the very same reasons
         //    as for the Via-header.
         // 10. Finally, build it!
-        SipRequest proxy = req.copy()
+        final SipRequest proxy = req.copy()
                 .onRequestURI(uri -> uri.copy().withHost("siplib.io").withUser("Kalle").build())
                 .withPoppedRoute()
                 .withTopMostViaHeader(ViaHeader.withHost("12.13.14.15").withBranch().build())
@@ -240,7 +282,7 @@ public class SipRequestTest extends PktsTestBase {
         // So, verify all of the above.
 
         // We changed the Request-URI:
-        SipURI uri = proxy.getRequestUri().toSipURI();
+        final SipURI uri = proxy.getRequestUri().toSipURI();
         assertThat(uri.getUser().get().toString(), is("Kalle"));
         assertThat(uri.getHost().toString(), is("siplib.io"));
 
