@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.pkts</groupId>
     <artifactId>pkts-parent</artifactId>
-    <version>3.0.5</version>
+    <version>3.0.6-SNAPSHOT</version>
   </parent>
 
   <name>Core Pkts</name>
