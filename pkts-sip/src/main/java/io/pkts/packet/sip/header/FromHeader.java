@@ -94,8 +94,8 @@ public interface FromHeader extends AddressParametersHeader {
 
     /**
      * Frame the value as a {@link FromHeader}.
-     * 
-     * @param value
+     *
+     * @param buffer
      * @return
      * @throws SipParseException in case anything goes wrong while parsing.
      */
@@ -103,6 +103,17 @@ public interface FromHeader extends AddressParametersHeader {
         final Buffer original = buffer.slice();
         final Object[] result = AddressParametersHeader.frame(buffer);
         return new FromHeaderImpl(original, (Address) result[0], (Buffer) result[1]);
+    }
+
+    /**
+     * Frame the value as a {@link FromHeader}.
+     *
+     * @param buffer
+     * @return
+     * @throws SipParseException in case anything goes wrong while parsing.
+     */
+    static FromHeader frame(final String buffer) throws SipParseException {
+        return frame(Buffers.wrap(buffer));
     }
 
     /**
