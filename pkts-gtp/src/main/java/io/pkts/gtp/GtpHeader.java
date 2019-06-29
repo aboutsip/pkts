@@ -28,11 +28,11 @@ public interface GtpHeader {
     }
 
     default Gtp1Header toGtp1Header() throws ClassCastException {
-        throw new ClassCastException("Unable to cast a " + this.getClass().getName() + " into a " + Gtp1Header.class.getName());
+        throw new ClassCastException("Unable to cast a " + getClass().getName() + " into a " + Gtp1Header.class.getName());
     }
 
     default Gtp2Header toGtp2Header() throws ClassCastException {
-        throw new ClassCastException("Unable to cast a " + this.getClass().getName() + " into a " + Gtp2Header.class.getName());
+        throw new ClassCastException("Unable to cast a " + getClass().getName() + " into a " + Gtp2Header.class.getName());
     }
 
     int getVersion();
@@ -43,4 +43,5 @@ public interface GtpHeader {
      *
      */
     int getMessageTypeDecimal();
+
 }

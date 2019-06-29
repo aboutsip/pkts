@@ -37,4 +37,12 @@ public interface Gtp2Header extends GtpHeader {
     default Gtp2Header toGtp2Header() throws ClassCastException {
         return this;
     }
+
+
+    /**
+     * In GTPv2, the sequence no is mandatory, unlike GTPv1 where it is an optional parameter.
+     */
+    Buffer getSequenceNo();
+
+    int getSequenceNoAsDecimal();
 }

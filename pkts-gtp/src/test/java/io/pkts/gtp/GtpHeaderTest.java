@@ -25,7 +25,10 @@ public class GtpHeaderTest extends GtpTestBase {
         assertThat(header.getLength(), is(13));
         assertThat(header.getMessageTypeDecimal(), is(99));
 
-        // Values from wireshark...
+        assertThat(header.getSequenceNo(), is(Buffer.of((byte) 0x35, (byte) 0x3d, (byte) 0x09)));
+        assertThat(header.getSequenceNoAsDecimal(), is(3489033));
+
+        // Values off of wireshark...
         Teid teid = Teid.of(Buffer.of((byte) 0xa5, (byte) 0xd2, (byte) 0x68, (byte) 0xf0));
         assertThat(header.getTeid().get(), is(teid));
 
@@ -34,6 +37,8 @@ public class GtpHeaderTest extends GtpTestBase {
         assertThat(header.getVersion(), is(2));
         assertThat(header.getLength(), is(55));
         assertThat(header.getMessageTypeDecimal(), is(100));
+        assertThat(header.getSequenceNo(), is(Buffer.of((byte) 0x35, (byte) 0x3d, (byte) 0x09)));
+        assertThat(header.getSequenceNoAsDecimal(), is(3489033));
 
         teid = Teid.of(Buffer.of((byte) 0x57, (byte) 0xb5, (byte) 0x01, (byte) 0xf8));
         assertThat(header.getTeid().get(), is(teid));
@@ -41,13 +46,14 @@ public class GtpHeaderTest extends GtpTestBase {
 
     @Test
     public void testFrameGtpV1Header() throws Exception {
-        final GtpHeader header = GtpHeader.frame(GtpRawData.createPdpContextRequest);
+        final Gtp1Header header = GtpHeader.frame(GtpRawData.createPdpContextRequest).toGtp1Header();
         assertThat(header.getVersion(), is(1));
         assertThat(header.getLength(), is(180));
         assertThat(header.getMessageTypeDecimal(), is(16));
+        assertThat(header.getSequenceNo().get(), is(Buffer.of((byte) 0x6a, (byte) 0xf3)));
+        assertThat(header.getSequenceNoAsDecimal().get(), is(27379));
 
         assertThat(header.toGtp1Header().getTeid(), is(emptyTeid));
-
     }
 
     /**

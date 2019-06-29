@@ -25,6 +25,7 @@ public class Gtp2HeaderImpl implements Gtp2Header {
      */
     private final Buffer header;
     private final Optional<Teid> teid;
+    private final Buffer seqNo;
 
     /**
      * Frame the buffer into a {@link Gtp2Header}. A {@link Gtp2Header} is either 8 or 12 bytes long
@@ -53,12 +54,14 @@ public class Gtp2HeaderImpl implements Gtp2Header {
             teid = Optional.empty();
         }
 
-        return new Gtp2HeaderImpl(header, teid);
+        final Buffer seqNo = teidFlag ? header.slice(8, 11) : header.slice(4, 7);
+        return new Gtp2HeaderImpl(header, teid, seqNo);
     }
 
-    private Gtp2HeaderImpl(final Buffer header, final Optional<Teid> teid) {
+    private Gtp2HeaderImpl(final Buffer header, final Optional<Teid> teid, final Buffer seqNo) {
         this.header = header;
         this.teid = teid;
+        this.seqNo = seqNo;
     }
 
     @Override
@@ -74,6 +77,16 @@ public class Gtp2HeaderImpl implements Gtp2Header {
     @Override
     public Optional<Teid> getTeid() {
         return teid;
+    }
+
+    @Override
+    public Buffer getSequenceNo() {
+        return seqNo;
+    }
+
+    @Override
+    public int getSequenceNoAsDecimal() {
+        return seqNo.getIntFromThreeOctets(0);
     }
 
 

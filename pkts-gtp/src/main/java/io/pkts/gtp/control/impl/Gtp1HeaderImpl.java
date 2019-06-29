@@ -6,6 +6,8 @@ import io.pkts.gtp.control.Gtp1Header;
 import io.snice.buffer.Buffer;
 import io.snice.buffer.ReadableBuffer;
 
+import java.util.Optional;
+
 import static io.snice.preconditions.PreConditions.assertArgument;
 import static io.snice.preconditions.PreConditions.assertNotNull;
 
@@ -13,10 +15,12 @@ public class Gtp1HeaderImpl implements Gtp1Header {
 
     private final Buffer header;
     private final Teid teid;
+    private final Optional<Buffer> seqNo;
 
-    private Gtp1HeaderImpl(final Buffer header, final Teid teid) {
+    private Gtp1HeaderImpl(final Buffer header, final Teid teid, final Optional<Buffer> seqNo) {
         this.header = header;
         this.teid = teid;
+        this.seqNo = seqNo;
     }
 
     /**
@@ -42,18 +46,31 @@ public class Gtp1HeaderImpl implements Gtp1Header {
 
         // if any of the sequence no, extension or n-pdu flags are "on" then we have an additional
         // 4 bytes in the header, hence, a "long" header
-        final boolean longHeader = ((flags & 0b00000100) == 0b00000100)
-                || ((flags & 0b00000010) == 0b00000010)
-                || ((flags & 0b00000001) == 0b00000001);
+        final boolean nPduNoFlag = (flags & 0b00000100) == 0b00000100;
+        final boolean seqNoFlag = (flags & 0b00000010) == 0b00000010;
+        final boolean extHeaderFlag = (flags & 0b00000001) == 0b00000001;
+        final boolean longHeader = seqNoFlag || nPduNoFlag || extHeaderFlag;
 
         final Buffer header = longHeader ? buffer.readBytes(12) : buffer.readBytes(8);
         final Teid teid = Teid.of(header.slice(4, 8));
-        return new Gtp1HeaderImpl(header, teid);
+        final Optional<Buffer> seqNo = seqNoFlag ? Optional.of(header.slice(8, 10)) : Optional.empty();
+
+        return new Gtp1HeaderImpl(header, teid, seqNo);
     }
 
     @Override
     public Teid getTeid() {
         return teid;
+    }
+
+    @Override
+    public Optional<Buffer> getSequenceNo() {
+        return seqNo;
+    }
+
+    @Override
+    public Optional<Integer> getSequenceNoAsDecimal() {
+        return seqNo.map(b -> b.getUnsignedShort(0));
     }
 
     @Override
