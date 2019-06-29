@@ -44,12 +44,14 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <netty.version>4.1.13.Final</netty.version>
+    <snice.version>0.1.2-SNAPSHOT</snice.version>
   </properties>
 
   <modules>
     <module>pkts-buffers</module>
     <module>pkts-sdp</module>
     <module>pkts-sip</module>
+    <module>pkts-gtp</module>
     <module>pkts-core</module>
     <module>pkts-streams</module>
     <module>pkts-examples</module>
@@ -91,6 +93,15 @@
       <scope>compile</scope>
     </dependency>
 
+        <dependency>
+            <groupId>io.pkts</groupId>
+            <artifactId>pkts-gtp</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+
+
     <dependency>
       <groupId>io.pkts</groupId>
       <artifactId>pkts-streams</artifactId>
@@ -98,6 +109,14 @@
       <type>jar</type>
       <scope>compile</scope>
     </dependency>
+
+        <dependency>
+            <groupId>io.snice</groupId>
+            <artifactId>snice-buffers</artifactId>
+            <version>${snice.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
 
    <dependency>
       <groupId>io.netty</groupId>
