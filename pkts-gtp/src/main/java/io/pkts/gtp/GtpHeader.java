@@ -37,7 +37,50 @@ public interface GtpHeader {
 
     int getVersion();
 
+    /**
+     * This is the length as read in the GTP packet itself. According to specification,
+     * it excludes the mandatory fields of the GTP header (but in GTPv2, not really), which makes this length
+     * somewhat useless. But to follow standard, this is what this one returns and of course,
+     * it is slightly different between GTPv1 and v2.
+     *
+     * <p>
+     * For GTPv1, see section 6 in TS 29.060, which reads:</br>
+     * <p>
+     * Length: This field indicates the length in octets of the payload, i.e. the rest of the packet following the mandatory
+     * part of the GTP header (that is the first 8 octets). The Sequence Number, the N-PDU Number or any Extension
+     * headers shall be considered to be part of the payload, i.e. included in the length count.
+     * </p>
+     *
+     * <p>
+     * For GTPv2, See section 5.5.1 in TS 23.274, which reads:</br>
+     *
+     * Octets 3 to 4 represent the Message Length field. This field shall indicate the length of the message in octets
+     * excluding the mandatory part of the GTP-C header (the first 4 octets). The TEID (if present) and the Sequence
+     * Number shall be included in the length count. The format of the Length field of information elements is specified
+     * in subclause 8.2 "Information Element Format".
+     *
+     * The annoying part about the GTPv2 one is that the Seq No is actually mandatory but because they
+     * made the TEID optional BUT placed in between the mandatory parts, I guess they made this weird decision.
+     * </p>
+     *
+     * <p>
+     * Anyway, you probably want to use the more useful {@link #getTotalLength()} and {@link #getBodyLength()}.
+     * </p>
+     *
+     */
     int getLength();
+
+    /**
+     * The total length is the length in bytes of the entire GTP mesesage, including the GTP header.
+     */
+    int getTotalLength();
+
+    /**
+     * The length of the GTP body only (in bytes). This excludes anything that is part of the GTP header.
+     *
+     * @return
+     */
+    int getBodyLength();
 
     /**
      *

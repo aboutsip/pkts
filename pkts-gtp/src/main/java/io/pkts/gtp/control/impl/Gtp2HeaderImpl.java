@@ -70,6 +70,16 @@ public class Gtp2HeaderImpl implements Gtp2Header {
     }
 
     @Override
+    public int getBodyLength() {
+        return getLength() - header.capacity() + 4;
+    }
+
+    @Override
+    public int getTotalLength() {
+        return getLength() + 4;
+    }
+
+    @Override
     public int getMessageTypeDecimal() {
         return Byte.toUnsignedInt(header.getByte(1));
     }

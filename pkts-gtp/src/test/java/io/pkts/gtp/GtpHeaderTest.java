@@ -23,6 +23,8 @@ public class GtpHeaderTest extends GtpTestBase {
         Gtp2Header header = GtpHeader.frame(GtpRawData.deleteBearerRequestGtpv2).toGtp2Header();
         assertThat(header.getVersion(), is(2));
         assertThat(header.getLength(), is(13));
+        assertThat(header.getTotalLength(), is(13 + 4));
+        assertThat(header.getBodyLength(), is(13 - 8));
         assertThat(header.getMessageTypeDecimal(), is(99));
 
         assertThat(header.getSequenceNo(), is(Buffer.of((byte) 0x35, (byte) 0x3d, (byte) 0x09)));
@@ -36,6 +38,8 @@ public class GtpHeaderTest extends GtpTestBase {
         header = GtpHeader.frame(GtpRawData.deleteBearerResponseGtpv2).toGtp2Header();
         assertThat(header.getVersion(), is(2));
         assertThat(header.getLength(), is(55));
+        assertThat(header.getTotalLength(), is(59));
+        assertThat(header.getBodyLength(), is(59 - 12));
         assertThat(header.getMessageTypeDecimal(), is(100));
         assertThat(header.getSequenceNo(), is(Buffer.of((byte) 0x35, (byte) 0x3d, (byte) 0x09)));
         assertThat(header.getSequenceNoAsDecimal(), is(3489033));
@@ -49,6 +53,8 @@ public class GtpHeaderTest extends GtpTestBase {
         final Gtp1Header header = GtpHeader.frame(GtpRawData.createPdpContextRequest).toGtp1Header();
         assertThat(header.getVersion(), is(1));
         assertThat(header.getLength(), is(180));
+        assertThat(header.getTotalLength(), is(180 + 8));
+        assertThat(header.getBodyLength(), is(180 - 4));
         assertThat(header.getMessageTypeDecimal(), is(16));
         assertThat(header.getSequenceNo().get(), is(Buffer.of((byte) 0x6a, (byte) 0xf3)));
         assertThat(header.getSequenceNoAsDecimal().get(), is(27379));
