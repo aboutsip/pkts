@@ -16,7 +16,8 @@ public interface GtpHeader {
 
     static GtpHeader frame(final ReadableBuffer buffer) throws IllegalArgumentException, GtpParseException {
         assertNotNull(buffer, "The buffer cannot be null");
-        final int version = (buffer.getByte(buffer.getReaderIndex()) & 11100000) >> 5;
+        final byte flags = buffer.getByte(buffer.getReaderIndex());
+        final int version = (flags & 0b11100000) >> 5;
         switch (version) {
             case 1:
                 return Gtp1Header.frame(buffer);
@@ -53,12 +54,12 @@ public interface GtpHeader {
      *
      * <p>
      * For GTPv2, See section 5.5.1 in TS 23.274, which reads:</br>
-     *
+     * <p>
      * Octets 3 to 4 represent the Message Length field. This field shall indicate the length of the message in octets
      * excluding the mandatory part of the GTP-C header (the first 4 octets). The TEID (if present) and the Sequence
      * Number shall be included in the length count. The format of the Length field of information elements is specified
      * in subclause 8.2 "Information Element Format".
-     *
+     * <p>
      * The annoying part about the GTPv2 one is that the Seq No is actually mandatory but because they
      * made the TEID optional BUT placed in between the mandatory parts, I guess they made this weird decision.
      * </p>
@@ -66,7 +67,6 @@ public interface GtpHeader {
      * <p>
      * Anyway, you probably want to use the more useful {@link #getTotalLength()} and {@link #getBodyLength()}.
      * </p>
-     *
      */
     int getLength();
 
