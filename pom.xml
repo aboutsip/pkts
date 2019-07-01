@@ -51,6 +51,7 @@
     <module>pkts-buffers</module>
     <module>pkts-sdp</module>
     <module>pkts-sip</module>
+    <module>pkts-3gppitu</module>
     <module>pkts-gtp</module>
     <module>pkts-core</module>
     <module>pkts-streams</module>

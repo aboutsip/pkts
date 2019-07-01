@@ -1,0 +1,46 @@
+package io.pkts.tgpp;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * This file has been auto generated. Do not manually edit.
+ *
+ * @author jonas@jonasborjesson.com
+ */
+public enum ReferencePoint {
+
+  {%- for interface in interfaces -%}
+    {{interface['name']}}({{interface['protocol']}}, {{interface['elements']}}, {{interface['description']}}, {{interface['references']}}){%- if interface['name'] != 'ZnPrime' -%},{% else %};{%- endif -%}
+
+  {%- endfor -%}
+
+    private final String description;
+    private final List<String> protocols;
+    private final List<String> elements;
+    private final List<String> references;
+
+    ReferencePoint(final String[] protocols, final String[] elements, final String description, final String[] references) {
+        this.protocols = Collections.unmodifiableList(Arrays.asList(protocols));
+        this.description = description;
+        this.elements = Collections.unmodifiableList(Arrays.asList(elements));
+        this.references = Collections.unmodifiableList(Arrays.asList(references));
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public List<String> getProtocols() {
+        return protocols;
+    }
+
+    public List<String> getElements() {
+        return elements;
+    }
+
+    public List<String> getReferences() {
+        return references;
+    }
+}

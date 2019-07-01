@@ -1,0 +1,104 @@
+Dont Process	Message Type value (Decimal)	Message	Specification	Section	Initial	Triggered	S3	S10	S16	N26	s11	s4	s5	s8	s2A	S2b
+	0	Reserved	29.274													
+	1	Echo Request	29.274		x											
+	2	Echo Response	29.274			X										
+	3	Version Not Supported Indication	29.274			X										
+x		SGSN/MME/ TWAN/ePDG to PGW (S4/S11, S5/S8, S2a, S2b)														
+	32	Create Session Request	29.274		X											
+	33	Create Session Response	29.274			X										
+	36	Delete Session Request	29.274		X											
+	37	Delete Session Response	29.274			X										
+x		SGSN/MME/ePDG to PGW (S4/S11, S5/S8, S2b)														
+	34	Modify Bearer Request	29.274		X											
+	35	Modify Bearer Response	29.274			X										
+x		MME to PGW (S11, S5/S8)														
+	40	Remote UE Report Notification	29.274		X											
+	41	Remote UE Report Acknowledge	29.274			X										
+x		SGSN/MME to PGW (S4/S11, S5/S8)														
+	38	Change Notification Request	29.274		X											
+	39	Change Notification Response	29.274			X										
+	164	Resume Notification	29.274		X											
+	165	Resume Acknowledge	29.274			X										
+x		Messages without explicit response														
+	64	Modify Bearer Command	29.274		X						x	x	x	x	x	x
+	65	Modify Bearer Failure Indication	29.274			X					x	x	x	x	x	x
+	66	Delete Bearer Command	29.274		X						x	x	x	x		
+	67	Delete Bearer Failure Indication	29.274			X					x	x	x	x		
+	68	Bearer Resource Command	29.274		X						x	x	x	x	x	x
+	69	Bearer Resource Failure Indication	29.274			X					x	x	x	x	x	x
+	70	Downlink Data Notification Failure Indication	29.274		X						x	x				
+	71	Trace Session Activation	29.274		X						x	x	x	x	x	x
+	72	Trace Session Deactivation	29.274		X						x	x				
+	73	Stop Paging Indication	29.274		X						x	x				
+x		PGW to SGSN/MME/ TWAN/ePDG (S5/S8, S4/S11, S2a, S2b)														
+	95	Create Bearer Request	29.274		X	X										
+	96	Create Bearer Response	29.274			X										
+	97	Update Bearer Request	29.274		X	X										
+	98	Update Bearer Response	29.274			X										
+	99	Delete Bearer Request	29.274		X	X										
+	100	Delete Bearer Response	29.274			X										
+x		PGW to MME, MME to PGW, SGW to PGW, SGW to MME, PGW to TWAN/ePDG, TWAN/ePDG to PGW (S5/S8, S11, S2a, S2b)														
+	101	Delete PDN Connection Set Request	29.274		X											
+	102	Delete PDN Connection Set Response	29.274			X										
+x		PGW to SGSN/MME (S5, S4/S11)														
+	103	PGW Downlink Triggering Notification	29.274		X											
+	104	PGW Downlink Triggering Acknowledge	29.274			X										
+x		MME to MME, SGSN to MME, MME to SGSN, SGSN to SGSN, MME to AMF, AMF to MME (S3/S10/S16/N26)														
+	128	Identification Request	29.274		X		X	X	X	X						
+	129	Identification Response	29.274			X	X	X	X	X						
+	130	Context Request	29.274		X		X	X	X	X						
+	131	Context Response	29.274			X	X	X	X	X						
+	132	Context Acknowledge	29.274			X	X	X	X	X						
+	133	Forward Relocation Request	29.274		X		X	X	X	X						
+	134	Forward Relocation Response	29.274			X	X	X	X	X						
+	135	Forward Relocation Complete Notification	29.274		X		X	X	X	X						
+	136	Forward Relocation Complete Acknowledge	29.274			X	X	X	X	X						
+	137	Forward Access Context Notification	29.274		X			X	X							
+	138	Forward Access Context Acknowledge	29.274			X		X	X							
+	139	Relocation Cancel Request	29.274		X		X	X	X	X						
+	140	Relocation Cancel Response	29.274			X	X	X	X	X						
+	141	Configuration Transfer Tunnel	29.274		X			X		X						
+	152	RAN Information Relay	29.274		X		X		X							
+x		SGSN to MME, MME to SGSN (S3)														
+	149	Detach Notification	29.274		X											
+	150	Detach Acknowledge	29.274			X										
+	151	CS Paging Indication	29.274		X											
+	153	Alert MME Notification	29.274		X											
+	154	Alert MME Acknowledge	29.274			X										
+	155	UE Activity Notification	29.274		X											
+	156	UE Activity Acknowledge	29.274			X										
+	157	ISR Status Indication	29.274		X											
+	158	UE Registration Query Request	29.274		X											
+	159	UE Registration Query Response	29.274			X										
+x		SGSN/MME to SGW, SGSN to MME (S4/S11/S3)  SGSN to SGSN (S16), SGW to PGW (S5/S8)														
+	162	Suspend Notification	29.274		X											
+	163	Suspend Acknowledge	29.274			X										
+x		SGSN/MME to SGW (S4/S11)														
+	160	Create Forwarding Tunnel Request	29.274		X											
+	161	Create Forwarding Tunnel Response	29.274			X										
+	166	Create Indirect Data Forwarding Tunnel Request	29.274		X											
+	167	Create Indirect Data Forwarding Tunnel Response	29.274			X										
+	168	Delete Indirect Data Forwarding Tunnel Request	29.274		X											
+	169	Delete Indirect Data Forwarding Tunnel Response	29.274			X										
+	170	Release Access Bearers Request	29.274		X											
+	171	Release Access Bearers Response	29.274			X										
+x		SGW to SGSN/MME (S4/S11)														
+	176	Downlink Data Notification	29.274		X											
+	177	Downlink Data Notification Acknowledge	29.274			X										
+	179	PGW Restart Notification	29.274		X											
+	180	PGW Restart Notification Acknowledge	29.274			X										
+x		SGW to SGSN (S4)														
+x	178	Reserved. Allocated in earlier version of the specification.	29.274													
+x		SGW to PGW, PGW to SGW (S5/S8)														
+	200	Update PDN Connection Set Request	29.274		X											
+	201	Update PDN Connection Set Response	29.274			X										
+x		MME to SGW (S11)														
+	211	Modify Access Bearers Request	29.274		X											
+	212	Modify Access Bearers Response	29.274			X										
+x		MBMS GW to MME/SGSN (Sm/Sn)														
+	231	MBMS Session Start Request	29.274		X											
+	232	MBMS Session Start Response	29.274			X										
+	233	MBMS Session Update Request	29.274		X											
+	234	MBMS Session Update Response	29.274			X										
+	235	MBMS Session Stop Request	29.274		X											
+	236	MBMS Session Stop Response	29.274			X										

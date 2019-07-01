@@ -1,0 +1,87 @@
+Name	Protocol	Elements	Description	Reference
+Bi	Diameter	Charging Collection Function (CCF) <> Billing System	Charging Collection Function CDR interface for data records from IMS core elements.	TS 32.225
+Cr	SIP	MRFC <> AS	Conveys media control requests, responses and notifications as well as documents between the MRFC and an Application Server	TS 23.218
+Cx	Diameter	I/S-CSCF <> HSS	Provides subscriber data to the S-CSCF	TS 29.228 TS 29.229
+Dw	Diameter	AAA Server <> SLF	Enables AAA Server to identify correct HSS for a specific user	TS 29.234
+Dx	Diameter	I-CSCF <> SLF	For IMS subscribers finds the correct HSS in a multi-HSS environment.	TS 29.228 TS 29.229
+Dz	Diameter	BSF <> SLF	The BSF obtains the identity of HSS containing the required subscriber specific data.	TS 29.109 TS 33.220
+Gf	MAP	SGSN<>EIR	Used to identify valid user equipment based on the device’s IMEI.	
+Gi	IP	GGSN <> PDN	Interface between mobile network and external public or private IP networks (for example, the Internet or IMS network).	TS 29.061 TS 23.002
+Dh	Diameter	AS <> SLF	Enables AS to find the HSS holding the applicable User Profile information in a multi-HSS environment.	TS 29.328 TS 29.329
+Gm	SIP	UE <> P-CSCF	Supports exchange of messages between SIP user equipment (UE) or a VoIP Gateway and P-CSCF	TS 23.002
+Gmb	Diameter	GGSN <> BM-SC	Supports exchange of signaling between the GGSN and the Broadcast-Multicast Service Center for MBMS users.	TS 29.061 TS 23.246 TS 23.002
+Gn	GTPv1	SGSN <> GGSN	Conveys control plane messages for establishing and managing tunnels for providing packet data network access. The Gn also manages user plane data packet tunnels from the RAN to the GGSN.	TS 29.060 TS 23.002
+Gp	GTPv1	SGSN <> GGSN in other PLMN	Similar to Gn, connects SGSN in visited network to GGSN in home PLMN.	TS 29.060 TS 23.002
+Gq	Diameter	AF <> PDF	Supports dynamic QoS-related service information exchanged between the Policy Decision Function (PDF) and the Application Function (AF).	TS 29.209
+Gr	MAP	SGSN <> HLR	Authentication, authorization and mobility management of UE within the mobile network.	TS 29.002 TS 23.002
+Gx	Diameter	PCEF/PGW <> PCRF	Provides QoS, policy and charging information to the Policy Enforcement Function that resides within the GGSN or PGW.	TS 29.211 TS 29.212 TS 23.203
+Gxa	Diameter	PCRF <> BBERF	Transfer of (QoS) policy information from the PCRF to the trusted non-access	TS 29.212
+Gxb	Diameter	ePDG <> vPCRF	Transfer of (QoS) policy information from the PCRF to trusted non-access.	TS 23.203
+Gxc	Diameter	PCRF <> BBERF	Transfer of (QoS) policy information from the PCRF to the serving gateway.	TS 23.203
+Gxx	Diameter	PCRF<>BBERF	Conveys (QoS) policy control from the PCRF.	TS 23.203
+Gy	Diameter	PCEF/PGW and OCS	Provides online charging control for event and session based service charging.	TS 32.240 TS 32.299 TS 32.251 TS 23.203: RFC 4006
+Gz	Diameter	PCEF/PGW <> OFCS	Provides transport of service data flow based information for offline charging.	TS 32.240  TS 32.295 TS 23.203
+Iq	H.248	IMS-ALG<>IMS AGW	Provides information to allocate, modify and release media paths between the IP-CAN and IMS core.	
+ISC	SIP	S-CSCF<>AS,S-CSCF<>MRB	The IMS Service Control Interface is used for requesting services from an AS. Also supports AS initiated requests to the IMS. Used by the MRB to initiate sessions that originated with an AS requesting media resources.	TS 23.228 TS 23.218
+Izi	RTP	TrGW <> TrGW belonging to a different IM CN subsystem network	Forwarding media streams from a TrGW to another TrGW belonging to a different IMS network.	TS 29.165
+Ma	SIP	AS <> I-CSCF	Supports forwarding of SIP requests destined to a Public Service Identity hosted by an AS.	TS 23.228
+Mb	SIP	MGW <> MRFP	IMS Subsystem access to IPv6 networks	TS 23.002 TS 29.162
+Mg	SIP	MGCF <> CSCF	Supports incoming/outgoing SIP sessions from the PSTN interworked through the MGCF.	TS 23.002 TS 23.517
+Mi	SIP	CSCF <> BGCF	Exchanges messages between S-CSCF and BGCF for interworking with the PSTN.	TS 23.002 TS 23.517
+Mj	SIP	BGCF <> MGCF	Exchange of sessions with an MGCF that the BGCF has selected to provide session breakout to the PSTN.,	TS 23.002 TS 23.517
+Mk	SIP	BGCF/IMS ALG <> BGCF	Supports interworking with the PSTN/CS domain; used when the BGCF has determined that a breakout should occur in another IMS network. Carries SIP messages from BGCF to a BGCF in another network.	TS 23.002 TS 23.517
+Mm	SIP	CSCF <> IBCF	Supports exchange of messages between IMS and external IP networks.	TS 23.002 TS 23.228
+Mn	H.248	MCGF <> IMS MGW	Supports exchange of messages between an MGCF and IMS MGW for control of bearer channels between the IMS and PSTN.	TS 23.002 TS 23.517
+Mp	H.248	MRFC <> MRFP	Supports MRFC control of media stream resources provided by an MRF.	TS 23.002 TS 23.517
+Mr	SIP	CSCF <> MRFC,AS <> MRFC	Supports exchange of information between an S-CSCF and MRFC. Also carries session control messages between an AS and MRFC.	TS 23.002 TS 23.517
+Mr′	SIP	AS <> MRFC	Supports interaction between an AS and an MRFC for session control without passing through an S-CSCF	TS 23.218
+Mw	SIP	CSCF <> CSCF	Supports exchange of messages between core CSCFs.	TS 23.002 TS 23.517
+Mx	SIP	CSCF/BGCF <> IBCF	Provides interworking with another IMS network when the BGCF has determined that a breakout should occur into the other IMS network. Carries SIP message from the BGCF to the IBCF in the other network.	TS 23.002 TS 23.517
+Mz	Diameter	VPLMN BM-SC <> HPLMN BM-SC	Supports exchange of signaling between the GGSN and the Broadcast-Multicast Service Center for MBMS users. This is the roaming version of the Gmb interface.	
+N26	GTPv2-C	MME <> AMF	N26 interface is an inter-CN interface between the MME and 5GS AMF in order to enable interworking between EPC and the NG core	23.501
+Pr	Diameter	AAA Server <> PNA	Used for reporting IP connectivity related events.	
+Rc	SIP	AS <> MRB	Supports requests by AS for assignment of media resources for a call when utilizing an MRB in In-Line mode or Query mode	TS 23.218
+Re	Diameter	Charging Function <> Rating function	Conveys pricing and tariff information from the Rating function.,	TS 32.296
+Rf	Diameter	AS <> OFCS	Supports exchange of offline charging information.	
+Ro	Diameter	AS <> OCS	Supports exchange of online charging in both the IMS and EPC.	
+Rx	Diameter	P-CSCF <> PCRF	Used to exchange policy and charging related information.	
+S10	GTPv2-C	MME<>MME	Supports exchange of messages for MME relocation and MME-to-MME information transfer.	TS 23.401
+S11	GTPv2-C	MME <> SGW	Provides mobility and bearer management for devices.	TS 23.401 TS 29.274
+S12	GTPv1-U	RNC	Supports user plane tunneling when a Direct Tunnel is established.	TS 23.401 TS 29.281
+S13	Diameter	MME <> EIR	Used for UE IMEI identity check procedures between an MME and EIR.	TS 29.272
+S13’	Diameter	SGSN <> EIR	Used for UE IMEI identity check procedures between SGSN and EIR.	TS 29.272
+S16	GTP-C	SGSN <> SGSN	Interface between two SGSNs within the same or different PLMNs when those SGSNs support S4.	29.274
+S1-MME	NAS,S1-AP	eNode B <> MME	Conveys mobility, session and E-UTRAN radio access bearer management messages.	TS 23.002 TS 23.401
+S1-U	GTPv1-U	eNode B <> SGW	Bearer user plane tunnel management.	
+S2a	GTPv2-C	PDN GW <> SGW	Provides user plane control and mobility support between the mobile packet core and WLAN access networks.	TS 29.275 TS 23.402
+S2b	GTPv2-C	PDN GW<> ePDG	Provides user plane control and mobility support between the mobile packet core and WLAN access networks.	TS 29.274 TS 23.402
+S3	GTPv2-C	SGSN<>MME	Supports control plane message exchange for inter-access network mobility procedures.	TS 23.401 TS 23.002
+S4	GTPv2-C	SGSN <> SGW	Supports procedures for setting up and releasing bearers when the UE is in a UMTS network.	TS 23.401 TS 23.002
+S5	GTPv2-C,GTPv1-U	SGW <> PDN GW	Provides user plane tunneling and control plane tunnel management for intra-PLMN traffic.	TS 23.401 TS 23.002
+S6a	Diameter	MME <> HSS	Supports transfer of subscription and authentication data for authenticating and authorizing user access.	TS 29.272
+S6b	Diameter	AAA Server/Proxy <> PDN GW	Used to authenticate and authorize the UE for access	TS 29.273 TS 23.402
+S6d	Diameter	SGSN <> HSS	Supports transfer of subscription and authentication data for authenticating and authorizing user access.	TS 29.272
+S8	GTP-U,GTP-C	SGW in the VPLMN <> PDN GW in the HPLMN	Provides user plane tunneling and control plane tunnel management for inter-PLMN traffic (roaming).	TS 23.401 TS 23.002
+S9	Diameter	PCRF in the HPLMN (H-PCRF) <> PCRF in the VPLMN (V- PCRF)	Supports transfer of (QoS) policy and charging control information from the HPLMN to a VPLMN.	TS 23.203 TS 29.215
+Sd	Diameter	PCRF <> TDF	Enables dynamic control over applications through detection, monitoring and reporting procedures.	
+SGi	Diameter	PDN GW <> Packet Data Network	Interface between EPC and external public or private IP networks (for example, the Internet or IMS network).	TS 29.061 TS 23.002
+Sh	Diameter	AS (SIP AS or OSA CSCF) <> HSS	Supports exchange of User Profile information such as service related information, user location information or charging function info.	
+Si	Diameter	IM-SSF <> HSS	Transports CAMEL subscription information including triggers for use by CAMEL based application services.	TS 23.228
+Sp	Diameter	PCRF <> SPR	Carries subscription information and updates in the SPR to the PCRF.,	TS 23.203
+STa	Diameter	Trusted non-IP access <> AAA Server/Proxy	Supports secure transport of access authentication, authorization, mobility parameters and charging-related information.	TS 29.273 TS 23.402
+SWa	Diameter	Un-trusted non-IP access <> AAA Server/Proxy	Supports secure transport of access authentication, authorization, mobility parameters and charging-related information.	TS 29.273
+SWd	Diameter	AAA Proxy <> AAA Server	Carries Authentication, Authorization and associated information between the AAA proxy and the AAA server.	TS 29.273
+SWm	Diameter	AAA Server/Proxy <> ePDG	Provides transport of mobility parameters, tunnel authentication and authorization data.	TS 29.273
+SWn	Diameter	Untrusted Non-IP Access <> ePDG	UE-initiated tunnel towards ePDG.	TS 29.273 TS 23.402
+SWx	Diameter	AAA Server <> HSS	Provides transport of authentication data.	
+Wa	RADIUS	WLAN Access Network <> AAA Proxy	Provides transport of authentication, authorization and charging data.	TS 29.234 TS 23.234
+Wd	RADIUS	AAA Proxy <> AAA Server	Provides transport of authentication, authorization and related subscriber information.	TS 29.234 TS 23.234
+Wg	Diameter	AAA Server/Proxy <> WAG	Provides transport and tunneling of charging information.	TS 29.234 TS 23.234
+Wi	IP	PDG <> Packet Data Network	Interface from WLAN to a public or private packet data network.	TS 23.234
+Wm	Diameter	AAA Server <> PDG	Enables user authentication and authorization along with conveying charging characteristics.	TS 29.234 TS 23.234
+Wx	Diameter	AAA Server <> HSS	Provides retrieval of authentication, WLAN subscriber, service and charging information from HSS.	TS 29.234 TS 23.234
+X2	X2AP,GTPv1-U	eNode B <> eNode B	Provides support for intra-LTE handovers, context transfer, load management, and user plane bearer transport control between eNode Bs.	TS 23.401 TS 36.420 TS 29.281
+Zh	Diameter,MAP	BSF <> HSS	Supports retrieval and transfer of authentication and security information.	
+Zh’	Diameter,MAP	BSF <> HSS	Supports retrieval and transfer of authentication and security information between operators.	TS 33.220 TS 29.109
+Zn	Diameter,HTTP	BSF and NAF	Conveys application specific user security settings and key information to the NAF.	TS 33.220 TS29.109
+Zn’	Diameter,HTTP	BSF <> Zn Proxy	Conveys intra-operator application specific user security settings and key information to the NAF.	TS 33.220 TS29.109

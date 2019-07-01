@@ -1,0 +1,62 @@
+package io.pkts.tgpp;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import static io.pkts.tgpp.ReferencePoint.N26;
+import static io.pkts.tgpp.ReferencePoint.S10;
+import static io.pkts.tgpp.ReferencePoint.S11;
+import static io.pkts.tgpp.ReferencePoint.S2a;
+import static io.pkts.tgpp.ReferencePoint.S2b;
+import static io.pkts.tgpp.ReferencePoint.S3;
+import static io.pkts.tgpp.ReferencePoint.S5;
+import static io.pkts.tgpp.ReferencePoint.S8;
+import static io.pkts.tgpp.ReferencePoint.S4;
+import static io.pkts.tgpp.ReferencePoint.S16;
+
+/**
+ * This file has been auto generated. Do not manually edit.
+ *
+ * @author jonas@jonasborjesson.com
+ */
+public enum Gtp2InformationElements {
+
+  {%- for element in elements -%}
+    {{element['message']}}({{element['type']}}, {{element['initial']}}, {{element['triggered']}}, {{element['specification']}}, {{element['section']}}{% if element['interfaces'] %} ,{{element['interfaces']}}{% endif %}){%- if element['type'] != 236 -%},{% else %};{%- endif -%}
+
+  {%- endfor -%}
+
+    private static Map<Integer, Gtp2InformationElements> byType = new HashMap<>();
+
+    static {
+        Arrays.stream(Gtp2InformationElements.values()).forEach(e -> byType.put(e.getType(), e));
+    }
+
+    public static Gtp2InformationElements lookup(final int type) {
+        return byType.get(type);
+    }
+
+    private final int type;
+    private final boolean isInitial;
+    private final boolean isTriggered;
+
+    Gtp2InformationElements(final int type, final boolean isInitial, final boolean isTriggered, final String specification, final String section, final ReferencePoint ... refs) {
+        this.type = type;
+        this.isInitial = isInitial;
+        this.isTriggered = isTriggered;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public boolean isInitial() {
+        return isInitial;
+    }
+
+    public boolean isTriggered() {
+        return isTriggered;
+    }
+
+}

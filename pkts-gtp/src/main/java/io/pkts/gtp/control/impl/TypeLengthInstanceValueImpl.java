@@ -33,6 +33,7 @@ public class TypeLengthInstanceValueImpl implements TypeLengthInstanceValue {
             throw new RuntimeException("Haven't implemented the extension type just yet");
         }
 
+
         final Buffer header = buffer.readBytes(4);
         final int length = header.getUnsignedShort(1);
         final Buffer value = buffer.readBytes(length);
