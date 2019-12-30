@@ -431,7 +431,7 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
         try {
             final Buffer content = this.msg.getContent();
             final ContentTypeHeader contentType = getContentTypeHeader();
-            if (content != null && contentType.isSDP()) {
+              if (content != null && !content.isEmpty() && contentType.isSDP()) {
                 return SDPFactory.getInstance().parse(content);
             }
         } catch (final SipPacketParseException | SdpException e) {
