@@ -42,7 +42,7 @@ public final class PcapGlobalHeader {
      * saved in nanosecond resolution instead of microseconds.
      */
     public static final byte[] MAGIC_NSEC = { (byte) 0xa1, (byte) 0xb2, (byte) 0x3c, (byte) 0x4d };
-    public static final byte[] MAGIC_NSEC_SWAPPED = { (byte) 0x4d, (byte) 0x3c, (byte) 0xb2, (byte) 0xa2 };
+    public static final byte[] MAGIC_NSEC_SWAPPED = { (byte) 0x4d, (byte) 0x3c, (byte) 0xb2, (byte) 0xa1 };
 
     /**
      * Found the following at:
@@ -60,7 +60,7 @@ public final class PcapGlobalHeader {
 
     private final ByteOrder byteOrder;
     private final byte[] body;
-
+    private final boolean nsTimestamps;
     /**
      * Factory method for creating a default {@link PcapGlobalHeader}. Mainly
      * used for when writing out new pcaps to a stream.
@@ -103,14 +103,23 @@ public final class PcapGlobalHeader {
     }
 
     public PcapGlobalHeader(final ByteOrder byteOrder, final byte[] body) {
+        this(byteOrder,body,false);
+    }
+
+    public PcapGlobalHeader(final ByteOrder byteOrder, final byte[] body, final boolean nsTimestamps) {
         assert byteOrder != null;
         assert body != null && body.length == 20;
         this.byteOrder = byteOrder;
         this.body = body;
+        this.nsTimestamps = nsTimestamps;
     }
 
     public ByteOrder getByteOrder() {
         return this.byteOrder;
+    }
+
+    public boolean timestampsInNs() {
+        return this.nsTimestamps;
     }
 
     /**
@@ -197,19 +206,28 @@ public final class PcapGlobalHeader {
         final byte[] header = h.getArray();
 
         ByteOrder byteOrder = null;
+        boolean nsTimestamps = false;
         if (header[0] == MAGIC_BIG_ENDIAN[0] && header[1] == MAGIC_BIG_ENDIAN[1]
                 && header[2] == MAGIC_BIG_ENDIAN[2] && header[3] == MAGIC_BIG_ENDIAN[3]) {
             byteOrder = ByteOrder.BIG_ENDIAN;
         } else if (header[0] == MAGIC_LITTLE_ENDIAN[0] && header[1] == MAGIC_LITTLE_ENDIAN[1]
                 && header[2] == MAGIC_LITTLE_ENDIAN[2] && header[3] == MAGIC_LITTLE_ENDIAN[3]) {
             byteOrder = ByteOrder.LITTLE_ENDIAN;
+        } else if (header[0] == MAGIC_NSEC[0] && header[1] == MAGIC_NSEC[1]
+                && header[2] == MAGIC_NSEC[2] && header[3] == MAGIC_NSEC[3]) {
+            byteOrder = ByteOrder.BIG_ENDIAN;
+            nsTimestamps = true;
+        } else if (header[0] == MAGIC_NSEC_SWAPPED[0] && header[1] == MAGIC_NSEC_SWAPPED[1]
+                && header[2] == MAGIC_NSEC_SWAPPED[2] && header[3] == MAGIC_NSEC_SWAPPED[3]) {
+            byteOrder = ByteOrder.LITTLE_ENDIAN;
+            nsTimestamps = true;
         } else {
             throw new IllegalArgumentException("Unknown header type");
         }
 
         final byte[] body = in.readBytes(20).getArray();
 
-        return new PcapGlobalHeader(byteOrder, body);
+        return new PcapGlobalHeader(byteOrder, body, nsTimestamps);
     }
 
     /**

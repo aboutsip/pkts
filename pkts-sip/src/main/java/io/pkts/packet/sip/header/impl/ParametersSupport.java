@@ -57,8 +57,6 @@ public final class ParametersSupport {
     }
 
     /**
-     * 
-     * @param name
      * @param params
      */
     public ParametersSupport(final Buffer params) {
@@ -124,15 +122,26 @@ public final class ParametersSupport {
     private Buffer consumeUntil(final Buffer name) {
         try {
             while (this.params.hasReadableBytes()) {
-                SipParser.consumeSEMI(this.params);
+                final int startIndex = params.getReaderIndex();
+                SipParser.consumeSEMI(params);
                 final Buffer[] keyValue = SipParser.consumeGenericParam(this.params);
-                ensureParamsMap();
+                final Buffer key = keyValue[0];
                 final Buffer value = keyValue[1] == null ? Buffers.EMPTY_BUFFER : keyValue[1];
-                this.paramMap.put(keyValue[0], value);
 
-                if (name != null && name.equals(keyValue[0])) {
-                    return value;
+                if (startIndex == params.getReaderIndex()) {
+                    throw new SipParseException("Issue-106 unable to make progress consuming parameters. " +
+                            "Possible bad input that was not properly detected before identified as being parameters");
                 }
+
+                if (key != null) {
+                    ensureParamsMap();
+                    this.paramMap.put(key, value);
+
+                    if (name != null && name.equals(key)) {
+                        return value;
+                    }
+                }
+
             }
             return null;
         } catch (final IndexOutOfBoundsException e) {

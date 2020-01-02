@@ -47,7 +47,7 @@ public final class MACPacketImpl extends AbstractPacket implements MACPacket {
      * @return
      */
     public static MACPacketImpl create(final PCapPacket parent, final Buffer headers) {
-        if (headers.capacity() != 14) {
+        if (headers.capacity() < 14) {
             throw new IllegalArgumentException("Not enough bytes to create this header");
         }
 
@@ -193,14 +193,22 @@ public final class MACPacketImpl extends AbstractPacket implements MACPacket {
 
     public Protocol getNextProtocol() throws IOException {
       if (getProtocol() == Protocol.ETHERNET_II) {
-          final byte b1 = headers.getByte(12);
-          final byte b2 = headers.getByte(13);
           EthernetFramer.EtherType etherType;
           try {
-              etherType = EthernetFramer.getEtherType(b1, b2);
+              etherType = EthernetFramer.getEtherType(headers.getByte(12), headers.getByte(13));
           } catch (UnknownEtherType e) {
-              throw new PacketParseException(12, String.format("Unknown Ethernet type 0x%x%x", b1, b2));
+              throw new PacketParseException(12, String.format("Unknown Ethernet type 0x%02x%02x", e.getB1(), e.getB2()));
           }
+          if (etherType == EthernetFramer.EtherType.Dot1Q) {
+              try {
+                  etherType = EthernetFramer.getEtherType(headers.getByte(16), headers.getByte(17));
+              } catch (UnknownEtherType e) {
+                  throw new PacketParseException(16, String.format("Unknown Ethernet type 0x%02x%02x", e.getB1(), e.getB2()));
+              } catch (IndexOutOfBoundsException e) {
+                  throw new PacketParseException(14, "Not enough bytes in this header");
+              }
+          }
+
           switch (etherType) {
               case IPv4:
                   return Protocol.IPv4;

@@ -57,7 +57,7 @@ public final class PcapFramer implements Framer<Packet, PCapPacket> {
             return null;
         }
 
-        final PcapRecordHeader header = new PcapRecordHeader(this.byteOrder, record);
+        final PcapRecordHeader header = new PcapRecordHeader(this.byteOrder, record, this.globalHeader.timestampsInNs());
         final int length = (int) header.getCapturedLength();
         if (length < 0) {
             throw new FramingException(String.format("Invalid PCAP captured length of %d", length), Protocol.PCAP);

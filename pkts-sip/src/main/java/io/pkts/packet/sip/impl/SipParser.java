@@ -239,7 +239,7 @@ public class SipParser {
         if (framer != null) {
             return framer;
         }
-        for (Map.Entry<Buffer, Function<SipHeader, ? extends SipHeader>> entry : framers.entrySet()) {
+        for (final Map.Entry<Buffer, Function<SipHeader, ? extends SipHeader>> entry : framers.entrySet()) {
             if (entry.getKey().equalsIgnoreCase(b)) {
                 return entry.getValue();
             }
@@ -1067,6 +1067,11 @@ public class SipParser {
         return potentialDisplayName;
     }
 
+    public static Buffer consumeAddressSpec(final Buffer buffer) throws IndexOutOfBoundsException, IOException,
+            SipParseException {
+        return consumeAddressSpec(false, buffer);
+    }
+
     /**
      * Consumes addr-spec, which according to RFC3261 section 25.1 is:
      *
@@ -1079,7 +1084,7 @@ public class SipParser {
      *
      * absoluteURI    =  scheme ":" ( hier-part / opaque-part )
      * </pre>
-     *
+     * <p>
      * And as you can see, it gets complicated. Also, these consume-functions
      * are not to validate the exact grammar but rather to find the boundaries
      * so the strategy for consuming the addr-spec is:
@@ -1087,25 +1092,27 @@ public class SipParser {
      * <li>If '>' is encountered, then we assume that this addr-spec is within a
      * name-addr so we stop here</li>
      * <li>If a white space or end-of-line is encountered, we also assume we are
-     * done.</li>
+     * done UNLESS the calling code knows that we are in a protected "< >" then
+     * we should allow for white space. See issue-106 </li>
      * </ul>
      *
-     * Note, I think the above is safe since I do believe you cannot have a
-     * white space or a quoted string (which could have contained white space)
-     * within any of the elements that are part of the addr-spec... Anyone?
+     * <p>
+     * Because of <a href="https://github.com/aboutsip/pkts/issues/106">issue-106</a> the <code>isProtected</code>
+     * boolean was introduced to allow for spaces after the initial ";' when we know the entire
+     * <code>addr-spec</code> is e.g. "protected" inside of angle brackets "< >", which is often the case
+     * when we parse out a <code>name-addr</code>, as we do in {@link io.pkts.packet.sip.address.Address#frame(Buffer)}.
+     * </p>
      *
      * @return
      * @throws IOException
      * @throws IndexOutOfBoundsException
-     * @throws SipParseException
-     *             in case we cannot successfully frame the addr-spec.
+     * @throws SipParseException         in case we cannot successfully frame the addr-spec.
      */
-    public static Buffer consumeAddressSpec(final Buffer buffer) throws IndexOutOfBoundsException, IOException,
+    public static Buffer consumeAddressSpec(final boolean isProtected, final Buffer buffer) throws IndexOutOfBoundsException, IOException,
             SipParseException {
-        buffer.markReaderIndex();
+        final int startIndex = buffer.getReaderIndex();
         int count = 0;
-        int state = 0; // zero is to look for colon, everything else is to find
-        // the end
+        int state = 0; // zero is to look for colon, everything else is to find the end
         boolean done = false;
 
         while (buffer.hasReadableBytes() && !done) {
@@ -1120,12 +1127,16 @@ public class SipParser {
                         "Have not been able to find the entire addr-spec after " + count + " bytes, giving up");
             } else if (state == 0 && b == COLON) {
                 state = 1;
-            } else if (state == 1 && (b == RAQUOT || b == SP || b == HTAB || b == CR || b == LF)) {
+            } else if (state == 1 && (b == RAQUOT || b == CR || b == LF)) {
+                done = true;
+                --count;
+            } else if (!isProtected && state == 1 && (b == SP || b == HTAB)) {
+                // https://github.com/aboutsip/pkts/issues/106
                 done = true;
                 --count;
             }
         }
-        buffer.resetReaderIndex();
+        buffer.setReaderIndex(startIndex);
 
         // didn't find the scheme portion
         if (state == 0) {

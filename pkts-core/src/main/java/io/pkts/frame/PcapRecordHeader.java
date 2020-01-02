@@ -24,15 +24,22 @@ public final class PcapRecordHeader {
 
     private final Buffer body;
 
+    private final boolean nsTimestamps;
+
     /**
      * 
      */
     public PcapRecordHeader(final ByteOrder byteOrder, final Buffer body) {
+        this(byteOrder, body, false);
+    }
+
+    public PcapRecordHeader(final ByteOrder byteOrder, final Buffer body, final boolean nsTimestamps) {
         assert body != null;
         assert body.capacity() == SIZE;
 
         this.byteOrder = byteOrder;
         this.body = body;
+        this.nsTimestamps = nsTimestamps;
     }
 
     /**
@@ -85,7 +92,12 @@ public final class PcapRecordHeader {
         return PcapGlobalHeader.getUnsignedInt(0, this.body.getArray(), this.byteOrder);
     }
 
+    @Deprecated
     public long getTimeStampMicroSeconds() {
+        return PcapGlobalHeader.getUnsignedInt(4, this.body.getArray(), this.byteOrder);
+    }
+
+    public long getTimeStampMicroOrNanoSeconds() {
         return PcapGlobalHeader.getUnsignedInt(4, this.body.getArray(), this.byteOrder);
     }
 
@@ -125,9 +137,16 @@ public final class PcapRecordHeader {
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         final long ts = getTimeStampSeconds();
-        final long tsMicroSeconds = getTimeStampMicroSeconds();
-        sb.append("ts_s: ").append(ts).append("\n")
-          .append("ts_us: ").append(tsMicroSeconds).append("\n")
+        final long tsMicroOrNanoSeconds = getTimeStampMicroOrNanoSeconds();
+        sb.append("ts_s: ").append(ts).append("\n");
+
+        if (this.nsTimestamps) {
+          sb.append("ts_ns: ");
+        } else {
+          sb.append("ts_us: ");
+        }
+
+        sb.append(tsMicroOrNanoSeconds).append("\n")
           .append("octects: ").append(getTotalLength()).append("\n")
           .append("length: ").append(getCapturedLength()).append("\n");
 

@@ -3,19 +3,45 @@
  */
 package io.pkts.packet.sip.header.impl;
 
+import io.pkts.buffer.Buffer;
+import io.pkts.buffer.Buffers;
+import io.pkts.packet.sip.SipParseException;
+import org.junit.Test;
+
 import static io.pkts.buffer.Buffers.wrap;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import io.pkts.buffer.Buffer;
-import io.pkts.buffer.Buffers;
-
-import org.junit.Test;
+import static org.junit.Assert.fail;
 
 /**
  * @author jonas@jonasborjesson.com
  *
  */
 public class ParametersSupportTest {
+
+    /**
+     * This is part of the fix for issue 106 where too strict (actually correct according
+     * to the BNF) and ultimately we ended up giving the {@link ParametersSupport} a buffer
+     * that contained a ">" and due to it, it wouldn't progress. So, the too strict parsing
+     * of name-addr exposed this bug here so now we are bailing out if we are not
+     * making any progress while parsing the buffer.
+     */
+    @Test
+    public void testIssueNo106() {
+        final Buffer params = Buffers.wrap("wrong>");
+        final ParametersSupport support = new ParametersSupport(params);
+        support.getParameter("wrong");
+
+        try {
+            // this previously caused a never ending loop, now we are bailing out
+            // instead.
+            support.getParameter("loop");
+            fail("Expected a SipParseException here");
+        } catch (final SipParseException e) {
+            // expected
+        }
+    }
+
 
     @Test
     public void testSupportFromScratch() {

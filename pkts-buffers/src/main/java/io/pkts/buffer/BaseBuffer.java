@@ -87,12 +87,13 @@ public abstract class BaseBuffer implements Buffer {
         }
 
         final int size = index - getReaderIndex();
-        Buffer result = null;
+        final Buffer result;
         if (size == 0) {
             result = Buffers.EMPTY_BUFFER;
         } else {
             result = readBytes(size);
         }
+
         readByte(); // consume the one at the index as well
         return result;
     }
@@ -263,9 +264,6 @@ public abstract class BaseBuffer implements Buffer {
      *
      * </blockquote>
      *
-     * @param s
-     *            the <code>String</code> containing the integer representation
-     *            to be parsed
      * @param radix
      *            the radix to be used while parsing <code>s</code>.
      * @return the integer represented by the string argument in the specified
@@ -293,8 +291,8 @@ public abstract class BaseBuffer implements Buffer {
         int i = getReaderIndex();
 
         final int max = getReadableBytes() + getReaderIndex();
-        int limit;
-        int multmin;
+        final int limit;
+        final int multmin;
         int digit;
 
         if (max > 0) {

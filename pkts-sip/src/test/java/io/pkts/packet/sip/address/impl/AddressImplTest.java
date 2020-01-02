@@ -5,6 +5,7 @@ package io.pkts.packet.sip.address.impl;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.packet.sip.SipException;
 import io.pkts.packet.sip.Transport;
 import io.pkts.packet.sip.address.Address;
 import io.pkts.packet.sip.address.SipURI;
@@ -13,8 +14,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.Optional;
+
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -170,6 +176,54 @@ public class AddressImplTest {
         assertThat(address.getDisplayName().isEmpty(), is(true));
         assertThat(address.getURI().toString(), is("sip:alice@example.com"));
     }
+
+    /**
+     * Test for issue no 106: https://github.com/aboutsip/pkts/issues/106
+     *
+     * <p>
+     * Ensure that the URI parameters are processed correctly
+     * when we create an address. Because of bad parsing, we ended up throwing
+     * an exception here, which eventually led to us not progressing in the parsing,
+     * which led to us creating an infinite loop when parsing a sip message.
+     * <p>
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testIssueNo106() throws Exception {
+        ensureUriParams("<sip:alice@example.com; transport=tcp>", "transport", "tcp");
+        ensureUriParams("hello <sip:alice@example.com; transport=tcp>", "transport", "tcp");
+
+        // Note that when the address isn't protected, the transport param below is now a
+        // header parameter and as such, it shouldn't actually be there...
+        ensureUriParams("sip:alice@example.com; transport=tcp", "transport", null);
+    }
+
+    private static void ensureUriParams(final String str, final String... params) throws SipException, IOException {
+        if (params != null && params.length % 2 != 0) {
+            fail("You must specify an even number of key-value parameters");
+        }
+
+        final Address address = Address.frame(str);
+        assertThat(address, notNullValue());
+
+        final SipURI uri = address.getURI().toSipURI();
+
+        // make sure that we do not find this one, no matter if we had
+        // parameters specified or not (shouldn't matter)
+        assertThat(uri.getParameter("whatever"), is(Optional.empty()));
+
+        if (params != null) {
+            for (int i = 0; i < params.length; i += 2) {
+                final String key = params[i];
+                final String value = params[i + 1];
+
+                final Optional<Buffer> expected = value == null ? Optional.empty() : Optional.of(Buffers.wrap(value));
+                assertThat(uri.getParameter(key), is(expected));
+            }
+        }
+    }
+
 
     /**
      * Make sure that we correctly include the uri parameters when present.
