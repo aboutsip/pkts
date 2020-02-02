@@ -1950,6 +1950,7 @@ public class SipParser {
         public int start;
         public int stop = -1;
         public boolean foundCR = false;
+        public boolean foundLF = false;
         public boolean foundCRLF = false;
         public boolean foundComma = false;
         public boolean insideQuotedString = false;
@@ -1965,6 +1966,7 @@ public class SipParser {
             values = new ArrayList<>(2);
             stop = -1;
             foundCR = false;
+            foundLF = false;
             foundCRLF = false;
             foundComma = false;
             insideQuotedString = false;
@@ -1982,8 +1984,10 @@ public class SipParser {
                     state.insideQuotedString = !state.insideQuotedString;
                     break;
                 case LF:
+                    state.foundLF = true;
                     state.foundCRLF = state.foundCR;
-                    state.stop = buffer.getReaderIndex() - 2;
+                    int separatorLen = (state.foundCRLF) ? 2 : 1;
+                    state.stop = buffer.getReaderIndex() - separatorLen;
                     break;
                 case CR:
                     state.foundCR = true;
@@ -2005,7 +2009,7 @@ public class SipParser {
                     break;
             }
 
-            if (state.foundCRLF) {
+            if (state.foundCRLF || state.foundLF) {
                 state.values.add(buffer.slice(state.start, state.stop));
                 // if (isNext(buffer, LF)) {
                 // buffer.readByte();
@@ -2028,6 +2032,7 @@ public class SipParser {
                 }
 
                 state.foundCR = false;
+                state.foundLF = false;
                 state.foundCRLF = false;
                 state.foundComma = false;
                 state.start = buffer.getReaderIndex();
