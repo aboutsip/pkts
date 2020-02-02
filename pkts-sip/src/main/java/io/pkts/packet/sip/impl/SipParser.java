@@ -496,8 +496,8 @@ public class SipParser {
                 value = consumeToken(buffer);
             }
         }
-        return new Buffer[] {
-                key, value };
+        return new Buffer[]{
+                key, value};
     }
 
     /**
@@ -947,7 +947,6 @@ public class SipParser {
      * COLON   =  SWS ":" SWS ; colon
      * LDQUOT  =  SWS DQUOTE; open double quotation mark
      * RDQUOT  =  DQUOTE SWS ; close double quotation mark
-
      * @param buffer
      * @param b
      * @return the number of bytes that was consumed.
@@ -1446,8 +1445,8 @@ public class SipParser {
             buffer.readByte(); // consume ':'
             port = consumePort(buffer);
         }
-        return new Buffer[] {
-                host, port };
+        return new Buffer[]{
+                host, port};
     }
 
     /**
@@ -1729,8 +1728,8 @@ public class SipParser {
     public static void expect(final Buffer buffer, final byte expected) throws SipParseException, IOException {
         final byte actual = buffer.readByte();
         if (actual != expected) {
-            final String actualStr = new String(new byte[] { actual }, Charset.forName("UTF-8"));
-            final String expectedStr = new String(new byte[] { expected });
+            final String actualStr = new String(new byte[]{actual}, Charset.forName("UTF-8"));
+            final String expectedStr = new String(new byte[]{expected});
             throw new SipParseException(buffer.getReaderIndex(), "Expected '" + expected + "' (" + expectedStr
                     + ") got '" + actual + "' (" + actualStr + ")");
         }
@@ -1986,7 +1985,7 @@ public class SipParser {
                 case LF:
                     state.foundLF = true;
                     state.foundCRLF = state.foundCR;
-                    int separatorLen = (state.foundCRLF) ? 2 : 1;
+                    final int separatorLen = state.foundCRLF ? 2 : 1;
                     state.stop = buffer.getReaderIndex() - separatorLen;
                     break;
                 case CR:
@@ -2205,7 +2204,7 @@ public class SipParser {
         short indexOfRecordRoute = -1;
         short indexOfContact = -1;
 
-        while (consumeCRLF(buffer) != 2 && (headerName = SipParser.nextHeaderName(buffer)) != null ) {
+        while (consumeCRLF(buffer) != 2 && (headerName = SipParser.nextHeaderName(buffer)) != null) {
             final List<Buffer> values = readHeaderValues(headerName, buffer).values;
             for (final Buffer value : values) {
                 SipHeader header = new SipHeaderImpl(headerName, value);
