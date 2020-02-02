@@ -17,6 +17,8 @@ import io.pkts.packet.PacketParseException;
 import io.pkts.packet.sip.SipPacket;
 import io.pkts.protocol.Protocol;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteOrder;
@@ -140,6 +142,10 @@ public class PktsTestBase {
 
     public List<Packet> loadStream(final String streamName) throws Exception {
         final InputStream stream = PktsTestBase.class.getResourceAsStream(streamName);
+        return loadStream(stream);
+    }
+
+    public List<Packet> loadStream(final InputStream stream) throws Exception {
         final Pcap pcap = Pcap.openStream(stream);
         final List<Packet> packets = new ArrayList<Packet>();
         pcap.loop(new PacketHandler() {
@@ -155,12 +161,20 @@ public class PktsTestBase {
 
     public List<IPv4Packet> loadIPPackets(final String streamName) throws Exception {
         final List<Packet> packets = loadStream(streamName);
+        return loadIPPackets(packets);
+    }
+
+    public List<IPv4Packet> loadIPPackets(final List<Packet> packets) throws Exception {
         final List<IPv4Packet> ipPackets = new ArrayList<>();
         for (final Packet packet : packets) {
             final IPv4Packet ip = (IPv4Packet) packet.getPacket(Protocol.IPv4);
             ipPackets.add(ip);
         }
         return ipPackets;
+    }
+
+    public List<IPv4Packet> loadIPPackets(final File file) throws Exception {
+        return loadIPPackets(loadStream(new FileInputStream(file)));
     }
 
     /**

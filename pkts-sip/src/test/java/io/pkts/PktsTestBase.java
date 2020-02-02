@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package io.pkts;
 
@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -54,10 +55,10 @@ public class PktsTestBase {
      */
     @Before
     public void setUp() throws Exception {
-        this.ethernetFrameBuffer = Buffers.wrap(RawData.rawEthernetFrame);
-        this.sipFrameBuffer = this.ethernetFrameBuffer.slice(42, this.ethernetFrameBuffer.capacity());
+        ethernetFrameBuffer = Buffers.wrap(RawData.rawEthernetFrame);
+        sipFrameBuffer = ethernetFrameBuffer.slice(42, ethernetFrameBuffer.capacity());
         final Buffer ethernetFrame = Buffers.wrap(RawData.rawEthernetFrame2);
-        this.sipFrameBuffer180Response = ethernetFrame.slice(42, ethernetFrame.capacity());
+        sipFrameBuffer180Response = ethernetFrame.slice(42, ethernetFrame.capacity());
     }
 
     /**
@@ -95,9 +96,9 @@ public class PktsTestBase {
      * @param port
      */
     protected void assertViaHeader(final ViaHeader via,
-                                       final String host,
-                                       final String transport,
-                                       final int port) {
+                                   final String host,
+                                   final String transport,
+                                   final int port) {
         assertThat(via.getHost().toString(), is(host));
         assertThat(via.getTransport().toString(), is(transport.toUpperCase()));
         assertThat(via.getPort(), is(port));
@@ -145,6 +146,13 @@ public class PktsTestBase {
 
     }
 
+    protected void assertAddressHeader(final AddressParametersHeader header, final String user, final String host) {
+        assertThat("The address header cannot be null", header, notNullValue());
+        final SipURI uri = header.getAddress().getURI().toSipURI();
+        assertThat(uri.getUser().get().toString(), is(user));
+        assertThat(uri.getHost().toString(), is(host));
+    }
+
     /**
      * Assert the value of the header.
      *
@@ -160,7 +168,7 @@ public class PktsTestBase {
         assertThat(header.get().getValue().toString(), is(expectedValue));
     }
 
-    protected void assertReasonPhrase(int statusCode, String expectedReason) throws Exception {
+    protected void assertReasonPhrase(final int statusCode, final String expectedReason) throws Exception {
         final SipMessage msg = parseMessage(RawData.sipInviteOneRecordRouteHeader);
         final SipResponse response = msg.createResponse(statusCode).build();
         assertThat(response.getReasonPhrase().toString(), is(expectedReason));
