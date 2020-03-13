@@ -167,4 +167,10 @@ public class Pcap {
         // TODO
     }
 
+    /**
+     *
+     */
+    public PcapGlobalHeader getPcapHeader() {
+        return this.header;
+    }
 }
