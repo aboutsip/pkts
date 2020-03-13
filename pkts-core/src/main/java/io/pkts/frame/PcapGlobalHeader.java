@@ -236,10 +236,18 @@ public final class PcapGlobalHeader {
      * @param out
      */
     public void write(final OutputStream out) throws IOException {
-        if (this.byteOrder == ByteOrder.BIG_ENDIAN) {
-            out.write(MAGIC_BIG_ENDIAN);
+        if (this.nsTimestamps) {
+            if (this.byteOrder == ByteOrder.BIG_ENDIAN) {
+                out.write(MAGIC_NSEC);
+            } else {
+                out.write(MAGIC_NSEC_SWAPPED);
+            }
         } else {
-            out.write(MAGIC_LITTLE_ENDIAN);
+            if (this.byteOrder == ByteOrder.BIG_ENDIAN) {
+                out.write(MAGIC_BIG_ENDIAN);
+            } else {
+                out.write(MAGIC_LITTLE_ENDIAN);
+            }
         }
         out.write(this.body);
     }
