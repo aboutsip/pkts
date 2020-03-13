@@ -3,12 +3,17 @@
  */
 package io.pkts.frame;
 
+import static io.pkts.frame.PcapGlobalHeader.*;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 
-import io.pkts.frame.PcapGlobalHeader;
+import io.pkts.buffer.Buffer;
+import io.pkts.buffer.Buffers;
 
+import java.io.*;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 import org.junit.After;
 import org.junit.Before;
@@ -49,4 +54,61 @@ public class PcapGlobalHeaderTest {
         assertThat(header.getByteOrder(), is(ByteOrder.LITTLE_ENDIAN));
     }
 
+    private static byte[] getDummyBody() {
+        Buffer body = Buffers.createBuffer(20);
+        body.setUnsignedByte(0, (short) 2);
+        body.setUnsignedByte(2, (short) 4);
+        body.setUnsignedInt(4, 0);
+        body.setUnsignedInt(8, 0);
+        body.setUnsignedInt(12, 65535);
+        return body.getRawArray();
+    }
+
+    /**
+     * Make sure the right magic number is written
+     */
+    @Test
+    public void littleEndianMicrosecondsHeader() throws IOException {
+        final byte[] body = getDummyBody();
+        PcapGlobalHeader header = new PcapGlobalHeader(ByteOrder.LITTLE_ENDIAN, body, false);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        header.write(os);
+        assertArrayEquals(Arrays.copyOf(os.toByteArray(), 4), MAGIC_LITTLE_ENDIAN);
+    }
+
+    /**
+     * Make sure the right magic number is written
+     */
+    @Test
+    public void bigEndianMicrosecondsHeader() throws IOException {
+        final byte[] body = getDummyBody();
+        PcapGlobalHeader header = new PcapGlobalHeader(ByteOrder.BIG_ENDIAN, body, false);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        header.write(os);
+        assertArrayEquals(Arrays.copyOf(os.toByteArray(), 4), MAGIC_BIG_ENDIAN);
+    }
+
+    /**
+     * Make sure the right magic number is written
+     */
+    @Test
+    public void littleEndianNanosecondsHeader() throws IOException {
+        final byte[] body = getDummyBody();
+        PcapGlobalHeader header = new PcapGlobalHeader(ByteOrder.LITTLE_ENDIAN, body, true);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        header.write(os);
+        assertArrayEquals(Arrays.copyOf(os.toByteArray(), 4), MAGIC_NSEC_SWAPPED);
+    }
+
+    /**
+     * Make sure the right magic number is written
+     */
+    @Test
+    public void bigEndianNanosecondsHeader() throws IOException {
+        final byte[] body = getDummyBody();
+        PcapGlobalHeader header = new PcapGlobalHeader(ByteOrder.BIG_ENDIAN, body, true);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        header.write(os);
+        assertArrayEquals(Arrays.copyOf(os.toByteArray(), 4), MAGIC_NSEC);
+    }
 }
