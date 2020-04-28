@@ -136,9 +136,9 @@ public class SipResponsePacketImpl extends SipPacketImpl implements SipResponseP
      */
     @Override
     public SipResponsePacket clone() {
-        final TransportPacket transport = (TransportPacket) getParentPacket().clone();
+        final TransportPacket transport = (TransportPacket) getParentPacket();
         final SipResponse response = this.response.clone();
-        return new SipResponsePacketImpl(transport, response);
+        return new SipResponsePacketImpl(transport != null ? transport.clone() : null, response);
     }
 
 }

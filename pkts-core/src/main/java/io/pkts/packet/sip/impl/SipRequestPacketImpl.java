@@ -49,9 +49,9 @@ public class SipRequestPacketImpl extends SipPacketImpl implements SipRequestPac
      */
     @Override
     public SipRequestPacket clone() {
-        final TransportPacket transport = getTransportPacket().clone();
+        final TransportPacket transport = getTransportPacket();
         final SipRequest request = (SipRequest) getSipMessage().clone();
-        return new SipRequestPacketImpl(transport, request);
+        return new SipRequestPacketImpl(transport != null ? transport.clone() : null, request);
     }
 
 }

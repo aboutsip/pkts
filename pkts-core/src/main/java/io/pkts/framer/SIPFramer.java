@@ -40,10 +40,6 @@ public final class SIPFramer implements Framer<TransportPacket, SipPacket> {
     @Override
     public SipPacket frame(final TransportPacket parent, final Buffer buffer) throws IOException {
 
-        if (parent == null) {
-            throw new IllegalArgumentException("The parent frame cannot be null");
-        }
-
         final SipMessage sip = SipParser.frame(buffer);
         if (sip.isRequest()) {
             return new SipRequestPacketImpl(parent, sip.toRequest());
