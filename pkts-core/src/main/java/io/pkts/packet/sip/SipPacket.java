@@ -117,6 +117,13 @@ public interface SipPacket extends ApplicationPacket {
     Buffer getMethod() throws SipPacketParseException;
 
     /**
+     * Get all headers as a list of {@link SipHeader}
+     *
+     * @return a list of {@link SipHeader}
+     */
+    List<SipHeader> getAllHeaders();
+
+    /**
      * Get the header as a buffer
      * 
      * @param headerName

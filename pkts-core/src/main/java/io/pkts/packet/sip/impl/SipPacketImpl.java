@@ -174,6 +174,15 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
         return this.msg.getMethod();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final List<SipHeader> getAllHeaders() {
+
+        return this.msg.getAllHeaders();
+    }
+
     /*
      * (non-Javadoc)
      * 
