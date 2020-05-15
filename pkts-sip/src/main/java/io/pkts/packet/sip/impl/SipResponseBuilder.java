@@ -7,8 +7,15 @@ import io.pkts.packet.sip.SipResponse;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ToHeader;
+import io.pkts.packet.sip.impl.SipInitialLine;
+import io.pkts.packet.sip.impl.SipResponseLine;
 
 import java.util.List;
+import java.util.Map;
+
+
+
+
 
 /**
  * @author jonas@jonasborjesson.com
@@ -146,31 +153,27 @@ public final class SipResponseBuilder extends SipMessageBuilder<SipResponse> imp
         return new SipResponseLine(statusCode, reason != null ? reason : getDefaultResponseReason(statusCode));
     }
 
-    @Override
-    protected SipResponse internalBuild(final Buffer msg,
-                                        final SipInitialLine initialLine,
-                                        final List<SipHeader> headers,
-                                        final short indexOfTo,
-                                        final short indexOfFrom,
-                                        final short indexOfCSeq,
-                                        final short indexOfCallId,
-                                        final short indexOfMaxForwards,
-                                        final short indexOfVia,
-                                        final short indexOfRoute,
-                                        final short indexOfRecordRoute,
-                                        final short indexOfContact,
-                                        final Buffer body) {
-        return new ImmutableSipResponse(msg, initialLine.toResponseLine(), headers,
-                indexOfTo,
-                indexOfFrom,
-                indexOfCSeq,
-                indexOfCallId,
-                indexOfMaxForwards,
-                indexOfVia,
-                indexOfRoute,
-                indexOfRecordRoute,
-                indexOfContact,
-                body);
+    @Override protected SipResponse internalBuild(final Buffer msg, final SipInitialLine initialLine,
+                                                  final Map<String, List<SipHeader>> headers, final SipHeader toHeader,
+                                                  final SipHeader fromHeader, final SipHeader cSeqHeader,
+                                                  final SipHeader callIdHeader, final SipHeader maxForwardsHeader,
+                                                  final SipHeader viaHeader, final SipHeader routeHeader,
+                                                  final SipHeader recordRouteHeader, final SipHeader contactHeader,
+                                                  final Buffer body) {
+
+        return new ImmutableSipResponse(msg,
+                                        initialLine.toResponseLine(),
+                                        headers,
+                                        toHeader,
+                                        fromHeader,
+                                        cSeqHeader,
+                                        callIdHeader,
+                                        maxForwardsHeader,
+                                        viaHeader,
+                                        routeHeader,
+                                        recordRouteHeader,
+                                        contactHeader,
+                                        body);
     }
 
     @Override

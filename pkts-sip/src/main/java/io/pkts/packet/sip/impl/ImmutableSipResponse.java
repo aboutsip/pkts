@@ -5,9 +5,14 @@ import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.SipResponse;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.SipHeader;
-import io.pkts.packet.sip.header.ViaHeader;
+import io.pkts.packet.sip.impl.SipResponseLine;
 
 import java.util.List;
+import java.util.Map;
+
+
+
+
 
 /**
  * @author jonas@jonasborjesson.com
@@ -19,34 +24,34 @@ public class ImmutableSipResponse extends ImmutableSipMessage implements SipResp
      *                           initial line etc.
      * @param initialLine        the parsed initial line (which is just a reference into the message buffer)
      * @param headers
-     * @param indexOfTo
-     * @param indexOfFrom
-     * @param indexOfCSeq
-     * @param indexOfCallId
-     * @param indexOfMaxForwards
-     * @param indexOfVia
-     * @param indexOfRoute
-     * @param indexOfRecordRoute
-     * @param indexOfContact
      * @param body
      */
     protected ImmutableSipResponse(final Buffer message,
                                    final SipResponseLine initialLine,
-                                   final List<SipHeader> headers,
-                                   final short indexOfTo,
-                                   final short indexOfFrom,
-                                   final short indexOfCSeq,
-                                   final short indexOfCallId,
-                                   final short indexOfMaxForwards,
-                                   final short indexOfVia,
-                                   final short indexOfRoute,
-                                   final short indexOfRecordRoute,
-                                   final short indexOfContact,
+                                   final Map<String, List<SipHeader>> headers,
+                                   final SipHeader toHeader,
+                                   final SipHeader fromHeader,
+                                   final SipHeader cSeqHeader,
+                                   final SipHeader callIdHeader,
+                                   final SipHeader maxForwardsHeader,
+                                   final SipHeader viaHeader,
+                                   final SipHeader routeHeader,
+                                   final SipHeader recordRouteHeader,
+                                   final SipHeader contactHeader,
                                    final Buffer body) {
-        super(message, initialLine, headers, indexOfTo,
-                indexOfFrom, indexOfCSeq, indexOfCallId,
-                indexOfMaxForwards, indexOfVia, indexOfRoute,
-                indexOfRecordRoute, indexOfContact, body);
+        super(message,
+              initialLine,
+              headers,
+              toHeader,
+              fromHeader,
+              cSeqHeader,
+              callIdHeader,
+              maxForwardsHeader,
+              viaHeader,
+              routeHeader,
+              recordRouteHeader,
+              contactHeader,
+              body);
     }
 
     @Override

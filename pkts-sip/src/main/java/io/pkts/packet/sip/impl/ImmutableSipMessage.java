@@ -1,7 +1,6 @@
 package io.pkts.packet.sip.impl;
 
 import io.pkts.buffer.Buffer;
-import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.CSeqHeader;
@@ -21,28 +20,36 @@ import io.pkts.packet.sip.header.ViaHeader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+
+
+
 
 /**
  * @author jonas@jonasborjesson.com
  */
 public abstract class ImmutableSipMessage implements SipMessage {
 
-    private static final String I_AM_IMMUTABLE_NO_CAN_DO = "I am immutable, no can do";
-    private final Buffer message;
-    private final SipInitialLine initialLine;
-    private final List<SipHeader> headers;
-    private final Buffer body;
+    private static final String                       I_AM_IMMUTABLE_NO_CAN_DO = "I am immutable, no can do";
+    private final        Buffer                       message;
+    private final        SipInitialLine               initialLine;
+    private final        Map<String, List<SipHeader>> headers;
+    private final        Buffer                       body;
+    private final        SipHeader                    toHeader;
+    private final        SipHeader                    fromHeader;
+    private final        SipHeader                    cSeqHeader;
+    private final        SipHeader                    callIdHeader;
+    private final        SipHeader                    maxForwardsHeader;
+    private final        SipHeader                    viaHeader;
+    private final        SipHeader                    routeHeader;
+    private final        SipHeader                    recordRouteHeader;
+    private final        SipHeader                    contactHeader;
 
-    private final short indexOfTo;
-    private final short indexOfFrom;
-    private final short indexOfCSeq;
-    private final short indexOfCallId;
-    private final short indexOfMaxForwards;
-    private final short indexOfVia;
-    private final short indexOfRoute;
-    private final short indexOfRecordRoute;
-    private final short indexOfContact;
+
+
+
 
     /**
      *
@@ -54,31 +61,30 @@ public abstract class ImmutableSipMessage implements SipMessage {
      */
     protected ImmutableSipMessage(final Buffer message,
                                   final SipInitialLine initialLine,
-                                  final List<SipHeader> headers,
-                                  final short indexOfTo,
-                                  final short indexOfFrom,
-                                  final short indexOfCSeq,
-                                  final short indexOfCallId,
-                                  final short indexOfMaxForwards,
-                                  final short indexOfVia,
-                                  final short indexOfRoute,
-                                  final short indexOfRecordRoute,
-                                  final short indexOfContact,
+                                  final Map<String, List<SipHeader>> headers,
+                                  final SipHeader toHeader,
+                                  final SipHeader fromHeader,
+                                  final SipHeader cSeqHeader,
+                                  final SipHeader callIdHeader,
+                                  final SipHeader maxForwardsHeader,
+                                  final SipHeader viaHeader,
+                                  final SipHeader routeHeader,
+                                  final SipHeader recordRouteHeader,
+                                  final SipHeader contactHeader,
                                   final Buffer body) {
         this.message = message;
         this.initialLine = initialLine;
         this.headers = headers;
         this.body = body;
-
-        this.indexOfTo = indexOfTo;
-        this.indexOfFrom = indexOfFrom;
-        this.indexOfCSeq = indexOfCSeq;
-        this.indexOfCallId = indexOfCallId;
-        this.indexOfMaxForwards = indexOfMaxForwards;
-        this.indexOfVia = indexOfVia;
-        this.indexOfRoute = indexOfRoute;
-        this.indexOfRecordRoute = indexOfRecordRoute;
-        this.indexOfContact = indexOfContact;
+        this.toHeader = toHeader;
+        this.fromHeader = fromHeader;
+        this.cSeqHeader = cSeqHeader;
+        this.callIdHeader = callIdHeader;
+        this.maxForwardsHeader = maxForwardsHeader;
+        this.viaHeader = viaHeader;
+        this.routeHeader = routeHeader;
+        this.recordRouteHeader = recordRouteHeader;
+        this.contactHeader = contactHeader;
     }
 
     @Override
@@ -93,8 +99,20 @@ public abstract class ImmutableSipMessage implements SipMessage {
 
     @Override
     public List<SipHeader> getAllHeaders() {
-        return new ArrayList<>(headers);
+        final List<SipHeader> allHeaders = new ArrayList<>();
+        for(final List<SipHeader> headerValues : headers.values()) {
+            allHeaders.addAll(headerValues);
+        }
+
+        return allHeaders;
     }
+
+    @Override
+    public Map<String, List<SipHeader>> getHeaderValues() {
+
+        return headers;
+    }
+
 
     @Override
     public int countNoOfHeaders() {
@@ -122,73 +140,60 @@ public abstract class ImmutableSipMessage implements SipMessage {
 
     @Override
     public Optional<SipHeader> getHeader(final Buffer headerName) throws SipParseException {
-        return Optional.ofNullable(findHeader(headerName));
+        return getHeader(headerName.toString());
     }
 
     @Override
     public List<SipHeader> getHeaders(final Buffer headerName) throws SipParseException {
         PreConditions.assertNotEmpty(headerName, "The name of the header cannot be null or the empty buffer");
-        return getHeadersInternal(headerName);
+        return getHeaders(headerName.toString());
     }
 
     @Override
     public List<SipHeader> getHeaders(final String headerName) throws SipParseException {
         PreConditions.assertNotEmpty(headerName, "The name of the header cannot be null or the empty string");
-        return getHeadersInternal(Buffers.wrap(headerName));
+
+        final List<SipHeader> headerValues = headers.get(headerName);
+
+        return headerValues == null || headerValues.isEmpty() ? Collections.emptyList() : new ArrayList<>(headerValues);
     }
 
-    private List<SipHeader> getHeadersInternal(final Buffer headerName) {
-        final List<SipHeader> headers = new ArrayList<>(3);
-        for (final SipHeader header : this.headers) {
-            if (headerName.equals(header.getName())) {
-                headers.add(header);
-            }
-        }
-        return headers;
-    }
 
     @Override
     public Optional<SipHeader> getHeader(final String headerName) throws SipParseException {
-        return Optional.ofNullable(findHeader(Buffers.wrap(headerName)));
+        return Optional.ofNullable(findHeader(headerName));
     }
 
     @Override
     public FromHeader getFromHeader() throws SipParseException {
-        if (indexOfFrom != -1) {
-            return headers.get(indexOfFrom).ensure().toFromHeader();
-        }
-        return null;
+
+
+        return fromHeader != null ? fromHeader.ensure().toFromHeader() : null;
     }
 
     @Override
     public ToHeader getToHeader() throws SipParseException {
-        if (indexOfTo != -1) {
-            return headers.get(indexOfTo).ensure().toToHeader();
-        }
-        return null;
+
+        return toHeader != null ? toHeader.ensure().toToHeader() : null;
     }
 
     @Override
     public ViaHeader getViaHeader() throws SipParseException {
-        if (indexOfVia != -1) {
-            return headers.get(indexOfVia).ensure().toViaHeader();
-        }
-        return null;
+
+        return viaHeader != null ? viaHeader.ensure().toViaHeader() : null;
     }
 
     @Override
     public List<ViaHeader> getViaHeaders() throws SipParseException {
-        if (indexOfVia == -1) {
+
+        final List<SipHeader> headerValues = headers.get(ViaHeader.NAME.toString());
+        if(headerValues == null || headerValues.isEmpty()) {
             return Collections.emptyList();
         }
 
-        final List<ViaHeader> vias = new ArrayList<>(5);
-        vias.add(headers.get(indexOfVia).ensure().toViaHeader());
-        for (int i = indexOfVia + 1; i < headers.size(); ++i) {
-            final SipHeader h = headers.get(i);
-            if (h.isViaHeader()) {
-                vias.add(h.ensure().toViaHeader());
-            }
+        final List<ViaHeader> vias = new ArrayList<>(headerValues.size());
+        for(final SipHeader via : headerValues) {
+            vias.add(via.ensure().toViaHeader());
         }
 
         return vias;
@@ -196,33 +201,27 @@ public abstract class ImmutableSipMessage implements SipMessage {
 
     @Override
     public MaxForwardsHeader getMaxForwards() throws SipParseException {
-        if (indexOfMaxForwards != -1) {
-            return headers.get(indexOfMaxForwards).ensure().toMaxForwardsHeader();
-        }
-        return null;
+
+        return maxForwardsHeader != null ? maxForwardsHeader.ensure().toMaxForwardsHeader() : null;
     }
 
     @Override
     public RecordRouteHeader getRecordRouteHeader() throws SipParseException {
-        if (indexOfRecordRoute != -1) {
-            return headers.get(indexOfRecordRoute).ensure().toRecordRouteHeader();
-        }
-        return null;
+
+        return recordRouteHeader != null ? recordRouteHeader.ensure().toRecordRouteHeader() : null;
     }
 
     @Override
     public List<RecordRouteHeader> getRecordRouteHeaders() throws SipParseException {
-        if (indexOfRecordRoute == -1) {
+
+        final List<SipHeader> headerValues = headers.get(RecordRouteHeader.NAME.toString());
+        if(headerValues == null || headerValues.isEmpty()) {
             return Collections.emptyList();
         }
 
-        final List<RecordRouteHeader> routes = new ArrayList<>(5);
-        routes.add(headers.get(indexOfRecordRoute).ensure().toRecordRouteHeader());
-        for (int i = indexOfRecordRoute + 1; i < headers.size(); ++i) {
-            final SipHeader h = headers.get(i);
-            if (h.isRecordRouteHeader()) {
-                routes.add(h.ensure().toRecordRouteHeader());
-            }
+        final List<RecordRouteHeader> routes = new ArrayList<>(headerValues.size());
+        for(final SipHeader route : headerValues) {
+            routes.add(route.ensure().toRecordRouteHeader());
         }
 
         return routes;
@@ -230,25 +229,21 @@ public abstract class ImmutableSipMessage implements SipMessage {
 
     @Override
     public RouteHeader getRouteHeader() throws SipParseException {
-        if (indexOfRoute != -1) {
-            return headers.get(indexOfRoute).ensure().toRouteHeader();
-        }
-        return null;
+
+        return routeHeader != null ? routeHeader.ensure().toRouteHeader() : null;
     }
 
     @Override
     public List<RouteHeader> getRouteHeaders() throws SipParseException {
-        if (indexOfRoute == -1) {
+
+        final List<SipHeader> headerValues = headers.get(RouteHeader.NAME.toString());
+        if(headerValues == null || headerValues.isEmpty()) {
             return Collections.emptyList();
         }
 
-        final List<RouteHeader> routes = new ArrayList<>(5);
-        routes.add(headers.get(indexOfRoute).ensure().toRouteHeader());
-        for (int i = indexOfRoute + 1; i < headers.size(); ++i) {
-            final SipHeader h = headers.get(i);
-            if (h.isRouteHeader()) {
-                routes.add(h.ensure().toRouteHeader());
-            }
+        final List<RouteHeader> routes = new ArrayList<>(headerValues.size());
+        for(final SipHeader route : headerValues) {
+            routes.add(route.ensure().toRouteHeader());
         }
 
         return routes;
@@ -256,56 +251,45 @@ public abstract class ImmutableSipMessage implements SipMessage {
 
     @Override
     public ExpiresHeader getExpiresHeader() throws SipParseException {
-        final SipHeader header = findHeader(ExpiresHeader.NAME);
-        if (header == null) {
-            return null;
-        }
 
-        return header.ensure().toExpiresHeader();
+        final SipHeader header = findHeader(ExpiresHeader.NAME.toString());
+
+        return header != null ? header.ensure().toExpiresHeader() : null;
     }
 
     @Override
     public ContactHeader getContactHeader() throws SipParseException {
-        if (indexOfContact != -1) {
-            return headers.get(indexOfContact).ensure().toContactHeader();
-        }
-        return null;
+
+        return contactHeader != null ? contactHeader.ensure().toContactHeader() : null;
     }
 
     @Override
     public ContentTypeHeader getContentTypeHeader() throws SipParseException {
-        final SipHeader header = findHeader(ContentTypeHeader.NAME);
-        if (header == null) {
-            return null;
-        }
 
-        return header.ensure().toContentTypeHeader();
+        final SipHeader header = findHeader(ContentTypeHeader.NAME.toString());
+
+        return header != null ? header.ensure().toContentTypeHeader() : null;
     }
 
     @Override
     public int getContentLength() throws SipParseException {
-        final SipHeader header = findHeader(ContentLengthHeader.NAME);
-        if (header == null) {
-            return 0;
-        }
 
-        return header.ensure().toContentLengthHeader().getContentLength();
+        final SipHeader header = findHeader(ContentLengthHeader.NAME.toString());
+
+        return header != null ? header.ensure().toContentLengthHeader().getContentLength() : 0;
     }
 
     @Override
     public CallIdHeader getCallIDHeader() throws SipParseException {
-        if (indexOfCallId != -1) {
-            return headers.get(indexOfCallId).ensure().toCallIdHeader();
-        }
-        return null;
+
+
+        return callIdHeader != null ? callIdHeader.ensure().toCallIdHeader() : null;
     }
 
     @Override
     public CSeqHeader getCSeqHeader() throws SipParseException {
-        if (indexOfCSeq != -1) {
-            return headers.get(indexOfCSeq).ensure().toCSeqHeader();
-        }
-        return null;
+
+        return cSeqHeader != null ? cSeqHeader.ensure().toCSeqHeader() : null;
     }
 
     @Override
@@ -319,33 +303,27 @@ public abstract class ImmutableSipMessage implements SipMessage {
 
     }
 
-    private SipHeader findHeader(final Buffer name) {
-        for (final SipHeader header : headers) {
-            if (name.equals(header.getName())) {
-                return header;
-            }
-        }
-        return null;
+    private SipHeader findHeader(final String name) {
+
+        final List<SipHeader> headerValues = headers.get(name);
+
+        return headerValues != null && !headerValues.isEmpty() ? headerValues.get(0) :null;
     }
+
 
     @Override
     public boolean equals(final Object o) {
+
         if (this == o) {
             return true;
         }
 
-        try {
-            final SipMessage other = (SipMessage)o;
-            if (!initialLine.equals(other.initialLine())) {
-                return false;
-            }
-
-            // TODO: lots more
-
-            return true;
-        } catch (final ClassCastException e) {
-            return false;
+        if (o instanceof SipMessage) {
+            final SipMessage other = (SipMessage) o;
+            return initialLine.equals(other.initialLine());
         }
+
+        return false;
     }
 
     @Override

@@ -22,7 +22,9 @@ import io.pkts.packet.sip.impl.SipParser;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -717,6 +719,11 @@ public interface SipMessage extends Cloneable {
 
     default int countNoOfHeaders() {
         return getAllHeaders().size();
+    }
+
+    default Map<String, List<SipHeader>> getHeaderValues() {
+        // TODO: can't be a default implementation of this. Just doing this while refactoring...
+        return Collections.emptyMap();
     }
 
     default List<SipHeader> getAllHeaders() {

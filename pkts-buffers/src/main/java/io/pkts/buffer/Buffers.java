@@ -5,6 +5,11 @@ package io.pkts.buffer;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
+
+
+
 
 /**
  * @author jonas@jonasborjesson.com
@@ -77,7 +82,7 @@ public final class Buffers {
             return Buffers.EMPTY_BUFFER;
         }
 
-        return Buffers.wrap(s.getBytes(Charset.forName("UTF-8")));
+        return Buffers.wrap(s.getBytes(StandardCharsets.UTF_8));
     }
 
     public static Buffer wrap(final InputStream is) {
