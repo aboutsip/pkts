@@ -15,6 +15,7 @@ import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -115,6 +116,20 @@ public interface SipPacket extends ApplicationPacket {
      * @return
      */
     Buffer getMethod() throws SipPacketParseException;
+
+    /**
+     * Get all headers as a list of {@link SipHeader}
+     *
+     * @return a list of {@link SipHeader}
+     */
+    List<SipHeader> getHeaders();
+
+    /**
+     * Get all headers as keyed by header name
+     *
+     * @return a map of header names with a list of {@link SipHeader}
+     */
+    Map<String, List<SipHeader>> getHeaderValues();
 
     /**
      * Get the header as a buffer

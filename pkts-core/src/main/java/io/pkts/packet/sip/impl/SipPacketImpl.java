@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -172,6 +173,22 @@ public abstract class SipPacketImpl extends AbstractPacket implements SipPacket 
     @Override
     public Buffer getMethod() throws SipPacketParseException {
         return this.msg.getMethod();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<SipHeader> getHeaders() {
+        return this.msg.getAllHeaders();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<String, List<SipHeader>> getHeaderValues() {
+        return this.msg.getHeaderValues();
     }
 
     /*
