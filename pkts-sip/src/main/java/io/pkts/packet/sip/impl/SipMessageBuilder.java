@@ -345,12 +345,13 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
             this.routeHeaders.clear();
             this.routeHeaders.add(route);
         }
+
         return this;
     }
 
     @Override
     public SipMessage.Builder<T> withRouteHeaders(final RouteHeader... routes) {
-        if (routes != null) {
+        if (routes != null && routes.length > 0) {
             this.routeHeaders = ensureList(this.routeHeaders);
             this.routeHeaders.clear();
             routeHeader = routes[0];
@@ -423,7 +424,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
 
     @Override
     public SipMessage.Builder<T> withRecordRouteHeaders(final RecordRouteHeader... recordRoutes) {
-        if (recordRoutes != null) {
+        if (recordRoutes != null && recordRoutes.length > 0) {
             this.recordRouteHeaders = ensureList(this.recordRouteHeaders);
             this.recordRouteHeaders.clear();
             recordRouteHeader = recordRoutes[0];
@@ -468,26 +469,22 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
 
     @Override
     public SipMessage.Builder<T> withViaHeaders(final ViaHeader... vias) {
-        if (vias != null) {
+        if (vias != null && vias.length > 0) {
             this.viaHeaders = ensureList(this.viaHeaders);
             this.viaHeaders.clear();
-            for (final ViaHeader via : vias) {
-                this.viaHeaders.add(via);
-                viaHeader = via;
-            }
+            viaHeader = vias[0];
+            this.viaHeaders.addAll(Arrays.asList(vias));
         }
         return this;
     }
 
     @Override
     public SipMessage.Builder<T> withViaHeaders(final List<ViaHeader> vias) {
-        if (vias != null) {
+        if (vias != null && !vias.isEmpty()) {
             this.viaHeaders = ensureList(this.viaHeaders);
             this.viaHeaders.clear();
-            for (final ViaHeader via : vias) {
-                this.viaHeaders.add(via);
-                viaHeader = via;
-            }
+            viaHeader = vias.get(0);
+            this.viaHeaders.addAll(vias);
         }
         return this;
     }
