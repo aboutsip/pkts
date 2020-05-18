@@ -32,20 +32,20 @@ import java.util.Optional;
  */
 public abstract class ImmutableSipMessage implements SipMessage {
 
-    private static final String                       I_AM_IMMUTABLE_NO_CAN_DO = "I am immutable, no can do";
-    private final        Buffer                       message;
-    private final        SipInitialLine               initialLine;
-    private final        Map<String, List<SipHeader>> headers;
-    private final        Buffer                       body;
-    private final        SipHeader                    toHeader;
-    private final        SipHeader                    fromHeader;
-    private final        SipHeader                    cSeqHeader;
-    private final        SipHeader                    callIdHeader;
-    private final        SipHeader                    maxForwardsHeader;
-    private final        SipHeader                    viaHeader;
-    private final        SipHeader                    routeHeader;
-    private final        SipHeader                    recordRouteHeader;
-    private final        SipHeader                    contactHeader;
+    private static final String I_AM_IMMUTABLE_NO_CAN_DO = "I am immutable, no can do";
+    private final Buffer message;
+    private final SipInitialLine initialLine;
+    private final Map<String, List<SipHeader>> headers;
+    private final Buffer body;
+    private final SipHeader toHeader;
+    private final SipHeader fromHeader;
+    private final SipHeader cSeqHeader;
+    private final SipHeader callIdHeader;
+    private final SipHeader maxForwardsHeader;
+    private final SipHeader viaHeader;
+    private final SipHeader routeHeader;
+    private final SipHeader recordRouteHeader;
+    private final SipHeader contactHeader;
 
 
 

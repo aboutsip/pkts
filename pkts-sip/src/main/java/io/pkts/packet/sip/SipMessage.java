@@ -721,10 +721,7 @@ public interface SipMessage extends Cloneable {
         return getAllHeaders().size();
     }
 
-    default Map<String, List<SipHeader>> getHeaderValues() {
-        // TODO: can't be a default implementation of this. Just doing this while refactoring...
-        return Collections.emptyMap();
-    }
+    Map<String, List<SipHeader>> getHeaderValues();
 
     default List<SipHeader> getAllHeaders() {
         // TODO: can't be a default implementation of this. Just doing this while refactoring...

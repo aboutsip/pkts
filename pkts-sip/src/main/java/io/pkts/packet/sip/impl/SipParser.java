@@ -2213,7 +2213,7 @@ public class SipParser {
                     recordRouteHeader = header;
                 }
 
-                headers.computeIfAbsent(headerName.toString(), k -> new ArrayList<>()).add(header);
+                headers.computeIfAbsent(headerName.toString(), k -> new ArrayList<>(4)).add(header);
             }
         }
 

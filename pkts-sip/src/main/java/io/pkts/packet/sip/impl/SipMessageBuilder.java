@@ -19,10 +19,7 @@ import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.packet.sip.impl.SipInitialLine;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -356,11 +353,10 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         if (routes != null) {
             this.routeHeaders = ensureList(this.routeHeaders);
             this.routeHeaders.clear();
-            for (final RouteHeader route : routes) {
-                this.routeHeaders.add(route);
-                routeHeader = route;
-            }
+            routeHeader = routes[0];
+            this.routeHeaders.addAll(Arrays.asList(routes));
         }
+
         return this;
     }
 
@@ -369,11 +365,10 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         if (routes != null && !routes.isEmpty()) {
             this.routeHeaders = ensureList(this.routeHeaders);
             this.routeHeaders.clear();
-            for (final RouteHeader route : routes) {
-                this.routeHeaders.add(route);
-                routeHeader = route;
-            }
+            routeHeader = routes.get(0);
+            this.routeHeaders.addAll(routes);
         }
+
         return this;
     }
 
@@ -431,11 +426,10 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         if (recordRoutes != null) {
             this.recordRouteHeaders = ensureList(this.recordRouteHeaders);
             this.recordRouteHeaders.clear();
-            for (final RecordRouteHeader rr : recordRoutes) {
-                this.recordRouteHeaders.add(rr);
-                recordRouteHeader = rr;
-            }
+            recordRouteHeader = recordRoutes[0];
+            this.recordRouteHeaders.addAll(Arrays.asList(recordRoutes));
         }
+
         return this;
     }
 
@@ -444,11 +438,10 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         if (recordRoutes != null && !recordRoutes.isEmpty()) {
             this.recordRouteHeaders = ensureList(this.recordRouteHeaders);
             this.recordRouteHeaders.clear();
-            for (final RecordRouteHeader rr : recordRoutes) {
-                this.recordRouteHeaders.add(rr);
-                recordRouteHeader = rr;
-            }
+            recordRouteHeader = recordRoutes.get(0);
+            this.recordRouteHeaders.addAll(recordRoutes);
         }
+
         return this;
     }
 
