@@ -5,14 +5,9 @@ import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.SipResponse;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.SipHeader;
-import io.pkts.packet.sip.impl.SipResponseLine;
 
 import java.util.List;
 import java.util.Map;
-
-
-
-
 
 /**
  * @author jonas@jonasborjesson.com

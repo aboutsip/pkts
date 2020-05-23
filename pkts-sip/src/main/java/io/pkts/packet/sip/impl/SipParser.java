@@ -21,11 +21,8 @@ import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
 import io.pkts.packet.sip.header.impl.SipHeaderImpl;
-import io.pkts.packet.sip.impl.SipInitialLine;
-import io.pkts.packet.sip.impl.SipUserHostInfo;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
