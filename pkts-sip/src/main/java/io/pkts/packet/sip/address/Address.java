@@ -85,7 +85,7 @@ public interface Address {
             doubleQuote = true;
         }
 
-        final Buffer displayName = SipParser.consumeDisplayName(buffer);
+        final Buffer displayName = SipParser.consumeDisplayName(doubleQuote, buffer);
         boolean leftAngleBracket = true;
 
         // handle the case of an address that looks like:

@@ -7,11 +7,18 @@ import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.ContentLengthHeader;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.impl.SipHeaderImpl;
+import io.pkts.packet.sip.impl.SipInitialLine;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+
+
+
+
 
 /**
  * A very specialized SIP message builder for streams and is also highly specific
@@ -32,25 +39,24 @@ public class SipMessageStreamBuilder {
     private int start;
 
     private SipInitialLine sipInitialLine;
-    private Buffer buffer;
+    private Buffer         buffer;
 
     private Buffer payload = Buffers.EMPTY_BUFFER;
 
     // Move along as long as we actually can consume an header and
-    private Buffer headerName = null;
-    private List<SipHeader> headers = new ArrayList<>();
-    private short count;
+    private Buffer                       headerName = null;
+    private Map<String, List<SipHeader>> headers    = new HashMap<>();
     private int contentLength;
 
-    private short indexOfTo = -1;
-    private short indexOfFrom = -1;
-    private short indexOfCSeq = -1;
-    private short indexOfCallId = -1;
-    private short indexOfMaxForwards = -1;
-    private short indexOfVia = -1;
-    private short indexOfRoute = -1;
-    private short indexOfRecordRoute = -1;
-    private short indexOfContact = -1;
+    private        SipHeader                    toHeader;
+    private        SipHeader                    fromHeader;
+    private        SipHeader                    cSeqHeader;
+    private        SipHeader                    callIdHeader;
+    private        SipHeader                    maxForwardsHeader;
+    private        SipHeader                    viaHeader;
+    private        SipHeader                    routeHeader;
+    private        SipHeader                    recordRouteHeader;
+    private        SipHeader                    contactHeader;
 
     private SipParser.HeaderValueState headerValueState;
 
@@ -76,8 +82,8 @@ public class SipMessageStreamBuilder {
 
     private void resetBuffer() {
         buffer = Buffers.createBuffer(config.getMaxAllowedInitialLineSize()
-                + config.getMaxAllowedHeadersSize()
-                + config.getMaxAllowedContentLength());
+                                      + config.getMaxAllowedHeadersSize()
+                                      + config.getMaxAllowedContentLength());
     }
 
     private void reset() {
@@ -87,19 +93,18 @@ public class SipMessageStreamBuilder {
         start = 0;
 
         headerName = null;
-        headers = new ArrayList<>();
-        count = 0;
+        headers = new HashMap<>();
         contentLength = 0;
 
-        indexOfTo = -1;
-        indexOfFrom = -1;
-        indexOfCSeq = -1;
-        indexOfCallId = -1;
-        indexOfMaxForwards = -1;
-        indexOfVia = -1;
-        indexOfRoute = -1;
-        indexOfRecordRoute = -1;
-        indexOfContact = -1;
+        toHeader = null;
+        fromHeader = null;
+        cSeqHeader = null;
+        callIdHeader = null;
+        maxForwardsHeader = null;
+        viaHeader = null;
+        routeHeader = null;
+        recordRouteHeader = null;
+        contactHeader = null;
     }
 
     public SipMessage build() throws IllegalStateException {
@@ -138,29 +143,33 @@ public class SipMessageStreamBuilder {
 
         SipMessage sipMessage = null;
         if (sipInitialLine.isRequestLine()) {
-            sipMessage = new ImmutableSipRequest(msg, sipInitialLine.toRequestLine(), headers,
-                    indexOfTo,
-                    indexOfFrom,
-                    indexOfCSeq,
-                    indexOfCallId,
-                    indexOfMaxForwards,
-                    indexOfVia,
-                    indexOfRoute,
-                    indexOfRecordRoute,
-                    indexOfContact,
-                    payload);
+            sipMessage = new ImmutableSipRequest(msg,
+                                                 sipInitialLine.toRequestLine(),
+                                                 headers,
+                                                 toHeader,
+                                                 fromHeader,
+                                                 cSeqHeader,
+                                                 callIdHeader,
+                                                 maxForwardsHeader,
+                                                 viaHeader,
+                                                 routeHeader,
+                                                 recordRouteHeader,
+                                                 contactHeader,
+                                                 payload);
         } else {
-            sipMessage = new ImmutableSipResponse(msg, sipInitialLine.toResponseLine(), headers,
-                    indexOfTo,
-                    indexOfFrom,
-                    indexOfCSeq,
-                    indexOfCallId,
-                    indexOfMaxForwards,
-                    indexOfVia,
-                    indexOfRoute,
-                    indexOfRecordRoute,
-                    indexOfContact,
-                    payload);
+            sipMessage = new ImmutableSipResponse(msg,
+                                                  sipInitialLine.toResponseLine(),
+                                                  headers,
+                                                  toHeader,
+                                                  fromHeader,
+                                                  cSeqHeader,
+                                                  callIdHeader,
+                                                  maxForwardsHeader,
+                                                  viaHeader,
+                                                  routeHeader,
+                                                  recordRouteHeader,
+                                                  contactHeader,
+                                                  payload);
         }
 
         reset();
@@ -345,9 +354,10 @@ public class SipMessageStreamBuilder {
 
             SipParser.readHeaderValues(headerValueState, headerName, buffer);
             if (headerValueState.done) {
+                SipHeader header;
                 final List<Buffer> values = headerValueState.values;
                 for (final Buffer value : values) {
-                    SipHeader header = new SipHeaderImpl(headerName, value);
+                    header = new SipHeaderImpl(headerName, value);
                     // The headers that are most commonly used will be fully
                     // parsed just because no stack can really function without
                     // looking into these headers.
@@ -355,37 +365,36 @@ public class SipMessageStreamBuilder {
                         final ContentLengthHeader l = header.ensure().toContentLengthHeader();
                         contentLength = l.getContentLength();
                         header = l;
-                    } else if (header.isContactHeader() && indexOfContact == -1) {
+                    } else if (contactHeader == null && header.isContactHeader()) {
                         header = header.ensure();
-                        indexOfContact = count;
-                    } else if (header.isCSeqHeader() && indexOfCSeq == -1) {
+                        contactHeader = header;
+                    } else if (cSeqHeader == null && header.isCSeqHeader()) {
                         header = header.ensure();
-                        indexOfCSeq = count;
-                    } else if (header.isMaxForwardsHeader() && indexOfMaxForwards == -1) {
+                        cSeqHeader = header;
+                    } else if ( maxForwardsHeader == null && header.isMaxForwardsHeader()) {
                         header = header.ensure();
-                        indexOfMaxForwards = count;
-                    } else if (header.isFromHeader() && indexOfFrom == -1) {
+                        maxForwardsHeader = header;
+                    } else if (fromHeader == null && header.isFromHeader()) {
                         header = header.ensure();
-                        indexOfFrom = count;
-                    } else if (header.isToHeader() && indexOfTo == -1) {
+                        fromHeader = header;
+                    } else if (toHeader == null && header.isToHeader()) {
                         header = header.ensure();
-                        indexOfTo = count;
-                    } else if (header.isViaHeader() && indexOfVia == -1) {
+                        toHeader = header;
+                    } else if (viaHeader == null && header.isViaHeader()) {
                         header = header.ensure();
-                        indexOfVia = count;
-                    } else if (header.isCallIdHeader() && indexOfCallId == -1) {
+                        viaHeader = header;
+                    } else if (callIdHeader == null && header.isCallIdHeader()) {
                         header = header.ensure();
-                        indexOfCallId = count;
-                    } else if (header.isRouteHeader() && indexOfRoute == -1) {
+                        callIdHeader = header;
+                    } else if (routeHeader == null && header.isRouteHeader()) {
                         header = header.ensure();
-                        indexOfRoute = count;
-                    } else if (header.isRecordRouteHeader() && indexOfRecordRoute == -1) {
+                        routeHeader = header;
+                    } else if (recordRouteHeader == null && header.isRecordRouteHeader()) {
                         header = header.ensure();
-                        indexOfRecordRoute = count;
+                        recordRouteHeader = header;
                     }
 
-                    headers.add(header);
-                    ++count;
+                    headers.computeIfAbsent(headerName.toString(), k -> new ArrayList<>()).add(header);
                 }
 
                 return State.CHECK_FOR_END_OF_HEADER_SECTION;

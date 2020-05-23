@@ -9,10 +9,18 @@ import io.pkts.packet.sip.address.URI;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ToHeader;
+import io.pkts.packet.sip.impl.PreConditions;
+import io.pkts.packet.sip.impl.SipInitialLine;
+import io.pkts.packet.sip.impl.SipRequestLine;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+
+
+
+
 
 /**
  * @author jonas@jonasborjesson.com
@@ -60,7 +68,7 @@ public class SipRequestBuilder extends SipMessageBuilder<SipRequest> implements 
                 finalURI = f.apply(finalURI.toSipURI());
             } catch (final Exception e) {
                 throw new SipParseException(0,
-                        "Unable to construct request URI due exception from registered function", e);
+                                            "Unable to construct request URI due exception from registered function", e);
             }
         }
         return new SipRequestLine(method, finalURI);
@@ -69,28 +77,31 @@ public class SipRequestBuilder extends SipMessageBuilder<SipRequest> implements 
     @Override
     protected SipRequest internalBuild(final Buffer msg,
                                        final SipInitialLine initialLine,
-                                       final List<SipHeader> headers,
-                                       final short indexOfTo,
-                                       final short indexOfFrom,
-                                       final short indexOfCSeq,
-                                       final short indexOfCallId,
-                                       final short indexOfMaxForwards,
-                                       final short indexOfVia,
-                                       final short indexOfRoute,
-                                       final short indexOfRecordRoute,
-                                       final short indexOfContact,
+                                       final Map<String, List<SipHeader>> headers,
+                                       final SipHeader toHeader,
+                                       final SipHeader fromHeader,
+                                       final SipHeader cSeqHeader,
+                                       final SipHeader callIdHeader,
+                                       final SipHeader maxForwardsHeader,
+                                       final SipHeader viaHeader,
+                                       final SipHeader routeHeader,
+                                       final SipHeader recordRouteHeader,
+                                       final SipHeader contactHeader,
                                        final Buffer body) {
-        return new ImmutableSipRequest(msg, initialLine.toRequestLine(), headers,
-                indexOfTo,
-                indexOfFrom,
-                indexOfCSeq,
-                indexOfCallId,
-                indexOfMaxForwards,
-                indexOfVia,
-                indexOfRoute,
-                indexOfRecordRoute,
-                indexOfContact,
-                body);
+
+        return new ImmutableSipRequest(msg,
+                                       initialLine.toRequestLine(),
+                                       headers,
+                                       toHeader,
+                                       fromHeader,
+                                       cSeqHeader,
+                                       callIdHeader,
+                                       maxForwardsHeader,
+                                       viaHeader,
+                                       routeHeader,
+                                       recordRouteHeader,
+                                       contactHeader,
+                                       body);
     }
 
     @Override

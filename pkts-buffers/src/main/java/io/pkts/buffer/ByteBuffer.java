@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * A buffer directly backed by a byte-array
@@ -351,11 +351,8 @@ public final class ByteBuffer extends AbstractBuffer {
 
     @Override
     public String toString() {
-        try {
-            return new String(getArray(), "UTF-8");
-        } catch (final UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+
+        return new String(getArray(), StandardCharsets.UTF_8);
     }
 
     @Override
