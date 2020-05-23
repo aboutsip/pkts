@@ -23,10 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-
-
-
-
 /**
  * @author jonas@jonasborjesson.com
  */
@@ -46,10 +42,6 @@ public abstract class ImmutableSipMessage implements SipMessage {
     private final SipHeader routeHeader;
     private final SipHeader recordRouteHeader;
     private final SipHeader contactHeader;
-
-
-
-
 
     /**
      *
@@ -166,20 +158,16 @@ public abstract class ImmutableSipMessage implements SipMessage {
 
     @Override
     public FromHeader getFromHeader() throws SipParseException {
-
-
         return fromHeader != null ? fromHeader.ensure().toFromHeader() : null;
     }
 
     @Override
     public ToHeader getToHeader() throws SipParseException {
-
         return toHeader != null ? toHeader.ensure().toToHeader() : null;
     }
 
     @Override
     public ViaHeader getViaHeader() throws SipParseException {
-
         return viaHeader != null ? viaHeader.ensure().toViaHeader() : null;
     }
 
@@ -201,13 +189,11 @@ public abstract class ImmutableSipMessage implements SipMessage {
 
     @Override
     public MaxForwardsHeader getMaxForwards() throws SipParseException {
-
         return maxForwardsHeader != null ? maxForwardsHeader.ensure().toMaxForwardsHeader() : null;
     }
 
     @Override
     public RecordRouteHeader getRecordRouteHeader() throws SipParseException {
-
         return recordRouteHeader != null ? recordRouteHeader.ensure().toRecordRouteHeader() : null;
     }
 
@@ -229,13 +215,11 @@ public abstract class ImmutableSipMessage implements SipMessage {
 
     @Override
     public RouteHeader getRouteHeader() throws SipParseException {
-
         return routeHeader != null ? routeHeader.ensure().toRouteHeader() : null;
     }
 
     @Override
     public List<RouteHeader> getRouteHeaders() throws SipParseException {
-
         final List<SipHeader> headerValues = headers.get(RouteHeader.NAME.toString());
         if(headerValues == null || headerValues.isEmpty()) {
             return Collections.emptyList();
@@ -251,44 +235,34 @@ public abstract class ImmutableSipMessage implements SipMessage {
 
     @Override
     public ExpiresHeader getExpiresHeader() throws SipParseException {
-
         final SipHeader header = findHeader(ExpiresHeader.NAME.toString());
-
         return header != null ? header.ensure().toExpiresHeader() : null;
     }
 
     @Override
     public ContactHeader getContactHeader() throws SipParseException {
-
         return contactHeader != null ? contactHeader.ensure().toContactHeader() : null;
     }
 
     @Override
     public ContentTypeHeader getContentTypeHeader() throws SipParseException {
-
         final SipHeader header = findHeader(ContentTypeHeader.NAME.toString());
-
         return header != null ? header.ensure().toContentTypeHeader() : null;
     }
 
     @Override
     public int getContentLength() throws SipParseException {
-
         final SipHeader header = findHeader(ContentLengthHeader.NAME.toString());
-
         return header != null ? header.ensure().toContentLengthHeader().getContentLength() : 0;
     }
 
     @Override
     public CallIdHeader getCallIDHeader() throws SipParseException {
-
-
         return callIdHeader != null ? callIdHeader.ensure().toCallIdHeader() : null;
     }
 
     @Override
     public CSeqHeader getCSeqHeader() throws SipParseException {
-
         return cSeqHeader != null ? cSeqHeader.ensure().toCSeqHeader() : null;
     }
 
@@ -304,9 +278,7 @@ public abstract class ImmutableSipMessage implements SipMessage {
     }
 
     private SipHeader findHeader(final String name) {
-
         final List<SipHeader> headerValues = headers.get(name);
-
         return headerValues != null && !headerValues.isEmpty() ? headerValues.get(0) :null;
     }
 

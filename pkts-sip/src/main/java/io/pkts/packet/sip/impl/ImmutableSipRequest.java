@@ -6,14 +6,9 @@ import io.pkts.packet.sip.SipRequest;
 import io.pkts.packet.sip.SipResponse;
 import io.pkts.packet.sip.address.URI;
 import io.pkts.packet.sip.header.SipHeader;
-import io.pkts.packet.sip.impl.SipRequestLine;
 
 import java.util.List;
 import java.util.Map;
-
-
-
-
 
 /**
  * @author jonas@jonasborjesson.com

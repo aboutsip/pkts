@@ -9,9 +9,6 @@ import io.pkts.packet.sip.address.URI;
 import io.pkts.packet.sip.header.CSeqHeader;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ToHeader;
-import io.pkts.packet.sip.impl.PreConditions;
-import io.pkts.packet.sip.impl.SipInitialLine;
-import io.pkts.packet.sip.impl.SipRequestLine;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,7 +24,7 @@ import java.util.function.Function;
  */
 public class SipRequestBuilder extends SipMessageBuilder<SipRequest> implements SipRequest.Builder {
 
-    private Buffer method;
+    private final Buffer method;
 
     private URI requestURI;
 

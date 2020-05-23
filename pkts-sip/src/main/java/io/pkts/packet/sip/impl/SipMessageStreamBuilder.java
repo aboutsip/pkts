@@ -7,7 +7,6 @@ import io.pkts.packet.sip.SipParseException;
 import io.pkts.packet.sip.header.ContentLengthHeader;
 import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.impl.SipHeaderImpl;
-import io.pkts.packet.sip.impl.SipInitialLine;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ import java.util.function.Function;
  */
 public class SipMessageStreamBuilder {
 
-    private Configuration config;
+    private final Configuration config;
 
     private State state = State.INIT;
 
@@ -39,26 +38,26 @@ public class SipMessageStreamBuilder {
     private int start;
 
     private SipInitialLine sipInitialLine;
-    private Buffer         buffer;
+    private Buffer buffer;
 
     private Buffer payload = Buffers.EMPTY_BUFFER;
 
     // Move along as long as we actually can consume an header and
-    private Buffer                       headerName = null;
-    private Map<String, List<SipHeader>> headers    = new HashMap<>();
+    private Buffer headerName = null;
+    private Map<String, List<SipHeader>> headers = new HashMap<>();
     private int contentLength;
 
-    private        SipHeader                    toHeader;
-    private        SipHeader                    fromHeader;
-    private        SipHeader                    cSeqHeader;
-    private        SipHeader                    callIdHeader;
-    private        SipHeader                    maxForwardsHeader;
-    private        SipHeader                    viaHeader;
-    private        SipHeader                    routeHeader;
-    private        SipHeader                    recordRouteHeader;
-    private        SipHeader                    contactHeader;
+    private SipHeader toHeader;
+    private SipHeader fromHeader;
+    private SipHeader cSeqHeader;
+    private SipHeader callIdHeader;
+    private SipHeader maxForwardsHeader;
+    private SipHeader viaHeader;
+    private SipHeader routeHeader;
+    private SipHeader recordRouteHeader;
+    private SipHeader contactHeader;
 
-    private SipParser.HeaderValueState headerValueState;
+    private final SipParser.HeaderValueState headerValueState;
 
     private final Function<Buffer, State>[] actions = new Function[State.values().length];
 
