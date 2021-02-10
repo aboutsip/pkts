@@ -36,6 +36,7 @@ public final class SipResponseBuilder extends SipMessageBuilder<SipResponse> imp
         DEFAULT_RESPONSE_REASON[180] = Buffers.wrap("Ringing");
         DEFAULT_RESPONSE_REASON[181] = Buffers.wrap("Call is Being Forwarded");
         DEFAULT_RESPONSE_REASON[182] = Buffers.wrap("Queued");
+        DEFAULT_RESPONSE_REASON[183] = Buffers.wrap("Session Progress");
         DEFAULT_RESPONSE_REASON[199] = Buffers.wrap("Early Dialog Terminated");
 
         // 2xx—Successful Responses
