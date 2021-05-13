@@ -44,6 +44,7 @@ public final class UdpPacketImpl extends TransportPacketImpl implements UDPPacke
         return this.headers.capacity();
     }
 
+    @Override
     public int getLength() {
         return this.headers.getUnsignedShort(4);
     }
@@ -52,6 +53,7 @@ public final class UdpPacketImpl extends TransportPacketImpl implements UDPPacke
         this.headers.setUnsignedShort(4, length);
     }
 
+    @Override
     public int getChecksum() {
         return this.headers.getUnsignedShort(6);
     }

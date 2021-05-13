@@ -9,6 +9,16 @@ package io.pkts.packet;
  */
 public interface TCPPacket extends TransportPacket {
 
+    int getChecksum();
+
+    int getUrgentPointer();
+
+    int getWindowSize();
+
+    short getReserved();
+
+    boolean isNS();
+
     boolean isFIN();
 
     boolean isSYN();

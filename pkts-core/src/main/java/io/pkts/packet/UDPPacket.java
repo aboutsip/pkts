@@ -9,4 +9,8 @@ package io.pkts.packet;
 public interface UDPPacket extends TransportPacket {
     @Override
     IPPacket getParentPacket();
+
+    int getChecksum();
+
+    int getLength();
 }

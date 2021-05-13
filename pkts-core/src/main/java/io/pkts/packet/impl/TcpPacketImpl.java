@@ -41,6 +41,31 @@ public final class TcpPacketImpl extends TransportPacketImpl implements TCPPacke
         return true;
     }
 
+    @Override
+    public int getChecksum() {
+        return this.headers.getUnsignedShort(16);
+    }
+
+    @Override
+    public int getUrgentPointer() {
+        return this.headers.getUnsignedShort(18);
+    }
+
+    @Override
+    public int getWindowSize() {
+        return this.headers.getUnsignedShort(14);
+    }
+
+    @Override
+    public short getReserved() {
+        try {
+            final byte a = this.headers.getByte(12);
+            return (short) ((a >> 1) & 0x7);
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * Get the header length in bytes
      * 
@@ -50,6 +75,18 @@ public final class TcpPacketImpl extends TransportPacketImpl implements TCPPacke
     public int getHeaderLength() {
         // 20 because the minimum TCP header length is 20 - ALWAYS
         return 20 + (this.options != null ? this.options.capacity() : 0);
+    }
+
+    @Override
+    public boolean isNS() {
+        try {
+            final byte b = this.headers.getByte(12);
+            return (b & 0x01) == 0x01;
+        } catch (final Exception e) {
+            // ignore, Shouldn't happen since we have already
+            // framed all the bytes
+            return false;
+        }
     }
 
     @Override

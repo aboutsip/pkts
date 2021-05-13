@@ -359,6 +359,31 @@ public final class IPv4PacketImpl extends AbstractPacket implements IPv4Packet {
     }
 
     @Override
+    public short getDSCP() {
+        try {
+            final byte a = this.headers.getByte(1);
+            return (short) ((a >> 2) & 0x3F);
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public short getECN() {
+        try {
+            final byte a = this.headers.getByte(1);
+            return (short) (a & 0x3);
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public int getTimeToLive() {
+        return this.headers.getUnsignedByte(8);
+    }
+
+    @Override
     public int getIdentification() {
         return this.headers.getUnsignedShort(4);
     }
