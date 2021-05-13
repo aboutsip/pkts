@@ -117,6 +117,29 @@ public final class IPv6PacketImpl extends AbstractPacket implements IPv6Packet {
     }
 
     @Override
+    public short getTrafficClass() {
+        try {
+            final byte a = this.headers.getByte(0);
+            final byte b = this.headers.getByte(1);
+            return (short) ((a & 0xF) << 4 | (b >> 4) & 0xF);
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public int getFlowLabel() {
+        final int a = this.headers.getUnsignedShort(1);
+        final int b = this.headers.getUnsignedShort(2);
+        return (((a >> 8) & 0xFF) << 16 | b & 0xFFFF);
+    }
+
+    @Override
+    public int getHopLimit() {
+        return this.headers.getUnsignedByte(7);
+    }
+
+    @Override
     public long getArrivalTime() {
         return getParentPacket().getArrivalTime();
     }

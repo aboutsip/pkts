@@ -99,6 +99,12 @@ public interface IPv4Packet extends IPPacket {
 
     boolean verifyIpChecksum();
 
+    int getTimeToLive();
+
+    short getDSCP();
+
+    short getECN();
+
     @Override
     IPv4Packet clone();
 
