@@ -414,6 +414,14 @@ public final class InputStreamBuffer extends AbstractBuffer {
      * {@inheritDoc}
      */
     @Override
+    public long getUnsignedInt(final int index) throws IndexOutOfBoundsException {
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public short getUnsignedByte(final int index) throws IndexOutOfBoundsException {
         // TODO Auto-generated method stub
         return 0;
@@ -514,7 +522,7 @@ public final class InputStreamBuffer extends AbstractBuffer {
     }
 
     @Override
-    public void write(byte[] bytes) throws IndexOutOfBoundsException, WriteNotSupportedException {
+    public void write(final byte[] bytes) throws IndexOutOfBoundsException, WriteNotSupportedException {
         throw new WriteNotSupportedException("Cannot write to an InputStreamBuffer");
     }
 

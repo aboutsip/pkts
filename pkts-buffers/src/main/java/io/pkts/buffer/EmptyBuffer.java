@@ -250,6 +250,14 @@ public class EmptyBuffer implements Buffer {
      * {@inheritDoc}
      */
     @Override
+    public long getUnsignedInt(final int index) throws IndexOutOfBoundsException {
+        throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public short getUnsignedByte(final int index) throws IndexOutOfBoundsException {
         throw new IndexOutOfBoundsException(THIS_BUFFER_IS_EMPTY);
     }

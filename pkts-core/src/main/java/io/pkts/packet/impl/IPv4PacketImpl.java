@@ -5,6 +5,7 @@ package io.pkts.packet.impl;
 
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
+import io.pkts.framer.SctpFramer;
 import io.pkts.framer.TCPFramer;
 import io.pkts.framer.UDPFramer;
 import io.pkts.packet.IPv4Packet;
@@ -24,6 +25,8 @@ public final class IPv4PacketImpl extends AbstractPacket implements IPv4Packet {
     private static final UDPFramer udpFramer = new UDPFramer();
 
     private static final TCPFramer tcpFramer = new TCPFramer();
+
+    private static final SctpFramer sctpFramer = new SctpFramer();
 
     private final Packet parent;
 
@@ -264,6 +267,8 @@ public final class IPv4PacketImpl extends AbstractPacket implements IPv4Packet {
                 return udpFramer.frame(this, payload);
             case TCP:
                 return tcpFramer.frame(this, payload);
+            case SCTP:
+                return sctpFramer.frame(this, payload);
             default:
                 throw new PacketParseException(9, String.format("Unsupported inner protocol %s for IPv4", protocol.getName()));
             }

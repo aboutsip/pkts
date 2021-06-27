@@ -23,6 +23,8 @@ public interface TransportPacket extends Packet, Cloneable {
 
     boolean isTCP();
 
+    boolean isSCTP();
+
     int getHeaderLength();
 
     TransportPacket clone();

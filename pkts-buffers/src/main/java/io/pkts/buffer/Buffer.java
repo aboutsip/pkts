@@ -13,15 +13,28 @@ import java.io.UnsupportedEncodingException;
  * since this entire project (i.e. yajpcap) is only for one particular use case,
  * we don't need all the flexibility of netty's buffers, even though somewhat
  * silly to re-invent the wheel.
- * 
+ *
  * @author jonas@jonasborjesson.com
  */
 public interface Buffer extends Cloneable {
 
     /**
+     * Helper method to "parse" out a unsigned int from the given 4 bytes.
+     *
+     * @param a
+     * @param b
+     * @param c
+     * @param d
+     * @return
+     */
+    static long unsignedInt(final byte a, final byte b, final byte c, final byte d) {
+        return ((long) (a & 0xff)) << 24 | (b & 0xff) << 16 | (c & 0xff) << 8 | d & 0xff;
+    }
+
+    /**
      * Same as calling {@link #getBytes(int, Buffer)} where the index is
      * {@link #getReaderIndex()}.
-     * 
+     *
      * @param dst
      * @throws IndexOutOfBoundsException
      */
@@ -138,7 +151,7 @@ public interface Buffer extends Cloneable {
 
     /**
      * Get the backing array.
-     * 
+     *
      * @return
      */
     byte[] getArray();
@@ -148,14 +161,109 @@ public interface Buffer extends Cloneable {
     }
 
     /**
+     * Check whether a particular bit within a byte is on or off.
+     *
+     * @param byteIndex the index of the byte we are going to check.
+     * @param bitNo     the bit no, which is zero indexed and of course needs to be within 0 to 7.
+     * @return
+     * @throws IllegalArgumentException in case the bit number is not between 0-7 (inclusive).
+     */
+    default boolean getBit(final int byteIndex, final int bitNo) throws IllegalArgumentException {
+        switch (bitNo) {
+            case 0:
+                return getBit0(byteIndex);
+            case 1:
+                return getBit1(byteIndex);
+            case 2:
+                return getBit2(byteIndex);
+            case 3:
+                return getBit3(byteIndex);
+            case 4:
+                return getBit4(byteIndex);
+            case 5:
+                return getBit5(byteIndex);
+            case 6:
+                return getBit6(byteIndex);
+            case 7:
+                return getBit7(byteIndex);
+            default:
+                throw new IllegalArgumentException("The bit number has to be between 0 - 7 (inclusive)");
+        }
+    }
+
+    default boolean getBit0(final int index) {
+        try {
+            return (getByte(index) & 0b00000001) == 0b00000001;
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    default boolean getBit1(final int index) {
+        try {
+            return (getByte(index) & 0b00000010) == 0b00000010;
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    default boolean getBit2(final int index) {
+        try {
+            return (getByte(index) & 0b00000100) == 0b00000100;
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    default boolean getBit3(final int index) {
+        try {
+            return (getByte(index) & 0b00001000) == 0b00001000;
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    default boolean getBit4(final int index) {
+        try {
+            return (getByte(index) & 0b00010000) == 0b00010000;
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    default boolean getBit5(final int index) {
+        try {
+            return (getByte(index) & 0b00100000) == 0b00100000;
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    default boolean getBit6(final int index) {
+        try {
+            return (getByte(index) & 0b01000000) == 0b01000000;
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    default boolean getBit7(final int index) {
+        try {
+            return (getByte(index) & 0b10000000) == 0b10000000;
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * Same as {@link #readUntil(4096, 'b')}
      *
      * Read until the specified byte is encountered and return a buffer
      * representing that section of the buffer.
-     * 
+     *
      * If the byte isn't found, then a {@link ByteNotFoundException} is thrown
      * and the {@link #getReaderIndex()} is left where we bailed out.
-     * 
+     *
      * Note, the byte we are looking for will have been consumed so whatever
      * that is left in the {@link Buffer} will not contain that byte.
      * 
@@ -418,6 +526,8 @@ public interface Buffer extends Cloneable {
 
     short readUnsignedByte() throws IndexOutOfBoundsException, IOException;
 
+    long getUnsignedInt(int index) throws IndexOutOfBoundsException;
+
     short getUnsignedByte(int index) throws IndexOutOfBoundsException;
 
     void setUnsignedByte(int index, short value) throws IndexOutOfBoundsException;
@@ -425,7 +535,7 @@ public interface Buffer extends Cloneable {
     /**
      * Parse all the readable bytes in this buffer as a unsigned integer value.
      * The reader index will not be modified.
-     * 
+     *
      * @return
      * @throws NumberFormatException
      *             in case the bytes in the buffer cannot be converted into an
