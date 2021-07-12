@@ -181,6 +181,16 @@ public class SipParser {
     public static final byte LAQUOT = '<';
 
     /**
+     * Left square bracket
+     */
+    public static final byte LSBRACKET = '[';
+
+    /**
+     * Right square bracket
+     */
+    public static final byte RSBRACKET = ']';
+
+    /**
      * Double quotation mark
      */
     public static final byte DQUOT = '"';
@@ -1675,6 +1685,14 @@ public class SipParser {
 
     public static boolean isDigit(final byte b) {
         return isDigit((char) b);
+    }
+
+    public static boolean isHexDigit(final char ch) {
+        return ch >= 48 && ch <= 57 || ch >= 65 && ch <= 70 || ch >= 97 && ch <= 102;
+    }
+
+    public static boolean isHexDigit(final byte b) {
+        return isHexDigit((char) b);
     }
 
     public static boolean isAlpha(final char ch) {

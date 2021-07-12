@@ -103,6 +103,13 @@ public class SipUserHostInfo {
         private int hostPortEndIndex; // Index where the host/port portion ends
         private int errorIndex; // Index of character that caused error, or -1 if no specific character
 
+        // Host parser
+        private enum HostType {
+            HOSTNAME_OR_IPV4, IPV6
+        }
+        private HostType hostType;
+        private boolean isIPv6BracketsClosed;
+
         // Hostname parser
         private enum HostnameParseState {
             BEGIN, INVALID, IN_LABEL, IN_LABEL_DASH, AT_SEPARATOR
@@ -117,6 +124,23 @@ public class SipUserHostInfo {
         private IPv4ParseState ipv4ParseState;
         private int ipv4NumDigits;
         private int ipv4NumSegments;
+
+        // IPv6 parser
+        private static class IPv6Parser {
+
+            public enum State {
+                INVALID, HEX_PART, HEX_SEQ, IPV4
+            }
+
+            public State state = State.HEX_PART;
+            public int numDigits = 0;
+            public int numHexDigits = 0;
+            public int numDoubleColons = 0;
+            public int numColons = 0;
+            public int numPeriods = 0;
+
+        }
+        private IPv6Parser ipv6Parser;
 
         private Parser(final Buffer buffer) {
             this.buffer = buffer;
@@ -198,9 +222,12 @@ public class SipUserHostInfo {
          */
         private void resetHostPortParser() {
             parseState = HostPortParseState.HOST;
+            hostType = HostType.HOSTNAME_OR_IPV4;
+            isIPv6BracketsClosed = false;
             hostnameParseState = HostnameParseState.BEGIN;
             ipv4ParseState = IPv4ParseState.BEGIN;
             ipv4NumSegments = 0;
+            ipv6Parser = new IPv6Parser();
             stateStartIndex = buffer.getReaderIndex();
             stateCount = 0;
             host = null;
@@ -235,6 +262,15 @@ public class SipUserHostInfo {
             switch (oldState) {
             case HOST:
                 host = res;
+                switch (hostType) {
+                    case HOSTNAME_OR_IPV4:
+                        host = res;
+                        break;
+                    case IPV6:
+                        res.setReaderIndex(1); // skips "["
+                        host = res.readBytes(stateCount - 2); // without "[" and "]"
+                        break;
+                }
                 hostPortEndIndex = buffer.getReaderIndex();
                 break;
             case PORT:
@@ -267,23 +303,59 @@ public class SipUserHostInfo {
         private void processHostPortCharacter(final byte b) throws IOException {
             switch (parseState) {
             case HOST:
-                if (b == COLON) {
-                    if (hostPortIsValid()) {
-                        enterHostPortParseState(HostPortParseState.PORT);
-                    } else {
-                        enterHostPortParseState(HostPortParseState.INVALID);
-                    }
-                } else if (b == SEMI || b == QUESTIONMARK) {
-                    if (hostPortIsValid()) {
-                        enterHostPortParseState(HostPortParseState.END);
-                    } else {
-                        enterHostPortParseState(HostPortParseState.INVALID);
-                    }
-                } else {
-                    // Check if the character is valid for the host portion
-                    // Host portion could be one of three things, check all three
-                    processHostnameCharacter(b);
-                    processIPv4Character(b);
+                switch (hostType) {
+                    case HOSTNAME_OR_IPV4:
+                        if (b == LSBRACKET && stateCount == 0) {
+                            // start IPv6
+                            hostType = HostType.IPV6;
+                            isIPv6BracketsClosed = false;
+                        } else if (b == COLON) {
+                            if (hostPortIsValid()) {
+                                enterHostPortParseState(HostPortParseState.PORT);
+                            } else {
+                                enterHostPortParseState(HostPortParseState.INVALID);
+                            }
+                        } else if (b == SEMI || b == QUESTIONMARK) {
+                            if (hostPortIsValid()) {
+                                enterHostPortParseState(HostPortParseState.END);
+                            } else {
+                                enterHostPortParseState(HostPortParseState.INVALID);
+                            }
+                        } else {
+                            // Check if the character is valid for the host portion
+                            // Host portion could be one of three things, check all three
+                            processHostnameCharacter(b);
+                            processIPv4Character(b);
+                        }
+                        break;
+                    case IPV6:
+                        if (isIPv6BracketsClosed) {
+                            if (b == COLON) {
+                                if (hostPortIsValid()) {
+                                    enterHostPortParseState(HostPortParseState.PORT);
+                                } else {
+                                    enterHostPortParseState(HostPortParseState.INVALID);
+                                }
+                            } else if (b == SEMI || b == QUESTIONMARK) {
+                                if (hostPortIsValid()) {
+                                    enterHostPortParseState(HostPortParseState.END);
+                                } else {
+                                    enterHostPortParseState(HostPortParseState.INVALID);
+                                }
+                            } else {
+                                enterHostPortParseState(HostPortParseState.INVALID);
+                            }
+                        } else if (b == RSBRACKET) {
+                            isIPv6BracketsClosed = true;
+                            if (ipv6Parser.state != IPv6Parser.State.INVALID && !hostIsValidIPv6()) {
+                                errorIndex = buffer.getReaderIndex() - 1;
+                                ipv6Parser.state = IPv6Parser.State.INVALID;
+                                enterHostPortParseState(HostPortParseState.INVALID);
+                            }
+                        } else {
+                            processIPv6Character(b);
+                        }
+                        break;
                 }
                 break;
             case PORT:
@@ -306,7 +378,7 @@ public class SipUserHostInfo {
         private boolean hostPortIsValid() {
             switch (parseState) {
             case HOST:
-                return hostIsValidHostname() || hostIsValidIPv4();
+                return hostIsValidHostname() || hostIsValidIPv4() || hostIsValidIPv6();
             case PORT:
                 return stateCount > 0;
             case END:
@@ -432,6 +504,127 @@ public class SipUserHostInfo {
          */
         private boolean hostIsValidIPv4() {
             return ipv4ParseState == IPv4ParseState.ACCUMULATE_DIGITS && ipv4NumSegments == 4;
+        }
+
+        /**
+         * Advances the IPv6 host parser using the given character
+         *
+         * Per RFC 3261:
+         * <pre>
+         * IPv4address    =  1*3DIGIT "." 1*3DIGIT "." 1*3DIGIT "." 1*3DIGIT
+         * IPv6address    =  hexpart [ ":" IPv4address ]
+         * hexpart        =  hexseq / hexseq "::" [ hexseq ] / "::" [ hexseq ]
+         * hexseq         =  hex4 *( ":" hex4)
+         * hex4           =  1*4HEXDIG
+         * </pre>
+         *
+         * @param b the character to parse
+         * @throws IOException
+         */
+        private void processIPv6Character(final byte b) throws IOException {
+            char c = (char)b;
+            switch (ipv6Parser.state) {
+                case INVALID:
+                    return;
+                case HEX_PART:
+                    if (isHexDigit(b) && ipv6Parser.numColons == 0) {
+                        // count hex digit and number digits
+                        ipv6Parser.numHexDigits++;
+                        if (isDigit(b)) {
+                            ipv6Parser.numDigits++;
+                        }
+                        ipv6Parser.state = IPv6Parser.State.HEX_SEQ;
+                        return;
+                    } else if (b == COLON) {
+                        if (ipv6Parser.numColons == 0) {
+                            ipv6Parser.numColons = 1;
+                            return;
+                        } else if (ipv6Parser.numColons == 1) {
+                            ipv6Parser.numColons = 0;
+                            ipv6Parser.numDoubleColons++;
+                            ipv6Parser.state = IPv6Parser.State.HEX_SEQ;
+                            return;
+                        }
+                    }
+                    break;
+                case HEX_SEQ:
+                    if (isHexDigit(b)) {
+                        // count hex digit and number digits
+                        ipv6Parser.numHexDigits++;
+                        if (isDigit(b)) {
+                            ipv6Parser.numDigits++;
+                        }
+                        ipv6Parser.numColons = 0;
+                        if (ipv6Parser.numHexDigits <= 4) {
+                            // within 1-4 hex digits
+                            return;
+                        }
+                    } else if (b == COLON && ipv6Parser.numHexDigits > 0) {
+                        // start next hex or optional ipv4
+                        ipv6Parser.numColons++;
+                        ipv6Parser.numDigits = 0;
+                        ipv6Parser.numHexDigits = 0;
+                        return;
+                    } else if (b == COLON && ipv6Parser.numColons == 0 && ipv6Parser.numDoubleColons == 1) {
+                        // double colons from HEX_PART and start IPv4 right away
+                        ipv6Parser.state = IPv6Parser.State.IPV4;
+                        ipv6Parser.numPeriods = 0;
+                        ipv6Parser.numDigits = 0;
+                        ipv6Parser.numHexDigits = 0;
+                        return;
+                    } else if (b == COLON && ipv6Parser.numColons == 1 && ipv6Parser.numDoubleColons == 0) {
+                        // start last hex seq
+                        ipv6Parser.numColons = 0;
+                        ipv6Parser.numDoubleColons++;
+                        return;
+                    } else if (b == PERIOD && ipv6Parser.numDigits > 0 && ipv6Parser.numDigits <= 3) {
+                        // start optional ipv4
+                        ipv6Parser.state = IPv6Parser.State.IPV4;
+                        ipv6Parser.numPeriods = 1;
+                        ipv6Parser.numDigits = 0;
+                        ipv6Parser.numHexDigits = 0;
+                        return;
+                    }
+                    break;
+                case IPV4:
+                    if (isDigit(b)) {
+                        ipv6Parser.numDigits++;
+                        if (ipv6Parser.numDigits <= 3) {
+                            // within 1-3 digits for ipv4
+                            return;
+                        }
+                    } else if (b == PERIOD && ipv6Parser.numDigits > 0 && ipv6Parser.numDigits <= 3 && ipv6Parser.numPeriods <= 3) {
+                        ipv6Parser.state = IPv6Parser.State.IPV4;
+                        ipv6Parser.numPeriods++;
+                        ipv6Parser.numDigits = 0;
+                        if (ipv6Parser.numPeriods <= 3) {
+                            return;
+                        }
+                    }
+                    break;
+            }
+
+            errorIndex = buffer.getReaderIndex() - 1;
+            ipv6Parser.state = IPv6Parser.State.INVALID;
+        }
+
+        /**
+         * Determines if the IPv6 host parser is currently in a valid state
+         *
+         * To be valid, the address must contain exactly 4 digit segments and not
+         * have failed for any other reason.
+         *
+         * @return true if valid, false otherwise
+         */
+        private boolean hostIsValidIPv6() {
+            switch (ipv6Parser.state) {
+                case INVALID:
+                case HEX_PART:
+                    return false;
+                case HEX_SEQ: return ipv6Parser.numHexDigits > 0 || ipv6Parser.numDoubleColons == 1;
+                case IPV4: return ipv6Parser.numPeriods == 3 && ipv6Parser.numDigits > 0;
+            }
+            return false;
         }
     }
 }
