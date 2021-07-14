@@ -115,6 +115,37 @@ public class SipParserTest {
     @Test
     public void testConsumeUserInfoHostTest() throws Exception {
         assertConsumeUserInfoHost("127.0.0.1", null, "127.0.0.1", null, null);
+
+        // IPv6
+        assertConsumeUserInfoHost("[2001:0db8:85a3:0000:0000:8a2e:0370:7334]", null, "2001:0db8:85a3:0000:0000:8a2e:0370:7334", null, null);
+        assertConsumeUserInfoHost("[2001:0DB8:85A3:0000:0000:8A2E:0370:7334]", null, "2001:0DB8:85A3:0000:0000:8A2E:0370:7334", null, null);
+        assertConsumeUserInfoHost("[2001:db8::1]", null, "2001:db8::1", null, null);
+        assertConsumeUserInfoHost("[::1]", null, "::1", null, null);
+        assertConsumeUserInfoHost("[::]", null, "::", null, null);
+        assertConsumeUserInfoHost("[:::192.168.1.1]", null, ":::192.168.1.1", null, null);
+        assertConsumeUserInfoHost("[::ffff:c000:0280]", null, "::ffff:c000:0280", null, null);
+        assertConsumeUserInfoHost("[::ffff:192.0.2.128]", null, "::ffff:192.0.2.128", null, null);
+
+        // IPv6 with port
+        assertConsumeUserInfoHost("[2001:0db8:85a3:0000:0000:8a2e:0370:7334]:5090", null, "2001:0db8:85a3:0000:0000:8a2e:0370:7334", "5090", null);
+        assertConsumeUserInfoHost("[2001:0DB8:85A3:0000:0000:8A2E:0370:7334]:5090", null, "2001:0DB8:85A3:0000:0000:8A2E:0370:7334", "5090", null);
+        assertConsumeUserInfoHost("[2001:db8::1]:5090", null, "2001:db8::1", "5090", null);
+        assertConsumeUserInfoHost("[::1]:5090", null, "::1", "5090", null);
+        assertConsumeUserInfoHost("[::]:5090", null, "::", "5090", null);
+        assertConsumeUserInfoHost("[:::192.168.1.1]:5090", null, ":::192.168.1.1", "5090", null);
+        assertConsumeUserInfoHost("[::ffff:c000:0280]:5090", null, "::ffff:c000:0280", "5090", null);
+        assertConsumeUserInfoHost("[::ffff:192.0.2.128]:5090", null, "::ffff:192.0.2.128", "5090", null);
+
+        // IPv6 with leftover
+        assertConsumeUserInfoHost("[2001:0db8:85a3:0000:0000:8a2e:0370:7334];transport=tcp", null, "2001:0db8:85a3:0000:0000:8a2e:0370:7334", null, ";transport=tcp");
+        assertConsumeUserInfoHost("[2001:0DB8:85A3:0000:0000:8A2E:0370:7334];transport=tcp", null, "2001:0DB8:85A3:0000:0000:8A2E:0370:7334", null, ";transport=tcp");
+        assertConsumeUserInfoHost("[2001:db8::1];transport=tcp", null, "2001:db8::1", null, ";transport=tcp");
+        assertConsumeUserInfoHost("[::1];transport=tcp", null, "::1", null, ";transport=tcp");
+        assertConsumeUserInfoHost("[::];transport=tcp", null, "::", null, ";transport=tcp");
+        assertConsumeUserInfoHost("[:::192.168.1.1];transport=tcp", null, ":::192.168.1.1", null, ";transport=tcp");
+        assertConsumeUserInfoHost("[::ffff:c000:0280];transport=tcp", null, "::ffff:c000:0280", null, ";transport=tcp");
+        assertConsumeUserInfoHost("[::ffff:192.0.2.128];transport=tcp", null, "::ffff:192.0.2.128", null, ";transport=tcp");
+
         assertConsumeUserInfoHost("alice@example.com", "alice", "example.com", null, null);
         assertConsumeUserInfoHost("alice:secret@example.com", "alice:secret", "example.com", null, null);
         assertConsumeUserInfoHost("alice@example.com:5090", "alice", "example.com", "5090", null);
@@ -178,6 +209,21 @@ public class SipParserTest {
         assertConsumeUserInfoHostThrowsParseException("127:0:0:1", 0);
 
         assertConsumeUserInfoHostThrowsParseException("9", 0);
+
+        // IPv6 without "[" "]"
+        assertConsumeUserInfoHostThrowsParseException("2001:0db8:85a3:0000:0000:8a2e:0370:7334", 3);
+        assertConsumeUserInfoHostThrowsParseException("2001:db8::1", 3);
+        assertConsumeUserInfoHostThrowsParseException("::1", 0);
+
+        // invalid IPv6
+        assertConsumeUserInfoHostThrowsParseException("[::::]", 4);
+        assertConsumeUserInfoHostThrowsParseException("[2001:db8:::1]", 13);
+        assertConsumeUserInfoHostThrowsParseException("[2001:0db8::85a3:0000::0000:8a2e:0370:7334]", 22);
+        assertConsumeUserInfoHostThrowsParseException("[2001:0db8::85a3:x000:0000:8a2e:0370:7334]", 17);
+        assertConsumeUserInfoHostThrowsParseException("[:::192.168.0]", 13);
+        assertConsumeUserInfoHostThrowsParseException("[:::192.168.0.4.5]", 15);
+        assertConsumeUserInfoHostThrowsParseException("[:::192.168.0.1455]", 17);
+        assertConsumeUserInfoHostThrowsParseException("[:::192.168.0..145]", 14);
 
         assertConsumeUserInfoHostThrowsParseException("customer.ip.pbx.com:", 20);
         assertConsumeUserInfoHostThrowsParseException("customer.ip.pbx.com:/", 20);
