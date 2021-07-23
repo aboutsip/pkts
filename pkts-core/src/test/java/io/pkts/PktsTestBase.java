@@ -1,33 +1,36 @@
 package io.pkts;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.frame.Frame;
 import io.pkts.frame.PcapGlobalHeader;
 import io.pkts.framer.FramerManager;
 import io.pkts.framer.PcapFramer;
-import io.pkts.packet.IPPacket;
 import io.pkts.packet.IPv4Packet;
 import io.pkts.packet.PCapPacket;
 import io.pkts.packet.Packet;
 import io.pkts.packet.PacketParseException;
+import io.pkts.packet.sctp.SctpDataChunk;
+import io.pkts.packet.sctp.SctpPacket;
 import io.pkts.packet.sip.SipPacket;
 import io.pkts.protocol.Protocol;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteOrder;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * Test base for all tests regarding framing and parsing
@@ -140,6 +143,24 @@ public class PktsTestBase {
     public void tearDown() throws Exception {
     }
 
+    /**
+     * Load the given resource as a {@link Buffer}
+     */
+    public Buffer loadBuffer(final String resource) throws Exception {
+        final Path path = Paths.get(PktsTestBase.class.getResource(resource).toURI());
+        final File file = path.toFile();
+        final byte[] buffer = new byte[(int) file.length()];
+        final InputStream ios = PktsTestBase.class.getResourceAsStream(resource);
+        ios.read(buffer);
+        return Buffers.wrap(buffer);
+
+    }
+
+    public Buffer loadStreamAsBuffer(final String streamName) {
+        final InputStream stream = PktsTestBase.class.getResourceAsStream(streamName);
+        return Buffers.wrap(stream);
+    }
+
     public List<Packet> loadStream(final String streamName) throws Exception {
         final InputStream stream = PktsTestBase.class.getResourceAsStream(streamName);
         return loadStream(stream);
@@ -157,6 +178,29 @@ public class PktsTestBase {
         });
         pcap.close();
         return packets;
+    }
+
+    public List<SctpPacket> loadSctpPackets(final String resource) throws Exception {
+        final InputStream stream = PktsTestBase.class.getResourceAsStream(resource);
+        final Pcap pcap = Pcap.openStream(stream);
+        final List<SctpPacket> sctpPackets = new ArrayList<>();
+        pcap.loop(packet -> {
+            sctpPackets.add((SctpPacket) packet.getPacket(Protocol.SCTP));
+            return true;
+        });
+        return sctpPackets;
+    }
+
+    /**
+     * Convenience method for loading a {@link SctpDataChunk} from the given pcap and index.
+     * It is assumed that there is only a single chunk within the SCTP packet.
+     *
+     * @param resource the pcap file to load
+     * @param index the index into that pcap file that is supposed to be a {@link SctpDataChunk} (will blow up
+     *              on a {@link ClassCastException} if that isn't true)
+     */
+    public SctpDataChunk loadSctpDataChunk(final String resource, final int index) throws Exception {
+        return (SctpDataChunk) loadSctpPackets(resource).get(index).getChunks().get(0);
     }
 
     public List<IPv4Packet> loadIPPackets(final String streamName) throws Exception {

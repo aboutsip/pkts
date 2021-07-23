@@ -44,6 +44,11 @@ public abstract class TransportPacketImpl extends AbstractPacket implements Tran
         return false;
     }
 
+    @Override
+    public boolean isSCTP() {
+        return false;
+    }
+
     /**
      * {@inheritDoc}
      */

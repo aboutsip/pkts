@@ -3,6 +3,8 @@
  */
 package io.pkts.buffer;
 
+import com.google.polo.pairing.HexDump;
+
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -230,6 +232,14 @@ public final class ByteBuffer extends AbstractBuffer {
         return getShort(index) & 0xFFFF;
     }
 
+    @Override
+    public long getUnsignedInt(final int index) throws IndexOutOfBoundsException {
+        final int i = lowerBoundary + index;
+        checkIndex(i);
+        checkIndex(i + 3);
+        return Buffer.unsignedInt(buffer[i], buffer[i + 1], buffer[i + 2], buffer[i + 3]);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -243,7 +253,7 @@ public final class ByteBuffer extends AbstractBuffer {
      */
     @Override
     public String dumpAsHex() {
-        return "dumpAsHex isn't implemented just yet";
+        return HexDump.dumpHexString(buffer, lowerBoundary, upperBoundary - lowerBoundary);
     }
 
     /**
@@ -311,18 +321,18 @@ public final class ByteBuffer extends AbstractBuffer {
                 // signifcant bits.
 
                  if (a1 != b1) {
-                    if (ignoreCase &&
-                        ((a1 >= 'A' && a1 <= 'Z') || (a1 >= 'a' && a1 <= 'z')) &&
-                        ((b1 >= 'A' && b1 <= 'Z') || (b1 >= 'a' && b1 <= 'z')) &&
-                        (a1 & 0x1f) == (b1 & 0x1f)) {
-                          continue;
-                    }
-                    return false;
-                }
+                     if (ignoreCase &&
+                             ((a1 >= 'A' && a1 <= 'Z') || (a1 >= 'a' && a1 <= 'z')) &&
+                             ((b1 >= 'A' && b1 <= 'Z') || (b1 >= 'a' && b1 <= 'z')) &&
+                             (a1 & 0x1f) == (b1 & 0x1f)) {
+                         continue;
+                     }
+                     return false;
+                 }
             }
 
             return true;
-        } catch (NullPointerException | ClassCastException e) {
+        } catch (final NullPointerException | ClassCastException e) {
             return false;
         }
     }
@@ -351,7 +361,6 @@ public final class ByteBuffer extends AbstractBuffer {
 
     @Override
     public String toString() {
-
         return new String(getArray(), StandardCharsets.UTF_8);
     }
 

@@ -400,6 +400,14 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
      * {@inheritDoc}
      */
     @Override
+    public long getUnsignedInt(final int index) throws IndexOutOfBoundsException {
+        throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public short getUnsignedByte(final int index) throws IndexOutOfBoundsException {
         throw new RuntimeException(NOT_IMPLEMENTED_JUST_YET);
     }
@@ -498,7 +506,7 @@ public class BoundedInputStreamBuffer extends BaseBuffer {
     }
 
     @Override
-    public void write(byte[] bytes) throws IndexOutOfBoundsException, WriteNotSupportedException {
+    public void write(final byte[] bytes) throws IndexOutOfBoundsException, WriteNotSupportedException {
         throw new WriteNotSupportedException("Cannot write to an InputStreamBuffer");
     }
 

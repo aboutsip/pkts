@@ -189,6 +189,18 @@ public final class Buffers {
         return new ByteBuffer(readerIndex, lowerBoundary, upperBoundary, writerIndex, buffer);
     }
 
+    public static void assertNotEmpty(final Buffer buffer) {
+        if (buffer == null || buffer.isEmpty()) {
+            throw new IllegalArgumentException("The Buffer is null or empty");
+        }
+    }
+
+    public static void assertNotEmpty(final Buffer buffer, final String msg) {
+        if (buffer == null || buffer.isEmpty()) {
+            throw new IllegalArgumentException(msg);
+        }
+    }
+
     /**
      * Copied straight from the Integer class but modified to return bytes instead.
      * 
