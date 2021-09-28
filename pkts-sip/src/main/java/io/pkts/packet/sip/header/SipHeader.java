@@ -128,7 +128,6 @@ public interface SipHeader extends Cloneable {
      * Note, the header returned really is a {@link SipHeader} and is NOT e.g. a {@link ToHeader}.
      * If you really need to parse it as a {@link ToHeader} you should use the
      *
-     * @param header the raw header
      * @return a new {@link SipHeader}.
      * @throws SipParseException in case the header is not a correct formatted header.
      */
@@ -188,9 +187,9 @@ public interface SipHeader extends Cloneable {
         try {
             if (m.getReadableBytes() == 4) {
                 return (m.getByte(0) == 'F' || m.getByte(0) == 'f') &&
-                       (m.getByte(1) == 'r' || m.getByte(1) == 'R') &&
-                       (m.getByte(2) == 'o' || m.getByte(2) == 'O') &&
-                       (m.getByte(3) == 'm' || m.getByte(3) == 'M');
+                        (m.getByte(1) == 'r' || m.getByte(1) == 'R') &&
+                        (m.getByte(2) == 'o' || m.getByte(2) == 'O') &&
+                        (m.getByte(3) == 'm' || m.getByte(3) == 'M');
             } else if (m.getReadableBytes() == 1) {
                 return m.getByte(0) == 'F' || m.getByte(0) == 'f';
             }
@@ -198,6 +197,39 @@ public interface SipHeader extends Cloneable {
             throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
         }
         return false;
+    }
+
+    default boolean isWWWAuthenticateHeader() {
+        //WWW-Authenticate
+        final Buffer m = getName();
+        try {
+            if (m.getReadableBytes() == 16) {
+                return (m.getByte(0) == 'W' || m.getByte(0) == 'w') &&
+                        (m.getByte(1) == 'W' || m.getByte(1) == 'w') &&
+                        (m.getByte(2) == 'W' || m.getByte(2) == 'w') &&
+                        m.getByte(3) == '-' &&
+                        (m.getByte(4) == 'A' || m.getByte(4) == 'a') &&
+                        (m.getByte(5) == 'U' || m.getByte(5) == 'u') &&
+                        (m.getByte(6) == 'T' || m.getByte(6) == 't') &&
+                        (m.getByte(7) == 'H' || m.getByte(7) == 'h') &&
+                        (m.getByte(8) == 'E' || m.getByte(8) == 'e') &&
+                        (m.getByte(9) == 'N' || m.getByte(9) == 'n') &&
+                        (m.getByte(10) == 'T' || m.getByte(10) == 't') &&
+                        (m.getByte(11) == 'I' || m.getByte(11) == 'i') &&
+                        (m.getByte(12) == 'C' || m.getByte(12) == 'c') &&
+                        (m.getByte(13) == 'A' || m.getByte(13) == 'a') &&
+                        (m.getByte(14) == 'T' || m.getByte(14) == 't') &&
+                        (m.getByte(15) == 'E' || m.getByte(15) == 'e');
+            }
+        } catch (final IOException e) {
+            throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
+        }
+        return false;
+    }
+
+    default WWWAuthenticateHeader toWWWAuthenticateHeader() {
+        throw new ClassCastException(CANNOT_CAST_HEADER_OF_TYPE + getClass().getName()
+                + " to type " + WWWAuthenticateHeader.class.getName());
     }
 
     default FromHeader toFromHeader() {
@@ -244,12 +276,12 @@ public interface SipHeader extends Cloneable {
         try {
             if (m.getReadableBytes() == 7) {
                 return (m.getByte(0) == 'C' || m.getByte(0) == 'c') &&
-                       (m.getByte(1) == 'o' || m.getByte(1) == 'O') &&
-                       (m.getByte(2) == 'n' || m.getByte(2) == 'N') &&
-                       (m.getByte(3) == 't' || m.getByte(3) == 'T') &&
-                       (m.getByte(4) == 'a' || m.getByte(4) == 'A') &&
-                       (m.getByte(5) == 'c' || m.getByte(5) == 'C') &&
-                       (m.getByte(6) == 't' || m.getByte(6) == 'T');
+                        (m.getByte(1) == 'o' || m.getByte(1) == 'O') &&
+                        (m.getByte(2) == 'n' || m.getByte(2) == 'N') &&
+                        (m.getByte(3) == 't' || m.getByte(3) == 'T') &&
+                        (m.getByte(4) == 'a' || m.getByte(4) == 'A') &&
+                        (m.getByte(5) == 'c' || m.getByte(5) == 'C') &&
+                        (m.getByte(6) == 't' || m.getByte(6) == 'T');
             } else if (m.getReadableBytes() == 1) {
                 // short form for the contact header is 'm'
                 return (m.getByte(0) == 'M' || m.getByte(0) == 'm');
@@ -270,12 +302,12 @@ public interface SipHeader extends Cloneable {
         try {
             if (m.getReadableBytes() == 7) {
                 return (m.getByte(0) == 'S' || m.getByte(0) == 's') &&
-                       (m.getByte(1) == 'u' || m.getByte(1) == 'U') &&
-                       (m.getByte(2) == 'b' || m.getByte(2) == 'B') &&
-                       (m.getByte(3) == 'j' || m.getByte(3) == 'J') &&
-                       (m.getByte(4) == 'e' || m.getByte(4) == 'E') &&
-                       (m.getByte(5) == 'c' || m.getByte(5) == 'C') &&
-                       (m.getByte(6) == 't' || m.getByte(6) == 'T');
+                        (m.getByte(1) == 'u' || m.getByte(1) == 'U') &&
+                        (m.getByte(2) == 'b' || m.getByte(2) == 'B') &&
+                        (m.getByte(3) == 'j' || m.getByte(3) == 'J') &&
+                        (m.getByte(4) == 'e' || m.getByte(4) == 'E') &&
+                        (m.getByte(5) == 'c' || m.getByte(5) == 'C') &&
+                        (m.getByte(6) == 't' || m.getByte(6) == 'T');
             }
         } catch (final IOException e) {
             throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
@@ -288,12 +320,12 @@ public interface SipHeader extends Cloneable {
         try {
             if (m.getReadableBytes() == 7) {
                 return (m.getByte(0) == 'C' || m.getByte(0) == 'c') &&
-                       (m.getByte(1) == 'a' || m.getByte(1) == 'A') &&
-                       (m.getByte(2) == 'l' || m.getByte(2) == 'L') &&
-                       (m.getByte(3) == 'l' || m.getByte(3) == 'L') &&
+                        (m.getByte(1) == 'a' || m.getByte(1) == 'A') &&
+                        (m.getByte(2) == 'l' || m.getByte(2) == 'L') &&
+                        (m.getByte(3) == 'l' || m.getByte(3) == 'L') &&
                         m.getByte(4) == '-' &&
-                       (m.getByte(5) == 'I' || m.getByte(5) == 'i') &&
-                       (m.getByte(6) == 'D' || m.getByte(6) == 'd');
+                        (m.getByte(5) == 'I' || m.getByte(5) == 'i') &&
+                        (m.getByte(6) == 'D' || m.getByte(6) == 'd');
             } else if (m.getReadableBytes() == 1) {
                 // short form for the call-id header is 'i'
                 return (m.getByte(0) == 'I' || m.getByte(0) == 'i');
@@ -315,10 +347,10 @@ public interface SipHeader extends Cloneable {
         if (m.getReadableBytes() == 5) {
             try {
                 return (m.getByte(0) == 'R' || m.getByte(0) == 'r') &&
-                       (m.getByte(1) == 'o' || m.getByte(1) == 'O') &&
-                       (m.getByte(2) == 'u' || m.getByte(2) == 'U') &&
-                       (m.getByte(3) == 't' || m.getByte(3) == 'T') &&
-                       (m.getByte(4) == 'e' || m.getByte(4) == 'E');
+                        (m.getByte(1) == 'o' || m.getByte(1) == 'O') &&
+                        (m.getByte(2) == 'u' || m.getByte(2) == 'U') &&
+                        (m.getByte(3) == 't' || m.getByte(3) == 'T') &&
+                        (m.getByte(4) == 'e' || m.getByte(4) == 'E');
             } catch (final IOException e) {
                 throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
             }
@@ -331,17 +363,17 @@ public interface SipHeader extends Cloneable {
         if (m.getReadableBytes() == 12) {
             try {
                 return (m.getByte(0) == 'R' || m.getByte(0) == 'r') &&
-                       (m.getByte(1) == 'e' || m.getByte(1) == 'E') &&
-                       (m.getByte(2) == 'c' || m.getByte(2) == 'C') &&
-                       (m.getByte(3) == 'o' || m.getByte(3) == 'O') &&
-                       (m.getByte(4) == 'r' || m.getByte(4) == 'R') &&
-                       (m.getByte(5) == 'd' || m.getByte(5) == 'D') &&
+                        (m.getByte(1) == 'e' || m.getByte(1) == 'E') &&
+                        (m.getByte(2) == 'c' || m.getByte(2) == 'C') &&
+                        (m.getByte(3) == 'o' || m.getByte(3) == 'O') &&
+                        (m.getByte(4) == 'r' || m.getByte(4) == 'R') &&
+                        (m.getByte(5) == 'd' || m.getByte(5) == 'D') &&
                         m.getByte(6) == '-' &&
-                       (m.getByte(7) == 'R' || m.getByte(7) == 'r') &&
-                       (m.getByte(8) == 'o' || m.getByte(8) == 'O') &&
-                       (m.getByte(9) == 'u' || m.getByte(9) == 'U') &&
-                       (m.getByte(10) == 't' || m.getByte(10) == 'T') &&
-                       (m.getByte(11) == 'e' || m.getByte(11) == 'E');
+                        (m.getByte(7) == 'R' || m.getByte(7) == 'r') &&
+                        (m.getByte(8) == 'o' || m.getByte(8) == 'O') &&
+                        (m.getByte(9) == 'u' || m.getByte(9) == 'U') &&
+                        (m.getByte(10) == 't' || m.getByte(10) == 'T') &&
+                        (m.getByte(11) == 'e' || m.getByte(11) == 'E');
             } catch (final IOException e) {
                 throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
             }
@@ -364,19 +396,19 @@ public interface SipHeader extends Cloneable {
         try {
             if (m.getReadableBytes() == 14) {
                 return (m.getByte(0) == 'C' || m.getByte(0) == 'c') &&
-                       (m.getByte(1) == 'o' || m.getByte(1) == 'O') &&
-                       (m.getByte(2) == 'n' || m.getByte(2) == 'N') &&
-                       (m.getByte(3) == 't' || m.getByte(3) == 'T') &&
-                       (m.getByte(4) == 'e' || m.getByte(4) == 'E') &&
-                       (m.getByte(5) == 'n' || m.getByte(5) == 'N') &&
-                       (m.getByte(6) == 't' || m.getByte(6) == 'T') &&
+                        (m.getByte(1) == 'o' || m.getByte(1) == 'O') &&
+                        (m.getByte(2) == 'n' || m.getByte(2) == 'N') &&
+                        (m.getByte(3) == 't' || m.getByte(3) == 'T') &&
+                        (m.getByte(4) == 'e' || m.getByte(4) == 'E') &&
+                        (m.getByte(5) == 'n' || m.getByte(5) == 'N') &&
+                        (m.getByte(6) == 't' || m.getByte(6) == 'T') &&
                         m.getByte(7) == '-' &&
-                       (m.getByte(8) == 'L' || m.getByte(8) == 'l') &&
-                       (m.getByte(9) == 'e' || m.getByte(9) == 'E') &&
-                       (m.getByte(10) == 'n' || m.getByte(10) == 'N') &&
-                       (m.getByte(11) == 'g' || m.getByte(11) == 'G') &&
-                       (m.getByte(12) == 't' || m.getByte(12) == 'T') &&
-                       (m.getByte(13) == 'h' || m.getByte(13) == 'H');
+                        (m.getByte(8) == 'L' || m.getByte(8) == 'l') &&
+                        (m.getByte(9) == 'e' || m.getByte(9) == 'E') &&
+                        (m.getByte(10) == 'n' || m.getByte(10) == 'N') &&
+                        (m.getByte(11) == 'g' || m.getByte(11) == 'G') &&
+                        (m.getByte(12) == 't' || m.getByte(12) == 'T') &&
+                        (m.getByte(13) == 'h' || m.getByte(13) == 'H');
             } else if (m.getReadableBytes() == 1) {
                 return (m.getByte(0) == 'L' || m.getByte(0) == 'l');
 
@@ -397,17 +429,17 @@ public interface SipHeader extends Cloneable {
         try {
             if (m.getReadableBytes() == 12) {
                 return (m.getByte(0) == 'C' || m.getByte(0) == 'c') &&
-                       (m.getByte(1) == 'o' || m.getByte(1) == 'O') &&
-                       (m.getByte(2) == 'n' || m.getByte(2) == 'N') &&
-                       (m.getByte(3) == 't' || m.getByte(3) == 'T') &&
-                       (m.getByte(4) == 'e' || m.getByte(4) == 'E') &&
-                       (m.getByte(5) == 'n' || m.getByte(5) == 'N') &&
-                       (m.getByte(6) == 't' || m.getByte(6) == 'T') &&
+                        (m.getByte(1) == 'o' || m.getByte(1) == 'O') &&
+                        (m.getByte(2) == 'n' || m.getByte(2) == 'N') &&
+                        (m.getByte(3) == 't' || m.getByte(3) == 'T') &&
+                        (m.getByte(4) == 'e' || m.getByte(4) == 'E') &&
+                        (m.getByte(5) == 'n' || m.getByte(5) == 'N') &&
+                        (m.getByte(6) == 't' || m.getByte(6) == 'T') &&
                         m.getByte(7) == '-' &&
-                       (m.getByte(8) == 'T' || m.getByte(8) == 't') &&
-                       (m.getByte(9) == 'y' || m.getByte(9) == 'Y') &&
-                       (m.getByte(10) == 'p' || m.getByte(10) == 'P') &&
-                       (m.getByte(11) == 'e' || m.getByte(11) == 'E');
+                        (m.getByte(8) == 'T' || m.getByte(8) == 't') &&
+                        (m.getByte(9) == 'y' || m.getByte(9) == 'Y') &&
+                        (m.getByte(10) == 'p' || m.getByte(10) == 'P') &&
+                        (m.getByte(11) == 'e' || m.getByte(11) == 'E');
             } else if (m.getReadableBytes() == 1) {
                 return (m.getByte(0) == 'C' || m.getByte(0) == 'c');
             }
@@ -427,12 +459,12 @@ public interface SipHeader extends Cloneable {
         try {
             if (m.getReadableBytes() == 7) {
                 return (m.getByte(0) == 'E' || m.getByte(0) == 'e') &&
-                       (m.getByte(1) == 'x' || m.getByte(1) == 'X') &&
-                       (m.getByte(2) == 'p' || m.getByte(2) == 'P') &&
-                       (m.getByte(3) == 'i' || m.getByte(3) == 'I') &&
-                       (m.getByte(4) == 'r' || m.getByte(4) == 'R') &&
-                       (m.getByte(5) == 'e' || m.getByte(5) == 'E') &&
-                       (m.getByte(6) == 's' || m.getByte(6) == 'S');
+                        (m.getByte(1) == 'x' || m.getByte(1) == 'X') &&
+                        (m.getByte(2) == 'p' || m.getByte(2) == 'P') &&
+                        (m.getByte(3) == 'i' || m.getByte(3) == 'I') &&
+                        (m.getByte(4) == 'r' || m.getByte(4) == 'R') &&
+                        (m.getByte(5) == 'e' || m.getByte(5) == 'E') &&
+                        (m.getByte(6) == 's' || m.getByte(6) == 'S');
             }
         } catch (final IOException e) {
             throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
@@ -450,9 +482,9 @@ public interface SipHeader extends Cloneable {
         try {
             if (m.getReadableBytes() == 4) {
                 return (m.getByte(0) == 'C' || m.getByte(0) == 'c') &&
-                       (m.getByte(1) == 'S' || m.getByte(1) == 's') &&
-                       (m.getByte(2) == 'e' || m.getByte(2) == 'E') &&
-                       (m.getByte(3) == 'q' || m.getByte(3) == 'Q');
+                        (m.getByte(1) == 'S' || m.getByte(1) == 's') &&
+                        (m.getByte(2) == 'e' || m.getByte(2) == 'E') &&
+                        (m.getByte(3) == 'q' || m.getByte(3) == 'Q');
             }
         } catch (final IOException e) {
             throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
@@ -470,17 +502,17 @@ public interface SipHeader extends Cloneable {
         if (m.getReadableBytes() == 12) {
             try {
                 return (m.getByte(0) == 'M' || m.getByte(0) == 'm') &&
-                       (m.getByte(1) == 'a' || m.getByte(1) == 'A') &&
-                       (m.getByte(2) == 'x' || m.getByte(2) == 'X') &&
+                        (m.getByte(1) == 'a' || m.getByte(1) == 'A') &&
+                        (m.getByte(2) == 'x' || m.getByte(2) == 'X') &&
                         m.getByte(3) == '-' &&
-                       (m.getByte(4) == 'F' || m.getByte(4) == 'f') &&
-                       (m.getByte(5) == 'o' || m.getByte(5) == 'O') &&
-                       (m.getByte(6) == 'r' || m.getByte(6) == 'R') &&
-                       (m.getByte(7) == 'w' || m.getByte(7) == 'W') &&
-                       (m.getByte(8) == 'a' || m.getByte(8) == 'A') &&
-                       (m.getByte(9) == 'r' || m.getByte(9) == 'R') &&
-                       (m.getByte(10) == 'd' || m.getByte(10) == 'D') &&
-                       (m.getByte(11) == 's' || m.getByte(11) == 'S');
+                        (m.getByte(4) == 'F' || m.getByte(4) == 'f') &&
+                        (m.getByte(5) == 'o' || m.getByte(5) == 'O') &&
+                        (m.getByte(6) == 'r' || m.getByte(6) == 'R') &&
+                        (m.getByte(7) == 'w' || m.getByte(7) == 'W') &&
+                        (m.getByte(8) == 'a' || m.getByte(8) == 'A') &&
+                        (m.getByte(9) == 'r' || m.getByte(9) == 'R') &&
+                        (m.getByte(10) == 'd' || m.getByte(10) == 'D') &&
+                        (m.getByte(11) == 's' || m.getByte(11) == 'S');
             } catch (final IOException e) {
                 throw new SipParseException(0, UNABLE_TO_PARSE_OUT_THE_HEADER_NAME_DUE_TO_UNDERLYING_IO_EXCEPTION, e);
             }
@@ -498,8 +530,8 @@ public interface SipHeader extends Cloneable {
         try {
             if (m.getReadableBytes() == 3) {
                 return (m.getByte(0) == 'V' || m.getByte(0) == 'v') &&
-                       (m.getByte(1) == 'i' || m.getByte(1) == 'I') &&
-                       (m.getByte(2) == 'a' || m.getByte(2) == 'A');
+                        (m.getByte(1) == 'i' || m.getByte(1) == 'I') &&
+                        (m.getByte(2) == 'a' || m.getByte(2) == 'A');
             } else if (m.getReadableBytes() == 1) {
                 // Short form for the via header is a 'v'
                 return (m.getByte(0) == 'V' || m.getByte(0) == 'v');

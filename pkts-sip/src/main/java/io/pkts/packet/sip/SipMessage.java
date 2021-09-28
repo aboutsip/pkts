@@ -3,20 +3,7 @@ package io.pkts.packet.sip;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.address.SipURI;
-import io.pkts.packet.sip.header.AddressParametersHeader;
-import io.pkts.packet.sip.header.CSeqHeader;
-import io.pkts.packet.sip.header.CallIdHeader;
-import io.pkts.packet.sip.header.ContactHeader;
-import io.pkts.packet.sip.header.ContentLengthHeader;
-import io.pkts.packet.sip.header.ContentTypeHeader;
-import io.pkts.packet.sip.header.ExpiresHeader;
-import io.pkts.packet.sip.header.FromHeader;
-import io.pkts.packet.sip.header.MaxForwardsHeader;
-import io.pkts.packet.sip.header.RecordRouteHeader;
-import io.pkts.packet.sip.header.RouteHeader;
-import io.pkts.packet.sip.header.SipHeader;
-import io.pkts.packet.sip.header.ToHeader;
-import io.pkts.packet.sip.header.ViaHeader;
+import io.pkts.packet.sip.header.*;
 import io.pkts.packet.sip.impl.SipInitialLine;
 import io.pkts.packet.sip.impl.SipParser;
 
@@ -35,9 +22,8 @@ import static io.pkts.packet.sip.impl.PreConditions.assertNotNull;
 
 /**
  * Packet representing a SIP message.
- * 
+ *
  * @author jonas@jonasborjesson.com
- * 
  */
 public interface SipMessage extends Cloneable {
 
@@ -46,7 +32,7 @@ public interface SipMessage extends Cloneable {
     /**
      * The first line of a sip message, which is either a request or a response
      * line
-     * 
+     *
      * @return
      */
     Buffer getInitialLine();
@@ -56,15 +42,14 @@ public interface SipMessage extends Cloneable {
     /**
      * Got tired of casting the {@link SipMessage} into a {@link SipRequest} so
      * you can use this method instead. Just a short cut for:
-     * 
+     *
      * <code>
-     *     (SipRequest)sipMessage;
+     * (SipRequest)sipMessage;
      * </code>
-     * 
+     *
      * @return this but casted into a {@link SipRequest}
-     * @throws ClassCastException
-     *             in case this {@link SipMessage} is actually a
-     *             {@link SipResponse}.
+     * @throws ClassCastException in case this {@link SipMessage} is actually a
+     *                            {@link SipResponse}.
      */
     default SipRequest toRequest() throws ClassCastException {
         throw new ClassCastException("Unable to cast a " + this.getClass().getName() + " into a " + SipRequest.class.getName());
@@ -73,15 +58,14 @@ public interface SipMessage extends Cloneable {
     /**
      * Got tired of casting the {@link SipMessage} into a {@link SipResponse} so
      * you can use this method instead. Just a short cut for:
-     * 
+     *
      * <code>
-     *     (SipResponse)sipMessage;
+     * (SipResponse)sipMessage;
      * </code>
-     * 
+     *
      * @return this but casted into a {@link SipResponse}
-     * @throws ClassCastException
-     *             in case this {@link SipMessage} is actually a
-     *             {@link SipResponse}.
+     * @throws ClassCastException in case this {@link SipMessage} is actually a
+     *                            {@link SipResponse}.
      */
     default SipResponse toResponse() throws ClassCastException {
         throw new ClassCastException("Unable to cast a " + this.getClass().getName() + " into a " + SipResponse.class.getName());
@@ -99,12 +83,11 @@ public interface SipMessage extends Cloneable {
      * <li>{@link CSeqHeader}</li>
      * <li>{@link ViaHeader}</li>
      * </ul>
-     * 
+     *
      * @param responseCode
      * @return
-     * @throws SipParseException
-     *             in case anything goes wrong when parsing out headers from the
-     *             {@link SipRequest}
+     * @throws SipParseException in case anything goes wrong when parsing out headers from the
+     *                           {@link SipRequest}
      */
     default SipResponse.Builder createResponse(final int responseCode) throws SipParseException, ClassCastException {
         return createResponse(responseCode, null);
@@ -116,7 +99,7 @@ public interface SipMessage extends Cloneable {
 
     /**
      * Check whether this sip message is a response or not
-     * 
+     *
      * @return
      */
     default boolean isResponse() {
@@ -125,7 +108,7 @@ public interface SipMessage extends Cloneable {
 
     /**
      * Check whether this sip message is a request or not
-     * 
+     *
      * @return
      */
     default boolean isRequest() {
@@ -282,24 +265,23 @@ public interface SipMessage extends Cloneable {
     /**
      * Checks whether this {@link SipMessage} is carrying anything in its
      * message body.
-     * 
+     *
      * @return true if this {@link SipMessage} has a message body, false
-     *         otherwise.
+     * otherwise.
      */
     boolean hasContent();
 
     /**
      * Get the method of this sip message
-     * 
+     *
      * @return
      */
     Buffer getMethod() throws SipParseException;
 
     /**
      * Get the header as a buffer
-     * 
-     * @param headerName
-     *            the name of the header we wish to fetch
+     *
+     * @param headerName the name of the header we wish to fetch
      * @return the header as a {@link SipHeader} or null if not found
      * @throws SipParseException
      */
@@ -307,9 +289,8 @@ public interface SipMessage extends Cloneable {
 
     /**
      * Same as {@link #getHeader(Buffers.wrap(keyParameter)}.
-     * 
-     * @param headerName
-     *            the name of the header we wish to fetch
+     *
+     * @param headerName the name of the header we wish to fetch
      * @return the header as a {@link SipHeader} or null if not found
      * @throws SipParseException
      */
@@ -328,16 +309,15 @@ public interface SipMessage extends Cloneable {
 
     /**
      * Convenience method for fetching the from-header
-     * 
+     *
      * @return the from header as a buffer
-     * @throws SipParseException
-     *             TODO
+     * @throws SipParseException TODO
      */
     FromHeader getFromHeader() throws SipParseException;
 
     /**
      * Convenience method for fetching the to-header
-     * 
+     *
      * @return the to header as a buffer
      */
     ToHeader getToHeader() throws SipParseException;
@@ -347,9 +327,9 @@ public interface SipMessage extends Cloneable {
      * has been sent then there should always be a {@link ViaHeader} present.
      * However, you just created a {@link SipMessage} youself then this method
      * may return null so please check for it.
-     * 
+     *
      * @return the top-most {@link ViaHeader} or null if there are no
-     *         {@link ViaHeader}s on this message just yet.
+     * {@link ViaHeader}s on this message just yet.
      * @throws SipParseException
      */
     ViaHeader getViaHeader() throws SipParseException;
@@ -364,7 +344,6 @@ public interface SipMessage extends Cloneable {
     List<ViaHeader> getViaHeaders() throws SipParseException;
 
     /**
-     * 
      * @return
      * @throws SipParseException
      */
@@ -372,10 +351,10 @@ public interface SipMessage extends Cloneable {
 
     /**
      * Get the top-most {@link RecordRouteHeader} header if present.
-     * 
+     *
      * @return the top-most {@link RecordRouteHeader} header or null if there
-     *         are no {@link RecordRouteHeader} headers found in this
-     *         {@link SipMessage}.
+     * are no {@link RecordRouteHeader} headers found in this
+     * {@link SipMessage}.
      * @throws SipParseException
      */
     RecordRouteHeader getRecordRouteHeader() throws SipParseException;
@@ -384,7 +363,7 @@ public interface SipMessage extends Cloneable {
      * Get all the RecordRoute-headers in this {@link SipMessage}. If there are
      * no {@link RecordRouteHeader}s in this {@link SipMessage} then an empty
      * list will be returned.
-     * 
+     *
      * @return
      * @throws SipParseException
      */
@@ -392,9 +371,9 @@ public interface SipMessage extends Cloneable {
 
     /**
      * Get the top-most {@link RouteHeader} header if present.
-     * 
+     *
      * @return the top-most {@link RouteHeader} header or null if there are no
-     *         {@link RouteHeader} headers found in this {@link SipMessage}.
+     * {@link RouteHeader} headers found in this {@link SipMessage}.
      * @throws SipParseException
      */
     RouteHeader getRouteHeader() throws SipParseException;
@@ -403,7 +382,7 @@ public interface SipMessage extends Cloneable {
      * Get all the Route-headers in this {@link SipMessage}. If there are no
      * {@link RouteHeader}s in this {@link SipMessage} then an empty list will
      * be returned.
-     * 
+     *
      * @return
      * @throws SipParseException
      */
@@ -411,7 +390,7 @@ public interface SipMessage extends Cloneable {
 
     /**
      * Get the {@link ExpiresHeader}
-     * 
+     *
      * @return
      * @throws SipParseException
      */
@@ -419,7 +398,7 @@ public interface SipMessage extends Cloneable {
 
     /**
      * Get the {@link ContactHeader}
-     * 
+     *
      * @return
      * @throws SipParseException
      */
@@ -428,7 +407,7 @@ public interface SipMessage extends Cloneable {
     /**
      * Get the {@link ContentTypeHeader} for this message. If there is no
      * Content-Type header in this SIP message then null will be returned.
-     * 
+     *
      * @return the {@link ContentTypeHeader} or null if there is none.
      * @throws SipParseException
      */
@@ -443,38 +422,38 @@ public interface SipMessage extends Cloneable {
      * @return the value of the Content-Length header if present or zero if
      * there was no such header (or of course if the Content-Length header was
      * present but actually had the value of zero)
-     *
      * @throws SipParseException
      */
     int getContentLength() throws SipParseException;
 
     /**
      * Convenience method for fetching the call-id-header
-     * 
+     *
      * @return the call-id header as a buffer
      */
     CallIdHeader getCallIDHeader() throws SipParseException;
 
     /**
      * Convenience method for fetching the CSeq header
-     * 
+     *
      * @return
      * @throws SipParseException
      */
     CSeqHeader getCSeqHeader() throws SipParseException;
 
+    WWWAuthenticateHeader getWWWAuthenticateHeader() throws SipParseException;
+
     /**
      * Convenience method for determining whether the method of this message is
      * an INVITE or not.
-     *
+     * <p>
      * Note, this method only determined if it is an INVITE, which then could
      * be either a request or a response, which you can check with {@link SipMessage#isRequest()} and
-     *  {@link SipMessage#isResponse()}
+     * {@link SipMessage#isResponse()}
      *
      * @return true if the method of this message is a INVITE, false otherwise.
-     * @throws SipParseException
-     *             in case the method could not be parsed out of the underlying
-     *             buffer.
+     * @throws SipParseException in case the method could not be parsed out of the underlying
+     *                           buffer.
      */
     default boolean isInvite() throws SipParseException {
         final Buffer m = getMethod();
@@ -491,7 +470,7 @@ public interface SipMessage extends Cloneable {
      *
      * @return true if the method of this message is a REGISTER, false otherwise.
      * @throws SipParseException in case the method could not be parsed out of the underlying
-     *         buffer.
+     *                           buffer.
      */
     default boolean isRegister() throws SipParseException {
         final Buffer m = getMethod();
@@ -509,7 +488,7 @@ public interface SipMessage extends Cloneable {
      *
      * @return true if the method of this message is a BYE, false otherwise.
      * @throws SipParseException in case the method could not be parsed out of the underlying
-     *         buffer.
+     *                           buffer.
      */
     default boolean isBye() throws SipParseException {
         final Buffer m = getMethod();
@@ -526,9 +505,8 @@ public interface SipMessage extends Cloneable {
      * is an ACK Request or not!
      *
      * @return true if the method of this message is a ACK, false otherwise.
-     * @throws SipParseException
-     *             in case the method could not be parsed out of the underlying
-     *             buffer.
+     * @throws SipParseException in case the method could not be parsed out of the underlying
+     *                           buffer.
      */
     default boolean isAck() throws SipParseException {
         final Buffer m = getMethod();
@@ -544,9 +522,8 @@ public interface SipMessage extends Cloneable {
      * a CANCEL or not
      *
      * @return true if the method of this message is a CANCEL, false otherwise.
-     * @throws SipParseException
-     *             in case the method could not be parsed out of the underlying
-     *             buffer.
+     * @throws SipParseException in case the method could not be parsed out of the underlying
+     *                           buffer.
      */
     default boolean isCancel() throws SipParseException {
         final Buffer m = getMethod();
@@ -564,9 +541,8 @@ public interface SipMessage extends Cloneable {
      * this is an OPTIONS Request or not!
      *
      * @return true if the method of this message is a OPTIONS, false otherwise.
-     * @throws SipParseException
-     *             in case the method could not be parsed out of the underlying
-     *             buffer.
+     * @throws SipParseException in case the method could not be parsed out of the underlying
+     *                           buffer.
      */
     default boolean isOptions() throws SipParseException {
         final Buffer m = getMethod();
@@ -585,9 +561,8 @@ public interface SipMessage extends Cloneable {
      * this is an MESSAGE Request or not!
      *
      * @return true if the method of this message is a MESSAGE, false otherwise.
-     * @throws SipParseException
-     *             in case the method could not be parsed out of the underlying
-     *             buffer.
+     * @throws SipParseException in case the method could not be parsed out of the underlying
+     *                           buffer.
      */
     default boolean isMessage() throws SipParseException {
         final Buffer m = getMethod();
@@ -605,9 +580,8 @@ public interface SipMessage extends Cloneable {
      * is an INFO Request or not!
      *
      * @return true if the method of this message is a INFO, false otherwise.
-     * @throws SipParseException
-     *             in case the method could not be parsed out of the underlying
-     *             buffer.
+     * @throws SipParseException in case the method could not be parsed out of the underlying
+     *                           buffer.
      */
     default boolean isInfo() throws SipParseException {
         final Buffer m = getMethod();
@@ -621,7 +595,7 @@ public interface SipMessage extends Cloneable {
     /**
      * Checks whether or not this request is considered to be an "initial"
      * request, i.e., a request that does not go within a dialog.
-     * 
+     *
      * @return
      * @throws SipParseException
      */
@@ -655,7 +629,7 @@ public interface SipMessage extends Cloneable {
      * <li>proxy require - checks if all items of the proxy require header are
      * present in the list of the extensions from the module parameter
      * proxy_require.</li>
-     * 
+     *
      * <li>parse uri's - checks if the specified URIs are present and parseable
      * by the SIP-router parsers</li>
      * <li>digest credentials - Check all instances of digest credentials in a
@@ -663,13 +637,12 @@ public interface SipMessage extends Cloneable {
      * and have meaningful values.</li>
      * </ul>
      * </p>
-     * 
+     *
      * <p>
      * This list is taken from <a href=
      * "http://kamailio.org/docs/modules/stable/modules/sanity.html#sanity_check"
      * >Kamailio.org</a>
      * </p>
-     * 
      */
     void verify();
 
@@ -682,7 +655,7 @@ public interface SipMessage extends Cloneable {
 
     /**
      * Perform a deep clone of this SipMessage.
-     * 
+     *
      * @return
      */
     SipMessage clone();
@@ -691,7 +664,7 @@ public interface SipMessage extends Cloneable {
      * Frame the supplied buffer into a {@link SipMessage}. No deep analysis of the message will be
      * performed so there is no guarantee that this {@link SipMessage} is actually a well formed
      * message.
-     * 
+     *
      * @param buffer
      * @return the framed {@link SipMessage}
      */
@@ -701,7 +674,6 @@ public interface SipMessage extends Cloneable {
     }
 
     /**
-     * 
      * @param buffer
      * @return
      * @throws IOException
@@ -736,12 +708,12 @@ public interface SipMessage extends Cloneable {
      * headers, request-uri, body etc through the withXXX-methods and then upon build time,
      * the builder will call out to any registered functions (as registered through the onXXX-methods)
      * allowing the application to make any last minute changes.
-     *
+     * <p>
      * In a real SIP stack there are headers within a {@link SipMessage} that typically needs to be
      * manipulated before being sent out over the network. One such header is the {@link ViaHeader} where
      * the transport layer typically has the responsibility to fill out the ip and port from which the
      * message was sent as well as specify the transport used.
-     *
+     * <p>
      * The idea is as follows: everything within this SIP library is immutable, which includes {@link SipRequest}
      * and {@link SipResponse}s but if you build a stack, the stack may actually need to change headers
      * before creating the "final" version of the {@link SipMessage} which is then sent out over the network.
@@ -750,10 +722,10 @@ public interface SipMessage extends Cloneable {
      * is about to be sent out and will (should) be filled out by the transport layer. Therefore, if you build
      * a stack you probably want to pass down a {@link Builder} to be "sent" all the way down to the transport layer
      * which will
-     *
+     * <p>
      * All callback as registered through the various onXXXX-methods allow for multiple callbacks to be registered.
      * They are called in reverse order from the order of registration.
-     *
+     * <p>
      * TODO: don't think I will do this anymore. If you add the same header via an of the three methods then
      * TODO: that header will be included three times. I.e., if you call withHeaderBuilder and withHeader and
      * TODO: the same header also exists in the template then it will be included that many times.
@@ -763,14 +735,14 @@ public interface SipMessage extends Cloneable {
      *     <li>Any header added through a withXXX-method</li>
      *     <li>Any header copied from a "template"</li>
      * </ul>
-     *
+     * <p>
      * I.e., if you e.g. have added a from-header builder object
      * through {@link Builder#withFromHeader(AddressParametersHeader.Builder)}
      * method then that builder will be used even if this builder is based off
      * another {@link SipMessage} (which then serves as a "template")
-     *
+     * <p>
      * TODO: add and/or clarify how headers are treated in general, i.e.:
-     *
+     * <p>
      * A header can be added to the final {@link SipMessage} that is being built via 1 out of 3 ways:
      * <ul>
      *     <li>Either via explicitly calling withXXXBuilder to add a builder object for that header </li>
@@ -778,7 +750,7 @@ public interface SipMessage extends Cloneable {
      *     <li>Or by copying an existing header from the {@link SipMessage} we are using as a template
      *     for constructing this new sip message.</li>
      * </ul>
-     *
+     * <p>
      * No matter how a header is added to the final message (via one of the three ways described above)
      * you will be given the opportunity to change the value of the header by registering a function
      * for manipulating the header just before it gets added. You do so through two methods:
@@ -786,13 +758,12 @@ public interface SipMessage extends Cloneable {
      *     <li>{@link io.pkts.packet.sip.SipMessage.Builder#onHeader(Function)}</li>
      *     <li>or {@link io.pkts.packet.sip.SipMessage.Builder#onHeaderBuilder(Consumer)}</li>
      * </ul>
-     *
+     * <p>
      * The first method is called when a header was added without a builder already created from it,
      * which is the case when a header is copied from the template or when you called onXXXHeader(header).
      * The reason for this is unless you actually want to change it, we don't want to waste time on
      * constructing a builder that you are not going to use. However, if you added the header
      * as a builder object then we will of coruse use that builder.
-     *
      */
     interface Builder<T extends SipMessage> {
 
@@ -826,7 +797,7 @@ public interface SipMessage extends Cloneable {
          *     <li>{@link ContentLengthHeader} - Will be added if there is a body
          *     on the message and the length set to the correct length.</li>
          * </ul>
-         *
+         * <p>
          * but if you don't want that, simply call this method and all the defaults
          * of this builder will be suspended. Of course, if you wish to actually
          * construct a valid {@link SipMessage} you are then responsible for adding
@@ -871,9 +842,9 @@ public interface SipMessage extends Cloneable {
          * returns a {@link SipHeader}, which is the header that will be pushed onto the new
          * {@link SipMessage}. If you do not want to include the header, then simply return
          * null and the header will be dropped.
-         *
+         * <p>
          * If you wish to leave the header un-touched, then simply return it has is.
-         *
+         * <p>
          * Also note that the following headers have explicit "on" methods (they are considered
          * to be "system" headers):
          *
@@ -887,17 +858,16 @@ public interface SipMessage extends Cloneable {
          *     <li>{@link MaxForwardsHeader}</li>
          *     <li>{@link CSeqHeader}</li>
          * </ul>
-         *
+         * <p>
          * The reason is simply because these are typically manipulated before
          * copying them over to a new request or response (e.g., Max Forwards is decremented,
          * CSeq may increase etc) and therefore it makes life easier if those headers are
          * "down casted" to their specific types.
          *
-         *
          * @param f
          * @return
          * @throws IllegalStateException in case a function already had been registered with
-         * this builder.
+         *                               this builder.
          */
         Builder<T> onHeader(Function<SipHeader, SipHeader> f) throws IllegalStateException;
 
@@ -905,13 +875,14 @@ public interface SipMessage extends Cloneable {
          * Adds the header to the list of headers already specified within this builder.
          * The header will be added last to the list of headers. Any already existing
          * headers with the same name will be preserved as is.
-         *
+         * <p>
          * If there are any headers with the same name as part of the {@link SipMessage}
          * used as a template, then those headers will
-         *
+         * <p>
          * TODO: this is essentially an "add header" so should it be called that?
          * TODO: and then should there be a set version? Just goes bad with a fluent
          * TODO: naming.
+         *
          * @param header
          * @return
          */
@@ -922,8 +893,9 @@ public interface SipMessage extends Cloneable {
         /**
          * Push the header to be the first on the list of existing headers already
          * added to this builder.
-         *
+         * <p>
          * TODO: naming
+         *
          * @return
          */
         Builder<T> withPushHeader(SipHeader header);
@@ -939,19 +911,25 @@ public interface SipMessage extends Cloneable {
          * @return
          */
         Builder<T> withFromHeader(FromHeader from);
+
         Builder<T> withFromHeader(String from);
 
         Builder<T> onToHeader(Consumer<AddressParametersHeader.Builder<ToHeader>> f);
+
         Builder<T> withToHeader(ToHeader to);
+
         Builder<T> withToHeader(String to);
 
         Builder<T> onContactHeader(Consumer<AddressParametersHeader.Builder<ContactHeader>> f);
+
         Builder<T> withContactHeader(ContactHeader contact);
 
         Builder<T> onCSeqHeader(Consumer<CSeqHeader.Builder> f);
+
         Builder<T> withCSeqHeader(CSeqHeader cseq);
 
         Builder<T> onMaxForwardsHeader(Consumer<MaxForwardsHeader.Builder> f);
+
         Builder<T> withMaxForwardsHeader(MaxForwardsHeader maxForwards);
 
         Builder<T> withCallIdHeader(CallIdHeader callID);
@@ -995,7 +973,7 @@ public interface SipMessage extends Cloneable {
          * @param routes
          * @return
          */
-        Builder<T> withRouteHeaders(RouteHeader ... routes);
+        Builder<T> withRouteHeaders(RouteHeader... routes);
 
         Builder<T> withRouteHeaders(List<RouteHeader> routes);
 
@@ -1012,7 +990,7 @@ public interface SipMessage extends Cloneable {
          * Pop the top-most route. Note, if you e.g. add a {@link RouteHeader} via the method
          * {@link io.pkts.packet.sip.SipMessage.Builder#withTopMostRouteHeader(RouteHeader)} followed
          * by this method, then the route you just added will be removed again. Order is important!
-         *
+         * <p>
          * Note: if you actually wanted to know the value of that {@link RouteHeader} then you should
          * really have checked it on the {@link SipMessage} you received and not on the builder
          * object.
@@ -1074,7 +1052,7 @@ public interface SipMessage extends Cloneable {
          * @param recordRoute
          * @return
          */
-        Builder<T> withRecordRouteHeaders(RecordRouteHeader ... recordRoute);
+        Builder<T> withRecordRouteHeaders(RecordRouteHeader... recordRoute);
 
         Builder<T> withRecordRouteHeaders(List<RecordRouteHeader> recordRoute);
 
@@ -1088,7 +1066,6 @@ public interface SipMessage extends Cloneable {
         Builder<T> withTopMostRecordRouteHeader(RecordRouteHeader recordRoute);
 
         /**
-         *
          * @param f
          * @return
          */
@@ -1116,15 +1093,15 @@ public interface SipMessage extends Cloneable {
          * index of the Via being processed. The top-most Via header will NEVER
          * be passed to this registered function but rather to the one explicitly
          * meant for processing the top-most via (see {@link Builder#onTopMostViaHeader(Consumer)}.
-         *
+         * <p>
          * I.e., Let's say you have the following message (request or response, same same):
          *
          * <code>
-         *     ...
-         *     Via: SIP/2.0/TCP 12.13.14.15;branch=z9hG4bK-asdf
-         *     Via: SIP/2.0/UDP 60.61.62.63;branch=z9hG4bK-1234
-         *     Via: SIP/2.0/UDP 96.97.98.99;branch=z9hG4bK-wxyz
-         *     ...
+         * ...
+         * Via: SIP/2.0/TCP 12.13.14.15;branch=z9hG4bK-asdf
+         * Via: SIP/2.0/UDP 60.61.62.63;branch=z9hG4bK-1234
+         * Via: SIP/2.0/UDP 96.97.98.99;branch=z9hG4bK-wxyz
+         * ...
          * </code>
          *
          * <ul>
@@ -1166,7 +1143,7 @@ public interface SipMessage extends Cloneable {
          * @param vias
          * @return
          */
-        Builder<T> withViaHeaders(ViaHeader ... vias);
+        Builder<T> withViaHeaders(ViaHeader... vias);
 
         /**
          * Set a list of Via headers. Any previously Via headers
@@ -1194,7 +1171,7 @@ public interface SipMessage extends Cloneable {
          * a function with {@link Builder#onTopMostViaHeader(Consumer)} is rather silly
          * so therefore you can just indicate that you want a new top-most via header
          * but you will fill out all details later.
-         *
+         * <p>
          * NOTE: if you do NOT register a function to handle this "empty" Via-header
          * through the method {@link Builder#onTopMostViaHeader(Consumer)} things will
          * blow up later with you try to build this message.
@@ -1207,7 +1184,7 @@ public interface SipMessage extends Cloneable {
          * Pop the top-most via. Note, if you e.g. add a {@link ViaHeader} through the method
          * {@link io.pkts.packet.sip.SipMessage.Builder#withTopMostViaHeader(ViaHeader)} followed
          * by this method, then the Via you just added will be removed again. Order is important!
-         *
+         * <p>
          * Note: if you actually wanted to know the value of that {@link ViaHeader} then you should
          * really have checked it on the {@link SipMessage} you received and not on the builder
          * object.
