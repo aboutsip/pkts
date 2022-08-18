@@ -3,19 +3,7 @@ package io.pkts.packet.sip.impl;
 import io.pkts.buffer.Buffer;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipParseException;
-import io.pkts.packet.sip.header.CSeqHeader;
-import io.pkts.packet.sip.header.CallIdHeader;
-import io.pkts.packet.sip.header.ContactHeader;
-import io.pkts.packet.sip.header.ContentLengthHeader;
-import io.pkts.packet.sip.header.ContentTypeHeader;
-import io.pkts.packet.sip.header.ExpiresHeader;
-import io.pkts.packet.sip.header.FromHeader;
-import io.pkts.packet.sip.header.MaxForwardsHeader;
-import io.pkts.packet.sip.header.RecordRouteHeader;
-import io.pkts.packet.sip.header.RouteHeader;
-import io.pkts.packet.sip.header.SipHeader;
-import io.pkts.packet.sip.header.ToHeader;
-import io.pkts.packet.sip.header.ViaHeader;
+import io.pkts.packet.sip.header.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -237,6 +225,12 @@ public abstract class ImmutableSipMessage implements SipMessage {
     public ExpiresHeader getExpiresHeader() throws SipParseException {
         final SipHeader header = findHeader(ExpiresHeader.NAME.toString());
         return header != null ? header.ensure().toExpiresHeader() : null;
+    }
+
+    @Override
+    public WWWAuthenticateHeader getWWWAuthenticateHeader() throws SipParseException{
+        final SipHeader header = findHeader(WWWAuthenticateHeader.NAME.toString());
+        return header != null ? header.ensure().toWWWAuthenticateHeader() : null;
     }
 
     @Override

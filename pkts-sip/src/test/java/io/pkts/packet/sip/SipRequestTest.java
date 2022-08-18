@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package io.pkts.packet.sip;
 
@@ -8,20 +8,17 @@ import io.pkts.RawData;
 import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.address.SipURI;
-import io.pkts.packet.sip.header.CSeqHeader;
-import io.pkts.packet.sip.header.CallIdHeader;
-import io.pkts.packet.sip.header.ContactHeader;
-import io.pkts.packet.sip.header.FromHeader;
-import io.pkts.packet.sip.header.MaxForwardsHeader;
-import io.pkts.packet.sip.header.RecordRouteHeader;
-import io.pkts.packet.sip.header.RouteHeader;
-import io.pkts.packet.sip.header.SipHeader;
-import io.pkts.packet.sip.header.ViaHeader;
+import io.pkts.packet.sip.header.*;
+import io.pkts.packet.sip.impl.SipParser;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -34,6 +31,131 @@ import static org.junit.Assert.fail;
 public class SipRequestTest extends PktsTestBase {
 
     private FromHeader from;
+
+
+    @Test
+    public void testBuildRegisterResponse() throws IOException {
+        StringBuilder register = new StringBuilder("REGISTER sip:10.32.26.25:5070;transport=tcp SIP/2.0\r\n" +
+                "Via: SIP/2.0/TCP 10.32.26.25:51696;rport;branch=z9hG4bKPj8d4db68b24754f539dbf3b563a44fe55;alias\r\n" +
+                "Max-Forwards: 70\r\n" +
+                "From: <sip:1000@10.32.26.25>;tag=89aefb1f3fc0413283a453eda5407f60\r\n" +
+                "To: jimmy<sip:1000@10.32.26.25>\r\n" +
+                "Call-ID: 1e7af0e67a5044658fc7f6716d329642\r\n" +
+                "CSeq: 36850 REGISTER\r\n" +
+                "User-Agent: MicroSIP/3.20.3\r\n" +
+                "Supported: outbound, path\r\n" +
+                "Contact: <sip:1000@10.32.26.25:51696;transport=TCP;ob>;reg-id=1;+sip.instance=\"<urn:uuid:00000000-0000-0000-0000-000011058e7e>\"\r\n" +
+                "Expires: 300\r\n" +
+                "Allow: PRACK, INVITE, ACK, BYE, CANCEL, UPDATE, INFO, SUBSCRIBE, NOTIFY, REFER, MESSAGE, OPTIONS\r\n" +
+                "Content-Length:  0\r\n");
+        SipMessage msgMessage = SipParser.frame(Buffers.wrap(register.toString()));
+
+        SipResponse sipResponse = msgMessage.createResponse(401)
+                .withHeader(SipHeader.create("User-Agent", "FreeSWITCH-mod_sofia/1.6.18+git~20170612T211449Z~6e79667c0a~64bit"))
+                .withHeader(SipHeader.create("Allow", "INVITE, ACK, BYE, CANCEL, OPTIONS, MESSAGE, INFO, UPDATE, REGISTER, REFER, NOTIFY, PUBLISH, SUBSCRIBE"))
+                .withHeader(SipHeader.create("Supported", "timer, path, replaces"))
+                .withHeader(SipHeader.create("WWW-Authenticate", "Digest realm=\"10.32.26.25\", nonce=\"bee3366b-cf59-476e-bc5e-334e0d65b386\", algorithm=MD5, qop=\"auth\""))
+                .withHeader(new ContentLengthHeader.Builder(0).build())
+                .build();
+
+        System.out.println(sipResponse);
+
+    }
+
+    @Test
+    public void testParseRegisterResponse() throws IOException {
+        StringBuilder register = new StringBuilder("SIP/2.0 401 Unauthorized\r\n" +
+                "Via: SIP/2.0/TCP 10.32.26.25:51696;rport=51696;branch=z9hG4bKPj8d4db68b24754f539dbf3b563a44fe55;alias\r\n" +
+                "From: <sip:1000@10.32.26.25>;tag=89aefb1f3fc0413283a453eda5407f60\r\n" +
+                "To: <sip:1000@10.32.26.25>;tag=Q0m1g96BS3vpa\r\n" +
+                "Call-ID: 1e7af0e67a5044658fc7f6716d329642\r\n" +
+                "CSeq: 36850 REGISTER\r\n" +
+                "User-Agent: FreeSWITCH-mod_sofia/1.6.18+git~20170612T211449Z~6e79667c0a~64bit\r\n" +
+                "Allow: INVITE, ACK, BYE, CANCEL, OPTIONS, MESSAGE, INFO, UPDATE, REGISTER, REFER, NOTIFY, PUBLISH, SUBSCRIBE\r\n" +
+                "Supported: timer, path, replaces\r\n" +
+                "WWW-Authenticate: Digest realm=\"10.32.26.25\", nonce=\"bee3366b-cf59-476e-bc5e-334e0d65b386\", algorithm=MD5, qop=\"auth\"\r\n" +
+                "Content-Length: 0");
+
+        SipMessage msgMessage = SipParser.frame(Buffers.wrap(register.toString()));
+
+        WWWAuthenticateHeader wwwAuthenticateHeader = msgMessage.getWWWAuthenticateHeader();
+
+        List<SipHeader> wwwAuthenticateList = msgMessage.getAllHeaders()
+                .stream()
+                .filter(c -> c.getName().equalsIgnoreCase(Buffers.wrap("WWW-Authenticate")))
+                .collect(Collectors.toList());
+        System.out.println(wwwAuthenticateList);
+    }
+
+
+
+    @Test
+    public void testParseRegister() throws IOException {
+        StringBuilder register = new StringBuilder("REGISTER sip:10.32.26.25:5070;transport=tcp SIP/2.0\r\n" +
+                "Via: SIP/2.0/TCP 10.32.26.25:51696;rport;branch=z9hG4bKPj8d4db68b24754f539dbf3b563a44fe55;alias\r\n" +
+                "Max-Forwards: 70\r\n" +
+                "From: <sip:1000@10.32.26.25>;tag=89aefb1f3fc0413283a453eda5407f60\r\n" +
+                "To: jimmy<sip:1000@10.32.26.25>\r\n" +
+                "Call-ID: 1e7af0e67a5044658fc7f6716d329642\r\n" +
+                "CSeq: 36850 REGISTER\r\n" +
+                "User-Agent: MicroSIP/3.20.3\r\n" +
+                "Supported: outbound, path\r\n" +
+                "Contact: <sip:1000@10.32.26.25:51696;transport=TCP;ob>;reg-id=1;+sip.instance=\"<urn:uuid:00000000-0000-0000-0000-000011058e7e>\"\r\n" +
+                "Expires: 300\r\n" +
+                "Allow: PRACK, INVITE, ACK, BYE, CANCEL, UPDATE, INFO, SUBSCRIBE, NOTIFY, REFER, MESSAGE, OPTIONS\r\n" +
+                "Content-Length:  0\r\n");
+
+        SipMessage msgMessage = SipParser.frame(Buffers.wrap(register.toString()));
+
+        if (msgMessage.isRegisterRequest()) {
+            System.out.println("This is a REGISTER request");
+        }
+
+        Buffer method = msgMessage.getMethod();
+        System.out.println("方法：" + method + "\n");
+        Buffer initialLine = msgMessage.getInitialLine();
+        System.out.println("第一行：" + initialLine + "\n");
+
+        List<ViaHeader> viaHeaders = msgMessage.getViaHeaders();
+        System.out.println("via:");
+        for (ViaHeader viaHeader : viaHeaders) {
+            System.out.println("host：" + viaHeader.getHost() + ",branch：" + viaHeader.getBranch() + ",alias:" + viaHeader.getParameter("alias"));
+        }
+
+        MaxForwardsHeader maxForwards = msgMessage.getMaxForwards();
+        System.out.println("\nmaxForwards:" + maxForwards.getMaxForwards());
+
+        FromHeader fromHeader = msgMessage.getFromHeader();
+        System.out.println("\nfrom-tag:" + fromHeader.getTag());
+
+        ToHeader toHeader = msgMessage.getToHeader();
+        System.out.println("\nto:" + toHeader.getAddress().getDisplayName());
+
+        CallIdHeader callIDHeader = msgMessage.getCallIDHeader();
+        System.out.println("\ncallId:" + callIDHeader.getCallId());
+
+        CSeqHeader cSeqHeader = msgMessage.getCSeqHeader();
+        System.out.println("\ncSeq:" + cSeqHeader.getSeqNumber());
+
+        Optional<SipHeader> userAgentHeader = msgMessage.getHeader("User-Agent");
+        System.out.println("\nuserAgent value:" + userAgentHeader.get().getValue());
+
+        Optional<SipHeader> supported = msgMessage.getHeader("Supported");
+        System.out.println("\nsupported name:" + supported.get().getName());
+
+        ContactHeader contactHeader = msgMessage.getContactHeader();
+        System.out.println("\ncontact reg-id:" + contactHeader.getParameter("reg-id"));
+
+        ExpiresHeader expiresHeader = msgMessage.getExpiresHeader();
+        System.out.println("\nexpires:" + expiresHeader.getExpires());
+
+        Optional<SipHeader> allowHeader = msgMessage.getHeader("Allow");
+        System.out.println("\nallow:" + allowHeader.get().getValue());
+
+        int contentLength = msgMessage.getContentLength();
+        System.out.println("\ncontentLength:" + contentLength);
+
+    }
 
     @Override
     @Before
@@ -124,7 +246,7 @@ public class SipRequestTest extends PktsTestBase {
      *
      * @throws Exception
      */
-    @Test(expected = SipParseException.class )
+    @Test(expected = SipParseException.class)
     public void testBlowUpOnNoFunctionToHandleEmptyTopMostVia() throws Exception {
         parseMessage(RawData.sipInviteOneRecordRouteHeader)
                 .copy()
@@ -140,7 +262,7 @@ public class SipRequestTest extends PktsTestBase {
      *
      * @throws Exception
      */
-    @Test(expected = SipParseException.class )
+    @Test(expected = SipParseException.class)
     public void testBlowUpOnNoFunctionToHandleEmptyVia() throws Exception {
         parseMessage(RawData.sipInviteOneRecordRouteHeader)
                 .copy()
@@ -175,8 +297,8 @@ public class SipRequestTest extends PktsTestBase {
 
         // Ensure that the from-tags now are different and that the two are actually
         // set in the first place.
-        assertThat(req.getFromHeader().getTag(), not((Buffer)null));
-        assertThat(b2bua.getFromHeader().getTag(), not((Buffer)null));
+        assertThat(req.getFromHeader().getTag(), not((Buffer) null));
+        assertThat(b2bua.getFromHeader().getTag(), not((Buffer) null));
         assertThat(req.getFromHeader().getTag(), not(b2bua.getFromHeader().getTag()));
 
         // ensure the Vias are correct. We pushed one, which should be at the top
@@ -193,12 +315,12 @@ public class SipRequestTest extends PktsTestBase {
         // make sure the body is left intact as well.
         final String expectedContent =
                 "v=0\r\n"
-                + "o=user1 53655765 2353687637 IN IP4 192.168.8.110\r\n"
-                + "s=-\r\n"
-                + "c=IN IP4 192.168.8.110\r\n"
-                + "t=0 0\r\n"
-                + "m=audio 6000 RTP/AVP 0\r\n"
-                + "a=rtpmap:0 PCMU/8000\r\n";
+                        + "o=user1 53655765 2353687637 IN IP4 192.168.8.110\r\n"
+                        + "s=-\r\n"
+                        + "c=IN IP4 192.168.8.110\r\n"
+                        + "t=0 0\r\n"
+                        + "m=audio 6000 RTP/AVP 0\r\n"
+                        + "a=rtpmap:0 PCMU/8000\r\n";
 
         assertThat(b2bua.getContent().toString(), is(expectedContent));
 
@@ -347,7 +469,7 @@ public class SipRequestTest extends PktsTestBase {
     /**
      * Test to create a new INVITE request and check all the headers that are supposed to be created
      * by default when not specified indeed are created with the correct values.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -371,7 +493,7 @@ public class SipRequestTest extends PktsTestBase {
     /**
      * Although not mandatory from the builder's perspective, having a request without a
      * {@link ContactHeader} is pretty much useless so make sure that we can add that as well.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -395,7 +517,7 @@ public class SipRequestTest extends PktsTestBase {
         assertThat(invite.getViaHeaders().size(), is(1));
         assertThat(
                 invite.getViaHeaders().get(0).toString()
-                .startsWith("Via: SIP/2.0/UDP 127.0.0.1:9898;branch=z9hG4bK"), is(true));
+                        .startsWith("Via: SIP/2.0/UDP 127.0.0.1:9898;branch=z9hG4bK"), is(true));
         assertThat(invite.getViaHeader().toString().startsWith("Via: SIP/2.0/UDP 127.0.0.1:9898;branch=z9hG4bK"),
                 is(true));
 
