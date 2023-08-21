@@ -530,11 +530,35 @@ public interface ViaHeader extends Parameters, SipHeader {
             return new ViaHeaderImpl(via, transport, host, port, params, indexOfBranch, indexOfReceived, indexOfRPort);
         }
 
-        private void transferValue(final Buffer dst) {
+        private boolean isIPv6Address(final Buffer host) throws SipParseException {
+            host.markReaderIndex();
+            try {
+                while (host.hasReadableBytes()) {
+                    final byte b = host.readByte();
+                    if (b == SipParser.COLON) {
+                        return true;
+                    }
+                }
+                return false; // no colon found so it is not IPv6 address
+            } catch (IOException ex) {
+                throw new SipParseException(host.getReaderIndex(), "Fail to read host buffer", ex);
+            } finally {
+                host.resetReaderIndex();
+            }
+        }
+
+        private void transferValue(final Buffer dst) throws SipParseException {
             SipParser.SIP2_0_SLASH.getBytes(0, dst);
             this.transport.toUpperCaseBuffer().getBytes(0, dst);
             dst.write(SipParser.SP);
+            boolean isHostIPv6 = isIPv6Address(this.host);
+            if (isHostIPv6) {
+                dst.write(SipParser.LSBRACKET);
+            }
             this.host.getBytes(0, dst);
+            if (isHostIPv6) {
+                dst.write(SipParser.RSBRACKET);
+            }
             if (this.port != -1) {
                 dst.write(SipParser.COLON);
                 dst.writeAsString(this.port);
