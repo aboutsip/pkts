@@ -24,7 +24,13 @@
       <artifactId>pkts-sdp</artifactId>
     </dependency>
 
-   <dependency> 
+      <dependency>
+          <groupId>io.hektor</groupId>
+          <artifactId>hektor-fsm</artifactId>
+          <version>0.0.5</version>
+      </dependency>
+
+      <dependency>
      <groupId>org.slf4j</groupId>
      <artifactId>slf4j-api</artifactId>
    </dependency>
