@@ -19,24 +19,19 @@
       <artifactId>pkts-buffers</artifactId>
     </dependency>
 
-   <!-- only for the SDP support. The reason
-        for including the entire jain sip ri
-        is because I couldn't find an official
-        SDP only release in any maven repos
-        and I didn't want to complicate things
-        for potential contributors so until
-        I write my own SDP library this will
-        be included. -->
+    <!-- only for the SDP support. The reason
+         for including the entire jain sip ri
+         is because I couldn't find an official
+         SDP only release in any maven repos
+         and I didn't want to complicate things
+         for potential contributors so until
+         I write my own SDP library this will
+         be included. -->
     <dependency>
-       <groupId>javax.sip</groupId>
-       <artifactId>jain-sip-ri</artifactId>
-   </dependency>
-
-
+      <groupId>javax.sip</groupId>
+      <artifactId>jain-sip-ri</artifactId>
+    </dependency>
     <!-- Test Dependencies -->
-    
-
-    
 
   </dependencies>
 
