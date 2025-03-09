@@ -8,7 +8,19 @@
   </parent>
 
   <name>Pkts Streams</name>
-  <groupId>io.pkts</groupId>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>16</source>
+                    <target>16</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <groupId>io.pkts</groupId>
   <artifactId>pkts-streams</artifactId>
   <packaging>jar</packaging>
   <dependencies>
@@ -24,7 +36,13 @@
       <artifactId>pkts-sdp</artifactId>
     </dependency>
 
-   <dependency> 
+      <dependency>
+          <groupId>io.hektor</groupId>
+          <artifactId>hektor-fsm</artifactId>
+          <version>0.0.5</version>
+      </dependency>
+
+      <dependency>
      <groupId>org.slf4j</groupId>
      <artifactId>slf4j-api</artifactId>
    </dependency>
