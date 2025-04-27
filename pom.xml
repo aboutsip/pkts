@@ -15,7 +15,7 @@
     <name>Pkts IO</name>
     <groupId>io.pkts</groupId>
     <artifactId>pkts-parent</artifactId>
-    <version>3.0.15-SNAPSHOT</version>
+    <version>3.0.16-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>PKTS IO - A pure java based library for manipulating pcaps</description>
     <licenses>
@@ -59,14 +59,14 @@
     </modules>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
+      <snapshotRepository>
+        <id>ossrh</id>
+        <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+      </snapshotRepository>
+      <repository>
+        <id>ossrh</id>
+        <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      </repository>
     </distributionManagement>
 
     <dependencyManagement>
@@ -227,6 +227,8 @@
                 </executions>
             </plugin>
 
+
+<!--
            <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-deploy-plugin</artifactId>
@@ -250,7 +252,7 @@
                 <arguments>-DaltDeploymentRepository=ossrh::default::https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</arguments>
             </configuration>
         </plugin>
-
+-->
 
 
             <plugin>
