@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.pkts</groupId>
     <artifactId>pkts-parent</artifactId>
-    <version>3.0.11-SNAPSHOT</version>
+    <version>3.0.12-SNAPSHOT</version>
   </parent>
 
   <name>Pkts Buffer Lib</name>
