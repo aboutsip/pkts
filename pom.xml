@@ -15,7 +15,7 @@
     <name>Pkts IO</name>
     <groupId>io.pkts</groupId>
     <artifactId>pkts-parent</artifactId>
-    <version>3.0.13-SNAPSHOT</version>
+    <version>3.0.13</version>
     <packaging>pom</packaging>
     <description>PKTS IO - A pure java based library for manipulating pcaps</description>
     <licenses>
@@ -38,7 +38,7 @@
         <connection>scm:git:git@github.com:aboutsip/pkts.git</connection>
         <developerConnection>scm:git:git@github.com:aboutsip/pkts.git</developerConnection>
         <url>git@github.com:aboutsip/pkts.git</url>
-        <tag>HEAD</tag>
+        <tag>pkts-parent-3.0.13</tag>
     </scm>
 
     <properties>
