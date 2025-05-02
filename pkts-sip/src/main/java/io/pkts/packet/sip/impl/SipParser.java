@@ -7,19 +7,7 @@ import io.pkts.buffer.Buffer;
 import io.pkts.buffer.Buffers;
 import io.pkts.packet.sip.SipMessage;
 import io.pkts.packet.sip.SipParseException;
-import io.pkts.packet.sip.header.CSeqHeader;
-import io.pkts.packet.sip.header.CallIdHeader;
-import io.pkts.packet.sip.header.ContactHeader;
-import io.pkts.packet.sip.header.ContentLengthHeader;
-import io.pkts.packet.sip.header.ContentTypeHeader;
-import io.pkts.packet.sip.header.ExpiresHeader;
-import io.pkts.packet.sip.header.FromHeader;
-import io.pkts.packet.sip.header.MaxForwardsHeader;
-import io.pkts.packet.sip.header.RecordRouteHeader;
-import io.pkts.packet.sip.header.RouteHeader;
-import io.pkts.packet.sip.header.SipHeader;
-import io.pkts.packet.sip.header.ToHeader;
-import io.pkts.packet.sip.header.ViaHeader;
+import io.pkts.packet.sip.header.*;
 import io.pkts.packet.sip.header.impl.SipHeaderImpl;
 
 import java.io.IOException;
@@ -30,9 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-
-
-
 
 
 /**
@@ -240,6 +225,9 @@ public class SipParser {
 
         framers.put(ViaHeader.NAME, header -> ViaHeader.frame(header.getValue()));
         framers.put(ViaHeader.COMPACT_NAME, header -> ViaHeader.frame(header.getValue()));
+
+        //新增WWWAuthenticateHeader注册
+        framers.put(WWWAuthenticateHeader.NAME, header -> WWWAuthenticateHeader.frame(header.getValue()));
     }
 
     /**
@@ -342,7 +330,7 @@ public class SipParser {
     public static boolean isSCTP(final Buffer t) {
         try {
             return t.capacity() == 4 && t.getByte(0) == 'S' && t.getByte(1) == 'C' && t.getByte(2) == 'T'
-                   && t.getByte(3) == 'P';
+                    && t.getByte(3) == 'P';
         } catch (final IOException e) {
             return false;
         }
@@ -401,7 +389,7 @@ public class SipParser {
     public static boolean isSCTPLower(final Buffer t) {
         try {
             return t.capacity() == 4 && t.getByte(0) == 's' && t.getByte(1) == 'c' && t.getByte(2) == 't'
-                   && t.getByte(3) == 'p';
+                    && t.getByte(3) == 'p';
         } catch (final IOException e) {
             return false;
         }
@@ -425,7 +413,7 @@ public class SipParser {
 
         if (b != 's') {
             throw new SipParseException(buffer.getReaderIndex() - 1,
-                                        "Expected 's' since the only schemes accepted are \"sip\" and \"sips\"");
+                    "Expected 's' since the only schemes accepted are \"sip\" and \"sips\"");
         }
 
         SipParser.expect(buffer, SipParser.COLON);
@@ -457,7 +445,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static List<Buffer[]> consumeGenericParams(final Buffer buffer) throws IndexOutOfBoundsException,
-                    IOException {
+            IOException {
         final List<Buffer[]> params = new ArrayList<Buffer[]>();
         while (buffer.hasReadableBytes() && buffer.peekByte() == SEMI) {
             buffer.readByte(); // consume the SEMI
@@ -511,7 +499,7 @@ public class SipParser {
             }
         }
         return new Buffer[]{
-                        key, value};
+                key, value};
     }
 
     /**
@@ -527,6 +515,28 @@ public class SipParser {
     public static boolean isNext(final Buffer buffer, final byte b) throws IOException {
 
         return buffer.hasReadableBytes() && buffer.peekByte() == b;
+    }
+
+    public static boolean isNext(final Buffer buffer, final byte[] bytes) throws IOException {
+        boolean hasReadableBytes = buffer.hasReadableBytes();
+        if (!hasReadableBytes) {
+            return false;
+        }
+        int readableBytes = buffer.getReadableBytes();
+        int length = bytes.length;
+        if (readableBytes < length) {
+            return false;
+        }
+        boolean match = true;
+        for (int i = 0; i < length; i++) {
+            int readIndex = buffer.getReaderIndex() + i;
+            byte aByte = buffer.getByte(readIndex);
+            if (aByte != bytes[i]) {
+                match = false;
+                break;
+            }
+        }
+        return match;
     }
 
     /**
@@ -692,7 +702,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeSLASH(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-                    IOException {
+            IOException {
         return consumeSeparator(buffer, SLASH);
     }
 
@@ -715,7 +725,7 @@ public class SipParser {
                 }
             } else {
                 throw new SipParseException(buffer.getReaderIndex(),
-                                            "Expected WS but nothing more to read in the buffer");
+                        "Expected WS but nothing more to read in the buffer");
             }
         } catch (final IOException e) {
             throw new SipParseException(buffer.getReaderIndex(), UNABLE_TO_READ_FROM_STREAM, e);
@@ -752,7 +762,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeSTAR(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-                    IOException {
+            IOException {
         return consumeSeparator(buffer, STAR);
     }
 
@@ -843,7 +853,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeCOMMA(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-                    IOException {
+            IOException {
         return consumeSeparator(buffer, COMMA);
     }
 
@@ -859,7 +869,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeSEMI(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-                    IOException {
+            IOException {
         return consumeSeparator(buffer, SEMI);
     }
 
@@ -875,7 +885,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeCOLON(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-                    IOException {
+            IOException {
         return consumeSeparator(buffer, COLON);
     }
 
@@ -891,7 +901,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeLDQUOT(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-                    IOException {
+            IOException {
         buffer.markReaderIndex();
         int consumed = consumeSWS(buffer);
         if (isNext(buffer, DQUOT)) {
@@ -916,7 +926,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     public static int consumeRDQUOT(final Buffer buffer) throws SipParseException, IndexOutOfBoundsException,
-                    IOException {
+            IOException {
         buffer.markReaderIndex();
         int consumed = 0;
         if (isNext(buffer, DQUOT)) {
@@ -956,7 +966,7 @@ public class SipParser {
      * @throws IndexOutOfBoundsException
      */
     private static int consumeSeparator(final Buffer buffer, final byte b) throws IndexOutOfBoundsException,
-                    IOException {
+            IOException {
         buffer.markReaderIndex();
         int consumed = consumeSWS(buffer);
         if (isNext(buffer, b)) {
@@ -984,7 +994,7 @@ public class SipParser {
      *             in case there is no token
      */
     public static Buffer expectToken(final Buffer buffer) throws IndexOutOfBoundsException, IOException,
-                    SipParseException {
+            SipParseException {
         final Buffer token = consumeToken(buffer);
         if (token == null) {
             throw new SipParseException(buffer.getReaderIndex(), "Expected TOKEN");
@@ -1094,7 +1104,7 @@ public class SipParser {
     }
 
     public static Buffer consumeAddressSpec(final Buffer buffer) throws IndexOutOfBoundsException, IOException,
-                    SipParseException {
+            SipParseException {
         return consumeAddressSpec(false, buffer);
     }
 
@@ -1135,7 +1145,7 @@ public class SipParser {
      * @throws SipParseException         in case we cannot successfully frame the addr-spec.
      */
     public static Buffer consumeAddressSpec(final boolean isProtected, final Buffer buffer) throws IndexOutOfBoundsException, IOException,
-                    SipParseException {
+            SipParseException {
         final int startIndex = buffer.getReaderIndex();
         int count = 0;
         int state = 0; // zero is to look for colon, everything else is to find the end
@@ -1150,7 +1160,7 @@ public class SipParser {
                 throw new SipParseException(buffer.getReaderIndex(), "No scheme found after 100 bytes, giving up");
             } else if (count > MAX_LOOK_AHEAD) {
                 throw new SipParseException(buffer.getReaderIndex(),
-                                            "Have not been able to find the entire addr-spec after " + count + " bytes, giving up");
+                        "Have not been able to find the entire addr-spec after " + count + " bytes, giving up");
             } else if (state == 0 && b == COLON) {
                 state = 1;
             } else if (state == 1 && (b == RAQUOT || b == CR || b == LF)) {
@@ -1339,7 +1349,7 @@ public class SipParser {
 
         consumeSWS(buffer);
         result[0] = consumeSentProtocol(buffer);
-        if(consumeLWS(buffer) == 0){
+        if (consumeLWS(buffer) == 0) {
             throw new SipParseException(buffer.getReaderIndex(), "Expected at least 1 WSP");
         }
 
@@ -1361,8 +1371,8 @@ public class SipParser {
 
         if (count == MAX_LOOK_AHEAD) {
             throw new SipParseException(buffer.getReaderIndex(),
-                                        "Unable to find the parameters part of the Via-header "
-                                        + "even after searching for " + MAX_LOOK_AHEAD + " bytes.");
+                    "Unable to find the parameters part of the Via-header "
+                            + "even after searching for " + MAX_LOOK_AHEAD + " bytes.");
         }
 
         if (indexOfSemi == 0) {
@@ -1370,7 +1380,7 @@ public class SipParser {
             // if there are no parameters present at all then there
             // is no chance of it being present.
             throw new SipParseException(buffer.getReaderIndex(),
-                                        "No via-parameters found. The Via-header MUST contain at least the branch parameter.");
+                    "No via-parameters found. The Via-header MUST contain at least the branch parameter.");
         }
 
         buffer.setReaderIndex(index);
@@ -1392,7 +1402,7 @@ public class SipParser {
             // indication an strange number of colons. May be the strange
             // ipv4 address after ipv6 thing which we currently dont handle
             throw new SipParseException(indexOfLastColon, "Found " + countOfColons + " which seems odd."
-                                                          + " Expecting 0, 1, 7 or 8 colons in the Via-host:port portion. Please check your traffic");
+                    + " Expecting 0, 1, 7 or 8 colons in the Via-host:port portion. Please check your traffic");
         }
 
         final List<Buffer[]> params = consumeGenericParams(buffer);
@@ -1475,7 +1485,7 @@ public class SipParser {
             port = consumePort(buffer);
         }
         return new Buffer[]{
-                        host, port};
+                host, port};
     }
 
     /**
@@ -1538,7 +1548,7 @@ public class SipParser {
             throw new SipParseException(buffer.getReaderIndex(), "Tried to consume m-type but buffer ended abruptly", e);
         } catch (final IOException e) {
             throw new SipParseException(buffer.getReaderIndex(),
-                                        "Tried to consume m-type but problem reading from underlying stream", e);
+                    "Tried to consume m-type but problem reading from underlying stream", e);
         }
     }
 
@@ -1569,7 +1579,7 @@ public class SipParser {
             throw new SipParseException(buffer.getReaderIndex(), "Tried to consume m-type but buffer ended abruptly", e);
         } catch (final IOException e) {
             throw new SipParseException(buffer.getReaderIndex(),
-                                        "Tried to consume m-type but problem reading from underlying stream", e);
+                    "Tried to consume m-type but problem reading from underlying stream", e);
         }
     }
 
@@ -1590,8 +1600,8 @@ public class SipParser {
         while (buffer.hasReadableBytes() && !done) {
             final byte b = buffer.readByte();
             final boolean ok = isAlphaNum(b) || b == DASH || b == PERIOD || b == EXCLAMATIONPOINT
-                               || b == PERCENT || b == STAR || b == UNDERSCORE || b == PLUS || b == BACKTICK
-                               || b == TICK || b == TILDE;
+                    || b == PERCENT || b == STAR || b == UNDERSCORE || b == PLUS || b == BACKTICK
+                    || b == TICK || b == TILDE;
             if (ok) {
                 ++count;
             } else {
@@ -1766,7 +1776,7 @@ public class SipParser {
             final String actualStr = new String(new byte[]{actual}, StandardCharsets.UTF_8);
             final String expectedStr = new String(new byte[]{expected});
             throw new SipParseException(buffer.getReaderIndex(), "Expected '" + expected + "' (" + expectedStr
-                                                                 + ") got '" + actual + "' (" + actualStr + ")");
+                    + ") got '" + actual + "' (" + actualStr + ")");
         }
     }
 
@@ -1912,8 +1922,9 @@ public class SipParser {
             return !isAllowEventsHeaderShort(headerName);
         } else if (size == 12) {
             return !isAllowEventsHeader(headerName);
+        } else if (size == 16) {
+            return !isWWWAuthenticateHeader(headerName);
         }
-
         return true;
     }
 
@@ -1926,7 +1937,7 @@ public class SipParser {
     private static boolean isDateHeader(final Buffer name) {
         try {
             return name.getByte(0) == 'D' && name.getByte(1) == 'a' &&
-                   name.getByte(2) == 't' && name.getByte(3) == 'e';
+                    name.getByte(2) == 't' && name.getByte(3) == 'e';
         } catch (final IOException e) {
             return false;
         }
@@ -1935,8 +1946,8 @@ public class SipParser {
     private static boolean isAllowHeader(final Buffer name) {
         try {
             return name.getByte(0) == 'A' && name.getByte(1) == 'l' &&
-                   name.getByte(2) == 'l' && name.getByte(3) == 'o' &&
-                   name.getByte(4) == 'w';
+                    name.getByte(2) == 'l' && name.getByte(3) == 'o' &&
+                    name.getByte(4) == 'w';
         } catch (final IOException e) {
             return false;
         }
@@ -1953,11 +1964,34 @@ public class SipParser {
     private static boolean isAllowEventsHeader(final Buffer name) {
         try {
             return name.getByte(0) == 'A' && name.getByte(1) == 'l' &&
-                   name.getByte(2) == 'l' && name.getByte(3) == 'o' &&
-                   name.getByte(4) == 'w' && name.getByte(5) == '-' &&
-                   name.getByte(6) == 'E' && name.getByte(7) == 'v' &&
-                   name.getByte(8) == 'e' && name.getByte(9) == 'n' &&
-                   name.getByte(10) == 't' && name.getByte(11) == 's';
+                    name.getByte(2) == 'l' && name.getByte(3) == 'o' &&
+                    name.getByte(4) == 'w' && name.getByte(5) == '-' &&
+                    name.getByte(6) == 'E' && name.getByte(7) == 'v' &&
+                    name.getByte(8) == 'e' && name.getByte(9) == 'n' &&
+                    name.getByte(10) == 't' && name.getByte(11) == 's';
+        } catch (final IOException e) {
+            return false;
+        }
+    }
+
+    private static boolean isWWWAuthenticateHeader(final Buffer name) {
+        try {
+            return (name.getByte(0) == 'W' || name.getByte(0) == 'w') &&
+                    (name.getByte(1) == 'W' || name.getByte(1) == 'w') &&
+                    (name.getByte(2) == 'W' || name.getByte(2) == 'w') &&
+                    name.getByte(3) == '-' &&
+                    (name.getByte(4) == 'A' || name.getByte(4) == 'a') &&
+                    (name.getByte(5) == 'U' || name.getByte(5) == 'u') &&
+                    (name.getByte(6) == 'T' || name.getByte(6) == 't') &&
+                    (name.getByte(7) == 'H' || name.getByte(7) == 'h') &&
+                    (name.getByte(8) == 'E' || name.getByte(8) == 'e') &&
+                    (name.getByte(9) == 'N' || name.getByte(9) == 'n') &&
+                    (name.getByte(10) == 'T' || name.getByte(10) == 't') &&
+                    (name.getByte(11) == 'I' || name.getByte(11) == 'i') &&
+                    (name.getByte(12) == 'C' || name.getByte(12) == 'c') &&
+                    (name.getByte(13) == 'A' || name.getByte(13) == 'a') &&
+                    (name.getByte(14) == 'T' || name.getByte(14) == 't') &&
+                    (name.getByte(15) == 'E' || name.getByte(15) == 'e');
         } catch (final IOException e) {
             return false;
         }
@@ -1966,9 +2000,9 @@ public class SipParser {
     private static boolean isSubjectHeader(final Buffer name) {
         try {
             return name.getByte(0) == 'S' && name.getByte(1) == 'u' &&
-                   name.getByte(2) == 'b' && name.getByte(3) == 'j' &&
-                   name.getByte(4) == 'e' && name.getByte(5) == 'c' &&
-                   name.getByte(6) == 't';
+                    name.getByte(2) == 'b' && name.getByte(3) == 'j' &&
+                    name.getByte(4) == 'e' && name.getByte(5) == 'c' &&
+                    name.getByte(6) == 't';
         } catch (final IOException e) {
             return false;
         }
@@ -2166,7 +2200,7 @@ public class SipParser {
 
         if (!couldBeSipMessage(buffer)) {
             throw new SipParseException(0, "Cannot be a SIP message because is doesnt start with \"SIP\" "
-                                           + "(for responses) or a method (for requests)");
+                    + "(for responses) or a method (for requests)");
         }
 
         final int startIndex = buffer.getReaderIndex();
@@ -2185,6 +2219,7 @@ public class SipParser {
         SipHeader routeHeader = null;
         SipHeader recordRouteHeader = null;
         SipHeader contactHeader = null;
+        SipHeader wwwAuthenticateHeader = null;
         final Map<String, List<SipHeader>> headers = new HashMap<>();
         int contentLength = 0;
 
@@ -2205,7 +2240,7 @@ public class SipParser {
                 } else if (cSeqHeader == null && header.isCSeqHeader()) {
                     header = header.ensure();
                     cSeqHeader = header;
-                } else if ( maxForwardsHeader == null && header.isMaxForwardsHeader()) {
+                } else if (maxForwardsHeader == null && header.isMaxForwardsHeader()) {
                     header = header.ensure();
                     maxForwardsHeader = header;
                 } else if (fromHeader == null && header.isFromHeader()) {
@@ -2226,7 +2261,11 @@ public class SipParser {
                 } else if (recordRouteHeader == null && header.isRecordRouteHeader()) {
                     header = header.ensure();
                     recordRouteHeader = header;
+                } else if (wwwAuthenticateHeader == null && header.isWWWAuthenticateHeader()) {
+                    header = header.ensure();
+                    wwwAuthenticateHeader = header;
                 }
+
 
                 headers.computeIfAbsent(headerName.toString(), k -> new ArrayList<>(4)).add(header);
             }
@@ -2248,32 +2287,32 @@ public class SipParser {
 
         if (initialLine.isRequestLine()) {
             return new ImmutableSipRequest(msg,
-                                           initialLine.toRequestLine(),
-                                           headers,
-                                           toHeader,
-                                           fromHeader,
-                                           cSeqHeader,
-                                           callIdHeader,
-                                           maxForwardsHeader,
-                                           viaHeader,
-                                           routeHeader,
-                                           recordRouteHeader,
-                                           contactHeader,
-                                           payload);
+                    initialLine.toRequestLine(),
+                    headers,
+                    toHeader,
+                    fromHeader,
+                    cSeqHeader,
+                    callIdHeader,
+                    maxForwardsHeader,
+                    viaHeader,
+                    routeHeader,
+                    recordRouteHeader,
+                    contactHeader,
+                    payload);
         } else {
             return new ImmutableSipResponse(msg,
-                                            initialLine.toResponseLine(),
-                                            headers,
-                                            toHeader,
-                                            fromHeader,
-                                            cSeqHeader,
-                                            callIdHeader,
-                                            maxForwardsHeader,
-                                            viaHeader,
-                                            routeHeader,
-                                            recordRouteHeader,
-                                            contactHeader,
-                                            payload);
+                    initialLine.toResponseLine(),
+                    headers,
+                    toHeader,
+                    fromHeader,
+                    cSeqHeader,
+                    callIdHeader,
+                    maxForwardsHeader,
+                    viaHeader,
+                    routeHeader,
+                    recordRouteHeader,
+                    contactHeader,
+                    payload);
         }
     }
 
@@ -2293,20 +2332,20 @@ public class SipParser {
 
     public static boolean couldBeSipMessage(final byte a, final byte b, final byte c) throws IOException {
         return a == 'S' && b == 'I' && c == 'P' || // response
-               a == 'I' && b == 'N' && c == 'V' || // INVITE
-               a == 'A' && b == 'C' && c == 'K' || // ACK
-               a == 'B' && b == 'Y' && c == 'E' || // BYE
-               a == 'O' && b == 'P' && c == 'T' || // OPTIONS
-               a == 'C' && b == 'A' && c == 'N' || // CANCEL
-               a == 'M' && b == 'E' && c == 'S' || // MESSAGE
-               a == 'R' && b == 'E' && c == 'G' || // REGISTER
-               a == 'I' && b == 'N' && c == 'F' || // INFO
-               a == 'P' && b == 'R' && c == 'A' || // PRACK
-               a == 'S' && b == 'U' && c == 'B' || // SUBSCRIBE
-               a == 'N' && b == 'O' && c == 'T' || // NOTIFY
-               a == 'U' && b == 'P' && c == 'D' || // UPDATE
-               a == 'R' && b == 'E' && c == 'F' || // REFER
-               a == 'P' && b == 'U' && c == 'B'; // PUBLISH
+                a == 'I' && b == 'N' && c == 'V' || // INVITE
+                a == 'A' && b == 'C' && c == 'K' || // ACK
+                a == 'B' && b == 'Y' && c == 'E' || // BYE
+                a == 'O' && b == 'P' && c == 'T' || // OPTIONS
+                a == 'C' && b == 'A' && c == 'N' || // CANCEL
+                a == 'M' && b == 'E' && c == 'S' || // MESSAGE
+                a == 'R' && b == 'E' && c == 'G' || // REGISTER
+                a == 'I' && b == 'N' && c == 'F' || // INFO
+                a == 'P' && b == 'R' && c == 'A' || // PRACK
+                a == 'S' && b == 'U' && c == 'B' || // SUBSCRIBE
+                a == 'N' && b == 'O' && c == 'T' || // NOTIFY
+                a == 'U' && b == 'P' && c == 'D' || // UPDATE
+                a == 'R' && b == 'E' && c == 'F' || // REFER
+                a == 'P' && b == 'U' && c == 'B'; // PUBLISH
 
     }
 
