@@ -459,8 +459,7 @@ public class SipParser {
     public static List<Buffer[]> consumeGenericParams(final Buffer buffer) throws IndexOutOfBoundsException,
                     IOException {
         final List<Buffer[]> params = new ArrayList<Buffer[]>();
-        while (buffer.hasReadableBytes() && buffer.peekByte() == SEMI) {
-            buffer.readByte(); // consume the SEMI
+        while (consumeSEMI(buffer) > 0) {
             params.add(consumeGenericParam(buffer));
         }
         return params;
@@ -503,11 +502,14 @@ public class SipParser {
             return new Buffer[2];
         }
         if (consumeEQUAL(buffer) > 0) {
-            // TODO: consume host and quoted string
             if (isNext(buffer, DOUBLE_QOUTE)) {
                 value = consumeQuotedString(buffer);
             } else {
-                value = consumeToken(buffer);
+                // token or host whichever is longer
+                final int count = Math.max(getTokenCount(buffer), getHostCount(buffer));
+                if (count > 0) {
+                    value = buffer.readBytes(count);
+                }
             }
         }
         return new Buffer[]{
@@ -1327,15 +1329,6 @@ public class SipParser {
      */
     public static Object[] consumeVia(final Buffer buffer) throws SipParseException, IOException {
         final Object[] result = new Object[4];
-        // start off by just finding the ';'. A Via-header MUST have a branch
-        // parameter and as such
-        // there must be a ';' present. If there isn't one, then bail out and
-        // complain.
-        int count = 0;
-        int indexOfSemi = 0;
-        int countOfColons = 0;
-        int indexOfLastColon = 0;
-        int readerIndexOfLastColon = 0; // for reporting
 
         consumeSWS(buffer);
         result[0] = consumeSentProtocol(buffer);
@@ -1343,59 +1336,14 @@ public class SipParser {
             throw new SipParseException(buffer.getReaderIndex(), "Expected at least 1 WSP");
         }
 
-        final int index = buffer.getReaderIndex();
-        while (indexOfSemi == 0 && buffer.hasReadableBytes() && ++count < MAX_LOOK_AHEAD) {
-            final byte b = buffer.readByte();
-            if (b == SipParser.SEMI) {
-                indexOfSemi = count;
-            } else if (b == SipParser.COLON) {
-                ++countOfColons;
-                indexOfLastColon = count;
-                readerIndexOfLastColon = buffer.getReaderIndex();
-            }
-        }
-
-        if (count == 0) {
-            return null;
-        }
-
-        if (count == MAX_LOOK_AHEAD) {
-            throw new SipParseException(buffer.getReaderIndex(),
-                                        "Unable to find the parameters part of the Via-header "
-                                        + "even after searching for " + MAX_LOOK_AHEAD + " bytes.");
-        }
-
-        if (indexOfSemi == 0) {
-            // well, we don't check if the branch parameter is there but
-            // if there are no parameters present at all then there
-            // is no chance of it being present.
-            throw new SipParseException(buffer.getReaderIndex(),
-                                        "No via-parameters found. The Via-header MUST contain at least the branch parameter.");
-        }
-
-        buffer.setReaderIndex(index);
-
-        if (countOfColons == 0 || countOfColons == 7) {
-            // no port, just host
-            result[1] = buffer.readBytes(indexOfSemi - 1);
-        } else if (indexOfLastColon != 0 && (countOfColons == 1 || countOfColons == 8)) {
-            // found either a single colon or 8 colons where 8 colons indicates
-            // that we have an ipv6 address in front of us.
-            result[1] = buffer.readBytes(indexOfLastColon - 1);
-            buffer.readByte(); // consume ':'
-            result[2] = buffer.readBytes(indexOfSemi - indexOfLastColon - 1); // consume
-            // port
-            if (result[2] == null || ((Buffer) result[2]).isEmpty()) {
-                throw new SipParseException(readerIndexOfLastColon + 1, "Expected port after colon");
-            }
-        } else {
-            // indication an strange number of colons. May be the strange
-            // ipv4 address after ipv6 thing which we currently dont handle
-            throw new SipParseException(indexOfLastColon, "Found " + countOfColons + " which seems odd."
-                                                          + " Expecting 0, 1, 7 or 8 colons in the Via-host:port portion. Please check your traffic");
-        }
+        Buffer[] sentBy = consumeSentBy(buffer);
+        result[1] = sentBy[0];
+        result[2] = sentBy[1];
 
         final List<Buffer[]> params = consumeGenericParams(buffer);
+        if (params.size() == 0) {
+            throw new SipParseException(buffer.getReaderIndex(), "Expected at least 1 parameter because Via without a branch parameter is illegal");
+        }
         result[3] = params;
 
         return result;
@@ -1427,55 +1375,25 @@ public class SipParser {
      * a ':' which then forces us to start checking the port. Also, white space
      * will stop parsing.
      *
-     * However, a colon could also signify an IPv6 address, which is not handled
-     * right now.
+     * '[' and ']' will signify IPv6 address for the host part.
      *
      * @param buffer
      * @return
      * @throws IOException
      */
-    public static Buffer[] consumeSentBye(final Buffer buffer) throws SipParseException, IOException {
-        final int index = buffer.getReaderIndex();
-        int count = 0;
-        boolean done = false;
-        boolean firstColon = false;
-        boolean consumePort = false;
-        while (!done && buffer.hasReadableBytes()) {
-            final byte b = buffer.readByte();
-            ++count;
-            if (firstColon && isDigit(b)) {
-                // get port
-                consumePort = true;
-                done = true;
-                count -= 2;
-                continue;
-            } else if (firstColon) {
-                // consume
-                firstColon = false;
-                continue;
-            }
+    public static Buffer[] consumeSentBy(final Buffer buffer) throws SipParseException, IOException {
+        Buffer host = consumeHost(buffer);
 
-            if (b == SipParser.COLON) {
-                firstColon = true;
-            } else if (b == SipParser.SEMI) {
-                --count;
-                done = true;
-            }
-        }
-
-        if (count == 0) {
-            return null;
-        }
-
-        buffer.setReaderIndex(index);
-        final Buffer host = buffer.readBytes(count);
         Buffer port = null;
-        if (consumePort) {
+        if (isNext(buffer, SipParser.COLON)) {
             buffer.readByte(); // consume ':'
             port = consumePort(buffer);
+            if (port == null) {
+                throw new SipParseException(buffer.getReaderIndex() + 1, "Expected port after colon");
+            }
         }
         return new Buffer[]{
-                        host, port};
+                host, port};
     }
 
     /**
@@ -1507,8 +1425,81 @@ public class SipParser {
         return null;
     }
 
-    public static Buffer consumeHostname(final Buffer buffer) throws IOException {
-        return null;
+    /**
+     * Consume a host, which according to RFC3261 is:
+     *
+     * <pre>
+     * host             =  hostname / IPv4address / IPv6reference
+     * hostname         =  *( domainlabel "." ) toplabel [ "." ]
+     * domainlabel      =  alphanum
+     * toplabel         =  ALPHA / ALPHA *( alphanum / "-" ) alphanum
+     * IPv4address    =  1*3DIGIT "." 1*3DIGIT "." 1*3DIGIT "." 1*3DIGIT
+     * IPv6reference  =  "[" IPv6address "]"
+     * IPv6address    =  hexpart [ ":" IPv4address ]
+     * hexpart        =  hexseq / hexseq "::" [ hexseq ] / "::" [ hexseq ]
+     * hexseq         =  hex4 *( ":" hex4)
+     * hex4           =  1*4HEXDIG
+     * </pre>
+     *
+     * Now, since we want to do things as fast as possible and all the
+     * consumeXXX methods only do framing we will implement something a little
+     * simpler, faster but not 100% according to the BNF.
+     *
+     * So, consume everything until we either hit a ';' signifying parameters or
+     * a ':'.
+     *
+     * '[' and ']' will signify IPv6 address for the host part.
+     *
+     * @param buffer
+     * @return
+     * @throws IOException
+     */
+    public static Buffer consumeHost(final Buffer buffer) throws IOException {
+        final int index = buffer.getReaderIndex();
+        int count = 0;
+        boolean endBracket = false;
+        boolean isIPv6 = false;
+
+        // TODO: Reuse SipUserHostInfo.Parser to properly parse host (domain/ipv4/ipv6)
+        while (buffer.hasReadableBytes() && ++count < MAX_LOOK_AHEAD) {
+            final byte b = buffer.readByte();
+
+            if (count == 1 && b == SipParser.LSBRACKET) {
+                isIPv6 = true;
+                --count;
+            } else if (isIPv6 && b == SipParser.RSBRACKET) {
+                endBracket = true;
+                --count;
+                break;
+            } else if ((!isIPv6 && b == SipParser.COLON) || b == SipParser.SEMI || b == SipParser.SP) {
+                --count;
+                break;
+            }
+        }
+
+        if (count == 0) {
+            return null;
+        }
+
+        if (count == MAX_LOOK_AHEAD) {
+            throw new SipParseException(buffer.getReaderIndex(),
+                    "Have not been able to find the entire host after " + count + " bytes, giving up");
+        }
+
+        if (isIPv6 && !endBracket) {
+            throw new SipParseException(index + 1 + count, "IPv6 address reference does not end with ']'");
+        }
+
+        final Buffer host;
+        if (isIPv6) {
+            buffer.setReaderIndex(index + 1); // consume '['
+            host = buffer.readBytes(count);
+            buffer.readByte(); // consume ']'
+        } else {
+            buffer.setReaderIndex(index);
+            host = buffer.readBytes(count);
+        }
+        return host;
     }
 
     /**
@@ -1625,6 +1616,31 @@ public class SipParser {
             }
         }
         buffer.setReaderIndex(index);
+        return count;
+    }
+
+    /**
+     * Helper method that counts the number of bytes that are considered part of
+     * the next host in the {@link Buffer}.
+     *
+     * @param buffer
+     * @return a count of the number of bytes the next host contains or zero if
+     *         no host is to be found within the buffer.
+     * @throws IOException
+     * @throws IndexOutOfBoundsException
+     */
+    public static int getHostCount(final Buffer buffer) throws IndexOutOfBoundsException, IOException {
+        int count = 0;
+        buffer.markReaderIndex();
+        while (buffer.hasReadableBytes()) {
+            final byte b = buffer.readByte();
+            final boolean ok = isAlphaNum(b) || b == DASH || b == PERIOD || b == LSBRACKET || b == RSBRACKET || b == COLON;
+            if (!ok) {
+                break;
+            }
+            ++count;
+        }
+        buffer.resetReaderIndex();
         return count;
     }
 
