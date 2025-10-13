@@ -20,15 +20,24 @@ public class ViaHeaderImplTest {
 
     @Test
     public void testBuildFromScratch() throws Exception {
-        final ViaHeader via = ViaHeader.withHost("pkts.io")
-                .withBranch("hello")
-                .withPort(5088)
-                .build();
+        // domain name
+        assertViaBuild("pkts.io", 5088, "hello", "Via: SIP/2.0/UDP pkts.io:5088;branch=hello");
 
-        assertThat(via.getPort(), is(5088));
-        assertThat(via.getBranch().toString(), is("hello"));
-        assertThat(via.getHost().toString(), is("pkts.io"));
-        assertThat(via.toString(), is("Via: SIP/2.0/UDP pkts.io:5088;branch=hello"));
+        // IPv4 address
+        assertViaBuild("127.0.0.1", 5088, "hello", "Via: SIP/2.0/UDP 127.0.0.1:5088;branch=hello");
+
+        // IPv6 address
+        final String[] ipv6Array = new String[]{
+                "2001:0db8:85a3:0042:1000:8a2e:0370:7334" /* full form */,
+                "ef82::1a12:1234:1b12",  /* Rule 1 - zero compression rule */
+                "1234:fd2:5621:1:89:0:0:4500", /* Rule 2 - leading zero compression rule */
+                "2001:1234::1b12:0:0:1a13", /* Rule 3 - zero is compressed at only one junction */
+        };
+
+        for (String ipv6 : ipv6Array) {
+            assertViaBuild(ipv6, 5088, "hello", "Via: SIP/2.0/UDP [" + ipv6 + "]:5088;branch=hello");
+        }
+
     }
 
     @Test
@@ -134,6 +143,18 @@ public class ViaHeaderImplTest {
         assertThat(copy.toString().contains("hello=fup"), is(true));
         assertThat(copy.toString().contains("apa=monkey"), is(true));
 
+    }
+
+    private void assertViaBuild(String host, int port, String branch, String expectedOutput) {
+        final ViaHeader via = ViaHeader.withHost(host)
+                .withBranch(branch)
+                .withPort(port)
+                .build();
+
+        assertThat(via.getPort(), is(port));
+        assertThat(via.getBranch().toString(), is(branch));
+        assertThat(via.getHost().toString(), is(host));
+        assertThat(via.toString(), is(expectedOutput));
     }
 
     private void assertViaRport(final String toParse, final int port) throws Exception {
