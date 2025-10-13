@@ -52,8 +52,13 @@ public class EthernetFramer implements Framer<PCapPacket, MACPacket> {
         try {
             EtherType etherType = getEtherType(buffer.getByte(12), buffer.getByte(13));
             if (etherType == EtherType.Dot1Q) {
-                getEtherType(buffer.getByte(16), buffer.getByte(17));
-                headers = buffer.readBytes(18);
+                EtherType innerEtherType = getEtherType(buffer.getByte(16), buffer.getByte(17));
+                // support QinQ
+                if (innerEtherType == EtherType.Dot1Q) {
+                    headers = buffer.readBytes(22);
+                } else {
+                    headers = buffer.readBytes(18);
+                }
             } else {
                 headers = buffer.readBytes(14);
             }

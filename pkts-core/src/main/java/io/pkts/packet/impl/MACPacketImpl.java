@@ -9,10 +9,7 @@ import io.pkts.frame.UnknownEtherType;
 import io.pkts.framer.EthernetFramer;
 import io.pkts.framer.IPv4Framer;
 import io.pkts.framer.IPv6Framer;
-import io.pkts.packet.IPPacket;
-import io.pkts.packet.MACPacket;
-import io.pkts.packet.PCapPacket;
-import io.pkts.packet.PacketParseException;
+import io.pkts.packet.*;
 import io.pkts.protocol.Protocol;
 
 import java.io.IOException;
@@ -199,16 +196,17 @@ public final class MACPacketImpl extends AbstractPacket implements MACPacket {
           } catch (UnknownEtherType e) {
               throw new PacketParseException(12, String.format("Unknown Ethernet type 0x%02x%02x", e.getB1(), e.getB2()));
           }
-          if (etherType == EthernetFramer.EtherType.Dot1Q) {
-              try {
-                  etherType = EthernetFramer.getEtherType(headers.getByte(16), headers.getByte(17));
-              } catch (UnknownEtherType e) {
-                  throw new PacketParseException(16, String.format("Unknown Ethernet type 0x%02x%02x", e.getB1(), e.getB2()));
-              } catch (IndexOutOfBoundsException e) {
-                  throw new PacketParseException(14, "Not enough bytes in this header");
+          for (int i = 0; i < 2; i++) {
+              if (etherType == EthernetFramer.EtherType.Dot1Q) {
+                  try {
+                      etherType = EthernetFramer.getEtherType(headers.getByte(16 + i * 4), headers.getByte(17 + i * 4));
+                  } catch (UnknownEtherType e) {
+                      throw new PacketParseException(16 + i * 4, String.format("Unknown Ethernet type 0x%02x%02x", e.getB1(), e.getB2()));
+                  } catch (IndexOutOfBoundsException e) {
+                      throw new PacketParseException(14, "Not enough bytes in this header");
+                  }
               }
           }
-
           switch (etherType) {
               case IPv4:
                   return Protocol.IPv4;
