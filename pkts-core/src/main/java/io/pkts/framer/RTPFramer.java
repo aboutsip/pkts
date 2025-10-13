@@ -102,8 +102,8 @@ public final class RTPFramer implements Framer<TransportPacket, RtpPacket> {
 
             if (hasExtension) {
                 final short extensionHeaders = buffer.readShort();
-                final int length = buffer.readUnsignedShort();
-                final Buffer extensionData = buffer.readBytes(length);
+                final int length = buffer.readUnsignedShort();  // RFC 3550: the number of 32-bit words in the extension
+                final Buffer extensionData = buffer.readBytes(4 * length);
             }
 
             if (hasPadding || hasExtension || csrcCount > 0) {
