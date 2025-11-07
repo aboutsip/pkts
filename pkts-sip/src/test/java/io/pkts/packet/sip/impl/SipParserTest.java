@@ -945,11 +945,22 @@ public class SipParserTest {
         assertVia("SIP/2.0/TLS test.aboutsip.com;ttl=45;branch=asdf;apa=monkey", "TLS", "test.aboutsip.com", null,
                 null, "ttl", "45", "branch", "asdf", "apa", "monkey");
 
-        final String ipv6 = "2001:0db8:85a3:0042:1000:8a2e:0370:7334";
-        assertVia("SIP/2.0/UDP " + ipv6 + ";branch=asdf", "UDP", ipv6, null, null, "branch", "asdf");
-        assertVia("SIP/2.0/UDP " + ipv6 + ":9090;branch=asdf", "UDP", ipv6, "9090", null, "branch", "asdf");
-        assertVia("SIP/2.0/TLS " + ipv6 + ":9090;rport;branch=asdf", "TLS", ipv6, "9090", null, "rport", null,
-                "branch", "asdf");
+        final String[] ipv6Array = new String[]{
+                "2001:0db8:85a3:0042:1000:8a2e:0370:7334" /* full form */,
+                "ef82::1a12:1234:1b12",  /* Rule 1 - zero compression rule */
+                "1234:fd2:5621:1:89:0:0:4500", /* Rule 2 - leading zero compression rule */
+                "2001:1234::1b12:0:0:1a13", /* Rule 3 - zero is compressed at only one junction */
+        };
+        for (String ipv6 : ipv6Array) {
+            assertVia("SIP/2.0/UDP [" + ipv6 + "];branch=asdf", "UDP", ipv6, null, null, "branch", "asdf");
+            assertVia("SIP/2.0/UDP [" + ipv6 + "]:9090;branch=asdf", "UDP", ipv6, "9090", null, "branch", "asdf");
+            assertVia("SIP/2.0/TLS [" + ipv6 + "]:9090;rport;branch=asdf", "TLS", ipv6, "9090", null, "rport", null,
+                    "branch", "asdf");
+            assertVia("SIP/2.0/TLS [" + ipv6 + "]:9090;received=" + ipv6 + ";rport=9090;branch=asdf", "TLS", ipv6, "9090", null,
+                    "received", ipv6,
+                    "rport", "9090",
+                    "branch", "asdf");
+        }
     }
 
     /**
@@ -963,7 +974,8 @@ public class SipParserTest {
         assertBadVia("SIP/1.0UDP 127.0.0.1:5088;branch=asdf", 5, "wrong protocol version");
         assertBadVia("SIP/2.0UDP 127.0.0.1:5088;branch=asdf", 8, "expected to freak out on a missing slash");
         assertBadVia("SIP/2.0/UDP sip.com", 19, "no branch parameter. Should not have accepted this");
-        assertBadVia("SIP/2.0/UDP :::", 15, "Strange number of colons. Cant parse a valid host out of it.");
+        assertBadVia("SIP/2.0/UDP 2001:0db8:85a3:0042:1000:8a2e:0370:7334;branch=asdf", 18, "IPv6 address without reference bracket");
+        assertBadVia("SIP/2.0/UDP [2001:0db8:85a3:0042:1000:8a2e:0370:7334;branch=asdf", 52, "No end bracket for IPv6");
         assertBadVia("SIP/2.0/UDP 127.0.0.1:;branch=asdf", 23, "No port specified after the colon");
     }
 
@@ -1072,7 +1084,7 @@ public class SipParserTest {
             final String leftOver)
                     throws Exception {
         final Buffer buffer = Buffers.wrap(toParse);
-        final Buffer[] result = SipParser.consumeSentBye(buffer);
+        final Buffer[] result = SipParser.consumeSentBy(buffer);
         if (expectedHost == null) {
             assertThat(result[0], is((Buffer) null));
         } else {
