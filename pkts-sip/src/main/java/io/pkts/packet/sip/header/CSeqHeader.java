@@ -114,6 +114,7 @@ public interface CSeqHeader extends SipHeader {
             throw new RuntimeException("Not implemented yet");
         }
 
+        @Override
         public CSeqHeader build() {
             final int size = Buffers.stringSizeOf(this.cseq);
             final Buffer value = Buffers.createBuffer(size + 1 + this.method.getReadableBytes());

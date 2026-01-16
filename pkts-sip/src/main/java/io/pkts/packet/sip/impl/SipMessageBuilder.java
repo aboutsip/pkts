@@ -18,11 +18,7 @@ import io.pkts.packet.sip.header.SipHeader;
 import io.pkts.packet.sip.header.ToHeader;
 import io.pkts.packet.sip.header.ViaHeader;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -594,7 +590,7 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         int msgSize = 2;
 
         final int headerCount = this.headers.size() + sizeOf(viaHeaders) + sizeOf(recordRouteHeaders) + sizeOf(routeHeaders);
-        final Map<String, List<SipHeader>> finalHeaders = new HashMap<>(headerCount);
+        final Map<String, List<SipHeader>> finalHeaders = new LinkedHashMap<>(headerCount);
 
         SipHeader contentLengthHeader = null;
 
@@ -612,6 +608,19 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
         routeHeader = null;
         recordRouteHeader = null;
         contactHeader = null;
+
+        if (this.viaHeaders != null) {
+            for (int j = 0; j < this.viaHeaders.size(); ++j) {
+                final ViaHeader finalVia = processVia(j, this.viaHeaders.get(j));
+                msgSize += finalVia.getBufferSize() + 2;
+                if (viaHeader == null) {
+                    viaHeader = finalVia;
+                }
+
+                finalHeaders.computeIfAbsent(finalVia.getName().toString(), k -> new ArrayList<>()).add(finalVia);
+            }
+        }
+
         for (int i = 0; i < this.headers.size(); ++i) {
             final SipHeader header = this.headers.get(i);
             if (header != null) {
@@ -627,18 +636,6 @@ public abstract class SipMessageBuilder<T extends SipMessage> implements SipMess
                         finalHeaders.computeIfAbsent(finalHeader.getName().toString(), k -> new ArrayList<>()).add(finalHeader);
                     }
                 }
-            }
-        }
-
-        if (this.viaHeaders != null) {
-            for (int j = 0; j < this.viaHeaders.size(); ++j) {
-                final ViaHeader finalVia = processVia(j, this.viaHeaders.get(j));
-                msgSize += finalVia.getBufferSize() + 2;
-                if (viaHeader == null) {
-                    viaHeader = finalVia;
-                }
-
-                finalHeaders.computeIfAbsent(finalVia.getName().toString(), k -> new ArrayList<>()).add(finalVia);
             }
         }
 
